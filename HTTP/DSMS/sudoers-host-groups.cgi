@@ -5,7 +5,7 @@ use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
-require 'common.pl';
+require '../common.pl';
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -195,7 +195,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-host-groups.cgi">
+<a href="DSMS/sudoers-host-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -216,7 +216,7 @@ function Expire_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='sudoers-host-groups.cgi' name='Add_Group' method='post' >
+<form action='DSMS/sudoers-host-groups.cgi' name='Add_Group' method='post' >
 
 <table align = "center">
 	<tr>
@@ -598,7 +598,7 @@ if (!$Group_Name_Edit) {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-host-groups.cgi">
+<a href="DSMS/sudoers-host-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -619,7 +619,7 @@ function Expire_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='sudoers-host-groups.cgi' name='Edit_Group' method='post' >
+<form action='DSMS/sudoers-host-groups.cgi' name='Edit_Group' method='post' >
 
 <table align = "center">
 	<tr>
@@ -922,14 +922,14 @@ sub html_delete_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="sudoers-host-groups.cgi">
+<a href="DSMS/sudoers-host-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Group</h3>
 
-<form action='sudoers-host-groups.cgi' method='post' >
+<form action='DSMS/sudoers-host-groups.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this group?</p>
 <table align = "center">
 	<tr>
@@ -1165,7 +1165,7 @@ sub html_show_links {
 			"Host",
 			"$Host ($IP)",
 			"$Active",
-			"<a href='sudoers-hosts.cgi?ID_Filter=$Host_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Host\" ></a>"
+			"<a href='DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Host\" ></a>"
 			);
 		}
 	}
@@ -1206,7 +1206,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -1216,7 +1216,7 @@ if ($Counter eq undef) {$Counter = 0};
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="sudoers-host-groups.cgi">
+<a href="DSMS/sudoers-host-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1305,13 +1305,13 @@ sub html_notes {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-host-groups.cgi">
+<a href="DSMS/sudoers-host-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Notes for $Group_Name</h3>
-<form action='sudoers-host-groups.cgi' method='post'>
+<form action='DSMS/sudoers-host-groups.cgi' method='post'>
 
 <table align='center'>
 	<tr>
@@ -1463,15 +1463,15 @@ sub html_output {
 
 
 				if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-					$Host = "<a href='sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #B1B1B1'>$Host ($IP)</span></a>"
+					$Host = "<a href='DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #B1B1B1'>$Host ($IP)</span></a>"
 				}
 				elsif ($Active == 1) {
-					$Host = "<a href='sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #00FF00'>$Host ($IP)</span></a>"
+					$Host = "<a href='DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #00FF00'>$Host ($IP)</span></a>"
 				}
 				else {
-					$Host = "<a href='sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #FF0000'>$Host ($IP)</span></a>"
+					$Host = "<a href='DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #FF0000'>$Host ($IP)</span></a>"
 				};
-				$Hosts = $Hosts . $Host . "&nbsp;&nbsp;&nbsp;" . "<a href='sudoers-host-groups.cgi?Delete_Host_ID=$Host_ID&Delete_Host_From_Group_ID=$DBID_Clean&Delete_Host_Name=$Host_Clean&Delete_Host_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
+				$Hosts = $Hosts . $Host . "&nbsp;&nbsp;&nbsp;" . "<a href='DSMS/sudoers-host-groups.cgi?Delete_Host_ID=$Host_ID&Delete_Host_From_Group_ID=$DBID_Clean&Delete_Host_Name=$Host_Clean&Delete_Host_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
 
 			}
 		}
@@ -1493,16 +1493,16 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='sudoers-host-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
-			"<a href='sudoers-host-groups.cgi?View_Notes=$DBID_Clean'>
+			"<a href='DSMS/sudoers-host-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
+			"<a href='DSMS/sudoers-host-groups.cgi?View_Notes=$DBID_Clean'>
 				<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='sudoers-host-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
-			"<a href='sudoers-host-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
+			"<a href='DSMS/sudoers-host-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
+			"<a href='DSMS/sudoers-host-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
 		);
 
 
@@ -1540,7 +1540,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='sudoers-host-groups.cgi' method='post' >
+			<form action='DSMS/sudoers-host-groups.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1580,7 +1580,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='sudoers-host-groups.cgi' method='post' >
+			<form action='DSMS/sudoers-host-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Group</span></td>
@@ -1592,7 +1592,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='sudoers-host-groups.cgi' method='post' >
+			<form action='DSMS/sudoers-host-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Group</span></td>

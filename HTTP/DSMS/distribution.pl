@@ -6,7 +6,7 @@ use DBI;
 use POSIX qw(strftime);
 use Net::SFTP::Foreign;
 
-require 'common.pl';
+require '../common.pl';
 
 my $Date = strftime "%Y-%m-%d", localtime;
 my $DB_Management = DB_Management();

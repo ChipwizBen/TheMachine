@@ -5,7 +5,7 @@ use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
-require 'common.pl';
+require '../common.pl';
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -150,7 +150,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-commands.cgi">
+<a href="DSMS/sudoers-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -171,7 +171,7 @@ function Expire_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='sudoers-commands.cgi' name='Add_Commands' method='post' >
+<form action='DSMS/sudoers-commands.cgi' name='Add_Commands' method='post' >
 
 <table align = "center">
 	<tr>
@@ -347,7 +347,7 @@ sub html_edit_command {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-commands.cgi">
+<a href="DSMS/sudoers-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -368,7 +368,7 @@ function Expire_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='sudoers-commands.cgi' name='Edit_Commands' method='post' >
+<form action='DSMS/sudoers-commands.cgi' name='Edit_Commands' method='post' >
 
 <table align = "center">
 	<tr>
@@ -557,14 +557,14 @@ sub html_delete_command {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-commands.cgi">
+<a href="DSMS/sudoers-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Command</h3>
 
-<form action='sudoers-commands.cgi' method='post' >
+<form action='DSMS/sudoers-commands.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this command?</p>
 <table align = "center">
 	<tr>
@@ -718,7 +718,7 @@ sub html_show_links {
 			"Command Group",
 			"$Group",
 			"$Active",
-			"<a href='sudoers-command-groups.cgi?ID_Filter=$Group_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
+			"<a href='DSMS/sudoers-command-groups.cgi?ID_Filter=$Group_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
 			);
 		}
 	}
@@ -759,7 +759,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -769,7 +769,7 @@ if ($Counter eq undef) {$Counter = 0};
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="sudoers-commands.cgi">
+<a href="DSMS/sudoers-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -858,13 +858,13 @@ sub html_notes {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-commands.cgi">
+<a href="DSMS/sudoers-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Notes for $Command_Name</h3>
-<form action='sudoers-commands.cgi' method='post'>
+<form action='DSMS/sudoers-commands.cgi' method='post'>
 
 <table align='center'>
 	<tr>
@@ -999,16 +999,16 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='sudoers-commands.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Command_Alias_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Command ID $DBID_Clean\" ></a>",
-			"<a href='sudoers-commands.cgi?View_Notes=$DBID_Clean'>
+			"<a href='DSMS/sudoers-commands.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Command_Alias_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Command ID $DBID_Clean\" ></a>",
+			"<a href='DSMS/sudoers-commands.cgi?View_Notes=$DBID_Clean'>
 				<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='sudoers-commands.cgi?Edit_Command=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Command ID $DBID_Clean\" ></a>",
-			"<a href='sudoers-commands.cgi?Delete_Command=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Command ID $DBID_Clean\" ></a>"
+			"<a href='DSMS/sudoers-commands.cgi?Edit_Command=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Command ID $DBID_Clean\" ></a>",
+			"<a href='DSMS/sudoers-commands.cgi?Delete_Command=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Command ID $DBID_Clean\" ></a>"
 		);
 
 
@@ -1048,7 +1048,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='sudoers-commands.cgi' method='post' >
+			<form action='DSMS/sudoers-commands.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1079,7 +1079,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='sudoers-commands.cgi' method='post' >
+			<form action='DSMS/sudoers-commands.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Command</span></td>
@@ -1091,7 +1091,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='sudoers-commands.cgi' method='post' >
+			<form action='DSMS/sudoers-commands.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Command</span></td>

@@ -5,16 +5,17 @@ use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
-require 'common.pl';
+require '../common.pl';
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Group = $CGI->param("Add_Group");
 my $Add_Group_Final = $CGI->param("Add_Group_Final");
-my $Add_Command_Temp_New = $CGI->param("Add_Command_Temp_New");
-my $Add_Command_Temp_Existing = $CGI->param("Add_Command_Temp_Existing");
+my $Add_User_Temp_New = $CGI->param("Add_User_Temp_New");
+my $Add_User_Temp_Existing = $CGI->param("Add_User_Temp_Existing");
 my $Group_Name_Add = $CGI->param("Group_Name_Add");
-	$Group_Name_Add =~ s/\W//g;
+	$Group_Name_Add =~ s/[^a-zA-Z0-9\-\.\_]//g;
+my $System_Group_Toggle_Add = $CGI->param("System_Group_Toggle_Add");
 my $Expires_Toggle_Add = $CGI->param("Expires_Toggle_Add");
 my $Expires_Date_Add = $CGI->param("Expires_Date_Add");
 	$Expires_Date_Add =~ s/\s//g;
@@ -23,10 +24,11 @@ my $Active_Add = $CGI->param("Active_Add");
 
 my $Edit_Group = $CGI->param("Edit_Group");
 my $Edit_Group_Final = $CGI->param("Edit_Group_Final");
-my $Edit_Command_Temp_New = $CGI->param("Edit_Command_Temp_New");
-my $Edit_Command_Temp_Existing = $CGI->param("Edit_Command_Temp_Existing");
+my $Edit_User_Temp_New = $CGI->param("Edit_User_Temp_New");
+my $Edit_User_Temp_Existing = $CGI->param("Edit_User_Temp_Existing");
 my $Group_Name_Edit = $CGI->param("Group_Name_Edit");
-	$Group_Name_Edit =~ s/\W//g;
+	$Group_Name_Edit =~ s/[^a-zA-Z0-9\-\.\_]//g;
+my $System_Group_Toggle_Edit = $CGI->param("System_Group_Toggle_Edit");
 my $Expires_Toggle_Edit = $CGI->param("Expires_Toggle_Edit");
 my $Expires_Date_Edit = $CGI->param("Expires_Date_Edit");
 	$Expires_Date_Edit =~ s/\s//g;
@@ -37,10 +39,10 @@ my $Delete_Group = $CGI->param("Delete_Group");
 my $Delete_Group_Confirm = $CGI->param("Delete_Group_Confirm");
 my $Group_Name_Delete = $CGI->param("Group_Name_Delete");
 
-my $Delete_Command_ID = $CGI->param("Delete_Command_ID");
-my $Delete_Command_From_Group_ID = $CGI->param("Delete_Command_From_Group_ID");
-my $Delete_Command_Name = $CGI->param("Delete_Command_Name");
-my $Delete_Command_From_Group_Name = $CGI->param("Delete_Command_From_Group_Name");
+my $Delete_User_ID = $CGI->param("Delete_User_ID");
+my $Delete_User_From_Group_ID = $CGI->param("Delete_User_From_Group_ID");
+my $Delete_User_Name = $CGI->param("Delete_User_Name");
+my $Delete_User_From_Group_Name = $CGI->param("Delete_User_From_Group_Name");
 
 my $Show_Links = $CGI->param("Show_Links");
 my $Show_Links_Name = $CGI->param("Show_Links_Name");
@@ -73,10 +75,10 @@ if ($Add_Group && !$Add_Group_Final) {
 	&html_add_group;
 }
 elsif ($Add_Group_Final) {
-	my ($Group_ID, $Command_Alias_Count) = &add_group;
-	my $Message_Green="$Group_Name_Add added successfully as ID $Group_ID with $Command_Alias_Count attached commands";
+	my ($Group_ID, $User_Count) = &add_group;
+	my $Message_Green="$Group_Name_Add added successfully as ID $Group_ID with $User_Count attached users";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-command-groups.cgi\n\n";
+	print "Location: sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Group && !$Edit_Group_Final) {
@@ -86,10 +88,10 @@ elsif ($Edit_Group && !$Edit_Group_Final) {
 	&html_edit_group;
 }
 elsif ($Edit_Group_Final) {
-	my ($Command_Alias_Count) = &edit_group;
-	my $Message_Green="$Group_Name_Edit edited successfully with $Command_Alias_Count newly attached commands";
+	my ($User_Count) = &edit_group;
+	my $Message_Green="$Group_Name_Edit edited successfully with $User_Count newly attached users";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-command-groups.cgi\n\n";
+	print "Location: sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Group) {
@@ -102,14 +104,14 @@ elsif ($Delete_Group_Confirm) {
 	&delete_group;
 	my $Message_Green="$Group_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-command-groups.cgi\n\n";
+	print "Location: sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
-elsif ($Delete_Command_ID && $Delete_Command_From_Group_ID) {
-	&delete_command;
-	my $Message_Green="$Delete_Command_Name removed from $Delete_Command_From_Group_Name successfully";
+elsif ($Delete_User_ID && $Delete_User_From_Group_ID) {
+	&delete_user;
+	my $Message_Green="$Delete_User_Name removed from $Delete_User_From_Group_Name successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-command-groups.cgi\n\n";
+	print "Location: sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Show_Links) {
@@ -142,34 +144,30 @@ else {
 
 sub html_add_group {
 
-if ($Add_Command_Temp_New) {
-	if ($Add_Command_Temp_Existing !~ m/^$Add_Command_Temp_New,/g &&
-	$Add_Command_Temp_Existing !~ m/,$Add_Command_Temp_New$/g &&
-	$Add_Command_Temp_Existing !~ m/,$Add_Command_Temp_New,/g) {
-			$Add_Command_Temp_Existing = $Add_Command_Temp_Existing . $Add_Command_Temp_New . ",";
+if ($Add_User_Temp_New) {
+	if ($Add_User_Temp_Existing !~ m/^$Add_User_Temp_New,/g &&
+	$Add_User_Temp_Existing !~ m/,$Add_User_Temp_New$/g &&
+	$Add_User_Temp_Existing !~ m/,$Add_User_Temp_New,/g) {
+			$Add_User_Temp_Existing = $Add_User_Temp_Existing . $Add_User_Temp_New . ",";
 		}
 }
 
-my $Commands;
-my @Commands = split(',', $Add_Command_Temp_Existing);
+my $Users;
+my @Users = split(',', $Add_User_Temp_Existing);
 
-foreach my $Command_Alias (@Commands) {
+foreach my $User (@Users) {
 
-	my $Command_Alias_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
-		FROM `commands`
+	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+		FROM `users`
 		WHERE `id` = ? ");
-	$Command_Alias_Query->execute($Command_Alias);
+	$User_Query->execute($User);
 
-	while ( (my $Command_Alias, my $Command, my $Expires, my $Active) = my @Command_Query = $Command_Alias_Query->fetchrow_array() )
+	while ( (my $User_Name, my $Expires, my $Active) = my @User_Query = $User_Query->fetchrow_array() )
 	{
 
-		my $Command_Name_Character_Limited = substr( $Command_Alias, 0, 40 );
-			if ($Command_Name_Character_Limited ne $Command_Alias) {
-				$Command_Name_Character_Limited = $Command_Name_Character_Limited . '...';
-			}
-		my $Command_Character_Limited = substr( $Command, 0, 40 );
-			if ($Command_Character_Limited ne $Command) {
-				$Command_Character_Limited = $Command_Character_Limited . '...';
+		my $User_Name_Character_Limited = substr( $User_Name, 0, 40 );
+			if ($User_Name_Character_Limited ne $User_Name) {
+				$User_Name_Character_Limited = $User_Name_Character_Limited . '...';
 			}
 
 		my $Expires_Epoch;
@@ -182,13 +180,13 @@ foreach my $Command_Alias (@Commands) {
 		}
 
 		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Commands = $Commands . "<tr><td align='left' style='color: #B1B1B1'>$Command_Name_Character_Limited</td> <td align='left' style='color: #B1B1B1'>$Command_Character_Limited</td></tr>";
+			$Users = $Users . "<tr><td align='left' style='color: #B1B1B1'>$User_Name_Character_Limited</td></tr>";
 		}
 		elsif ($Active) {
-			$Commands = $Commands . "<tr><td align='left' style='color: #00FF00'>$Command_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$Command_Character_Limited</td></tr>";
+			$Users = $Users . "<tr><td align='left' style='color: #00FF00'>$User_Name_Character_Limited</td></tr>";
 		}
 		else {
-			$Commands = $Commands . "<tr><td align='left' style='color: #FF0000'>$Command_Name_Character_Limited</td> <td align='left' style='color: #FF0000'>$Command_Character_Limited</td></tr>";
+			$Users = $Users . "<tr><td align='left' style='color: #FF0000'>$User_Name_Character_Limited</td></tr>";
 		}
 		
 	}
@@ -199,7 +197,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-command-groups.cgi">
+<a href="DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -217,10 +215,20 @@ function Expire_Toggle() {
 		document.Add_Group.Expires_Date_Add.disabled=true;
 	}
 }
+function System_Group_Toggle() {
+	if(document.Add_Group.System_Group_Toggle_Add.checked)
+	{
+		document.Add_Group.Add_User_Temp_New.disabled=true;
+	}
+	else
+	{
+		document.Add_Group.Add_User_Temp_New.disabled=false;
+	}
+}
 //-->
 </SCRIPT>
 
-<form action='sudoers-command-groups.cgi' name='Add_Group' method='post' >
+<form action='DSMS/sudoers-user-groups.cgi' name='Add_Group' method='post' >
 
 <table align = "center">
 	<tr>
@@ -229,29 +237,30 @@ function Expire_Toggle() {
 		<td colspan='3'><input type='text' name='Group_Name_Add' style="width: 300px" maxlength='128' value="$Group_Name_Add" placeholder="Group Name" required autofocus></td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Add Command:</td>
+		<td style="text-align: right;">System Group:</td>
+		<td><input type="checkbox" onclick="System_Group_Toggle()" name="System_Group_Toggle_Add"></td>
+		<td colspan='3' align="left">(See the specific definition below)</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Add User:</td>
 		<td></td>
 		<td colspan='3'>
-			<select name='Add_Command_Temp_New' onchange='this.form.submit()' style="width: 300px">
+			<select name='Add_User_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-				my $Command_Alias_List_Query = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
-				FROM `commands`
-				ORDER BY `command_alias` ASC");
-				$Command_Alias_List_Query->execute( );
+				my $User_List_Query = $DB_Sudoers->prepare("SELECT `id`, `username`, `expires`, `active`
+				FROM `users`
+				ORDER BY `username` ASC");
+				$User_List_Query->execute( );
 				
-				print "<option value='' selected>--Select a Command--</option>";
+				print "<option value='' selected>--Select a User--</option>";
 				
-				while ( (my $ID, my $Command_Alias, my $Command, my $Expires, my $Active) = my @Command_List_Query = $Command_Alias_List_Query->fetchrow_array() )
+				while ( (my $ID, my $User_Name, my $Expires, my $Active) = my @User_List_Query = $User_List_Query->fetchrow_array() )
 				{
 
-					my $Command_Name_Character_Limited = substr( $Command_Alias, 0, 40 );
-						if ($Command_Name_Character_Limited ne $Command_Alias) {
-							$Command_Name_Character_Limited = $Command_Name_Character_Limited . '...';
-						}
-					my $Command_Character_Limited = substr( $Command, 0, 40 );
-						if ($Command_Character_Limited ne $Command) {
-							$Command_Character_Limited = $Command_Character_Limited . '...';
+					my $User_Name_Character_Limited = substr( $User_Name, 0, 40 );
+						if ($User_Name_Character_Limited ne $User_Name) {
+							$User_Name_Character_Limited = $User_Name_Character_Limited . '...';
 						}
 
 					my $Expires_Epoch;
@@ -264,13 +273,13 @@ ENDHTML
 					}
 
 					if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-						print "<option style='color: #B1B1B1;' value='$ID'>$Command_Name_Character_Limited ($Command_Character_Limited) [Expired]</option>";
+						print "<option style='color: #B1B1B1;' value='$ID'>$User_Name_Character_Limited [Expired]</option>";
 					}
 					elsif ($Active) {
-						print "<option value='$ID'>$Command_Name_Character_Limited ($Command_Character_Limited)</option>";
+						print "<option value='$ID'>$User_Name_Character_Limited</option>";
 					}
 					else {
-						print "<option style='color: #FF0000;' value='$ID'>$Command_Name_Character_Limited ($Command_Character_Limited) [Inactive]</option>";
+						print "<option style='color: #FF0000;' value='$ID'>$User_Name_Character_Limited [Inactive]</option>";
 					}
 					
 				}
@@ -280,25 +289,25 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Attached Commands:</td>
+		<td style="text-align: right;">Attached Users:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
 
-if ($Commands) {
+if ($Users) {
 print <<ENDHTML;
 			<table>
 				<tr>
-					<td>Command Name</td>
-					<td>Command</td>
+					<td>User Name</td>
 				</tr>
-				$Commands
+				$Users
 			</table>
 ENDHTML
 }
 else {
 	print "<span style='text-align: left; color: #FFC600;'>None</span>";
 }
+
 
 print <<ENDHTML;
 		</td>
@@ -319,6 +328,11 @@ print <<ENDHTML;
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 <li>Group Names must be unique and contain only a-z, A-Z, 0-9 and _ characters.</li>
+<li>A <b>System Group</b> refers to the user group on a host, usually defined in /etc/group, and 
+represented by a prefixed '%' in a traditional sudoers file. If selected, you cannot attach sudo 
+users to this group here because the group's users will be determined by the host. Leave this 
+unchecked to treat this group as a <b>Sudoers Group</b>, which is a group of users independent of 
+any groups in /etc/group, and will therefore be treated as a sudoers group on <i>any</i> host.</li>
 <li>Groups with an expiry set are automatically removed from sudoers at 23:59:59
 (or the next sudoers refresh thereafter) on the day of expiry. Expired entries are functionally
 equivalent to inactive entries. The date entry format is YYYY-MM-DD.</li>
@@ -326,7 +340,7 @@ equivalent to inactive entries. The date entry format is YYYY-MM-DD.</li>
 </ul>
 
 <input type='hidden' name='Add_Group' value='1'>
-<input type='hidden' name='Add_Command_Temp_Existing' value='$Add_Command_Temp_Existing'>
+<input type='hidden' name='Add_User_Temp_Existing' value='$Add_User_Temp_Existing'>
 
 <hr width="50%">
 <div style="text-align: center"><input type=submit name='Add_Group_Final' value='Add Group'></div>
@@ -341,7 +355,7 @@ sub add_group {
 
 	### Existing Group_Name Check
 	my $Existing_Group_Name_Check = $DB_Sudoers->prepare("SELECT `id`
-		FROM `command_groups`
+		FROM `user_groups`
 		WHERE `groupname` = ?");
 		$Existing_Group_Name_Check->execute($Group_Name_Add);
 		my $Existing_Groups = $Existing_Group_Name_Check->rows();
@@ -354,46 +368,51 @@ sub add_group {
 		}
 		my $Message_Red="Group Name: $Group_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-command-groups.cgi\n\n";
+		print "Location: sudoers-user-groups.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Group_Name Check
 
+	if ($System_Group_Toggle_Add eq 'on') {
+		$System_Group_Toggle_Add = 1;
+		$Add_User_Temp_Existing = '';
+	}
+	else {
+		$System_Group_Toggle_Add = 0;
+	}
 	if ($Expires_Toggle_Add ne 'on') {
 		$Expires_Date_Add = '0000-00-00';
 	}
 
-	my $Group_Insert = $DB_Sudoers->prepare("INSERT INTO `command_groups` (
+	my $Group_Insert = $DB_Sudoers->prepare("INSERT INTO `user_groups` (
 		`id`,
 		`groupname`,
+		`system_group`,
 		`expires`,
 		`active`,
 		`modified_by`
 	)
 	VALUES (
 		NULL,
-		?,
-		?,
-		?,
-		?
+		?, ?, ?, ?, ?
 	)");
 
-	$Group_Insert->execute($Group_Name_Add, $Expires_Date_Add, $Active_Add, $User_Name);
+	$Group_Insert->execute($Group_Name_Add, $System_Group_Toggle_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
 	my $Group_Insert_ID = $DB_Sudoers->{mysql_insertid};
 
-	$Add_Command_Temp_Existing =~ s/,$//;
-	my @Commands = split(',', $Add_Command_Temp_Existing);
-	my $Command_Alias_Count=0;
+	$Add_User_Temp_Existing =~ s/,$//;
+	my @Users = split(',', $Add_User_Temp_Existing);
+	my $User_Count=0;
 
-	foreach my $Command_Alias (@Commands) {
+	foreach my $User (@Users) {
 
-		$Command_Alias_Count++;
+		$User_Count++;
 
-		my $Command_Alias_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_command_groups_to_commands` (
+		my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_user_groups_to_users` (
 			`id`,
 			`group`,
-			`command`
+			`user`
 		)
 		VALUES (
 			NULL,
@@ -401,11 +420,13 @@ sub add_group {
 			?
 		)");
 		
-		$Command_Alias_Insert->execute($Group_Insert_ID, $Command_Alias);
+		$User_Insert->execute($Group_Insert_ID, $User);
 
 	}
 
 	# Audit Log
+	if ($System_Group_Toggle_Add) {$System_Group_Toggle_Add = 'System'} else {$System_Group_Toggle_Add = 'Sudoers'}
+
 	if ($Expires_Date_Add eq '0000-00-00') {
 		$Expires_Date_Add = 'not expire';
 	}
@@ -415,28 +436,28 @@ sub add_group {
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
-	my $Commands_Attached;
-	foreach my $Command (@Commands) {
+	my $Users_Attached;
+	foreach my $User (@Users) {
 
-		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`
-			FROM `commands`
+		my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+			FROM `users`
 			WHERE `id` = ?"
 		);
-		$Select_Commands->execute($Command);
+		$Select_Users->execute($User);
 
-		while ((my $Command_Name) = $Select_Commands->fetchrow_array() )
+		while ((my $User_Name) = $Select_Users->fetchrow_array() )
 		{
-			$Commands_Attached = $Command_Name . ", " . $Commands_Attached;
+			$Users_Attached = $User_Name . ", " . $Users_Attached;
 		}
 
-	$Commands_Attached =~ s/,\s$//;
+	$Users_Attached =~ s/,\s$//;
 	}
 
-	if ($Commands_Attached) {
-		$Commands_Attached = ": " . $Commands_Attached;
+	if ($Users_Attached) {
+		$Users_Attached = ": " . $Users_Attached;
 	}
 	else {
-		$Commands_Attached = '';
+		$Users_Attached = '';
 	}
 
 	my $DB_Management = DB_Management();
@@ -447,26 +468,23 @@ sub add_group {
 		`username`
 	)
 	VALUES (
-		?,
-		?,
-		?,
-		?
+		?, ?, ?, ?
 	)");
 	
-	$Audit_Log_Submission->execute("Command Groups", "Add", "$User_Name added $Group_Name_Add, set it $Active_Add and to $Expires_Date_Add. $Command_Alias_Count commands were attached$Commands_Attached. The system assigned it Command Group ID $Group_Insert_ID.", $User_Name);
+	$Audit_Log_Submission->execute("User Groups", "Add", "$User_Name added $Group_Name_Add as a $System_Group_Toggle_Add Group, set it $Active_Add and to $Expires_Date_Add. $User_Count users were attached$Users_Attached. The system assigned it User Group ID $Group_Insert_ID.", $User_Name);
 	# / Audit Log
 
-	return($Group_Insert_ID, $Command_Alias_Count);
+	return($Group_Insert_ID, $User_Count);
 
 } # sub add_group
 
 sub html_edit_group {
 
-### Currently Attached Commands Retrieval and Conversion
+### Currently Attached Users Retrieval and Conversion
 
-my $Commands;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
-	FROM `lnk_command_groups_to_commands`
+my $Users;
+my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+	FROM `lnk_user_groups_to_users`
 	WHERE `group` = ? "
 );
 $Select_Links->execute($Edit_Group);
@@ -475,21 +493,17 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 {
 	my $Link = @Select_Links[0];
 
-	my $Command_Alias_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
-		FROM `commands`
+	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+		FROM `users`
 		WHERE `id` = ? ");
-	$Command_Alias_Query->execute($Link);
-		
-	while ( (my $Command_Alias, my $Command, my $Expires, my $Active) = my @Command_Query = $Command_Alias_Query->fetchrow_array() )
+	$User_Query->execute($Link);
+
+	while ( (my $User_Name, my $Expires, my $Active) = my @User_Query = $User_Query->fetchrow_array() )
 	{
 
-		my $Command_Name_Character_Limited = substr( $Command_Alias, 0, 40 );
-			if ($Command_Name_Character_Limited ne $Command_Alias) {
-				$Command_Name_Character_Limited = $Command_Name_Character_Limited . '...';
-			}
-		my $Command_Character_Limited = substr( $Command, 0, 40 );
-			if ($Command_Character_Limited ne $Command) {
-				$Command_Character_Limited = $Command_Character_Limited . '...';
+		my $User_Name_Character_Limited = substr( $User_Name, 0, 40 );
+			if ($User_Name_Character_Limited ne $User_Name) {
+				$User_Name_Character_Limited = $User_Name_Character_Limited . '...';
 			}
 
 		my $Expires_Epoch;
@@ -502,63 +516,59 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 		}
 
 		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Commands = $Commands . "<tr><td align='left' style='color: #B1B1B1'>$Command_Name_Character_Limited</td> <td align='left' style='color: #B1B1B1'>$Command_Character_Limited</td></tr>";
+			$Users = $Users . "<tr><td align='left' style='color: #B1B1B1'>$User_Name_Character_Limited</td></tr>";
 		}
 		elsif ($Active) {
-			$Commands = $Commands . "<tr><td align='left' style='color: #00FF00'>$Command_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$Command_Character_Limited</td></tr>";
+			$Users = $Users . "<tr><td align='left' style='color: #00FF00'>$User_Name_Character_Limited</td></tr>";
 		}
 		else {
-			$Commands = $Commands . "<tr><td align='left' style='color: #FF0000'>$Command_Name_Character_Limited</td> <td align='left' style='color: #FF0000'>$Command_Character_Limited</td></tr>";
+			$Users = $Users . "<tr><td align='left' style='color: #FF0000'>$User_Name_Character_Limited</td></tr>";
 		}
 	}
 }
 
-### / Currently Attached Commands Retrieval and Conversion
+### / Currently Attached Users Retrieval and Conversion
 
-### Newly Attached Commands Retrieval and Conversion
+### Newly Attached Users Retrieval and Conversion
 
-if ($Edit_Command_Temp_New) {
+if ($Edit_User_Temp_New) {
 
-	if ($Edit_Command_Temp_Existing !~ m/^$Edit_Command_Temp_New,/g &&
-	$Edit_Command_Temp_Existing !~ m/,$Edit_Command_Temp_New$/g &&
-	$Edit_Command_Temp_Existing !~ m/,$Edit_Command_Temp_New,/g) {
+	if ($Edit_User_Temp_Existing !~ m/^$Edit_User_Temp_New,/g &&
+	$Edit_User_Temp_Existing !~ m/,$Edit_User_Temp_New$/g &&
+	$Edit_User_Temp_Existing !~ m/,$Edit_User_Temp_New,/g) {
 		
 		### Check to see if new link is already attached to this group
 		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
-			FROM `lnk_command_groups_to_commands`
-			WHERE `command` = ?
+			FROM `lnk_user_groups_to_users`
+			WHERE `user` = ?
 			AND `group` = ? "
 		);
-		$Select_Links->execute($Edit_Command_Temp_New, $Edit_Group);
+		$Select_Links->execute($Edit_User_Temp_New, $Edit_Group);
 
 		my $Matched_Rows = $Select_Links->rows();
 
 		if ($Matched_Rows == 0) {
-			$Edit_Command_Temp_Existing = $Edit_Command_Temp_Existing . $Edit_Command_Temp_New . ",";
+			$Edit_User_Temp_Existing = $Edit_User_Temp_Existing . $Edit_User_Temp_New . ",";
 		}
 	}
 }
 
-my $Commands_New;
-my @Commands = split(',', $Edit_Command_Temp_Existing);
+my $Users_New;
+my @Users = split(',', $Edit_User_Temp_Existing);
 
-foreach my $Command_Alias (@Commands) {
+foreach my $User (@Users) {
 
-	my $Command_Alias_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
-		FROM `commands`
+	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+		FROM `users`
 		WHERE `id` = ? ");
-	$Command_Alias_Query->execute($Command_Alias);
+	$User_Query->execute($User);
 		
-	while ( (my $Command_Alias, my $Command, my $Expires, my $Active) = my @Command_Query = $Command_Alias_Query->fetchrow_array() )
+	while ( (my $User_Name, my $Expires, my $Active) = my @User_Query = $User_Query->fetchrow_array() )
 	{
 
-		my $Command_Name_Character_Limited = substr( $Command_Alias, 0, 40 );
-			if ($Command_Name_Character_Limited ne $Command_Alias) {
-				$Command_Name_Character_Limited = $Command_Name_Character_Limited . '...';
-			}
-		my $Command_Character_Limited = substr( $Command, 0, 40 );
-			if ($Command_Character_Limited ne $Command) {
-				$Command_Character_Limited = $Command_Character_Limited . '...';
+		my $User_Name_Character_Limited = substr( $User_Name, 0, 40 );
+			if ($User_Name_Character_Limited ne $User_Name) {
+				$User_Name_Character_Limited = $User_Name_Character_Limited . '...';
 			}
 
 		my $Expires_Epoch;
@@ -571,24 +581,24 @@ foreach my $Command_Alias (@Commands) {
 		}
 
 		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Commands_New = $Commands_New . "<tr><td align='left' style='color: #B1B1B1'>$Command_Name_Character_Limited</td> <td align='left' style='color: #B1B1B1'>$Command_Character_Limited</td></tr>";
+			$Users_New = $Users_New . "<tr><td align='left' style='color: #B1B1B1'>$User_Name_Character_Limited</td></tr>";
 		}
 		elsif ($Active) {
-			$Commands_New = $Commands_New . "<tr><td align='left' style='color: #00FF00'>$Command_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$Command_Character_Limited</td></tr>";
+			$Users_New = $Users_New . "<tr><td align='left' style='color: #00FF00'>$User_Name_Character_Limited</td></tr>";
 		}
 		else {
-			$Commands_New = $Commands_New . "<tr><td align='left' style='color: #FF0000'>$Command_Name_Character_Limited</td> <td align='left' style='color: #FF0000'>$Command_Character_Limited</td></tr>";
+			$Users_New = $Users_New . "<tr><td align='left' style='color: #FF0000'>$User_Name_Character_Limited</td></tr>";
 		}
 	}
 }
 
-### / Newly Attached Commands Retrieval and Conversion
+### / Newly Attached Users Retrieval and Conversion
 
 ### Group Details Retrieval
 
 if (!$Group_Name_Edit) {
-	my $Select_Group_Details = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
-		FROM `command_groups`
+	my $Select_Group_Details = $DB_Sudoers->prepare("SELECT `groupname`, `system_group`, `expires`, `active`
+		FROM `user_groups`
 		WHERE `id` = ? "
 	);
 	$Select_Group_Details->execute($Edit_Group);
@@ -596,28 +606,40 @@ if (!$Group_Name_Edit) {
 	while ( my @Select_Details = $Select_Group_Details->fetchrow_array() )
 	{
 		$Group_Name_Edit = @Select_Details[0];
-		$Expires_Date_Edit = @Select_Details[1];
-		$Active_Edit = @Select_Details[2];
+		$System_Group_Toggle_Edit = @Select_Details[1];
+		$Expires_Date_Edit = @Select_Details[2];
+		$Active_Edit = @Select_Details[3];
 	}
 }
 
-	my $Checked;
-	my $Disabled;
+	my $System_Group_Checked;
+	my $System_Group_Disabled;
+	if ($System_Group_Toggle_Edit == 1) {
+		$System_Group_Checked = 'checked';
+		$System_Group_Disabled = 'disabled';
+	}
+	else {
+		$System_Group_Checked = '';
+		$System_Group_Disabled = '';
+	}
+
+	my $Expires_Checked;
+	my $Expires_Disabled;
 	if ($Expires_Date_Edit eq '0000-00-00' || !$Expires_Date_Edit) {
-		$Checked = '';
-		$Disabled = 'disabled';
+		$Expires_Checked = '';
+		$Expires_Disabled = 'disabled';
 		$Expires_Date_Edit = strftime "%Y-%m-%d", localtime;
 	}
 	else {
-		$Checked = 'checked';
-		$Disabled = '';
+		$Expires_Checked = 'checked';
+		$Expires_Disabled = '';
 	}
 
 ### / Group Details Retrieval
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-command-groups.cgi">
+<a href="DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -635,10 +657,20 @@ function Expire_Toggle() {
 		document.Edit_Group.Expires_Date_Edit.disabled=true;
 	}
 }
+function System_Group_Toggle() {
+	if(document.Edit_Group.System_Group_Toggle_Edit.checked)
+	{
+		document.Edit_Group.Edit_User_Temp_New.disabled=true;
+	}
+	else
+	{
+		document.Edit_Group.Edit_User_Temp_New.disabled=false;
+	}
+}
 //-->
 </SCRIPT>
 
-<form action='sudoers-command-groups.cgi' name='Edit_Group' method='post' >
+<form action='DSMS/sudoers-user-groups.cgi' name='Edit_Group' method='post' >
 
 <table align = "center">
 	<tr>
@@ -647,29 +679,30 @@ function Expire_Toggle() {
 		<td colspan='3'><input type='text' name='Group_Name_Edit' style="width: 300px" maxlength='128' value="$Group_Name_Edit" placeholder="Group Name" required autofocus></td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Add Command:</td>
+		<td style="text-align: right;">System Group:</td>
+		<td><input type="checkbox" onclick="System_Group_Toggle()" name="System_Group_Toggle_Edit" $System_Group_Checked></td>
+		<td colspan='3' align="left">(See the specific definition below)</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Add User:</td>
 		<td></td>
 		<td colspan='3'>
-			<select name='Edit_Command_Temp_New' onchange='this.form.submit()' style="width: 300px">
+			<select name='Edit_User_Temp_New' onchange='this.form.submit()' style="width: 300px" $System_Group_Disabled>
 ENDHTML
 
-				my $Command_Alias_List_Query = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
-				FROM `commands`
-				ORDER BY `command_alias` ASC");
-				$Command_Alias_List_Query->execute( );
+				my $User_List_Query = $DB_Sudoers->prepare("SELECT `id`, `username`, `expires`, `active`
+				FROM `users`
+				ORDER BY `username` ASC");
+				$User_List_Query->execute( );
 				
-				print "<option value='' selected>--Select a Command--</option>";
+				print "<option value='' selected>--Select a User--</option>";
 				
-				while ( (my $ID, my $Command_Alias, my $Command, my $Expires, my $Active) = my @Command_List_Query = $Command_Alias_List_Query->fetchrow_array() )
+				while ( (my $ID, my $User_Name, my $Expires, my $Active) = my @User_List_Query = $User_List_Query->fetchrow_array() )
 				{
 
-					my $Command_Name_Character_Limited = substr( $Command_Alias, 0, 40 );
-						if ($Command_Name_Character_Limited ne $Command_Alias) {
-							$Command_Name_Character_Limited = $Command_Name_Character_Limited . '...';
-						}
-					my $Command_Character_Limited = substr( $Command, 0, 40 );
-						if ($Command_Character_Limited ne $Command) {
-							$Command_Character_Limited = $Command_Character_Limited . '...';
+					my $User_Name_Character_Limited = substr( $User_Name, 0, 40 );
+						if ($User_Name_Character_Limited ne $User_Name) {
+							$User_Name_Character_Limited = $User_Name_Character_Limited . '...';
 						}
 
 					my $Expires_Epoch;
@@ -682,13 +715,13 @@ ENDHTML
 					}
 			
 					if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-						print "<option style='color: #B1B1B1;' value='$ID'>$Command_Name_Character_Limited ($Command_Character_Limited) [Expired]</option>";
+						print "<option style='color: #B1B1B1;' value='$ID'>$User_Name_Character_Limited [Expired]</option>";
 					}
 					elsif ($Active) {
-						print "<option value='$ID'>$Command_Name_Character_Limited ($Command_Character_Limited)</option>";
+						print "<option value='$ID'>$User_Name_Character_Limited</option>";
 					}
 					else {
-						print "<option style='color: #FF0000;' value='$ID'>$Command_Name_Character_Limited ($Command_Character_Limited) [Inactive]</option>";
+						print "<option style='color: #FF0000;' value='$ID'>$User_Name_Character_Limited [Inactive]</option>";
 					}
 					
 				}
@@ -698,19 +731,18 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Existing Commands:</td>
+		<td style="text-align: right;">Existing Users:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
 
-if ($Commands) {
+if ($Users) {
 print <<ENDHTML;
 			<table>
 				<tr>
-					<td>Command Name</td>
-					<td>Command</td>
+					<td>User Name</td>
 				</tr>
-				$Commands
+				$Users
 			</table>
 ENDHTML
 }
@@ -723,19 +755,18 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">New Commands:</td>
+		<td style="text-align: right;">New Users:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
 
-if ($Commands_New) {
+if ($Users_New) {
 print <<ENDHTML;
 			<table>
 				<tr>
-					<td>Command Name</td>
-					<td>Command</td>
+					<td>User Name</td>
 				</tr>
-				$Commands_New
+				$Users_New
 			</table>
 ENDHTML
 }
@@ -749,8 +780,8 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">Expires:</td>
-		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Edit" $Checked></td>
-		<td colspan='3'><input type="text" style="width: 300px" name="Expires_Date_Edit" value="$Expires_Date_Edit" placeholder="$Expires_Date_Edit" $Disabled></td>
+		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Edit" $Expires_Checked></td>
+		<td colspan='3'><input type="text" style="width: 300px" name="Expires_Date_Edit" value="$Expires_Date_Edit" placeholder="$Expires_Date_Edit" $Expires_Disabled></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Active:</td>
@@ -779,6 +810,11 @@ print <<ENDHTML;
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 <li>Group Names must be unique and contain only a-z, A-Z, 0-9 and _ characters.</li>
+<li>A <b>System Group</b> refers to the user group on a host, usually defined in /etc/group, and 
+represented by a prefixed '%' in a traditional sudoers file. If selected, you cannot attach sudo 
+users to this group here because the group's users will be determined by the host. Leave this 
+unchecked to treat this group as a <b>Sudoers Group</b>, which is a group of users independent of 
+any groups in /etc/group, and will therefore be treated as a sudoers group on <i>any</i> host.</li>
 <li>You can only activate a modified command if you are an Approver.
 If you are not an Approver and you modify this entry, it will automatically be set to Inactive.</li>
 <li>Groups with an expiry set are automatically removed from sudoers at 23:59:59
@@ -788,7 +824,7 @@ equivalent to inactive entries. The date entry format is YYYY-MM-DD.</li>
 </ul>
 
 <input type='hidden' name='Edit_Group' value='$Edit_Group'>
-<input type='hidden' name='Edit_Command_Temp_Existing' value='$Edit_Command_Temp_Existing'>
+<input type='hidden' name='Edit_User_Temp_Existing' value='$Edit_User_Temp_Existing'>
 
 <hr width="50%">
 <div style="text-align: center"><input type=submit name='Edit_Group_Final' value='Edit Group'></div>
@@ -803,7 +839,7 @@ sub edit_group {
 
 	### Existing Group_Name Check
 	my $Existing_Group_Name_Check = $DB_Sudoers->prepare("SELECT `id`
-		FROM `command_groups`
+		FROM `user_groups`
 		WHERE `groupname` = ?
 		AND `id` != ?");
 		$Existing_Group_Name_Check->execute($Group_Name_Edit, $Edit_Group);
@@ -817,56 +853,21 @@ sub edit_group {
 		}
 		my $Message_Red="Group Name: $Group_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-command-groups.cgi\n\n";
+		print "Location: sudoers-user-groups.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Group_Name Check
 
-	if ($Expires_Toggle_Edit ne 'on') {
-		$Expires_Date_Edit = '0000-00-00';
-	}
-
-	my $Update_Group = $DB_Sudoers->prepare("UPDATE `command_groups` SET
-		`groupname` = ?,
-		`expires` = ?,
-		`active` = ?,
-		`modified_by` = ?
-		WHERE `id` = ?");
-	$Update_Group->execute($Group_Name_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_Group);
-
-	$Edit_Command_Temp_Existing =~ s/,$//;
-	my @Commands = split(',', $Edit_Command_Temp_Existing);
-	my $Command_Alias_Count=0;
-
-	foreach my $Command_Alias (@Commands) {
-
-		$Command_Alias_Count++;
-
-		my $Command_Alias_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_command_groups_to_commands` (
-			`id`,
-			`group`,
-			`command`
-		)
-		VALUES (
-			NULL,
-			?,
-			?
-		)");
-		
-		$Command_Alias_Insert->execute($Edit_Group, $Command_Alias);
-
-	}
-
 	### Revoke Rule Approval ###
 
 	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
-	INNER JOIN `lnk_rules_to_command_groups`
-	ON `rules`.`id` = `lnk_rules_to_command_groups`.`rule`
+	INNER JOIN `lnk_rules_to_user_groups`
+	ON `rules`.`id` = `lnk_rules_to_user_groups`.`rule`
 	SET
 	`modified_by` = '$User_Name',
 	`approved` = '0',
-	`approved_by` = 'Approval Revoked by $User_Name when modifying Command Group ID $Edit_Group'
-	WHERE `lnk_rules_to_command_groups`.`command_group` = ?");
+	`approved_by` = 'Approval Revoked by $User_Name when modifying User Group ID $Edit_Group'
+	WHERE `lnk_rules_to_user_groups`.`user_group` = ?");
 
 	my $Rules_Revoked = $Update_Rule->execute($Edit_Group);
 
@@ -874,7 +875,56 @@ sub edit_group {
 
 	### / Revoke Rule Approval ###
 
+	if ($System_Group_Toggle_Edit eq 'on') {
+		$System_Group_Toggle_Edit = 1;
+		$Edit_User_Temp_Existing = '';
+		my $Delete_Users_From_System_Group = $DB_Sudoers->prepare("DELETE from `lnk_user_groups_to_users`
+			WHERE `group` = ?");
+		$Delete_Users_From_System_Group->execute($Edit_Group);
+	}
+	else {
+		$System_Group_Toggle_Edit = 0;
+	}
+
+	if ($Expires_Toggle_Edit ne 'on') {
+		$Expires_Date_Edit = '0000-00-00';
+	}
+
+	my $Update_Group = $DB_Sudoers->prepare("UPDATE `user_groups` SET
+		`groupname` = ?,
+		`system_group` = ?,
+		`expires` = ?,
+		`active` = ?,
+		`modified_by` = ?
+		WHERE `id` = ?");
+	$Update_Group->execute($Group_Name_Edit, $System_Group_Toggle_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_Group);
+
+	$Edit_User_Temp_Existing =~ s/,$//;
+	my @Users = split(',', $Edit_User_Temp_Existing);
+	my $User_Count=0;
+
+	foreach my $User (@Users) {
+
+		$User_Count++;
+
+		my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_user_groups_to_users` (
+			`id`,
+			`group`,
+			`user`
+		)
+		VALUES (
+			NULL,
+			?,
+			?
+		)");
+		
+		$User_Insert->execute($Edit_Group, $User);
+
+	}
+
 	# Audit Log
+	if ($System_Group_Toggle_Edit) {$System_Group_Toggle_Edit = 'System'} else {$System_Group_Toggle_Edit = 'Sudoers'}
+
 	if ($Expires_Date_Edit eq '0000-00-00') {
 		$Expires_Date_Edit = 'does not expire';
 	}
@@ -884,28 +934,28 @@ sub edit_group {
 
 	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
 
-	my $Commands_Attached;
-	foreach my $Command (@Commands) {
+	my $Users_Attached;
+	foreach my $User (@Users) {
 
-		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`
-			FROM `commands`
+		my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+			FROM `users`
 			WHERE `id` = ?"
 		);
-		$Select_Commands->execute($Command);
+		$Select_Users->execute($User);
 
-		while ((my $Command_Name) = $Select_Commands->fetchrow_array() )
+		while ((my $User_Name) = $Select_Users->fetchrow_array() )
 		{
-			$Commands_Attached = $Command_Name . ", " . $Commands_Attached;
+			$Users_Attached = $User_Name . ", " . $Users_Attached;
 		}
 
-	$Commands_Attached =~ s/,\s$//;
+	$Users_Attached =~ s/,\s$//;
 	}
 
-	if ($Commands_Attached) {
-		$Commands_Attached = ": " . $Commands_Attached;
+	if ($Users_Attached) {
+		$Users_Attached = ": " . $Users_Attached;
 	}
 	else {
-		$Commands_Attached = '';
+		$Users_Attached = '';
 	}
 
 	my $DB_Management = DB_Management();
@@ -920,19 +970,19 @@ sub edit_group {
 	)");
 
 	if ($Rules_Revoked > 0) {
-		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified Command Group ID $Edit_Group, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
+		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified User Group ID $Edit_Group, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 	}
-	$Audit_Log_Submission->execute("Command Groups", "Modify", "$User_Name modified Command Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $Command_Alias_Count new commands were attached$Commands_Attached.", $User_Name);
+	$Audit_Log_Submission->execute("User Groups", "Modify", "$User_Name modified User Group ID $Edit_Group. The new entry is recorded as $System_Group_Toggle_Edit Group $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $User_Count new users were attached$Users_Attached.", $User_Name);
 	# / Audit Log
 
-	return($Command_Alias_Count);
+	return($User_Count);
 
 } # sub edit_group
 
 sub html_delete_group {
 
 	my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname`
-	FROM `command_groups`
+	FROM `user_groups`
 	WHERE `id` = ?");
 
 	$Select_Group->execute($Delete_Group);
@@ -944,14 +994,14 @@ sub html_delete_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="sudoers-command-groups.cgi">
+<a href="DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Group</h3>
 
-<form action='sudoers-command-groups.cgi' method='post' >
+<form action='DSMS/sudoers-user-groups.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this group?</p>
 <table align = "center">
 	<tr>
@@ -978,13 +1028,13 @@ sub delete_group {
 	### Revoke Rule Approval ###
 
 	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
-	INNER JOIN `lnk_rules_to_command_groups`
-	ON `rules`.`id` = `lnk_rules_to_command_groups`.`rule`
+	INNER JOIN `lnk_rules_to_user_groups`
+	ON `rules`.`id` = `lnk_rules_to_user_groups`.`rule`
 	SET
 	`modified_by` = '$User_Name',
 	`approved` = '0',
-	`approved_by` = 'Approval Revoked by $User_Name when deleting Command Group ID $Delete_Group_Confirm'
-	WHERE `lnk_rules_to_command_groups`.`command_group` = ?");
+	`approved_by` = 'Approval Revoked by $User_Name when deleting User Group ID $Delete_Group_Confirm'
+	WHERE `lnk_rules_to_user_groups`.`user_group` = ?");
 
 	my $Rules_Revoked = $Update_Rule->execute($Delete_Group_Confirm);
 
@@ -993,35 +1043,35 @@ sub delete_group {
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
-		FROM `lnk_command_groups_to_commands`
+	my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+		FROM `lnk_user_groups_to_users`
 		WHERE `group` = ?"
 	);
 	$Select_Links->execute($Delete_Group_Confirm);
 
-	my $Commands_Attached;
-	while (( my $Command_ID ) = $Select_Links->fetchrow_array() )
+	my $Users_Attached;
+	while (( my $User_ID ) = $Select_Links->fetchrow_array() )
 	{
 
-		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`
-			FROM `commands`
+		my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+			FROM `users`
 			WHERE `id` = ?"
 		);
-		$Select_Commands->execute($Command_ID);
+		$Select_Users->execute($User_ID);
 
-		while (( my $Command ) = $Select_Commands->fetchrow_array() )
+		while (( my $User ) = $Select_Users->fetchrow_array() )
 		{
-			$Commands_Attached = $Command . ", " . $Commands_Attached;
+			$Users_Attached = $User . ", " . $Users_Attached;
 		}
 	}
 
-	my $Select_Commands = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
-		FROM `command_groups`
+	my $Select_Users = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
+		FROM `user_groups`
 		WHERE `id` = ?");
 
-	$Select_Commands->execute($Delete_Group_Confirm);
+	$Select_Users->execute($Delete_Group_Confirm);
 
-	while (( my $Group_Name, my $Expires, my $Active ) = $Select_Commands->fetchrow_array() )
+	while (( my $Group_Name, my $Expires, my $Active ) = $Select_Users->fetchrow_array() )
 	{
 
 		if ($Expires eq '0000-00-00') {
@@ -1032,13 +1082,13 @@ sub delete_group {
 		}
 	
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
-		$Commands_Attached =~ s/,\s$//;
+		$Users_Attached =~ s/,\s$//;
 
-		if ($Commands_Attached) {
-			$Commands_Attached = "the following commands attached: " . $Commands_Attached . ".";
+		if ($Users_Attached) {
+			$Users_Attached = "the following users attached: " . $Users_Attached . ".";
 		}
 		else {
-			$Commands_Attached = 'no commands attached.';
+			$Users_Attached = 'no users attached.';
 		}
 
 		my $DB_Management = DB_Management();
@@ -1053,57 +1103,57 @@ sub delete_group {
 		)");
 
 		if ($Rules_Revoked > 0) {
-			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Command Group ID $Delete_Group_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
+			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted User Group ID $Delete_Group_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 		}
-		$Audit_Log_Submission->execute("Command Groups", "Delete", "$User_Name deleted Command Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name, set $Active and $Expires. It had $Commands_Attached", $User_Name);
+		$Audit_Log_Submission->execute("User Groups", "Delete", "$User_Name deleted User Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name, set $Active and $Expires. It had $Users_Attached", $User_Name);
 
 	}
 	# / Audit Log
 
-	my $Delete_Group = $DB_Sudoers->prepare("DELETE from `command_groups`
+	my $Delete_Group = $DB_Sudoers->prepare("DELETE from `user_groups`
 		WHERE `id` = ?");
 	
 	$Delete_Group->execute($Delete_Group_Confirm);
 
- 	my $Delete_Command_Link = $DB_Sudoers->prepare("DELETE from `lnk_command_groups_to_commands`
+ 	my $Delete_User = $DB_Sudoers->prepare("DELETE from `lnk_user_groups_to_users`
 		WHERE `group` = ?");
 	
-	$Delete_Command_Link->execute($Delete_Group_Confirm);
+	$Delete_User->execute($Delete_Group_Confirm);
 
- 	my $Delete_Rule_Links = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_command_groups`
-		WHERE `command_group` = ?");
+ 	my $Delete_Rule_Links = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_user_groups`
+		WHERE `user_group` = ?");
 	
 	$Delete_Rule_Links->execute($Delete_Group_Confirm);
 
 } # sub delete_group
 
-sub delete_command {
+sub delete_user {
 
 	### Revoke Rule Approval ###
 
 	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
-	INNER JOIN `lnk_rules_to_command_groups`
-	ON `rules`.`id` = `lnk_rules_to_command_groups`.`rule`
+	INNER JOIN `lnk_rules_to_user_groups`
+	ON `rules`.`id` = `lnk_rules_to_user_groups`.`rule`
 	SET
 	`modified_by` = '$User_Name',
 	`approved` = '0',
-	`approved_by` = 'Approval Revoked by $User_Name when modifying Command Group ID $Delete_Command_From_Group_ID'
-	WHERE `lnk_rules_to_command_groups`.`command_group` = ?");
+	`approved_by` = 'Approval Revoked by $User_Name when modifying User Group ID $Delete_User_From_Group_ID'
+	WHERE `lnk_rules_to_user_groups`.`user_group` = ?");
 
-	my $Rules_Revoked = $Update_Rule->execute($Delete_Command_From_Group_ID);
+	my $Rules_Revoked = $Update_Rule->execute($Delete_User_From_Group_ID);
 
 	if ($Rules_Revoked eq '0E0') {$Rules_Revoked = 0}
 
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`
-		FROM `commands`
+	my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+		FROM `users`
 		WHERE `id` = ?");
 
-	$Select_Commands->execute($Delete_Command_ID);
+	$Select_Users->execute($Delete_User_ID);
 
-	while (( my $Command_Alias, my $Command ) = $Select_Commands->fetchrow_array() )
+	while (( my $Username ) = $Select_Users->fetchrow_array() )
 	{
 	
 		my $DB_Management = DB_Management();
@@ -1118,18 +1168,18 @@ sub delete_command {
 		)");
 
 		if ($Rules_Revoked > 0) {
-			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Command ID $Delete_Command_ID from Command Group ID $Delete_Command_From_Group_ID, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
+			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted User ID $Delete_User_ID from User Group ID $Delete_User_From_Group_ID, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 		}
-		$Audit_Log_Submission->execute("Command Groups", "Delete", "$User_Name removed $Command_Alias ($Command) [Command ID $Delete_Command_ID] from Command Group $Delete_Command_From_Group_Name [Command Group ID $Delete_Command_From_Group_ID].", $User_Name);
+		$Audit_Log_Submission->execute("User Groups", "Delete", "$User_Name removed $Username [User ID $Delete_User_ID] from User Group $Delete_User_From_Group_Name [User Group ID $Delete_User_From_Group_ID].", $User_Name);
 
 	}
 	# / Audit Log
 
-	my $Delete_Command = $DB_Sudoers->prepare("DELETE from `lnk_command_groups_to_commands`
+	my $Delete_User = $DB_Sudoers->prepare("DELETE from `lnk_user_groups_to_users`
 		WHERE `group` = ?
-		AND `command` = ?");
+		AND `user` = ?");
 
-	$Delete_Command->execute($Delete_Command_From_Group_ID, $Delete_Command_ID);
+	$Delete_User->execute($Delete_User_From_Group_ID, $Delete_User_ID);
 
 }
 
@@ -1152,10 +1202,10 @@ sub html_show_links {
 	$Table->addRow( "#", "Category", "Name", "Status", "View" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	### Commands
+	### Users
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
-		FROM `lnk_command_groups_to_commands`
+	my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+		FROM `lnk_user_groups_to_users`
 		WHERE `group` = ?"
 	);
 	$Select_Links->execute($Show_Links);
@@ -1163,20 +1213,19 @@ sub html_show_links {
 	while ( my @Select_Links = $Select_Links->fetchrow_array() )
 	{
 		
-		my $Command_Alias_ID = @Select_Links[0];
+		my $User_ID = @Select_Links[0];
 
-		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `active`
-			FROM `commands`
+		my $Select_Users = $DB_Sudoers->prepare("SELECT `username`, `active`
+			FROM `users`
 			WHERE `id` = ?"
 		);
-		$Select_Commands->execute($Command_Alias_ID);
+		$Select_Users->execute($User_ID);
 
-		while ( my @Select_Command_Array = $Select_Commands->fetchrow_array() )
+		while ( my @Select_User_Array = $Select_Users->fetchrow_array() )
 		{
 
-			my $Command_Alias = $Select_Command_Array[0];
-			my $Command = $Select_Command_Array[1];
-			my $Active = $Select_Command_Array[2];
+			my $User = $Select_User_Array[0];
+			my $Active = $Select_User_Array[1];
 
 			if ($Active) {$Active = "Active"} else {$Active = "<span style='color: #FF0000'>Inactive</span>"}
 
@@ -1184,10 +1233,10 @@ sub html_show_links {
 
 			$Table->addRow(
 			"$Counter",
-			"Command",
-			"$Command_Alias ($Command)",
+			"User",
+			"$User",
 			"$Active",
-			"<a href='sudoers-commands.cgi?ID_Filter=$Command_Alias_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Command_Alias\" ></a>"
+			"<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $User\" ></a>"
 			);
 		}
 	}
@@ -1195,8 +1244,8 @@ sub html_show_links {
 	### Rules
 
 	my $Select_Links = $DB_Sudoers->prepare("SELECT `rule`
-		FROM `lnk_rules_to_command_groups`
-		WHERE `command_group` = ?"
+		FROM `lnk_rules_to_user_groups`
+		WHERE `user_group` = ?"
 	);
 	$Select_Links->execute($Show_Links);
 
@@ -1228,7 +1277,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -1238,7 +1287,7 @@ if ($Counter eq undef) {$Counter = 0};
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="sudoers-command-groups.cgi">
+<a href="DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1273,7 +1322,7 @@ sub html_notes {
 	### Discover Group Name
 	my $Group_Name;
 	my $Select_Group_Name = $DB_Sudoers->prepare("SELECT `groupname`
-	FROM `command_groups`
+	FROM `user_groups`
 	WHERE `id` = ?");
 
 	$Select_Group_Name->execute($View_Notes);
@@ -1283,7 +1332,7 @@ sub html_notes {
 	### Discover Note Count
 	my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
 		FROM `notes`
-		WHERE `type_id` = '06'
+		WHERE `type_id` = '04'
 		AND `item_id` = ?"
 	);
 	$Select_Note_Count->execute($View_Notes);
@@ -1292,7 +1341,7 @@ sub html_notes {
 
 	my $Select_Notes = $DB_Sudoers->prepare("SELECT `note`, `last_modified`, `modified_by`
 	FROM `notes`
-	WHERE `type_id` = '06'
+	WHERE `type_id` = '04'
 	AND `item_id` = ?
 	ORDER BY `last_modified` DESC");
 
@@ -1327,13 +1376,13 @@ sub html_notes {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-command-groups.cgi">
+<a href="DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Notes for $Group_Name</h3>
-<form action='sudoers-command-groups.cgi' method='post'>
+<form action='DSMS/sudoers-user-groups.cgi' method='post'>
 
 <table align='center'>
 	<tr>
@@ -1368,7 +1417,7 @@ sub add_note {
 	VALUES (
 		?, ?, ?, ?
 	)");
-	$Note_Submission->execute(06, $New_Note_ID, $New_Note, $User_Name);
+	$Note_Submission->execute(04, $New_Note_ID, $New_Note, $User_Name);
 
 } # sub add_note
 
@@ -1387,13 +1436,13 @@ sub html_output {
 	);
 
 
-	my $Select_Group_Count = $DB_Sudoers->prepare("SELECT `id` FROM `command_groups`");
+	my $Select_Group_Count = $DB_Sudoers->prepare("SELECT `id` FROM `user_groups`");
 		$Select_Group_Count->execute( );
 		my $Total_Rows = $Select_Group_Count->rows();
 
 
-	my $Select_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`, `last_modified`, `modified_by`
-		FROM `command_groups`
+	my $Select_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `active`, `last_modified`, `modified_by`
+		FROM `user_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
 		OR `expires` LIKE ?
@@ -1410,7 +1459,7 @@ sub html_output {
 	
 	my $Rows = $Select_Groups->rows();
 
-	$Table->addRow( "ID", "Group Name", "Connected Commands", "Expires", "Active", "Last Modified", "Modified By", "Links", "Notes", "Edit", "Delete" );
+	$Table->addRow( "ID", "Group Name", "Connected Users", "Expires", "Active", "Last Modified", "Modified By", "Links", "Notes", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Group_Row_Count=1;
@@ -1419,7 +1468,7 @@ sub html_output {
 	{
 
 		$Group_Row_Count++;
-		my $Commands;
+		my $Users;
 
 		my $DBID = @Select_Groups[0];
 			my $DBID_Clean = $DBID;
@@ -1428,19 +1477,20 @@ sub html_output {
 		my $Group_Name = @Select_Groups[1];
 		my $Group_Name_Clean = $Group_Name;
 			$Group_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Group_Expires = @Select_Groups[2];
+		my $System_Group = @Select_Groups[2];
+		my $Group_Expires = @Select_Groups[3];
 		my $Group_Expires_Clean = $Group_Expires;
 			$Group_Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = @Select_Groups[3];
+		my $Active = @Select_Groups[4];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = @Select_Groups[4];
-		my $Modified_By = @Select_Groups[5];
+		my $Last_Modified = @Select_Groups[5];
+		my $Modified_By = @Select_Groups[6];
 
 		### Discover Note Count
 
 		my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
 			FROM `notes`
-			WHERE `type_id` = '06'
+			WHERE `type_id` = '04'
 			AND `item_id` = ?"
 		);
 		$Select_Note_Count->execute($DBID_Clean);
@@ -1448,31 +1498,30 @@ sub html_output {
 
 		### / Discover Note Count
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
-			FROM `lnk_command_groups_to_commands`
+		my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+			FROM `lnk_user_groups_to_users`
 			WHERE `group` = ?"
 		);
 		$Select_Links->execute($DBID_Clean);
 
 		while ( my @Select_Links = $Select_Links->fetchrow_array() )
 		{
-			
-			my $Command_Alias_ID = @Select_Links[0];
 
-			my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
-				FROM `commands`
+			my $User_ID = @Select_Links[0];
+
+			my $Select_Users = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+				FROM `users`
 				WHERE `id` = ?"
 			);
-			$Select_Commands->execute($Command_Alias_ID);
+			$Select_Users->execute($User_ID);
 
-			while ( my @Select_Commands = $Select_Commands->fetchrow_array() )
+			while ( my @Select_Users = $Select_Users->fetchrow_array() )
 			{
 
-				my $Command_Alias = @Select_Commands[0];
-					my $Command_Alias_Clean = $Command_Alias;
-				my $Command = @Select_Commands[1];
-				my $Expires = @Select_Commands[2];
-				my $Active = @Select_Commands[3];
+				my $User = @Select_Users[0];
+					my $User_Clean = $User;
+				my $Expires = @Select_Users[1];
+				my $Active = @Select_Users[2];
 
 				my $Expires_Epoch;
 				my $Today_Epoch = time;
@@ -1485,15 +1534,15 @@ sub html_output {
 
 
 				if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-					$Command_Alias = "<a href='sudoers-commands.cgi?ID_Filter=$Command_Alias_ID'><span style='color: #B1B1B1'>$Command_Alias ($Command)</span></a>"
+					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #B1B1B1'>$User</span></a>"
 				}
 				elsif ($Active == 1) {
-					$Command_Alias = "<a href='sudoers-commands.cgi?ID_Filter=$Command_Alias_ID'><span style='color: #00FF00'>$Command_Alias ($Command)</span></a>"
+					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #00FF00'>$User</span></a>"
 				}
 				else {
-					$Command_Alias = "<a href='sudoers-commands.cgi?ID_Filter=$Command_Alias_ID'><span style='color: #FF0000'>$Command_Alias ($Command)</span></a>"
+					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #FF0000'>$User</span></a>"
 				};
-				$Commands = $Commands . $Command_Alias . "&nbsp;&nbsp;&nbsp;" . "<a href='sudoers-command-groups.cgi?Delete_Command_ID=$Command_Alias_ID&Delete_Command_From_Group_ID=$DBID_Clean&Delete_Command_Name=$Command_Alias_Clean&Delete_Command_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
+				$Users = $Users . $User . "&nbsp;&nbsp;&nbsp;" . "<a href='DSMS/sudoers-user-groups.cgi?Delete_User_ID=$User_ID&Delete_User_From_Group_ID=$DBID_Clean&Delete_User_Name=$User_Clean&Delete_User_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
 
 			}
 		}
@@ -1506,25 +1555,29 @@ sub html_output {
 		else {
 			$Group_Expires_Epoch = str2time("$Group_Expires_Clean"."T23:59:59");
 		}
+		if ($System_Group) {
+			$Group_Name = '%' . $Group_Name;
+			$Users = '<div style="text-align: center;">[This is a System Group. Users are defined by the host\'s /etc/group file.]</div>'
+		}
 
 		$Table->addRow(
 			"$DBID",
 			"$Group_Name",
-			"$Commands",
+			"$Users",
 			"$Group_Expires",
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='sudoers-command-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
-			"<a href='sudoers-command-groups.cgi?View_Notes=$DBID_Clean'>
+			"<a href='DSMS/sudoers-user-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
+			"<a href='DSMS/sudoers-user-groups.cgi?View_Notes=$DBID_Clean'>
 				<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='sudoers-command-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
-			"<a href='sudoers-command-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
+			"<a href='DSMS/sudoers-user-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
+			"<a href='DSMS/sudoers-user-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
 		);
 
 
@@ -1562,7 +1615,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='sudoers-command-groups.cgi' method='post' >
+			<form action='DSMS/sudoers-user-groups.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1591,18 +1644,18 @@ print <<ENDHTML;
 				</tr>
 				<tr>
 					<td colspan='2' style="text-align: left;">
-						Commands highlighted <span style="color: #00FF00;">green</span> are Active<br />
-						Commands highlighted <span style="color: #FF0000;">red</span> are Inactive<br />
-						Commands highlighted <span style="color: #B1B1B1;">grey</span> have expired<br />
-						Click a Command to view it in the Commands table<br />
-						Click <span style='color: #FFC600'>[Remove]</span> to remove a command from the group
+						Users highlighted <span style="color: #00FF00;">green</span> are Active<br />
+						Users highlighted <span style="color: #FF0000;">red</span> are Inactive<br />
+						Users highlighted <span style="color: #B1B1B1;">grey</span> have expired<br />
+						Click a User to view it in the Users table<br />
+						Click <span style='color: #FFC600'>[Remove]</span> to remove a user from the group
 					</td>
 				</tr>
 			</form>
 			</table>
 		</td>
 		<td align="center">
-			<form action='sudoers-command-groups.cgi' method='post' >
+			<form action='DSMS/sudoers-user-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Group</span></td>
@@ -1614,7 +1667,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='sudoers-command-groups.cgi' method='post' >
+			<form action='DSMS/sudoers-user-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Group</span></td>
@@ -1626,7 +1679,7 @@ print <<ENDHTML;
 ENDHTML
 
 						my $Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`
-						FROM `command_groups`
+						FROM `user_groups`
 						ORDER BY `groupname` ASC");
 						$Group_List_Query->execute( );
 
@@ -1645,7 +1698,7 @@ print <<ENDHTML;
 	</tr>
 </table>
 
-<p style="font-size:14px; font-weight:bold;">Command Groups | Groups Displayed: $Rows of $Total_Rows</p>
+<p style="font-size:14px; font-weight:bold;">User Groups | Groups Displayed: $Rows of $Total_Rows</p>
 
 $Table
 

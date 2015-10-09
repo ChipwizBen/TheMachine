@@ -5,7 +5,7 @@ use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
-require 'common.pl';
+require '../common.pl';
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -147,7 +147,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 print <<ENDHTML;
 
 <div id="small-popup-box">
-<a href="sudoers-hosts.cgi">
+<a href="DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -180,7 +180,7 @@ function DHCP_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='sudoers-hosts.cgi' name='Add_Hosts' method='post' >
+<form action='DSMS/sudoers-hosts.cgi' name='Add_Hosts' method='post' >
 
 <table align = "center">
 	<tr>
@@ -390,7 +390,7 @@ sub html_edit_host {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="sudoers-hosts.cgi">
+<a href="DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -423,7 +423,7 @@ function DHCP_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='sudoers-hosts.cgi' name='Edit_Hosts' method='post' >
+<form action='DSMS/sudoers-hosts.cgi' name='Edit_Hosts' method='post' >
 
 <table align = "center">
 	<tr>
@@ -614,14 +614,14 @@ sub html_delete_host {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="sudoers-hosts.cgi">
+<a href="DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Host</h3>
 
-<form action='sudoers-hosts.cgi' method='post' >
+<form action='DSMS/sudoers-hosts.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host?</p>
 <table align = "center">
 	<tr>
@@ -783,7 +783,7 @@ sub html_show_links {
 			"Host Group",
 			"$Group",
 			"$Active",
-			"<a href='sudoers-host-groups.cgi?ID_Filter=$Group_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
+			"<a href='DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
 			);
 		}
 	}
@@ -824,7 +824,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -834,7 +834,7 @@ if ($Counter eq undef) {$Counter = 0};
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="sudoers-hosts.cgi">
+<a href="DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -923,13 +923,13 @@ sub html_notes {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="sudoers-hosts.cgi">
+<a href="DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Notes for $Host_Name</h3>
-<form action='sudoers-hosts.cgi' method='post'>
+<form action='DSMS/sudoers-hosts.cgi' method='post'>
 
 <table align='center'>
 	<tr>
@@ -1063,16 +1063,16 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='sudoers-hosts.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Host_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Host ID $DBID_Clean\" ></a>",
-			"<a href='sudoers-hosts.cgi?View_Notes=$DBID_Clean'>
+			"<a href='DSMS/sudoers-hosts.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Host_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Host ID $DBID_Clean\" ></a>",
+			"<a href='DSMS/sudoers-hosts.cgi?View_Notes=$DBID_Clean'>
 				<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='sudoers-hosts.cgi?Edit_Host=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Host ID $DBID_Clean\" ></a>",
-			"<a href='sudoers-hosts.cgi?Delete_Host=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Host ID $DBID_Clean\" ></a>"
+			"<a href='DSMS/sudoers-hosts.cgi?Edit_Host=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Host ID $DBID_Clean\" ></a>",
+			"<a href='DSMS/sudoers-hosts.cgi?Delete_Host=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Host ID $DBID_Clean\" ></a>"
 		);
 
 
@@ -1111,7 +1111,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='sudoers-hosts.cgi' method='post' >
+			<form action='DSMS/sudoers-hosts.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1142,7 +1142,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='sudoers-hosts.cgi' method='post' >
+			<form action='DSMS/sudoers-hosts.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Host</span></td>
@@ -1154,7 +1154,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='sudoers-hosts.cgi' method='post' >
+			<form action='DSMS/sudoers-hosts.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Host</span></td>

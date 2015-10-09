@@ -119,24 +119,45 @@ print <<ENDHTML;
 					<li><a href="resources/Sudoers_Management_System_Manual.pdf">System Manual</a></li>
 				</ul>
 			</li>
-			<li><a href="#"><span>&nbsp; Groups</span></a>
+			<li><a href="#"><span>&nbsp; IP</span></a>
 				<ul>
-					<li><a href="sudoers-host-groups.cgi">Host Groups</a></li>
-					<li><a href="sudoers-user-groups.cgi">User Groups</a></li>
-					<li><a href="sudoers-command-groups.cgi">Command Groups</a></li>
+					<li><a href="IP/ipv4-allocation.cgi">IPv4 Allocation</a></li>
+					<li><a href="IP/ipv6-allocation.cgi">#IPv6 Allocation</a></li>
+					<li><a href="IP/ip-allocation-log.cgi">IPv4 Allocation</a></li>
 				</ul>
 			</li>
-			<li><a href="sudoers-hosts.cgi"><span>&nbsp; Hosts</span></a>
-
+			<li><a href="#"><span>&nbsp; Icinga</span></a>
+				<ul>
+					<li><a href="#"><span>&nbsp; Icinga</span></a>
+				</ul>
 			</li>
-			<li><a href="sudoers-users.cgi"><span>&nbsp; Sudo Users</span></a>
-			
+			<li><a href="#"><span>&nbsp; BIND</span></a>
+				<ul>
+					<li><a href="#"><span>&nbsp; BIND</span></a>
+				</ul>
 			</li>
-			<li><a href="sudoers-commands.cgi"><span>&nbsp; Commands</span></a>
-			
-			</li>
-			<li><a href="sudoers-rules.cgi"><span>&nbsp; Rules</span></a>
-
+			<li><a href="#"><span>&nbsp; DSMS</span></a>
+				<ul>
+					<li><a href="#"><span>&nbsp; Groups</span></a>
+						<ul>
+							<li><a href="DSMS/sudoers-host-groups.cgi">Host Groups</a></li>
+							<li><a href="DSMS/sudoers-user-groups.cgi">User Groups</a></li>
+							<li><a href="DSMS/sudoers-command-groups.cgi">Command Groups</a></li>
+						</ul>
+					</li>
+					<li><a href="DSMS/sudoers-hosts.cgi"><span>&nbsp; Hosts</span></a>
+		
+					</li>
+					<li><a href="DSMS/sudoers-users.cgi"><span>&nbsp; Sudo Users</span></a>
+					
+					</li>
+					<li><a href="DSMS/sudoers-commands.cgi"><span>&nbsp; Commands</span></a>
+					
+					</li>
+					<li><a href="DSMS/sudoers-rules.cgi"><span>&nbsp; Rules</span></a>
+		
+					</li>
+				</ul>
 			</li>
 		</ul>
 	</div> <!-- buttons -->

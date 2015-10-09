@@ -3,7 +3,7 @@
 use strict;
 use POSIX qw(strftime);
 
-require 'common.pl';
+require '../common.pl';
 my $DB_Management = DB_Management();
 my $DB_Sudoers = DB_Sudoers();
 my $Sudoers_Location = Sudoers_Location();
