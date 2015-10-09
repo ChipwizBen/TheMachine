@@ -1,0 +1,17 @@
+You need to tell Apache that the default index file is index.cgi, so set DirectoryIndex to:
+
+DirectoryIndex index.cgi
+
+You need to tell Apache how it should handle .cgi and .pl files. Add this config:
+
+#Handlers
+AddHandler cgi-script .cgi .pl
+<Files ~ "\.pl$">
+Options +ExecCGI
+</Files>
+<Files ~ "\.cgi$">
+Options +ExecCGI
+</Files>
+
+You'll also need to setup SSL. Each installation will be different, so I won't include 
+instructions. There are plenty of how tos on the internet. 
