@@ -80,7 +80,7 @@ if ($User_Admin ne '1') {
 }
 
 if ($Add_Contact) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_add_contact;
 }
@@ -99,7 +99,7 @@ elsif ($Contact_Add && $Alias_Add) {
 	exit(0);
 }
 elsif ($Edit_Contact) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_edit_contact;
 }
@@ -111,7 +111,7 @@ elsif ($Contact_Edit_Post) {
 	exit(0);
 }
 elsif ($Delete_Contact) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_delete_contact;
 }
@@ -123,12 +123,12 @@ elsif ($Contact_Delete_Post) {
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 }
 

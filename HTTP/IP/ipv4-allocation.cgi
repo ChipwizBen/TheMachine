@@ -7,7 +7,7 @@ use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_I
 use POSIX qw(strftime);
 use HTML::Table;
 
-require 'common.pl';
+require "common.pl";
 my $DB_Management = DB_Management();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
@@ -34,16 +34,16 @@ if ($Reset eq '1') {
 }
 elsif ($Location_Input) {
 	my ($IP_Block_Name, $Final_Allocated_IP) = &allocation;
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output ($IP_Block_Name, $Final_Allocated_IP);
 }
 else {
 	if ($Manual_Override eq '1') {
-		require "header.cgi";
+		require "../header.cgi";
 		&html_output_manual;
 	}
 	else {
-		require "header.cgi";
+		require "../header.cgi";
 		&html_output;
 	}
 }

@@ -48,7 +48,7 @@ if ($User_Admin ne '1') {
 }
 
 if ($Add_Group) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_add_group;
 }
@@ -67,7 +67,7 @@ elsif ($Group_Add && $Alias_Add) {
 	exit(0);
 }
 elsif ($Edit_Group) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_edit_group;
 }
@@ -79,7 +79,7 @@ elsif ($Group_Edit_Post) {
 	exit(0);
 }
 elsif ($Delete_Group) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_delete_group;
 }
@@ -91,12 +91,12 @@ elsif ($Group_Delete_Post) {
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 }
 

@@ -87,7 +87,7 @@ if ($User_Admin ne '1') {
 }
 
 if ($Add_Host) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_add_host;
 }
@@ -106,7 +106,7 @@ elsif ($Host_Name_Add && $Address_Add) {
 	exit(0);
 }
 elsif ($Edit_Host) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_edit_host;
 }
@@ -118,7 +118,7 @@ elsif ($Host_Edit_Post) {
 	exit(0);
 }
 elsif ($Delete_Host) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_delete_host;
 }
@@ -130,12 +130,12 @@ elsif ($Host_Delete_Post) {
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_config;
 }
 elsif ($Host_Notes) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_notes;
 }
@@ -147,7 +147,7 @@ elsif ($Host_Note_Update && $Host_Note_Update_ID) {
 	exit(0);
 }
 else {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 }
 

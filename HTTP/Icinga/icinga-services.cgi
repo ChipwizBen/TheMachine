@@ -84,7 +84,7 @@ if ($User_Admin ne '1') {
 }
 
 if ($Add_Service) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_add_service;
 }
@@ -103,7 +103,7 @@ elsif ($Description_Add) {
 	exit(0);
 }
 elsif ($Edit_Service) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_edit_service;
 }
@@ -115,7 +115,7 @@ elsif ($Service_Edit_Post) {
 	exit(0);
 }
 elsif ($Delete_Service) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_delete_service;
 }
@@ -127,17 +127,17 @@ elsif ($Service_Delete_Post) {
 	exit(0);
 }
 elsif ($Linked_Hosts) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_linked_hosts;
 }
 elsif ($Display_Config) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 }
 

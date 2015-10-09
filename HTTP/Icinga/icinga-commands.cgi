@@ -49,7 +49,7 @@ if ($User_Admin ne '1') {
 }
 
 if ($Add_Command) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_add_command;
 }
@@ -68,7 +68,7 @@ elsif ($Command_Add && $Command_Add) {
 	exit(0);
 }
 elsif ($Edit_Command) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_edit_command;
 }
@@ -80,7 +80,7 @@ elsif ($Command_Edit_Post) {
 	exit(0);
 }
 elsif ($Delete_Command) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_delete_command;
 }
@@ -92,17 +92,17 @@ elsif ($Command_Delete_Post) {
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_config;
 }
 elsif ($Show_Linked) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_show_linked;
 }
 else {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 }
 

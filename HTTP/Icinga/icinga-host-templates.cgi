@@ -85,7 +85,7 @@ if ($User_Admin ne '1') {
 }
 
 if ($Add_Host_Template) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_add_host_template;
 }
@@ -104,7 +104,7 @@ elsif ($Template_Name_Add) {
 	exit(0);
 }
 elsif ($Edit_Host_Template) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_edit_host_template;
 }
@@ -116,7 +116,7 @@ elsif ($Host_Edit_Post) {
 	exit(0);
 }
 elsif ($Delete_Host_Template) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_delete_host_template;
 }
@@ -128,12 +128,12 @@ elsif ($Template_Delete_Post) {
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_config;
 }
 elsif ($Template_Notes) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_notes;
 }
@@ -145,7 +145,7 @@ elsif ($Template_Note_Update && $Template_Note_Update_ID) {
 	exit(0);
 }
 else {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 }
 

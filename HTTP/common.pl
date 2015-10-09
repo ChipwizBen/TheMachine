@@ -8,7 +8,7 @@ sub Maintenance_Mode {
 
 	# This is a system toggle to turn on or off Maintenance Mode. When Maintenance Mode is on, users are prevented from making system changes, or accessing the system.
 
-	my $Maintenance_Mode = 'On';
+	my $Maintenance_Mode = 'Off';
 
 	if ($Maintenance_Mode =~ /on/i) {
 		print "Location: maintenance.cgi\n\n";
@@ -101,6 +101,26 @@ sub DB_Sudoers {
 	return $DB_Sudoers;
 
 } # sub DB_Sudoers
+
+sub DB_IP_Allocation {
+
+	#  This is your IP Allocation database's connection information.
+
+	use DBI;
+
+	my $Host = 'localhost';
+	my $Port = '3306';
+	my $DB = 'IP_Allocation';
+	my $User = 'Sudoers';
+	my $Password = '<Password>';
+
+	my $DB_IP_Allocation = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
+		$User,
+		$Password)
+		or die "Can't connect to database: $DBI::errstr\n";
+	return $DB_IP_Allocation;
+
+} # sub DB_IP_Allocation
 
 sub Distribution_Defaults {
 

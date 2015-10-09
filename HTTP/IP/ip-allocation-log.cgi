@@ -115,7 +115,7 @@ $TABLEENTRYNUMBER++;
 
 	my $rows = $sth->rows();
 
-require "header.cgi"; ## no critic
+require "../header.cgi"; ## no critic
 &html_output;
 
 sub html_output {

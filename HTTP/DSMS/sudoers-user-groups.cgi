@@ -69,7 +69,7 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Group && !$Add_Group_Final) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_add_group;
@@ -82,7 +82,7 @@ elsif ($Add_Group_Final) {
 	exit(0);
 }
 elsif ($Edit_Group && !$Edit_Group_Final) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_edit_group;
@@ -95,7 +95,7 @@ elsif ($Edit_Group_Final) {
 	exit(0);
 }
 elsif ($Delete_Group) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_delete_group;
@@ -115,27 +115,27 @@ elsif ($Delete_User_ID && $Delete_User_From_Group_ID) {
 	exit(0);
 }
 elsif ($Show_Links) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_show_links;
 }
 elsif ($View_Notes) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_notes;
 }
 elsif ($New_Note && $New_Note_ID) {
 	&add_note;
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	$View_Notes = $New_Note_ID;
 	&html_notes;
 }
 else {
-	require "header.cgi"; ## no critic
+	require "../header.cgi"; ## no critic
 	&html_output;
 	require "footer.cgi";
 }

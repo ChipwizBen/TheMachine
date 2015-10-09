@@ -79,7 +79,7 @@ if ($User_Admin ne '1') {
 }
 
 if ($Add_Service_Template) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_add_service_template;
 }
@@ -98,7 +98,7 @@ elsif ($Name_Template_Add) {
 	exit(0);
 }
 elsif ($Edit_Service_Template) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_edit_service_template;
 }
@@ -110,7 +110,7 @@ elsif ($Service_Template_Edit_Post) {
 	exit(0);
 }
 elsif ($Delete_Service_Template) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_delete_service_template;
 }
@@ -122,17 +122,17 @@ elsif ($Service_Template_Delete_Post) {
 	exit(0);
 }
 elsif ($Linked_Service_Groups) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_linked_service_groups;
 }
 elsif ($Display_Config) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 }
 

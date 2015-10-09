@@ -55,7 +55,7 @@ if ($User_Admin ne '1') {
 }
 
 if ($Add_Time) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_add_time_period;
 }
@@ -74,7 +74,7 @@ elsif ($Time_Add && $Alias_Add) {
 	exit(0);
 }
 elsif ($Edit_Time) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_edit_time_period;
 }
@@ -86,7 +86,7 @@ elsif ($Time_Edit_Post) {
 	exit(0);
 }
 elsif ($Delete_Time) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_delete_time_period;
 }
@@ -98,12 +98,12 @@ elsif ($Time_Delete_Post) {
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 }
 

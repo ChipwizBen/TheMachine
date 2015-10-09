@@ -109,7 +109,7 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Rule && !$Add_Rule_Final) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_add_rule;
@@ -122,7 +122,7 @@ elsif ($Add_Rule_Final) {
 	exit(0);
 }
 elsif ($Edit_Rule && !$Edit_Rule_Final) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_edit_rule;
@@ -135,7 +135,7 @@ elsif ($Edit_Rule_Final) {
 	exit(0);
 }
 elsif ($Delete_Rule) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_delete_rule;
@@ -149,7 +149,7 @@ elsif ($Delete_Rule_Confirm) {
 }
 elsif ($Delete_Rule_Item_ID) {
 	&delete_rule_item;
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 }
@@ -161,21 +161,21 @@ elsif ($Approve_Rule_ID && $User_Approver) {
 	exit(0);
 }
 elsif ($View_Notes) {
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	&html_notes;
 }
 elsif ($New_Note && $New_Note_ID) {
 	&add_note;
-	require "header.cgi";
+	require "../header.cgi";
 	&html_output;
 	require "footer.cgi";
 	$View_Notes = $New_Note_ID;
 	&html_notes;
 }
 else {
-	require "header.cgi"; ## no critic
+	require "../header.cgi"; ## no critic
 	&html_output;
 	require "footer.cgi";
 }

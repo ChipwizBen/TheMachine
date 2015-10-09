@@ -3,7 +3,7 @@
 use strict;
 use POSIX qw(strftime);
 
-require 'common.pl';
+require 'common.pl' or require '../common.pl';
 my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
@@ -138,25 +138,17 @@ print <<ENDHTML;
 			</li>
 			<li><a href="#"><span>&nbsp; DSMS</span></a>
 				<ul>
-					<li><a href="#"><span>&nbsp; Groups</span></a>
+					<li><a href="#">Groups <b style="float:right;">></b></a>
 						<ul>
 							<li><a href="DSMS/sudoers-host-groups.cgi">Host Groups</a></li>
 							<li><a href="DSMS/sudoers-user-groups.cgi">User Groups</a></li>
 							<li><a href="DSMS/sudoers-command-groups.cgi">Command Groups</a></li>
 						</ul>
 					</li>
-					<li><a href="DSMS/sudoers-hosts.cgi"><span>&nbsp; Hosts</span></a>
-		
-					</li>
-					<li><a href="DSMS/sudoers-users.cgi"><span>&nbsp; Sudo Users</span></a>
-					
-					</li>
-					<li><a href="DSMS/sudoers-commands.cgi"><span>&nbsp; Commands</span></a>
-					
-					</li>
-					<li><a href="DSMS/sudoers-rules.cgi"><span>&nbsp; Rules</span></a>
-		
-					</li>
+					<li><a href="DSMS/sudoers-hosts.cgi">Hosts</a></li>
+					<li><a href="DSMS/sudoers-users.cgi">Sudo Users</a></li>
+					<li><a href="DSMS/sudoers-commands.cgi">Commands</a></li>
+					<li><a href="DSMS/sudoers-rules.cgi">Rules</a></li>
 				</ul>
 			</li>
 		</ul>
