@@ -3,7 +3,11 @@
 use strict;
 use HTML::Table;
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
 my $DB_Icinga = DB_Icinga();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -16,7 +20,6 @@ my $Alias_Add = $CGI->param("Alias_Add");
 my $Address_Add = $CGI->param("Address_Add");
 my $Parent_Add = $CGI->param("Parent_Add");
 my $Host_Group_Add = $CGI->param("Host_Group_Add");
-my $Notification_Period_Add = $CGI->param("Notification_Period_Add");
 my $Contact_Add = $CGI->param("Contact_Add");
 my $Contact_Group_Add = $CGI->param("Contact_Group_Add");
 my $Check_Period_Add = $CGI->param("Check_Period_Add");
@@ -75,19 +78,19 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 	}
 
 if (!$Username) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
 if ($Add_Host) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_add_host;
 }
@@ -102,11 +105,11 @@ elsif ($Host_Name_Add && $Address_Add) {
 		$Session->param('Message_Orange', $Message_Orange);
 	}
 	
-	print "Location: nagios-hosts.cgi\n\n";
+	print "Location: /Icinga/icinga-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Host) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_edit_host;
 }
@@ -114,11 +117,11 @@ elsif ($Host_Edit_Post) {
 	&edit_host;
 	my $Message_Green="$Host_Edit ($Alias_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-hosts.cgi\n\n";
+	print "Location: /Icinga/icinga-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Host) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_delete_host;
 }
@@ -126,16 +129,16 @@ elsif ($Host_Delete_Post) {
 	&delete_host;
 	my $Message_Green="$Host_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-hosts.cgi\n\n";
+	print "Location: /Icinga/icinga-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_display_config;
 }
 elsif ($Host_Notes) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_display_notes;
 }
@@ -143,11 +146,11 @@ elsif ($Host_Note_Update && $Host_Note_Update_ID) {
 	&update_notes;
 	my $Message_Green="Notes updated successfully";
 	$Session->param('Message_Green', $Message_Green);
-	print "Location: nagios-hosts.cgi\n\n";
+	print "Location: /Icinga/icinga-hosts.cgi\n\n";
 	exit(0);
 }
 else {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 }
 
@@ -157,14 +160,14 @@ sub html_add_host {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-hosts.cgi">
+<a href="/Icinga/icinga-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Host</h3>
 
-<form action='Icinga/icinga-hosts.cgi' method='post' >
+<form action='/Icinga/icinga-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -263,13 +266,13 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Time_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Check_Period = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Time_Periods->execute();
+							$Select_Check_Period->execute();
 					
-							while ( my @DB_Service = $Select_Time_Periods->fetchrow_array() )
+							while ( my @DB_Service = $Select_Check_Period->fetchrow_array() )
 							{
 								my $ID_Extract = $DB_Service[0];
 								my $Name_Extract = $DB_Service[1];
@@ -289,13 +292,13 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Time_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Time_Periods->execute();
+							$Select_Notification_Period->execute();
 					
-							while ( my @DB_Host = $Select_Time_Periods->fetchrow_array() )
+							while ( my @DB_Host = $Select_Notification_Period->fetchrow_array() )
 							{
 								my $ID_Extract = $DB_Host[0];
 								my $Name_Extract = $DB_Host[1];
@@ -540,7 +543,7 @@ sub add_host {
 	if ($Rows > 0) {
 		my $Message_Red="Host name $Host_Name_Add already exists. Host not added.";
 		$Session->param('Message_Red', $Message_Red);
-		print "Location: nagios-hosts.cgi\n\n";
+		print "Location: /Icinga/icinga-hosts.cgi\n\n";
 		exit(0);
 	}
 
@@ -665,14 +668,14 @@ sub html_edit_host {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-hosts.cgi">
+<a href="/Icinga/icinga-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Host <span style="color: #00FF00;">$Host_Extract</span></h3>
 
-<form action='Icinga/icinga-hosts.cgi' method='post' >
+<form action='/Icinga/icinga-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -736,7 +739,7 @@ sub edit_host {
 
 			my $Message_Red="$Host_Edit already exists - Conflicting Host ID (This entry): $Host_Edit_Post, Existing Host ID: $ID_Extract, Existing Host Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-hosts.cgi\n\n";
+			print "Location: /Icinga/icinga-hosts.cgi\n\n";
 			exit(0);
 
 		}
@@ -772,14 +775,14 @@ sub html_delete_host {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-hosts.cgi">
+<a href="/Icinga/icinga-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Host</h3>
 
-<form action='Icinga/icinga-hosts.cgi' method='post' >
+<form action='/Icinga/icinga-hosts.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host?</p>
 <table align = "center">
 	<tr>
@@ -813,19 +816,19 @@ sub delete_host {
 				WHERE `id` = ?");
 	$Delete->execute($Host_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToHosttemplate`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToHosttemplate`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Host_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToContact`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToContact`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Host_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToContactgroup`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToContactgroup`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Host_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToHostgroup`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToHostgroup`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Host_Delete_Post);
 
@@ -1152,12 +1155,12 @@ sub html_display_config {
 			$Check_Period = $Check_Period_Extract_Templates_Template;
 		}
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Check_Period);
+		$Select_Check_Period->execute($Check_Period);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Check_Period->fetchrow_array() )
 		{
 			my $DB_Check_Period = $DB_Time_Period[0];
 
@@ -1189,12 +1192,12 @@ sub html_display_config {
 			$Notification_Period = $Notification_Period_Extract_Templates_Template;
 		}
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Notification_Period);
+		$Select_Notification_Period->execute($Notification_Period);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Notification_Period->fetchrow_array() )
 		{
 			my $DB_Notification_Period = $DB_Time_Period[0];
 
@@ -1285,7 +1288,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="full-width-popup-box">
-<a href="Icinga/icinga-hosts.cgi">
+<a href="/Icinga/icinga-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1487,7 +1490,7 @@ sub html_display_notes {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-hosts.cgi">
+<a href="/Icinga/icinga-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1509,7 +1512,7 @@ print <<ENDHTML;
 	</tr>
 </table>
 
-<form action='Icinga/icinga-hosts.cgi' method='post' >
+<form action='/Icinga/icinga-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -1549,17 +1552,16 @@ sub update_notes {
 sub html_output {
 
 	my $Table = new HTML::Table(
-                            -cols=>16,
-                            -align=>'center',
-                            -rules=>'all',
-                            -border=>0,
-                            -bgcolor=>'25aae1',
-                            -evenrowclass=>'tbeven',
-                            -oddrowclass=>'tbodd',
-                            -class=>'statustable',
-                            -width=>'100%',
-                            -spacing=>0,
-                            -padding=>1 );
+		-cols=>16,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'100%',
+		-spacing=>0,
+		-padding=>1
+	);
 
 
 	$Table->addRow ( "ID", "Name", "Alias", "IP", "Host Groups", "Parent", "Children", "Host Templates", "Contact Groups", "Active",
@@ -1594,7 +1596,8 @@ sub html_output {
 			my $ID_Extract_Display = $ID_Extract;
 			$ID_Extract_Display =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Name_Extract = $DB_Host[1];
-			$Name_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+			my $Name = $Name_Extract;
+			$Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Alias_Extract = $DB_Host[2];
 			$Alias_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $IP_Extract = $DB_Host[3];
@@ -1626,7 +1629,7 @@ sub html_output {
 				{
 
 					my $Host_Group = $DB_Group[0];
-					$Host_Groups = "<a href='Icinga/icinga-host-groups.cgi?Filter=$Host_Group'>$Host_Group</a><br />".$Host_Groups;
+					$Host_Groups = "<a href='/Icinga/icinga-host-groups.cgi?Filter=$Host_Group'>$Host_Group</a><br />".$Host_Groups;
 
 				}
 			}
@@ -1655,7 +1658,7 @@ sub html_output {
 				{
 
 					my $Host_Parent = $DB_Parent[0];
-					$Host_Parents = "<a href='Icinga/icinga-hosts.cgi?Filter=$Host_Parent'>$Host_Parent</a><br />".$Host_Parents;
+					$Host_Parents = "<a href='/Icinga/icinga-hosts.cgi?Filter=$Host_Parent'>$Host_Parent</a><br />".$Host_Parents;
 
 				}
 			}
@@ -1684,7 +1687,7 @@ sub html_output {
 				{
 
 					my $Host_Child = $DB_Child[0];
-					$Host_Children = "<a href='Icinga/icinga-hosts.cgi?Filter=$Host_Child'>$Host_Child</a><br />".$Host_Children;
+					$Host_Children = "<a href='/Icinga/icinga-hosts.cgi?Filter=$Host_Child'>$Host_Child</a><br />".$Host_Children;
 
 				}
 			}
@@ -1713,7 +1716,7 @@ sub html_output {
 				{
 
 					my $Host_Template = $DB_Template[0];
-					$Host_Templates = "<a href='Icinga/icinga-host-templates.cgi?Filter=$Host_Template'>$Host_Template</a><br />".$Host_Templates;
+					$Host_Templates = "<a href='/Icinga/icinga-host-templates.cgi?Filter=$Host_Template'>$Host_Template</a><br />".$Host_Templates;
 
 				}
 			}
@@ -1742,7 +1745,7 @@ sub html_output {
 				{
 
 					my $Host_Contact_Group = $DB_Contact_Group[0];
-					$Host_Contact_Groups = "<a href='Icinga/icinga-contact-groups.cgi?Filter=$Host_Contact_Group'>$Host_Contact_Group</a><br />".$Host_Contact_Groups;
+					$Host_Contact_Groups = "<a href='/Icinga/icinga-contact-groups.cgi?Filter=$Host_Contact_Group'>$Host_Contact_Group</a><br />".$Host_Contact_Groups;
 
 				}
 			}
@@ -1758,8 +1761,8 @@ sub html_output {
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='Icinga/icinga-hosts.cgi?Edit_Host=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='Icinga/icinga-hosts.cgi?Edit_Host=$ID_Extract'>$Name_Extract</a>",
+			"<a href='/Icinga/icinga-hosts.cgi?Edit_Host=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga-hosts.cgi?Edit_Host=$ID_Extract'>$Name</a>",
 			$Alias_Extract,
 			$IP_Extract,
 			$Host_Groups,
@@ -1770,10 +1773,10 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='Icinga/icinga-hosts.cgi?Host_Notes=$ID_Extract'><img src=\"resorcs/imgs/add-note.png\" alt=\"View/Edit Notes for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-hosts.cgi?Display_Config=$ID_Extract'><img src=\"resorcs/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-hosts.cgi?Edit_Host=$ID_Extract'><img src=\"resorcs/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-hosts.cgi?Delete_Host=$ID_Extract'><img src=\"resorcs/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-hosts.cgi?Host_Notes=$ID_Extract'><img src=\"/resources/imgs/add-note.png\" alt=\"View/Edit Notes for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-hosts.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-hosts.cgi?Edit_Host=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-hosts.cgi?Delete_Host=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		for (10 .. 16) {
@@ -1796,7 +1799,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='Icinga/icinga-hosts.cgi' method='post' >
+			<form action='/Icinga/icinga-hosts.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1812,23 +1815,57 @@ if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";}
 if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
 
 print <<ENDHTML;
+						</select>
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Search:</td>
-					<td style="text-align: right;"><input type='search' style="width: 150px" name='Filter' maxlength='100' value="$Filter" title="Search" placeholder="Search"></td>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td style="text-align: right;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Hosts" placeholder="Search">
+					</td>
 				</tr>
-				</form>
+			</form>
 			</table>
 		</td>
-		<td align="right">
-			<form action='Icinga/icinga-hosts.cgi' method='post' >
+		<td align="center">
+			<form action='/Icinga/icinga-hosts.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Host</span></td>
 				</tr>
 				<tr>
 					<td align="center"><input type='submit' name='Add_Host' value='Add Host'></td>
+				</tr>
+			</table>
+			</form>
+		</td>
+		<td align="right">
+			<form action='/Icinga/icinga-hosts.cgi' method='post' >
+			<table>
+				<tr>
+					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Host</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;"><input type=submit name='Edit Host' value='Edit Host'></td>
+					<td align="center">
+						<select name='Edit_Host' style="width: 150px">
+ENDHTML
+
+						my $Host_List_Query = $DB_Icinga->prepare("SELECT `id`, `host_name`
+						FROM `nagios_host`
+						ORDER BY `host_name` ASC");
+						$Host_List_Query->execute( );
+						
+						while ( (my $ID, my $Host_Name) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
+						{
+							print "<option value='$ID'>$Host_Name</option>";
+						}
+
+print <<ENDHTML;
+						</select>
+					</td>
 				</tr>
 			</table>
 			</form>

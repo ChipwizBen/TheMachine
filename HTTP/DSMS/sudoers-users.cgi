@@ -5,7 +5,12 @@ use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
+my $Footer = Footer();
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -47,7 +52,7 @@ my $User_Admin = $Session->param("User_Admin");
 my $User_Approver = $Session->param("User_Approver");
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
@@ -60,68 +65,68 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_User) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_add_user;
 }
 elsif ($User_Name_Add) {
 	my $User_ID = &add_user;
 	my $Message_Green="$User_Name_Add added successfully as ID $User_ID";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-users.cgi\n\n";
+	print "Location: /DSMS/sudoers-users.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_User) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_edit_user;
 }
 elsif ($Edit_User_Post) {
 	&edit_user;
 	my $Message_Green="$User_Name_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-users.cgi\n\n";
+	print "Location: /DSMS/sudoers-users.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_User) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_delete_user;
 }
 elsif ($Delete_User_Confirm) {
 	&delete_user;
 	my $Message_Green="$User_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-users.cgi\n\n";
+	print "Location: /DSMS/sudoers-users.cgi\n\n";
 	exit(0);
 }
 elsif ($Show_Links) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_show_links;
 }
 elsif ($View_Notes) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_notes;
 }
 elsif ($New_Note && $New_Note_ID) {
 	&add_note;
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	$View_Notes = $New_Note_ID;
 	&html_notes;
 }
 else {
-	require "../header.cgi"; ## no critic
+	require $Header; ## no critic
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 }
 
 
@@ -132,7 +137,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="DSMS/sudoers-users.cgi">
+<a href="/DSMS/sudoers-users.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -153,7 +158,7 @@ function Expire_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='DSMS/sudoers-users.cgi' name='Add_Users' method='post' >
+<form action='/DSMS/sudoers-users.cgi' name='Add_Users' method='post' >
 
 <table align = "center">
 	<tr>
@@ -202,11 +207,11 @@ sub add_user {
 		my $Existing_ID;
 		while ( my @Select_User_Names = $Existing_User_Name_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_User_Names[0];
+			$Existing_ID = $Select_User_Names[0];
 		}
 		my $Message_Red="User_Name: $User_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-users.cgi\n\n";
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
 		exit(0);
 	}
 	### / Existing User_Name Check
@@ -293,7 +298,7 @@ sub html_edit_user {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="DSMS/sudoers-users.cgi">
+<a href="/DSMS/sudoers-users.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -314,7 +319,7 @@ function Expire_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='DSMS/sudoers-users.cgi' name='Edit_Users' method='post' >
+<form action='/DSMS/sudoers-users.cgi' name='Edit_Users' method='post' >
 
 <table align = "center">
 	<tr>
@@ -383,11 +388,11 @@ sub edit_user {
 		my $Existing_ID;
 		while ( my @Select_User_Names = $Existing_User_Name_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_User_Names[0];
+			$Existing_ID = $Select_User_Names[0];
 		}
 		my $Message_Red="User_Name: $User_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-users.cgi\n\n";
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
 		exit(0);
 	}
 	### / Existing User_Name Check
@@ -466,14 +471,14 @@ sub html_delete_user {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="DSMS/sudoers-users.cgi">
+<a href="/DSMS/sudoers-users.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete User</h3>
 
-<form action='DSMS/sudoers-users.cgi' method='post' >
+<form action='/DSMS/sudoers-users.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this user?</p>
 <table align = "center">
 	<tr>
@@ -601,7 +606,7 @@ sub html_show_links {
 	while ( my @Select_Links = $Select_Links->fetchrow_array() )
 	{
 		
-		my $Group_ID = @Select_Links[0];
+		my $Group_ID = $Select_Links[0];
 
 		my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`, `active`
 			FROM `user_groups`
@@ -624,7 +629,7 @@ sub html_show_links {
 			"User Group",
 			"$Group",
 			"$Active",
-			"<a href='DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
+			"<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
 			);
 		}
 	}
@@ -640,7 +645,7 @@ sub html_show_links {
 	while ( my @Select_Links = $Select_Links->fetchrow_array() )
 	{
 		
-		my $Rule_ID = @Select_Links[0];
+		my $Rule_ID = $Select_Links[0];
 
 		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`
@@ -665,7 +670,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -675,7 +680,7 @@ if ($Counter eq undef) {$Counter = 0};
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-users.cgi">
+<a href="/DSMS/sudoers-users.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -764,13 +769,13 @@ sub html_notes {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-users.cgi">
+<a href="/DSMS/sudoers-users.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Notes for $Sudo_User_Name</h3>
-<form action='DSMS/sudoers-users.cgi' method='post'>
+<form action='/DSMS/sudoers-users.cgi' method='post'>
 
 <table align='center'>
 	<tr>
@@ -856,20 +861,20 @@ sub html_output {
 
 		$User_Row_Count++;
 
-		my $DBID = @Select_Users[0];
+		my $DBID = $Select_Users[0];
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($ID_Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $DB_User_Name = @Select_Users[1];
+		my $DB_User_Name = $Select_Users[1];
 			my $DB_User_Name_Clean = $DB_User_Name;
 			$DB_User_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Expires = @Select_Users[2];
+		my $Expires = $Select_Users[2];
 			my $Expires_Clean = $Expires;
 			$Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = @Select_Users[3];
+		my $Active = $Select_Users[3];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = @Select_Users[4];
-		my $Modified_By = @Select_Users[5];
+		my $Last_Modified = $Select_Users[4];
+		my $Modified_By = $Select_Users[5];
 
 		### Discover Note Count
 
@@ -899,16 +904,16 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='DSMS/sudoers-users.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$DB_User_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to User ID $DBID_Clean\" ></a>",
-			"<a href='DSMS/sudoers-users.cgi?View_Notes=$DBID_Clean'>
-				<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+			"<a href='/DSMS/sudoers-users.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$DB_User_Name_Clean'><img src=\"/resources/imgs/linked.png\" alt=\"Linked Objects to User ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-users.cgi?View_Notes=$DBID_Clean'>
+				<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='DSMS/sudoers-users.cgi?Edit_User=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit User ID $DBID_Clean\" ></a>",
-			"<a href='DSMS/sudoers-users.cgi?Delete_User=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete User ID $DBID_Clean\" ></a>"
+			"<a href='/DSMS/sudoers-users.cgi?Edit_User=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit User ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-users.cgi?Delete_User=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete User ID $DBID_Clean\" ></a>"
 		);
 
 
@@ -945,7 +950,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='DSMS/sudoers-users.cgi' method='post' >
+			<form action='/DSMS/sudoers-users.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -976,7 +981,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='DSMS/sudoers-users.cgi' method='post' >
+			<form action='/DSMS/sudoers-users.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New User</span></td>
@@ -988,7 +993,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='DSMS/sudoers-users.cgi' method='post' >
+			<form action='/DSMS/sudoers-users.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit User</span></td>

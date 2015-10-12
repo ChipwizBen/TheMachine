@@ -2,7 +2,10 @@
 
 use strict;
 
-require 'common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
 my ($CGI, $Session, $Cookie) = CGI();
 
 &reset_variables;
@@ -38,8 +41,7 @@ print <<ENDHTML;
 ENDHTML
 #DSMS
 #	<ul>
-#		<li><a href="https://www.one.com/community/Distributed-Developed%20Tools%20%28DDT%29/SitePages/DSMS%20-%20Distributed%20Sudoers%20Management%20System.aspx" target="_blank">DSMS DDT Page</a></li>
-#		<li><a href="https://udm-sudoers-01.alabs.nwk1.com/" target="_blank">DSMS Test System</a></li>
+#		<li>/li>
 #	</ul>
 print <<ENDHTML;
 	</div> <!-- footerblocka1 -->

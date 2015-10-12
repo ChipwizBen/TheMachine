@@ -35,6 +35,63 @@ sub System_Short_Name {
 
 } # sub System_Short_Name
 
+sub Header {
+
+	my $Header;
+	if (-f 'header.cgi') {$Header = 'header.cgi';} else {$Header = '../header.cgi';}
+	return $Header;
+	
+} # sub Header
+
+sub Footer {
+
+	my $Footer;
+	if (-f 'footer.cgi') {$Footer = 'footer.cgi';} else {$Footer = '../footer.cgi';}
+	return $Footer;
+	
+} # sub Footer
+
+sub LDAP_Login {
+
+	# These are the connection paremeters for LDAP / Active Directory. If you disable this, the system will use internal authentication.
+
+	my $LDAP_Enabled = 'On'; # Set this to 'Off' to disable LDAP/AD authentication
+
+	my $LDAP_Query = $_[0]; 
+	if ($LDAP_Query eq 'Status_Check') {
+		return $LDAP_Enabled;
+		exit(0);
+	}
+	elsif ($LDAP_Enabled =~ /on/i) {
+
+		my $LDAP_User_Name = $_[0];
+		my $LDAP_Password = $_[1];
+
+		use Authen::Simple::LDAP;
+
+		my $LDAP_Connection = Authen::Simple::LDAP->new(
+			version => 3,
+			host =>	'welwdc01.nwk1.com',
+			port => 389,
+			timeout => 60,
+			binddn => 'cn=zldapsearch,ou=Service Accounts,ou=Elevated Users,dc=,dc=local',
+			bindpw => 'routineldapquery',
+			basedn => 'ou=Unix Groups,ou=Groups,dc=,dc=local',
+			filter => '(uid=%s)',
+			scope => 'sub'
+		);
+
+		if ( $LDAP_Connection->authenticate( $LDAP_User_Name, $LDAP_Password ) ) {
+			return 'Success'; 
+		}
+		
+	}
+	else {
+		return 'Off';
+	}
+
+} # sub LDAP_Login
+
 sub Recovery_Email_Address {
 
 	# This is the email address that the DSMS System will appear to send emails from during password recoveries. It may be a legitimate address (such as the system administrator's address) or it could be a blocking address, such as noreply@nwk1.com.
@@ -121,6 +178,26 @@ sub DB_IP_Allocation {
 	return $DB_IP_Allocation;
 
 } # sub DB_IP_Allocation
+
+sub DB_Icinga {
+
+	#  This is your Icinga database's connection information. This is where your Icinga data is stored.
+
+	use DBI;
+
+	my $Host = 'localhost';
+	my $Port = '3306';
+	my $DB = 'Nagios';
+	my $User = 'Sudoers';
+	my $Password = '<Password>';
+
+	my $DB_Icinga = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
+		$User,
+		$Password)
+		or die "Can't connect to database: $DBI::errstr\n";
+	return $DB_Icinga;
+
+} # sub DB_Icinga
 
 sub Distribution_Defaults {
 

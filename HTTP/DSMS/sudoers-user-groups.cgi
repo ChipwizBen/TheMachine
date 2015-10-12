@@ -5,7 +5,12 @@ use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
+my $Footer = Footer();
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -56,7 +61,7 @@ my $User_Admin = $Session->param("User_Admin");
 my $User_Approver = $Session->param("User_Approver");
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
@@ -69,75 +74,75 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Group && !$Add_Group_Final) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_add_group;
 }
 elsif ($Add_Group_Final) {
 	my ($Group_ID, $User_Count) = &add_group;
 	my $Message_Green="$Group_Name_Add added successfully as ID $Group_ID with $User_Count attached users";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-user-groups.cgi\n\n";
+	print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Group && !$Edit_Group_Final) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_edit_group;
 }
 elsif ($Edit_Group_Final) {
 	my ($User_Count) = &edit_group;
 	my $Message_Green="$Group_Name_Edit edited successfully with $User_Count newly attached users";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-user-groups.cgi\n\n";
+	print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Group) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_delete_group;
 }
 elsif ($Delete_Group_Confirm) {
 	&delete_group;
 	my $Message_Green="$Group_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-user-groups.cgi\n\n";
+	print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_User_ID && $Delete_User_From_Group_ID) {
 	&delete_user;
 	my $Message_Green="$Delete_User_Name removed from $Delete_User_From_Group_Name successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-user-groups.cgi\n\n";
+	print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Show_Links) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_show_links;
 }
 elsif ($View_Notes) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_notes;
 }
 elsif ($New_Note && $New_Note_ID) {
 	&add_note;
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	$View_Notes = $New_Note_ID;
 	&html_notes;
 }
 else {
-	require "../header.cgi"; ## no critic
+	require $Header; ## no critic
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 }
 
 
@@ -197,7 +202,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-user-groups.cgi">
+<a href="/DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -228,7 +233,7 @@ function System_Group_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='DSMS/sudoers-user-groups.cgi' name='Add_Group' method='post' >
+<form action='/DSMS/sudoers-user-groups.cgi' name='Add_Group' method='post' >
 
 <table align = "center">
 	<tr>
@@ -368,7 +373,7 @@ sub add_group {
 		}
 		my $Message_Red="Group Name: $Group_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-user-groups.cgi\n\n";
+		print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Group_Name Check
@@ -639,7 +644,7 @@ if (!$Group_Name_Edit) {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-user-groups.cgi">
+<a href="/DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -670,7 +675,7 @@ function System_Group_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='DSMS/sudoers-user-groups.cgi' name='Edit_Group' method='post' >
+<form action='/DSMS/sudoers-user-groups.cgi' name='Edit_Group' method='post' >
 
 <table align = "center">
 	<tr>
@@ -853,7 +858,7 @@ sub edit_group {
 		}
 		my $Message_Red="Group Name: $Group_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-user-groups.cgi\n\n";
+		print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Group_Name Check
@@ -994,14 +999,14 @@ sub html_delete_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="DSMS/sudoers-user-groups.cgi">
+<a href="/DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Group</h3>
 
-<form action='DSMS/sudoers-user-groups.cgi' method='post' >
+<form action='/DSMS/sudoers-user-groups.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this group?</p>
 <table align = "center">
 	<tr>
@@ -1236,7 +1241,7 @@ sub html_show_links {
 			"User",
 			"$User",
 			"$Active",
-			"<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $User\" ></a>"
+			"<a href='/DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $User\" ></a>"
 			);
 		}
 	}
@@ -1277,7 +1282,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -1287,7 +1292,7 @@ if ($Counter eq undef) {$Counter = 0};
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-user-groups.cgi">
+<a href="/DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1376,13 +1381,13 @@ sub html_notes {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-user-groups.cgi">
+<a href="/DSMS/sudoers-user-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Notes for $Group_Name</h3>
-<form action='DSMS/sudoers-user-groups.cgi' method='post'>
+<form action='/DSMS/sudoers-user-groups.cgi' method='post'>
 
 <table align='center'>
 	<tr>
@@ -1534,15 +1539,15 @@ sub html_output {
 
 
 				if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #B1B1B1'>$User</span></a>"
+					$User = "<a href='/DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #B1B1B1'>$User</span></a>"
 				}
 				elsif ($Active == 1) {
-					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #00FF00'>$User</span></a>"
+					$User = "<a href='/DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #00FF00'>$User</span></a>"
 				}
 				else {
-					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #FF0000'>$User</span></a>"
+					$User = "<a href='/DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #FF0000'>$User</span></a>"
 				};
-				$Users = $Users . $User . "&nbsp;&nbsp;&nbsp;" . "<a href='DSMS/sudoers-user-groups.cgi?Delete_User_ID=$User_ID&Delete_User_From_Group_ID=$DBID_Clean&Delete_User_Name=$User_Clean&Delete_User_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
+				$Users = $Users . $User . "&nbsp;&nbsp;&nbsp;" . "<a href='/DSMS/sudoers-user-groups.cgi?Delete_User_ID=$User_ID&Delete_User_From_Group_ID=$DBID_Clean&Delete_User_Name=$User_Clean&Delete_User_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
 
 			}
 		}
@@ -1568,16 +1573,16 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='DSMS/sudoers-user-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
-			"<a href='DSMS/sudoers-user-groups.cgi?View_Notes=$DBID_Clean'>
-				<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+			"<a href='/DSMS/sudoers-user-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"/resources/imgs/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-user-groups.cgi?View_Notes=$DBID_Clean'>
+				<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='DSMS/sudoers-user-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
-			"<a href='DSMS/sudoers-user-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
+			"<a href='/DSMS/sudoers-user-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-user-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
 		);
 
 
@@ -1615,7 +1620,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='DSMS/sudoers-user-groups.cgi' method='post' >
+			<form action='/DSMS/sudoers-user-groups.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1655,7 +1660,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='DSMS/sudoers-user-groups.cgi' method='post' >
+			<form action='/DSMS/sudoers-user-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Group</span></td>
@@ -1667,7 +1672,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='DSMS/sudoers-user-groups.cgi' method='post' >
+			<form action='/DSMS/sudoers-user-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Group</span></td>

@@ -7,15 +7,18 @@ use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_I
 use POSIX qw(strftime);
 use HTML::Table;
 
-require "common.pl";
-my $DB_Management = DB_Management();
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
@@ -29,21 +32,21 @@ if ($Reset eq '1') {
 	$Session->param('Location_Input', $Location_Input); #Posting Location_Input session var
 	$CIDR_Input='';
 	$Session->param('CIDR_Input', $CIDR_Input); #Posting CIDR_Input session var
-	print "Location: ipv4-allocation.cgi\n\n";
+	print "Location: /IP/ipv4-allocation.cgi\n\n";
 	exit(0);
 }
 elsif ($Location_Input) {
 	my ($IP_Block_Name, $Final_Allocated_IP) = &allocation;
-	require "../header.cgi";
+	require $Header;
 	&html_output ($IP_Block_Name, $Final_Allocated_IP);
 }
 else {
 	if ($Manual_Override eq '1') {
-		require "../header.cgi";
+		require $Header;
 		&html_output_manual;
 	}
 	else {
-		require "../header.cgi";
+		require $Header;
 		&html_output;
 	}
 }
@@ -105,7 +108,7 @@ sub allocation {
 				{
 					my $Message_Red="Problem with IP range $Overlap_Check, it is not properly defined.";
 					$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-					print "Location: ipv4-allocation.cgi?Reset=1\n\n";
+					print "Location: /IP/ipv4-allocation.cgi?Reset=1\n\n";
 					exit(0);
 				}
 				elsif ( $Overlap_Check == $IP_IDENTICAL )
@@ -153,7 +156,7 @@ sub allocation {
 		if ($IP_Block_Limit_Integer < $IP_Block_Limit_Integer_Final) {
 			my $Message_Red="There are no more available blocks in $IP_Block for a $CIDR_Input notation. Either reduce the block size or use a different block";
 			$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-			print "Location: ipv4-allocation.cgi?Reset=1\n\n";
+			print "Location: /IP/ipv4-allocation.cgi?Reset=1\n\n";
 			exit(0);
 		}
 
@@ -217,7 +220,7 @@ my ($Allocation_Range_Error, $IP_Block) = @_;
 	Error Details: $Allocation_Range_Error<br/>
 	--------------- You must select a CIDR that fits within the boundaries of $IP_Block ---------------";
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: ipv4-allocation.cgi?Reset=1\n\n";
+	print "Location: /IP/ipv4-allocation.cgi?Reset=1\n\n";
 	exit(0);
 } # sub allocation_error
 
@@ -239,93 +242,11 @@ if ($Final_Allocated_IP) {
 		$Final_Range_Max=$Final_IP_Allocation->last_ip();
 }
 
-### v4 counter
-
-my $IPv4_Table = new HTML::Table(
-	-cols=>4,
-	-align=>'center',
-	-border=>0,
-	-rules=>'cols',
-	-evenrowclass=>'tbeven',
-	-oddrowclass=>'tbodd',
-	-width=>'90%',
-	-spacing=>0,
-	-padding=>1
-);
-$IPv4_Table->addRow ( "IP Block", "Block Name", "Block Description", "Range for Use", "Range for Use Subnet", "Used", "Status Toggle" );
-$IPv4_Table->setRowClass (1, 'tbrow1');
-$IPv4_Table->setRowStyle(1, "background-color:#293E77;");
-
-my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `ip_block`, `ip_block_name`, `ip_block_description`, `range_for_use`, `range_for_use_subnet`, `percent_used`, `status`, `id`
-FROM `ipv4_address_blocks`
-ORDER BY
-	SUBSTRING_INDEX(`ip_block`,'.',1)+0,
-    SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-3),'.',1)+0,
-    SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-2),'.',1)+0,
-    SUBSTRING_INDEX(`ip_block`,'.',-1)+0 ASC");
-$IPv4_Block_Query->execute( );
-
-my $Rows = $IPv4_Block_Query->rows();
-
-my $Row_Count=1;
-while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
-{
-
-	$Row_Count++;
-	
-	my $IPv4_Block = $IPv4_Block_Query_Output[0];
-	my $IPv4_Block_Name = $IPv4_Block_Query_Output[1];
-	my $IPv4_Block_Description = $IPv4_Block_Query_Output[2];
-	my $IPv4_Range_For_Use = $IPv4_Block_Query_Output[3];
-	my $IPv4_Range_For_Use_Subnet = $IPv4_Block_Query_Output[4];
-	my $IPv4_Percent_Used = $IPv4_Block_Query_Output[5];
-		$IPv4_Percent_Used = sprintf("%.2f", $IPv4_Percent_Used);
-	my $IPv4_Status = $IPv4_Block_Query_Output[6];
-	my $Block_DB_ID = $IPv4_Block_Query_Output[7];
-	
-	if ($IPv4_Status eq '1') {
-		$IPv4_Status="Disable";
-	}
-	
-	if ($IPv4_Status eq '0') {
-		$IPv4_Status="Enable";
-	}
-	
-	$IPv4_Block_Name = "<a href='adminmanagement.cgi?EDIT_CUSTOMER_BLOCK=$Block_DB_ID'>$IPv4_Block_Name</a>";
-	
-	$IPv4_Table->addRow( ${IPv4_Block}, ${IPv4_Block_Name}, ${IPv4_Block_Description}, ${IPv4_Range_For_Use}, ${IPv4_Range_For_Use_Subnet}, $IPv4_Percent_Used."%", "<a href='adminmanagement.cgi?ENABLE_IPv4_Block=$IPv4_Block&ENABLE_IPv4_Status=$IPv4_Status'>$IPv4_Status</a>");
-	$IPv4_Table->setColClass (7, 'tbenablecolumn');
-	
-	if ($IPv4_Percent_Used <= 50) {
-		$IPv4_Table->setCellClass ($Row_Count, 6, 'tbrowgreen');
-	}
-	elsif ($IPv4_Percent_Used <= 75) {
-		$IPv4_Table->setCellClass ($Row_Count, 6, 'tbrowyellow');
-	}
-	elsif ($IPv4_Percent_Used <= 90) {
-		$IPv4_Table->setCellClass ($Row_Count, 6, 'tbrowwarning');
-	}
-	elsif ($IPv4_Percent_Used > 90) {
-		$IPv4_Table->setCellClass ($Row_Count, 6, 'tbrowerror');
-	}
-	
-	if ($IPv4_Status eq 'Enable') {
-		$IPv4_Table->setLastRowClass ('tballocationrowdisabled');
-	}
-}
-
-### / v4 counter
 
 print <<ENDHTML;
 
 <div id="full-page-block">
 <p><b>IPv4 Allocation</b></p>
-
-<div>
-<h3>IPv4 Allocation Index</h3>
-Total Number of IP Blocks: $Rows<br />
-$IPv4_Table<br />
-</div>
 
 	<a href="ipv4-allocation.cgi?Manual_Override=1">Switch to Manual Allocation</a>
 	

@@ -12,14 +12,14 @@ my $User_Name = $Session->param("User_Name");
 my $User_Admin = $Session->param("User_Admin");
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin != 1 && $User_Admin != 2) {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red);
-	print "Location: index.cgi\n\n";
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 

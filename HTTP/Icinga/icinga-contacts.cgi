@@ -3,7 +3,11 @@
 use strict;
 use HTML::Table;
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
 my $DB_Icinga = DB_Icinga();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -68,19 +72,19 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 	}
 
 if (!$Username) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
 if ($Add_Contact) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_add_contact;
 }
@@ -95,11 +99,11 @@ elsif ($Contact_Add && $Alias_Add) {
 		$Session->param('Message_Orange', $Message_Orange);
 	}
 	
-	print "Location: nagios-contacts.cgi\n\n";
+	print "Location: /Icinga/icinga-contacts.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Contact) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_edit_contact;
 }
@@ -107,11 +111,11 @@ elsif ($Contact_Edit_Post) {
 	&edit_contact;
 	my $Message_Green="$Contact_Edit ($Alias_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-contacts.cgi\n\n";
+	print "Location: /Icinga/icinga-contacts.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Contact) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_delete_contact;
 }
@@ -119,16 +123,16 @@ elsif ($Contact_Delete_Post) {
 	&delete_contact;
 	my $Message_Green="$Contact_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-contacts.cgi\n\n";
+	print "Location: /Icinga/icinga-contacts.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 }
 
@@ -138,14 +142,14 @@ sub html_add_contact {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-contacts.cgi">
+<a href="/Icinga/icinga-contacts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Contact</h3>
 
-<form action='Icinga/icinga-contacts.cgi' method='post' >
+<form action='/Icinga/icinga-contacts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -336,7 +340,7 @@ sub add_contact {
 
 			my $Message_Red="$Contact_Add already exists (ID: $ID_Extract, Alias: $Alias_Extract), new contact refused";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-contacts.cgi\n\n";
+			print "Location: /Icinga/icinga-contacts.cgi\n\n";
 			exit(0);
 
 		}
@@ -433,14 +437,14 @@ sub html_edit_contact {
 
 		print <<ENDHTML;
 		<div id="wide-popup-box">
-		<a href="Icinga/icinga-contacts.cgi">
+		<a href="/Icinga/icinga-contacts.cgi">
 		<div id="blockclosebutton">
 		</div>
 		</a>
 		
 		<h3 align="center">Editing Contact <span style="color: #00FF00;">$Name_Extract</span></h3>
 		
-		<form action='Icinga/icinga-contacts.cgi' method='post' >
+		<form action='/Icinga/icinga-contacts.cgi' method='post' >
 		
 		<table align = "center">
 			<tr>
@@ -765,7 +769,7 @@ sub edit_contact {
 
 			my $Message_Red="$Contact_Edit already exists (ID: $ID_Extract, Alias: $Alias_Extract), edited contact refused";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-contacts.cgi\n\n";
+			print "Location: /Icinga/icinga-contacts.cgi\n\n";
 			exit(0);
 
 		}
@@ -850,14 +854,14 @@ sub html_delete_contact {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-contacts.cgi">
+<a href="/Icinga/icinga-contacts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Contact</h3>
 
-<form action='Icinga/icinga-contacts.cgi' method='post' >
+<form action='/Icinga/icinga-contacts.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
@@ -1006,7 +1010,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="full-width-popup-box">
-<a href="Icinga/icinga-contacts.cgi">
+<a href="/Icinga/icinga-contacts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1082,17 +1086,16 @@ ENDHTML
 sub html_output {
 
 	my $Table = new HTML::Table(
-                            -cols=>14,
-                            -align=>'center',
-                            -rules=>'all',
-                            -border=>0,
-                            -bgcolor=>'25aae1',
-                            -evenrowclass=>'tbodd', #Reversed because of double header line
-                            -oddrowclass=>'tbeven', #Reversed because of double header line
-                            -class=>'statustable',
-                            -width=>'100%',
-                            -spacing=>0,
-                            -padding=>1 );
+		-cols=>16,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbodd', # Reversed due to double header line
+		-oddrowclass=>'tbeven', # Reversed due to double header line
+		-width=>'100%',
+		-spacing=>0,
+		-padding=>1
+	);
 
 	$Table->addRow ( "ID", "Name", "Alias", "Notifications", "", "", "", "", "", "Email", "Active", "Last Modified",
 	"Modified By", "View Config", "Edit", "Delete" );
@@ -1226,7 +1229,7 @@ sub html_output {
 				while ( my @DB_Host_Command_Conversion = $Select_Host_Command_Name->fetchrow_array() )
 				{
 					$Host_Notification_Command_Conversion = "$Host_Notification_Command_Conversion
-						<a href='Icinga/icinga-commands.cgi?Filter=$DB_Host_Command_Conversion[0]'>
+						<a href='/Icinga/icinga-commands.cgi?Filter=$DB_Host_Command_Conversion[0]'>
 							$DB_Host_Command_Conversion[0]
 						</a>
 						<br /><br />";
@@ -1252,7 +1255,7 @@ sub html_output {
 				while ( my @DB_Service_Command_Conversion = $Select_Service_Command_Name->fetchrow_array() )
 				{
 					$Service_Notification_Command_Conversion = "$Service_Notification_Command_Conversion
-						<a href='Icinga/icinga-commands.cgi?Filter=$DB_Service_Command_Conversion[0]'>
+						<a href='/Icinga/icinga-commands.cgi?Filter=$DB_Service_Command_Conversion[0]'>
 							$DB_Service_Command_Conversion[0]
 						</a>
 						<br /><br />";
@@ -1265,11 +1268,11 @@ sub html_output {
 		$Service_Notification_Command_Conversion =~ s/<br \/><br \/>$//g;
 
 		$Table->addRow(
-			"<a href='Icinga/icinga-contacts.cgi?Edit_Contact=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='Icinga/icinga-contacts.cgi?Edit_Contact=$ID_Extract'>$Name_Extract</a>",
+			"<a href='/Icinga/icinga-contacts.cgi?Edit_Contact=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga-contacts.cgi?Edit_Contact=$ID_Extract'>$Name_Extract</a>",
 			$Alias_Extract,
-			"<a href='Icinga/icinga-time-periods.cgi?Filter=$Host_Notification_Period_Conversion'>$Host_Notification_Period_Conversion</a>",
-			"<a href='Icinga/icinga-time-periods.cgi?Filter=$Service_Notification_Period_Conversion'>$Service_Notification_Period_Conversion</a>",
+			"<a href='/Icinga/icinga-time-periods.cgi?Filter=$Host_Notification_Period_Conversion'>$Host_Notification_Period_Conversion</a>",
+			"<a href='/Icinga/icinga-time-periods.cgi?Filter=$Service_Notification_Period_Conversion'>$Service_Notification_Period_Conversion</a>",
 			$Host_Notification_Options_Display,
 			$Service_Notification_Options_Display,
 			$Host_Notification_Command_Conversion,
@@ -1278,9 +1281,9 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='Icinga/icinga-contacts.cgi?Display_Config=$ID_Extract'><img src=\"resorcs/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-contacts.cgi?Edit_Contact=$ID_Extract'><img src=\"resorcs/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-contacts.cgi?Delete_Contact=$ID_Extract'><img src=\"resorcs/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-contacts.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-contacts.cgi?Edit_Contact=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-contacts.cgi?Delete_Contact=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 
@@ -1315,7 +1318,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='Icinga/icinga-contacts.cgi' method='post' >
+			<form action='/Icinga/icinga-contacts.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1331,17 +1334,22 @@ if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";}
 if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
 
 print <<ENDHTML;
+						</select>
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Search:</td>
-					<td style="text-align: right;"><input type='search' style="width: 150px" name='Filter' maxlength='100' value="$Filter" title="Search" placeholder="Search"></td>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td style="text-align: right;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Contacts" placeholder="Search">
+					</td>
 				</tr>
-				</form>
+			</form>
 			</table>
 		</td>
-		<td align="right">
-			<form action='Icinga/icinga-contacts.cgi' method='post' >
+		<td align="center">
+			<form action='/Icinga/icinga-contacts.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Contact</span></td>
@@ -1351,6 +1359,34 @@ print <<ENDHTML;
 				</tr>
 			</table>
 			</form>
+		</td>
+		<td align="right">
+			<form action='/Icinga/icinga-contacts.cgi' method='post' >
+			<table>
+				<tr>
+					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Contact</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;"><input type='submit' name='Edit Contact' value='Edit Contact'></td>
+					<td align="center">
+						<select name='Edit_Contact' style="width: 150px">
+ENDHTML
+
+						my $Contact_List_Query = $DB_Icinga->prepare("SELECT `id`, `contact_name`
+						FROM `nagios_contact`
+						ORDER BY `contact_name` ASC");
+						$Contact_List_Query->execute( );
+						
+						while ( (my $ID, my $DB_Contact_Name) = my @Contact_List_Query = $Contact_List_Query->fetchrow_array() )
+						{
+							print "<option value='$ID'>$DB_Contact_Name</option>";
+						}
+
+print <<ENDHTML;
+						</select>
+					</td>
+				</tr>
+			</table>
 		</td>
 	</tr>
 </table>

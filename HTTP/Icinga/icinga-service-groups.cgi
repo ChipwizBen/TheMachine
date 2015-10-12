@@ -3,7 +3,11 @@
 use strict;
 use HTML::Table;
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
 my $DB_Icinga = DB_Icinga();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -36,19 +40,19 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 	}
 
 if (!$Username) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
 if ($Add_Group) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_add_group;
 }
@@ -63,11 +67,11 @@ elsif ($Group_Add && $Alias_Add) {
 		$Session->param('Message_Orange', $Message_Orange);
 	}
 	
-	print "Location: nagios-service-groups.cgi\n\n";
+	print "Location: /Icinga/icinga-service-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Group) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_edit_group;
 }
@@ -75,11 +79,11 @@ elsif ($Group_Edit_Post) {
 	&edit_group;
 	my $Message_Green="$Group_Edit ($Alias_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-service-groups.cgi\n\n";
+	print "Location: /Icinga/icinga-service-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Group) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_delete_group;
 }
@@ -87,16 +91,16 @@ elsif ($Group_Delete_Post) {
 	&delete_group;
 	my $Message_Green="$Group_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-service-groups.cgi\n\n";
+	print "Location: /Icinga/icinga-service-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 }
 
@@ -106,14 +110,14 @@ sub html_add_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-service-groups.cgi">
+<a href="/Icinga/icinga-service-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Group</h3>
 
-<form action='Icinga/icinga-service-groups.cgi' method='post' >
+<form action='/Icinga/icinga-service-groups.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -160,7 +164,7 @@ sub add_group {
 
 			my $Message_Red="$Group_Add already exists (ID: $ID_Extract, Alias: $Alias_Extract)";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-service-groups.cgi\n\n";
+			print "Location: /Icinga/icinga-service-groups.cgi\n\n";
 			exit(0);
 
 		}
@@ -204,14 +208,14 @@ sub html_edit_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-service-groups.cgi">
+<a href="/Icinga/icinga-service-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Group <span style="color: #00FF00;">$Group_Extract</span></h3>
 
-<form action='Icinga/icinga-service-groups.cgi' method='post' >
+<form action='/Icinga/icinga-service-groups.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -275,7 +279,7 @@ sub edit_group {
 
 			my $Message_Red="$Group_Edit already exists - Conflicting Group ID (This entry): $Group_Edit_Post, Existing Group ID: $ID_Extract, Existing Group Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-service-groups.cgi\n\n";
+			print "Location: /Icinga/icinga-service-groups.cgi\n\n";
 			exit(0);
 
 		}
@@ -311,14 +315,14 @@ sub html_delete_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-service-groups.cgi">
+<a href="/Icinga/icinga-service-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Group</h3>
 
-<form action='Icinga/icinga-service-groups.cgi' method='post' >
+<form action='/Icinga/icinga-service-groups.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
@@ -381,7 +385,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-service-groups.cgi">
+<a href="/Icinga/icinga-service-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -429,17 +433,16 @@ ENDHTML
 sub html_output {
 
 	my $Table = new HTML::Table(
-                            -cols=>9,
-                            -align=>'center',
-                            -rules=>'all',
-                            -border=>0,
-                            -bgcolor=>'25aae1',
-                            -evenrowclass=>'tbeven',
-                            -oddrowclass=>'tbodd',
-                            -class=>'statustable',
-                            -width=>'100%',
-                            -spacing=>0,
-                            -padding=>1 );
+		-cols=>9,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'100%',
+		-spacing=>0,
+		-padding=>1
+	);
 
 
 	$Table->addRow ( "ID", "Name", "Alias", "Active", "Last Modified", "Modified By", "View Config", "Edit", "Delete" );
@@ -482,15 +485,15 @@ sub html_output {
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='Icinga/icinga-service-groups.cgi?Edit_Group=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='Icinga/icinga-service-groups.cgi?Edit_Group=$ID_Extract'>$Name_Extract</a>",
+			"<a href='/Icinga/icinga-service-groups.cgi?Edit_Group=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga-service-groups.cgi?Edit_Group=$ID_Extract'>$Name_Extract</a>",
 			$Alias_Extract,
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='Icinga/icinga-service-groups.cgi?Display_Config=$ID_Extract'><img src=\"resorcs/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-service-groups.cgi?Edit_Group=$ID_Extract'><img src=\"resorcs/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-service-groups.cgi?Delete_Group=$ID_Extract'><img src=\"resorcs/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-service-groups.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-service-groups.cgi?Edit_Group=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-service-groups.cgi?Delete_Group=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		for (4 .. 9) {
@@ -513,7 +516,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='Icinga/icinga-service-groups.cgi' method='post' >
+			<form action='/Icinga/icinga-service-groups.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -539,7 +542,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="right">
-			<form action='Icinga/icinga-service-groups.cgi' method='post' >
+			<form action='/Icinga/icinga-service-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Group</span></td>

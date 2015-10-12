@@ -9,7 +9,7 @@ my ($CGI, $Session, $Cookie) = CGI();
 my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 

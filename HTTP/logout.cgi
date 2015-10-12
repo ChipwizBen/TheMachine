@@ -8,6 +8,6 @@ my ($CGI, $Session, $Cookie) = CGI();
 
 $Session->delete();
 
-print "Location: login.cgi\n\n";
+print "Location: /login.cgi\n\n";
 
 exit(0);

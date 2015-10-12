@@ -3,7 +3,11 @@
 use strict;
 use HTML::Table;
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
 my $DB_Icinga = DB_Icinga();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -37,19 +41,19 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 	}
 
 if (!$Username) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
 if ($Add_Command) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_add_command;
 }
@@ -64,11 +68,11 @@ elsif ($Command_Add && $Command_Add) {
 		$Session->param('Message_Orange', $Message_Orange);
 	}
 	
-	print "Location: icinga-commands.cgi\n\n";
+	print "Location: /icinga-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Command) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_edit_command;
 }
@@ -76,11 +80,11 @@ elsif ($Command_Edit_Post) {
 	&edit_command;
 	my $Message_Green="$Command_Edit ($Command_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: icinga-commands.cgi\n\n";
+	print "Location: /icinga-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Command) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_delete_command;
 }
@@ -88,21 +92,21 @@ elsif ($Command_Delete_Post) {
 	&delete_command;
 	my $Message_Green="$Command_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: icinga-commands.cgi\n\n";
+	print "Location: /icinga-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_display_config;
 }
 elsif ($Show_Linked) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_show_linked;
 }
 else {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 }
 
@@ -112,14 +116,14 @@ sub html_add_command {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Command</h3>
 
-<form action='Icinga/icinga-commands.cgi' method='post' >
+<form action='/Icinga/icinga-commands.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -153,7 +157,7 @@ ENDHTML
 sub add_command {
 
 	my $Command_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `command_line`
-	FROM `icinga_command`
+	FROM `nagios_command`
 	WHERE `command_name` = '$Command_Add'");
 
 	$Command_Insert_Check->execute( );
@@ -168,13 +172,13 @@ sub add_command {
 
 			my $Message_Red="$Command_Add already exists (ID: $ID_Extract, Command: $Command_Extract)";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: icinga-commands.cgi\n\n";
+			print "Location: /icinga-commands.cgi\n\n";
 			exit(0);
 
 		}
 	}
 	else {
-		my $Command_Insert = $DB_Icinga->prepare("INSERT INTO `icinga_command` (
+		my $Command_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_command` (
 			`id`,
 			`command_name`,
 			`command_line`,
@@ -199,7 +203,7 @@ sub add_command {
 sub html_edit_command {
 
 	my $Select_Command = $DB_Icinga->prepare("SELECT `command_name`, `command_line`, `active`
-	FROM `icinga_command`
+	FROM `nagios_command`
 	WHERE `id` = '$Edit_Command'");
 	$Select_Command->execute( );
 	
@@ -212,14 +216,14 @@ sub html_edit_command {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Command <span style="color: #00FF00;">$Command_Extract</span></h3>
 
-<form action='Icinga/icinga-commands.cgi' method='post' >
+<form action='/Icinga/icinga-commands.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -269,7 +273,7 @@ ENDHTML
 sub edit_command {
 
 	my $Command_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `command_line`
-	FROM `icinga_command`
+	FROM `nagios_command`
 	WHERE `command_name` = '$Command_Edit'
 	AND `id` != '$Command_Edit_Post'");
 
@@ -285,14 +289,14 @@ sub edit_command {
 
 			my $Message_Red="$Command_Edit already exists - Conflicting Command ID (This entry): $Command_Edit_Post, Existing Command ID: $ID_Extract, Existing Command Command: $Command_Extract";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: icinga-commands.cgi\n\n";
+			print "Location: /icinga-commands.cgi\n\n";
 			exit(0);
 
 		}
 	}
 	else {
 
-		my $Command_Update = $DB_Icinga->prepare("UPDATE `icinga_command` SET
+		my $Command_Update = $DB_Icinga->prepare("UPDATE `nagios_command` SET
 			`command_name` = ?,
 			`command_line` = ?,
 			`active` = ?,
@@ -309,7 +313,7 @@ sub edit_command {
 sub html_delete_command {
 
 	my $Select_Command = $DB_Icinga->prepare("SELECT `command_name`, `command_line`
-	FROM `icinga_command`
+	FROM `nagios_command`
 	WHERE `id` = '$Delete_Command'");
 	$Select_Command->execute( );
 	
@@ -321,14 +325,14 @@ sub html_delete_command {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Command</h3>
 
-<form action='Icinga/icinga-commands.cgi' method='post' >
+<form action='/Icinga/icinga-commands.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this command?</p>
 <table align = "center">
 	<tr>
@@ -358,7 +362,7 @@ ENDHTML
 
 sub delete_command {
 
-	$DB_Icinga->do("DELETE from `icinga_command`
+	$DB_Icinga->do("DELETE from `nagios_command`
 				WHERE `id` = '$Command_Delete_Post'");
 
 } # sub delete_command
@@ -366,7 +370,7 @@ sub delete_command {
 sub html_display_config {
 
 	my $Select_Command = $DB_Icinga->prepare("SELECT `command_name`, `command_line`, `active`, `last_modified`, `modified_by`
-	FROM `icinga_command`
+	FROM `nagios_command`
 	WHERE `id` = ?");
 	$Select_Command->execute($Display_Config);
 	
@@ -390,7 +394,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -440,7 +444,7 @@ sub html_show_linked {
 	my $Command_Name;
 	my $Command_Description;
 	my $Select_Command_Name = $DB_Icinga->prepare("SELECT `command_name`
-	FROM `icinga_command`
+	FROM `nagios_command`
 	WHERE `id` = ?");
 	
 		$Select_Command_Name->execute($Show_Linked);
@@ -482,7 +486,7 @@ sub html_show_linked {
 			if ($Service_Active) {$Service_Active = "<span style='color: #00FF00;'>Yes</span>"}
 			else {$Service_Active = "<span style='color: #FF0000;'>No</span>"}
 
-			my $View_Service = "<a href='Icinga/icinga-services.cgi?Filter=$Service_ID'><img src=\"resorcs/imgs/forward.png\" alt=\"View Service $Service_Description\" ></a>";
+			my $View_Service = "<a href='/Icinga/icinga-services.cgi?Filter=$Service_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View Service $Service_Description\" ></a>";
 
 			$Table->addRow ( "$Service_ID", "$Service_Name", "$Service_Description", "$Service_Active", "$View_Service" );
 
@@ -492,7 +496,7 @@ sub html_show_linked {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -510,28 +514,27 @@ ENDHTML
 sub html_output {
 
 	my $Table = new HTML::Table(
-                            -cols=>10,
-                            -align=>'center',
-                            -rules=>'all',
-                            -border=>0,
-                            -bgcolor=>'25aae1',
-                            -evenrowclass=>'tbeven',
-                            -oddrowclass=>'tbodd',
-                            -class=>'statustable',
-                            -width=>'100%',
-                            -spacing=>0,
-                            -padding=>1 );
+		-cols=>10,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'100%',
+		-spacing=>0,
+		-padding=>1
+	);
 
 
 	$Table->addRow ( "ID", "Name", "Command", "Active", "Last Modified", "Modified By", "Linked", "View Config", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Commands_Count = $DB_Icinga->prepare("SELECT `id` FROM `icinga_command`");
+	my $Select_Commands_Count = $DB_Icinga->prepare("SELECT `id` FROM `nagios_command`");
 		$Select_Commands_Count->execute( );
 		my $Total_Rows = $Select_Commands_Count->rows();	
 
 	my $Select_Commands = $DB_Icinga->prepare("SELECT `id`, `command_name`, `command_line`, `active`, `last_modified`, `modified_by`
-	FROM `icinga_command`
+	FROM `nagios_command`
 	WHERE (`id` LIKE '$Filter'
 	OR `command_name` LIKE '%$Filter%'
 	OR `command_line` LIKE '%$Filter%')
@@ -553,7 +556,8 @@ sub html_output {
 			my $ID_Extract_Display = $ID_Extract;
 			$ID_Extract_Display =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Name_Extract = $DB_Command[1];
-			$Name_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+			my $Name = $Name_Extract;
+			$Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Command_Extract = $DB_Command[2];
 			$Command_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Active_Extract = $DB_Command[3];
@@ -563,16 +567,16 @@ sub html_output {
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'>$Name_Extract</a>",
+			"<a href='/Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'>$Name</a>",
 			$Command_Extract,
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='Icinga/icinga-commands.cgi?Show_Linked=$ID_Extract'><img src=\"resorcs/imgs/linked.png\" alt=\"Show Linked Hosts/Services for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-commands.cgi?Display_Config=$ID_Extract'><img src=\"resorcs/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'><img src=\"resorcs/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-commands.cgi?Delete_Command=$ID_Extract'><img src=\"resorcs/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-commands.cgi?Show_Linked=$ID_Extract'><img src='/resources/imgs/linked.png' alt='Show Linked Hosts/Services for $Name_Extract'></a>",
+			"<a href='/Icinga/icinga-commands.cgi?Display_Config=$ID_Extract'><img src='/resources/imgs/view-notes.png' alt='View Config for $Name_Extract'></a>",
+			"<a href='/Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'><img src='/resources/imgs/edit.png' alt='Edit $Name_Extract'></a>",
+			"<a href='/Icinga/icinga-commands.cgi?Delete_Command=$ID_Extract'><img src='/resources/imgs/delete.png' alt='Delete $Name_Extract'></a>"
 		);
 
 		for (4 .. 10) {
@@ -595,7 +599,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='Icinga/icinga-commands.cgi' method='post' >
+			<form action='/Icinga/icinga-commands.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -611,17 +615,22 @@ if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";}
 if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
 
 print <<ENDHTML;
+						</select>
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Search:</td>
-					<td style="text-align: right;"><input type='search' style="width: 150px" name='Filter' maxlength='100' value="$Filter" title="Search" placeholder="Search"></td>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td style="text-align: right;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Commands" placeholder="Search">
+					</td>
 				</tr>
-				</form>
+			</form>
 			</table>
 		</td>
-		<td align="right">
-			<form action='Icinga/icinga-commands.cgi' method='post' >
+		<td align="center">
+			<form action='/Icinga/icinga-commands.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Command</span></td>
@@ -631,6 +640,34 @@ print <<ENDHTML;
 				</tr>
 			</table>
 			</form>
+		</td>
+		<td align="right">
+			<form action='/Icinga/icinga-commands.cgi' method='post' >
+			<table>
+				<tr>
+					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Command</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;"><input type='submit' name='Edit Command' value='Edit Command'></td>
+					<td align="center">
+						<select name='Edit_Command' style="width: 150px">
+ENDHTML
+
+						my $Command_List_Query = $DB_Icinga->prepare("SELECT `id`, `command_name`
+						FROM `nagios_command`
+						ORDER BY `command_name` ASC");
+						$Command_List_Query->execute( );
+						
+						while ( (my $ID, my $DB_Command_Name) = my @Command_List_Query = $Command_List_Query->fetchrow_array() )
+						{
+							print "<option value='$ID'>$DB_Command_Name</option>";
+						}
+
+print <<ENDHTML;
+						</select>
+					</td>
+				</tr>
+			</table>
 		</td>
 	</tr>
 </table>

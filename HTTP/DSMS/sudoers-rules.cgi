@@ -5,7 +5,12 @@ use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
+my $Footer = Footer();
 my $DB_Management = DB_Management();
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
@@ -96,7 +101,7 @@ my $User_Approver = $Session->param("User_Approver");
 my $User_Requires_Approval = $Session->param("User_Requires_Approval");
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
@@ -109,75 +114,75 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Rule && !$Add_Rule_Final) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_add_rule;
 }
 elsif ($Add_Rule_Final) {
 	my $Rule_ID = &add_rule;
 	my $Message_Green="$Rule_Name_Add added successfully as ID $Rule_ID";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-rules.cgi\n\n";
+	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Rule && !$Edit_Rule_Final) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_edit_rule;
 }
 elsif ($Edit_Rule_Final) {
 	&edit_rule;
 	my $Message_Green="$Rule_Name_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-rules.cgi\n\n";
+	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Rule) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_delete_rule;
 }
 elsif ($Delete_Rule_Confirm) {
 	&delete_rule;
 	my $Message_Green="$Rule_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-rules.cgi\n\n";
+	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Rule_Item_ID) {
 	&delete_rule_item;
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 }
 elsif ($Approve_Rule_ID && $User_Approver) {
 	&approve_rule;
 	my $Message_Green="$Approve_Rule_Name rule approved successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-rules.cgi\n\n";
+	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
 elsif ($View_Notes) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_notes;
 }
 elsif ($New_Note && $New_Note_ID) {
 	&add_note;
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	$View_Notes = $New_Note_ID;
 	&html_notes;
 }
 else {
-	require "../header.cgi"; ## no critic
+	require $Header; ## no critic
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 }
 
 
@@ -416,7 +421,7 @@ foreach my $Command (@Commands) {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-rules.cgi">
+<a href="/DSMS/sudoers-rules.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -437,7 +442,7 @@ function Expire_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='DSMS/sudoers-rules.cgi' name='Add_Rule' method='post' >
+<form action='/DSMS/sudoers-rules.cgi' name='Add_Rule' method='post' >
 
 <table align = "center">
 	<tr>
@@ -891,7 +896,7 @@ sub add_rule {
 		}
 		my $Message_Red="Rule_Name: $Rule_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-rules.cgi\n\n";
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Rule_Name Check
@@ -1798,7 +1803,7 @@ foreach my $Command (@Commands) {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-rules.cgi">
+<a href="/DSMS/sudoers-rules.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1819,7 +1824,7 @@ function Expire_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='DSMS/sudoers-rules.cgi' name='Edit_Rule' method='post' >
+<form action='/DSMS/sudoers-rules.cgi' name='Edit_Rule' method='post' >
 
 <table align = "center">
 	<tr>
@@ -2292,7 +2297,7 @@ sub edit_rule {
 		}
 		my $Message_Red="Rule Name: $Rule_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-rules.cgi\n\n";
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Rule_Name Check
@@ -2658,14 +2663,14 @@ sub html_delete_rule {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="DSMS/sudoers-rules.cgi">
+<a href="/DSMS/sudoers-rules.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Rule</h3>
 
-<form action='DSMS/sudoers-rules.cgi' method='post' >
+<form action='/DSMS/sudoers-rules.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this rule?</p>
 <table align = "center">
 	<tr>
@@ -2815,7 +2820,7 @@ if ($Delete_Host_Group_ID) {
 	
 			my $Message_Green="Host Group $Name [Host Group ID $Delete_Host_Group_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
 			$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-			print "Location: sudoers-rules.cgi\n\n";
+			print "Location: /DSMS/sudoers-rules.cgi\n\n";
 			exit(0);
 		}
 	}
@@ -2841,7 +2846,7 @@ if ($Delete_Host_Group_ID) {
 
 		my $Message_Green="ALL Hosts and Host Groups removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
 		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-		print "Location: sudoers-rules.cgi\n\n";
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 	}
 }
@@ -2882,7 +2887,7 @@ if ($Delete_Host_ID) {
 			# / Audit Log
 			my $Message_Green="Host $Name [Host ID $Delete_Host_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
 			$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-			print "Location: sudoers-rules.cgi\n\n";
+			print "Location: /DSMS/sudoers-rules.cgi\n\n";
 			exit(0);
 		}
 	}
@@ -2908,7 +2913,7 @@ if ($Delete_Host_ID) {
 
 		my $Message_Green="ALL Hosts and Host Groups removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
 		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-		print "Location: sudoers-rules.cgi\n\n";
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 	}
 }
@@ -2948,7 +2953,7 @@ if ($Delete_User_Group_ID) {
 
 		my $Message_Green="User Group $Name [User Group ID $Delete_User_Group_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
 		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-		print "Location: sudoers-rules.cgi\n\n";
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 
 	}
@@ -2990,7 +2995,7 @@ if ($Delete_User_ID) {
 
 		my $Message_Green="User $Name [User ID $Delete_User_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
 		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-		print "Location: sudoers-rules.cgi\n\n";
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 
 	}
@@ -3032,7 +3037,7 @@ if ($Delete_Command_Group_ID) {
 
 		my $Message_Green="Command Group $Name [Command Group ID $Delete_Command_Group_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
 		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-		print "Location: sudoers-rules.cgi\n\n";
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 
 	}
@@ -3074,7 +3079,7 @@ if ($Delete_Command_ID) {
 
 		my $Message_Green="Command $Name [Command ID $Delete_Command_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
 		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-		print "Location: sudoers-rules.cgi\n\n";
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 
 	}
@@ -3128,7 +3133,7 @@ sub approve_rule {
 		else {
 			my $Message_Red="Nice try, but you cannot approve your own rules.";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: sudoers-rules.cgi\n\n";
+			print "Location: /DSMS/sudoers-rules.cgi\n\n";
 			exit(0);
 		}
 	}
@@ -3209,13 +3214,13 @@ sub html_notes {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-rules.cgi">
+<a href="/DSMS/sudoers-rules.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Notes for $Rule_Name</h3>
-<form action='DSMS/sudoers-rules.cgi' method='post'>
+<form action='/DSMS/sudoers-rules.cgi' method='post'>
 
 <table align='center'>
 	<tr>
@@ -3434,19 +3439,19 @@ sub html_output {
 					}
 	
 					if ($Group_Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-						$Group = "<a href='DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #B1B1B1';>$Group</span></a>"
+						$Group = "<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #B1B1B1';>$Group</span></a>"
 						. "&nbsp;" .
-						"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					}
 					elsif ($Group_Active) {
-						$Group = "<a href='DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #00FF00';>$Group</span></a>"
+						$Group = "<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #00FF00';>$Group</span></a>"
 						. "&nbsp;" .
-						"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 						}
 					else {
-						$Group = "<a href='DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #FF0000';>$Group</span></a>"
+						$Group = "<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #FF0000';>$Group</span></a>"
 						. "&nbsp;" .
-						"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					};
 					
 					$Attached_Host_Groups = $Attached_Host_Groups . $Group ."<br />";
@@ -3457,7 +3462,7 @@ sub html_output {
 		else {
 			$Attached_Host_Groups = "<a href='#' class='tooltip' text=\"This is a special sudoers group, meaning all hosts.\"><span style='color: #00FF00'>ALL (Special)</span></a>"
 			. "&nbsp;" .
-			"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=ALL' class='tooltip' text=\"Remove ALL from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>";
+			"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=ALL' class='tooltip' text=\"Remove ALL from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>";
 		}
 
 		### / Discover Attached Host Groups
@@ -3502,19 +3507,19 @@ sub html_output {
 					}
 	
 					if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-						$Host = "<a href='DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #B1B1B1'>$Host</span></a>"
+						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #B1B1B1'>$Host</span></a>"
 						. "&nbsp;" .
-						"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					}
 					elsif ($Active) {
-						$Host = "<a href='DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #00FF00'>$Host</span></a>"
+						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #00FF00'>$Host</span></a>"
 						. "&nbsp;" .
-						"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					}
 					else {
-						$Host = "<a href='DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #FF0000'>$Host</span></a>"
+						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #FF0000'>$Host</span></a>"
 						. "&nbsp;" .
-						"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					};
 					$Attached_Hosts = $Attached_Hosts . $Host  . "<br />";
 				}
@@ -3523,7 +3528,7 @@ sub html_output {
 		else {
 			$Attached_Hosts = "<a href='#' class='tooltip' text=\"This is a special sudoers group, meaning all hosts.\"><span style='color: #00FF00'>ALL (Special)</span></a>"
 			. "&nbsp;" .
-			"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=ALL' class='tooltip' text=\"Remove ALL from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>";
+			"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=ALL' class='tooltip' text=\"Remove ALL from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>";
 		}
 		
 		### / Discover Attached Hosts
@@ -3633,19 +3638,19 @@ sub html_output {
 				
 
 				if ($Group_Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-					$Group = "<a href='DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"$Users_In_This_Group\n$Attached_Users\"><span style='color: #B1B1B1';>$Group</span></a>"
+					$Group = "<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"$Users_In_This_Group\n$Attached_Users\"><span style='color: #B1B1B1';>$Group</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				}
 				elsif ($Group_Active) {
-					$Group = "<a href='DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"$Users_In_This_Group\n$Attached_Users\"><span style='color: #00FF00';>$Group</span></a>"
+					$Group = "<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"$Users_In_This_Group\n$Attached_Users\"><span style='color: #00FF00';>$Group</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				}
 				else {
-					$Group = "<a href='DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"$Users_In_This_Group\n$Attached_Users\"><span style='color: #FF0000';>$Group</span></a>"
+					$Group = "<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"$Users_In_This_Group\n$Attached_Users\"><span style='color: #FF0000';>$Group</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				};
 				
 				$Attached_User_Groups = $Attached_User_Groups . $Group ."<br />";
@@ -3691,19 +3696,19 @@ sub html_output {
 				}
 
 				if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #B1B1B1'>$User</span></a>"
+					$User = "<a href='/DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #B1B1B1'>$User</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_ID=$User_ID' class='tooltip' text=\"Remove $User from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_ID=$User_ID' class='tooltip' text=\"Remove $User from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				}
 				elsif ($Active) {
-					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #00FF00'>$User</span></a>"
+					$User = "<a href='/DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #00FF00'>$User</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_ID=$User_ID' class='tooltip' text=\"Remove $User from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_ID=$User_ID' class='tooltip' text=\"Remove $User from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				}
 				else {
-					$User = "<a href='DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #FF0000'>$User</span></a>"
+					$User = "<a href='/DSMS/sudoers-users.cgi?ID_Filter=$User_ID'><span style='color: #FF0000'>$User</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_ID=$User_ID' class='tooltip' text=\"Remove $User from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_User_ID=$User_ID' class='tooltip' text=\"Remove $User from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				};
 				$Attached_Users = $Attached_Users . $User  . "<br />";
 			}
@@ -3805,19 +3810,19 @@ sub html_output {
 				}
 
 				if ($Group_Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-					$Group = "<a href='DSMS/sudoers-command-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Commands in this group:\n$Attached_Commands\"><span style='color: #B1B1B1';>$Group</span></a>"
+					$Group = "<a href='/DSMS/sudoers-command-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Commands in this group:\n$Attached_Commands\"><span style='color: #B1B1B1';>$Group</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				}
 				elsif ($Group_Active) {
-					$Group = "<a href='DSMS/sudoers-command-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Commands in this group:\n$Attached_Commands\"><span style='color: #00FF00';>$Group</span></a>"
+					$Group = "<a href='/DSMS/sudoers-command-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Commands in this group:\n$Attached_Commands\"><span style='color: #00FF00';>$Group</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				}
 				else {
-					$Group = "<a href='DSMS/sudoers-command-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Commands in this group:\n$Attached_Commands\"><span style='color: #FF0000';>$Group</span></a>"
+					$Group = "<a href='/DSMS/sudoers-command-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Commands in this group:\n$Attached_Commands\"><span style='color: #FF0000';>$Group</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				};
 				
 				$Attached_Command_Groups = $Attached_Command_Groups . $Group ."<br />";
@@ -3864,19 +3869,19 @@ sub html_output {
 				}
 
 				if ($Command_Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-					$Command_Alias = "<a href='DSMS/sudoers-commands.cgi?ID_Filter=$Command_ID' class='tooltip' text=\"$Command\"><span style='color: #B1B1B1'>$Command_Alias</span></a>"
+					$Command_Alias = "<a href='/DSMS/sudoers-commands.cgi?ID_Filter=$Command_ID' class='tooltip' text=\"$Command\"><span style='color: #B1B1B1'>$Command_Alias</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_ID=$Command_ID' class='tooltip' text=\"Remove $Command_Alias from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_ID=$Command_ID' class='tooltip' text=\"Remove $Command_Alias from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				}
 				elsif ($Command_Active) {
-					$Command_Alias = "<a href='DSMS/sudoers-commands.cgi?ID_Filter=$Command_ID' class='tooltip' text=\"$Command\"><span style='color: #00FF00'>$Command_Alias</span></a>"
+					$Command_Alias = "<a href='/DSMS/sudoers-commands.cgi?ID_Filter=$Command_ID' class='tooltip' text=\"$Command\"><span style='color: #00FF00'>$Command_Alias</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_ID=$Command_ID' class='tooltip' text=\"Remove $Command_Alias from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_ID=$Command_ID' class='tooltip' text=\"Remove $Command_Alias from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				}
 				else {
-					$Command_Alias = "<a href='DSMS/sudoers-commands.cgi?ID_Filter=$Command_ID' class='tooltip' text=\"$Command\"><span style='color: #FF0000'>$Command_Alias</span></a>"
+					$Command_Alias = "<a href='/DSMS/sudoers-commands.cgi?ID_Filter=$Command_ID' class='tooltip' text=\"$Command\"><span style='color: #FF0000'>$Command_Alias</span></a>"
 					. "&nbsp;" .
-					"<a href='DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_ID=$Command_ID' class='tooltip' text=\"Remove $Command_Alias from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
+					"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Command_ID=$Command_ID' class='tooltip' text=\"Remove $Command_Alias from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 				};
 				$Attached_Commands = $Attached_Commands . $Command_Alias  . "<br />";
 			}
@@ -3927,16 +3932,16 @@ sub html_output {
 				"$Approved",
 				"$Last_Modified<br />$Last_Approved",
 				"$Modified_By<br />$Approved_By",
-				"<a href='DSMS/sudoers-rules.cgi?Approve_Rule_ID=$DBID_Clean&Approve_Rule_Name=$DB_Rule_Name_Clean'><img src=\"resources/imgs/buttons/confirm.png\" alt=\"Approve Rule ID $DBID_Clean\" ></a>",
-				"<a href='DSMS/sudoers-rules.cgi?View_Notes=$DBID_Clean'>
-					<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+				"<a href='/DSMS/sudoers-rules.cgi?Approve_Rule_ID=$DBID_Clean&Approve_Rule_Name=$DB_Rule_Name_Clean'><img src=\"/resources/imgs/buttons/confirm.png\" alt=\"Approve Rule ID $DBID_Clean\" ></a>",
+				"<a href='/DSMS/sudoers-rules.cgi?View_Notes=$DBID_Clean'>
+					<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 						<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 							$Note_Count
 						</p>
 					</div>
 				</a>",
-				"<a href='DSMS/sudoers-rules.cgi?Edit_Rule=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Rule ID $DBID_Clean\" ></a>",
-				"<a href='DSMS/sudoers-rules.cgi?Delete_Rule=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Rule ID $DBID_Clean\" ></a>"
+				"<a href='/DSMS/sudoers-rules.cgi?Edit_Rule=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Rule ID $DBID_Clean\" ></a>",
+				"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Rule ID $DBID_Clean\" ></a>"
 			);
 		}
 		else {
@@ -3956,16 +3961,16 @@ sub html_output {
 				"$Approved",
 				"$Last_Modified<br />$Last_Approved",
 				"$Modified_By<br />$Approved_By",
-				"<img src=\"resources/imgs/buttons/confirm-dim.png\" alt=\"You cannot approve this rule\" >",
-				"<a href='DSMS/sudoers-rules.cgi?View_Notes=$DBID_Clean'>
-					<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+				"<img src=\"/resources/imgs/buttons/confirm-dim.png\" alt=\"You cannot approve this rule\" >",
+				"<a href='/DSMS/sudoers-rules.cgi?View_Notes=$DBID_Clean'>
+					<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 						<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 							$Note_Count
 						</p>
 					</div>
 				</a>",
-				"<a href='DSMS/sudoers-rules.cgi?Edit_Rule=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Rule ID $DBID_Clean\" ></a>",
-				"<a href='DSMS/sudoers-rules.cgi?Delete_Rule=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Rule ID $DBID_Clean\" ></a>"
+				"<a href='/DSMS/sudoers-rules.cgi?Edit_Rule=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Rule ID $DBID_Clean\" ></a>",
+				"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Rule ID $DBID_Clean\" ></a>"
 			);
 		}
 
@@ -4017,7 +4022,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='DSMS/sudoers-rules.cgi' method='post' >
+			<form action='/DSMS/sudoers-rules.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -4048,7 +4053,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='DSMS/sudoers-rules.cgi' method='post' >
+			<form action='/DSMS/sudoers-rules.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Rule</span></td>
@@ -4060,7 +4065,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='DSMS/sudoers-rules.cgi' method='post' >
+			<form action='/DSMS/sudoers-rules.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Rule</span></td>
@@ -4118,11 +4123,11 @@ ENDHTML
 							if ($Approver == 1 && $Requires_Approval == 1) {
 								print "<tr>
 										<td>Approver</td>
-										<td><img src='resources/imgs/green.png' alt='Is an Approver' ></td>
+										<td><img src='/resources/imgs/green.png' alt='Is an Approver' ></td>
 									</tr>
 									<tr>
 										<td>Changes Requires Approval</td>
-										<td><img src='resources/imgs/green.png' alt='Requires Approval' ></td>
+										<td><img src='/resources/imgs/green.png' alt='Requires Approval' ></td>
 									</tr>
 									<tr>
 										<td align='center' colspan='2'>You can approve rules of other users but not your own.</td>
@@ -4132,11 +4137,11 @@ ENDHTML
 							elsif ($Approver == 1 && $Requires_Approval == 0) {
 								print "<tr>
 										<td>Approver</td>
-										<td><img src='resources/imgs/green.png' alt='Is an Approver' ></td>
+										<td><img src='/resources/imgs/green.png' alt='Is an Approver' ></td>
 									</tr>
 									<tr>
 										<td>Changes Requires Approval</td>
-										<td><img src='resources/imgs/red.png' alt='Does not Require Approval' ></td>
+										<td><img src='/resources/imgs/red.png' alt='Does not Require Approval' ></td>
 									</tr>
 									<tr>
 										<td align='center' colspan='2'>You can approve all rules including your own.</td>
@@ -4146,11 +4151,11 @@ ENDHTML
 							elsif ($Approver == 0) {
 								print "<tr>
 										<td>Approver</td>
-										<td><img src='resources/imgs/red.png' alt='Is not an Approver' ></td>
+										<td><img src='/resources/imgs/red.png' alt='Is not an Approver' ></td>
 									</tr>
 									<tr>
 										<td>Changes Requires Approval</td>
-										<td><img src='resources/imgs/green.png' alt='Requires Approval' ></td>
+										<td><img src='/resources/imgs/green.png' alt='Requires Approval' ></td>
 									</tr>
 									<tr>
 										<td align='center' colspan='2'>You cannot approve rules.</td>

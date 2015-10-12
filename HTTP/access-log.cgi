@@ -11,14 +11,14 @@ my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
 my $User_Admin = $Session->param("User_Admin"); #Accessing User_Admin session var
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location1: \logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin != 1 && $User_Admin != 2) {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location1: \index.cgi\n\n";
 	exit(0);
 }
 

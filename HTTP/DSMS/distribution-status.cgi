@@ -3,7 +3,12 @@
 use strict;
 use HTML::Table;
 
-require 'common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
+my $Footer = Footer();
 my $DB_Management = DB_Management();
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
@@ -37,14 +42,14 @@ my $User_Name = $Session->param("User_Name");
 my $User_Admin = $Session->param("User_Admin");
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin != 1 && $User_Admin != 2) {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
@@ -58,31 +63,31 @@ if ($Edit_Host_Parameters) {
 	if ($User_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to edit that.';
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: distribution-status.cgi\n\n";
+		print "Location: /distribution-status.cgi\n\n";
 		exit(0);
 	}
-	require "header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_edit_host_parameters;
 }
 elsif ($Edit_Host_Parameters_Post) {
 	if ($User_Admin != 1) {
 		my $Message_Red = 'Nice try.';
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: distribution-status.cgi\n\n";
+		print "Location: /distribution-status.cgi\n\n";
 		exit(0);
 	}
 	&edit_host_parameters;
 	my $Message_Green="$Host_Name_Edit ($IP_Edit) distribution parameters edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: distribution-status.cgi\n\n";
+	print "Location: /distribution-status.cgi\n\n";
 	exit(0);
 }
 else {
-	require "header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";	
+	require $Footer;	
 }
 
 sub html_edit_host_parameters {
@@ -335,7 +340,7 @@ sub html_output {
 				$Last_Successful_Checkin,
 				$Last_Modified,
 				$Modified_By,
-				"<a href='distribution-status.cgi?Edit_Host_Parameters=$Host_ID'><img src=\"resources/imgs/edit.png\" alt=\"Edit Host Parameters $Host_ID\" ></a>"
+				"<a href='distribution-status.cgi?Edit_Host_Parameters=$Host_ID'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host Parameters $Host_ID\" ></a>"
 			);
 		
 			if ($Status_Light eq 'OK') {

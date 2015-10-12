@@ -3,7 +3,11 @@
 use strict;
 use HTML::Table;
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
 my $DB_Icinga = DB_Icinga();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -35,7 +39,6 @@ my $Display_Config = $CGI->param("Display_Config");
 my $Filter = $CGI->param("Filter");
 
 my $Username = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
 	if ($Rows_Returned eq '') {
@@ -43,19 +46,12 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 	}
 
 if (!$Username) {
-	print "Location: logout.cgi\n\n";
-	exit(0);
-}
-
-if ($User_Admin ne '1') {
-	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($Add_Time) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_add_time_period;
 }
@@ -70,11 +66,11 @@ elsif ($Time_Add && $Alias_Add) {
 		$Session->param('Message_Orange', $Message_Orange);
 	}
 	
-	print "Location: nagios-time-periods.cgi\n\n";
+	print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Time) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_edit_time_period;
 }
@@ -82,11 +78,11 @@ elsif ($Time_Edit_Post) {
 	&edit_time_period;
 	my $Message_Green="$Time_Edit ($Alias_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-time-periods.cgi\n\n";
+	print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Time) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_delete_time_period;
 }
@@ -94,16 +90,16 @@ elsif ($Time_Delete_Post) {
 	&delete_time_period;
 	my $Message_Green="$Time_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-time-periods.cgi\n\n";
+	print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 }
 
@@ -113,14 +109,14 @@ sub html_add_time_period {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-time-periods.cgi">
+<a href="/Icinga/icinga-time-periods.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Add New Time</h3>
+<h3 align="center">Add New Time Period</h3>
 
-<form action='Icinga/icinga-time-periods.cgi' method='post' >
+<form action='/Icinga/icinga-time-periods.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -195,7 +191,7 @@ sub add_time_period {
 
 			my $Message_Red="$Time_Add already exists (ID: $ID_Extract, Alias: $Alias_Extract), time period not added";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-time-periods.cgi\n\n";
+			print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 			exit(0);
 
 		}
@@ -277,14 +273,14 @@ sub html_edit_time_period {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-time-periods.cgi">
+<a href="/Icinga/icinga-time-periods.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Time <span style="color: #00FF00;">$Time_Extract</span></h3>
 
-<form action='Icinga/icinga-time-periods.cgi' method='post' >
+<form action='/Icinga/icinga-time-periods.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -348,7 +344,7 @@ sub edit_time_period {
 
 			my $Message_Red="$Time_Edit already exists - Conflicting Time ID (This entry): $Time_Edit_Post, Existing Time ID: $ID_Extract, Existing Time Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-time-periods.cgi\n\n";
+			print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 			exit(0);
 
 		}
@@ -384,14 +380,14 @@ sub html_delete_time_period {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-time-periods.cgi">
+<a href="/Icinga/icinga-time-periods.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Time</h3>
 
-<form action='Icinga/icinga-time-periods.cgi' method='post' >
+<form action='/Icinga/icinga-time-periods.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
@@ -479,7 +475,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-time-periods.cgi">
+<a href="/Icinga/icinga-time-periods.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -593,18 +589,16 @@ ENDHTML
 sub html_output {
 
 	my $Table = new HTML::Table(
-                            -cols=>16,
-                            -align=>'center',
-                            -rules=>'all',
-                            -border=>0,
-                            -bgcolor=>'25aae1',
-                            -evenrowclass=>'tbeven',
-                            -oddrowclass=>'tbodd',
-                            -class=>'statustable',
-                            -width=>'100%',
-                            -spacing=>0,
-                            -padding=>1 );
-
+		-cols=>16,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'100%',
+		-spacing=>0,
+		-padding=>1
+	);
 
 	$Table->addRow ( "ID", "Name", "Alias", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Active", "Last Modified", "Modified By", "View Config", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
@@ -636,7 +630,8 @@ sub html_output {
 			my $ID_Extract_Display = $ID_Extract;
 			$ID_Extract_Display =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Name_Extract = $DB_Time[1];
-			$Name_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+			my $Name = $Name_Extract;
+			$Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Alias_Extract = $DB_Time[2];
 			$Alias_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Active_Extract = $DB_Time[3];
@@ -657,21 +652,21 @@ sub html_output {
 			my $Range = $DB_Time_Definition[1];
 				$Range =~ s/,/\<br \/\>/g;
 
-			if ($Day =~ m/su/) {$Sunday = $Range};
-			if ($Day =~ m/mo/) {$Monday = $Range};
-			if ($Day =~ m/tu/) {$Tuesday = $Range};
-			if ($Day =~ m/we/) {$Wednesday = $Range};
-			if ($Day =~ m/th/) {$Thursday = $Range};
-			if ($Day =~ m/fr/) {$Friday = $Range};
-			if ($Day =~ m/sa/) {$Saturday = $Range};
+			if ($Day =~ m/sun/) {$Sunday = $Range};
+			if ($Day =~ m/mon/) {$Monday = $Range};
+			if ($Day =~ m/tue/) {$Tuesday = $Range};
+			if ($Day =~ m/wed/) {$Wednesday = $Range};
+			if ($Day =~ m/thu/) {$Thursday = $Range};
+			if ($Day =~ m/fri/) {$Friday = $Range};
+			if ($Day =~ m/sat/) {$Saturday = $Range};
 
 		}
 
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='Icinga/icinga-time-periods.cgi?Edit_Time=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='Icinga/icinga-time-periods.cgi?Edit_Time=$ID_Extract'>$Name_Extract</a>",
+			"<a href='/Icinga/icinga-time-periods.cgi?Edit_Time=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga-time-periods.cgi?Edit_Time=$ID_Extract'>$Name</a>",
 			$Alias_Extract,
 			$Sunday,
 			$Monday,
@@ -683,9 +678,9 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='Icinga/icinga-time-periods.cgi?Display_Config=$ID_Extract'><img src=\"resorcs/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-time-periods.cgi?Edit_Time=$ID_Extract'><img src=\"resorcs/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-time-periods.cgi?Delete_Time=$ID_Extract'><img src=\"resorcs/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-time-periods.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-time-periods.cgi?Edit_Time=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-time-periods.cgi?Delete_Time=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		if ($Sunday eq undef) {$Table->setCellClass ($User_Row_Count, 4, 'tbroworange')}
@@ -716,7 +711,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='Icinga/icinga-time-periods.cgi' method='post' >
+			<form action='/Icinga/icinga-time-periods.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -732,17 +727,22 @@ if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";}
 if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
 
 print <<ENDHTML;
+						</select>
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Search:</td>
-					<td style="text-align: right;"><input type='search' style="width: 150px" name='Filter' maxlength='100' value="$Filter" title="Search" placeholder="Search"></td>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td style="text-align: right;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Time_Periods" placeholder="Search">
+					</td>
 				</tr>
-				</form>
+			</form>
 			</table>
 		</td>
-		<td align="right">
-			<form action='Icinga/icinga-time-periods.cgi' method='post' >
+		<td align="center">
+			<form action='/Icinga/icinga-time-periods.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Time Period</span></td>
@@ -752,6 +752,34 @@ print <<ENDHTML;
 				</tr>
 			</table>
 			</form>
+		</td>
+		<td align="right">
+			<form action='/Icinga/icinga-time-periods.cgi' method='post' >
+			<table>
+				<tr>
+					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Time Period</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;"><input type='submit' name='Edit_Time_Period' value='Edit Time Period'></td>
+					<td align="center">
+						<select name='Edit_Time' style="width: 150px">
+ENDHTML
+
+						my $Time_Period_List_Query = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`
+						FROM `nagios_timeperiod`
+						ORDER BY `timeperiod_name` ASC");
+						$Time_Period_List_Query->execute( );
+						
+						while ( (my $ID, my $DB_Time_Period_Name) = my @Time_Period_List_Query = $Time_Period_List_Query->fetchrow_array() )
+						{
+							print "<option value='$ID'>$DB_Time_Period_Name</option>";
+						}
+
+print <<ENDHTML;
+						</select>
+					</td>
+				</tr>
+			</table>
 		</td>
 	</tr>
 </table>

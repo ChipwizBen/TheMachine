@@ -3,7 +3,11 @@
 use strict;
 use HTML::Table;
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
 my $DB_Icinga = DB_Icinga();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -67,19 +71,19 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 	}
 
 if (!$Username) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
 if ($Add_Service_Template) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_add_service_template;
 }
@@ -94,11 +98,11 @@ elsif ($Name_Template_Add) {
 		$Session->param('Message_Orange', $Message_Orange);
 	}
 	
-	print "Location: nagios-service-templates.cgi\n\n";
+	print "Location: /Icinga/icinga-service-templates.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Service_Template) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_edit_service_template;
 }
@@ -106,11 +110,11 @@ elsif ($Service_Template_Edit_Post) {
 	&edit_service_template;
 	my $Message_Green="$Service_Template_Edit ($Service_Template_Description_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-service-templates.cgi\n\n";
+	print "Location: /Icinga/icinga-service-templates.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Service_Template) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_delete_service_template;
 }
@@ -118,21 +122,21 @@ elsif ($Service_Template_Delete_Post) {
 	&delete_service_template;
 	my $Message_Green="$Service_Template_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-service-templates.cgi\n\n";
+	print "Location: /Icinga/icinga-service-templates.cgi\n\n";
 	exit(0);
 }
 elsif ($Linked_Service_Groups) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_linked_service_groups;
 }
 elsif ($Display_Config) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 }
 
@@ -142,14 +146,14 @@ sub html_add_service_template {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-service-templates.cgi">
+<a href="/Icinga/icinga-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Service Template</h3>
 
-<form action='Icinga/icinga-service-templates.cgi' method='post' >
+<form action='/Icinga/icinga-service-templates.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -576,14 +580,14 @@ sub html_edit_service_template {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-service-templates.cgi">
+<a href="/Icinga/icinga-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Service <span style="color: #00FF00;">$Service_Template_Extract</span></h3>
 
-<form action='Icinga/icinga-service-templates.cgi' method='post' >
+<form action='/Icinga/icinga-service-templates.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -647,7 +651,7 @@ sub edit_service_template {
 
 			my $Message_Red="$Service_Template_Edit already exists - Conflicting Service ID (This entry): $Service_Template_Edit_Post, Existing Service ID: $ID_Extract, Existing Service Description: $Service_Template_Description_Extract";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-service-templates.cgi\n\n";
+			print "Location: /Icinga/icinga-service-templates.cgi\n\n";
 			exit(0);
 
 		}
@@ -682,14 +686,14 @@ sub html_delete_service_template {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-service-templates.cgi">
+<a href="/Icinga/icinga-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Service Template</h3>
 
-<form action='Icinga/icinga-service-templates.cgi' method='post' >
+<form action='/Icinga/icinga-service-templates.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
@@ -1136,7 +1140,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="full-width-popup-box">
-<a href="Icinga/icinga-service-templates.cgi">
+<a href="/Icinga/icinga-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1360,7 +1364,7 @@ sub html_linked_service_groups {
 					if ($Service_Group_Active) {$Service_Group_Active = "<span style='color: #00FF00;'>Yes</span>"}
 					else {$Service_Group_Active = "<span style='color: #FF0000;'>No</span>"}
 
-					my $View_Group = "<a href='Icinga/icinga-service-groups.cgi?Filter=$Template_ID'><img src=\"resorcs/imgs/forward.png\" alt=\"View Group $Service_Group_Name\" ></a>";
+					my $View_Group = "<a href='/Icinga/icinga-service-groups.cgi?Filter=$Template_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View Group $Service_Group_Name\" ></a>";
 
 				$Table->addRow ( "$Template_ID", "$Service_Group_Name", "$Service_Group_Active", "$View_Group" );
 
@@ -1372,7 +1376,7 @@ sub html_linked_service_groups {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-service-templates.cgi">
+<a href="/Icinga/icinga-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1391,18 +1395,16 @@ ENDHTML
 sub html_output {
 
 	my $Table = new HTML::Table(
-                            -cols=>11,
-                            -align=>'center',
-                            -rules=>'all',
-                            -border=>0,
-                            -bgcolor=>'25aae1',
-                            -evenrowclass=>'tbeven',
-                            -oddrowclass=>'tbodd',
-                            -class=>'statustable',
-                            -width=>'100%',
-                            -spacing=>0,
-                            -padding=>1 );
-
+		-cols=>11,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'100%',
+		-spacing=>0,
+		-padding=>1
+	);
 
 	$Table->addRow ( "ID", "Name", "Check Command", "Service Group", "Active",
 		"Last Modified", "Modified By", "Linked Services", "View Config", "Edit (todo)", "Delete" );
@@ -1416,7 +1418,8 @@ sub html_output {
 	`active`, `last_modified`, `modified_by`
 	FROM `nagios_servicetemplate`
 	WHERE (`id` LIKE '%$Filter%'
-	OR `template_name` LIKE '%$Filter%')
+	OR `template_name` LIKE '%$Filter%'
+	OR `check_command` LIKE '%$Filter%')
 	ORDER BY `template_name` ASC
 	LIMIT 0 , $Rows_Returned");
 
@@ -1435,9 +1438,9 @@ sub html_output {
 			my $ID_Extract_Display = $ID_Extract;
 			$ID_Extract_Display =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Name_Extract = $DB_Service_Template[1];
-			$Name_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+			my $Name = $Name_Extract;
+			$Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Check_Command_Extract = $DB_Service_Template[2];
-			$Check_Command_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Active_Extract = $DB_Service_Template[3];
 		my $Last_Modified_Extract = $DB_Service_Template[4];
 		my $Modified_By_Extract = $DB_Service_Template[5];
@@ -1465,7 +1468,7 @@ sub html_output {
 				{
 
 					my $Service_Group = $DB_Group[0];
-					$Service_Groups = "<a href='Icinga/icinga-service-groups.cgi?Filter=$Service_Group'>$Service_Group</a><br />".$Service_Groups;
+					$Service_Groups = "<a href='/Icinga/icinga-service-groups.cgi?Filter=$Service_Group'>$Service_Group</a><br />".$Service_Groups;
 
 				}
 
@@ -1489,7 +1492,7 @@ sub html_output {
 			{
 
 				$Check_Command = $DB_Command[0];
-				$Check_Command = "<a href='Icinga/icinga-commands.cgi?Filter=$Check_Command'><span style='color: #FFFF00;'>$Check_Command</span></a>";
+				$Check_Command = "<a href='/Icinga/icinga-commands.cgi?Filter=$Check_Command'><span style='color: #FFFF00;'>$Check_Command</span></a>";
 				$Check_Command = $Check_Command.$Check_Command_Extract_Command_Remaining;
 
 			}
@@ -1498,17 +1501,17 @@ sub html_output {
 
 
 		$Table->addRow(
-			"<a href='Icinga/icinga-service-templates.cgi?Edit_Service_Template=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='Icinga/icinga-service-templates.cgi?Edit_Service_Template=$ID_Extract'>$Name_Extract</a>",
+			"<a href='/Icinga/icinga-service-templates.cgi?Edit_Service_Template=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga-service-templates.cgi?Edit_Service_Template=$ID_Extract'>$Name</a>",
 			$Check_Command,
 			$Service_Groups,
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='Icinga/icinga-service-templates.cgi?Linked_Service_Groups=$ID_Extract'><img src=\"resorcs/imgs/linked.png\" alt=\"View Linked Service Groups for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-service-templates.cgi?Display_Config=$ID_Extract'><img src=\"resorcs/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-service-templates.cgi?Edit_Service_Template=$ID_Extract'><img src=\"resorcs/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='Icinga/icinga-service-templates.cgi?Delete_Service_Template=$ID_Extract'><img src=\"resorcs/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-service-templates.cgi?Linked_Service_Groups=$ID_Extract'><img src=\"/resources/imgs/linked.png\" alt=\"View Linked Service Groups for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-service-templates.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-service-templates.cgi?Edit_Service_Template=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-service-templates.cgi?Delete_Service_Template=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		for (5 .. 11) {
@@ -1532,7 +1535,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='Icinga/icinga-service-templates.cgi' method='post' >
+			<form action='/Icinga/icinga-service-templates.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1548,23 +1551,57 @@ if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";}
 if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
 
 print <<ENDHTML;
+						</select>
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Search:</td>
-					<td style="text-align: right;"><input type='search' style="width: 150px" name='Filter' maxlength='100' value="$Filter" title="Search" placeholder="Search"></td>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td style="text-align: right;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Services" placeholder="Search">
+					</td>
 				</tr>
-				</form>
+			</form>
 			</table>
 		</td>
-		<td align="right">
-			<form action='Icinga/icinga-service-templates.cgi' method='post' >
+		<td align="center">
+			<form action='/Icinga/icinga-service-templates.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Service Template</span></td>
 				</tr>
 				<tr>
-					<td align="center"><input type='submit' name='Add_Service_Template' value='Add Template'></td>
+					<td align="center"><input type='submit' name='Add_Service_Template' value='Add Service Template'></td>
+				</tr>
+			</table>
+			</form>
+		</td>
+		<td align="right">
+			<form action='/Icinga/icinga-service-templates.cgi' method='post' >
+			<table>
+				<tr>
+					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Service</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;"><input type=submit name='Edit Service Template' value='Edit Service'></td>
+					<td align="center">
+						<select name='Edit_Service_Template' style="width: 150px">
+ENDHTML
+
+						my $Template_List_Query = $DB_Icinga->prepare("SELECT `id`, `template_name`
+						FROM `nagios_servicetemplate`
+						ORDER BY `template_name` ASC");
+						$Template_List_Query->execute( );
+						
+						while ( (my $ID, my $Template_Name) = my @Template_List_Query = $Template_List_Query->fetchrow_array() )
+						{
+							print "<option value='$ID'>$Template_Name</option>";
+						}
+
+print <<ENDHTML;
+						</select>
+					</td>
 				</tr>
 			</table>
 			</form>

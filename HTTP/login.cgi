@@ -4,10 +4,14 @@ use strict;
 use Digest::SHA qw(sha512_hex);
 use MIME::Lite;
 
-require 'common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
 my $System_Name = System_Name();
 my $DB_Management = DB_Management();
 my ($CGI, $Session, $Cookie) = CGI();
+my $LDAP_Check = LDAP_Login('Status_Check');
 my $Recovery_Email_Address = Recovery_Email_Address();
 
 my $Referer = $Session->param("Referer");
@@ -22,11 +26,56 @@ my $User_Password_Form = $CGI->param("Password_Form");
 
 my $Login_Message;
 
-if ($User_Name_Form) {
+if ($User_Name_Form && $LDAP_Check =~ /on/i) {
 	&login_user;
+}
+else {
+	&ldap_login;
 }
 &html_output;
 exit(0);
+
+sub ldap_login {
+
+	my $LDAP_Login = LDAP_Login($User_Name_Form, $User_Password_Form);
+
+	if ($LDAP_Login = 'Success') {
+		$Login_Message = "Success";
+
+		my $Permissions_Query = $DB_Management->prepare("SELECT `email`, `admin`, `approver`, `requires_approval`, `lockout`
+		FROM `credentials`
+		WHERE `username` = ?");
+		$Permissions_Query->execute($User_Name_Form);
+
+		my $User_Admin;
+		while ( my @DB_Query = $Permissions_Query->fetchrow_array( ) )
+		{
+			my $DB_Email = $DB_Query[0];
+			my $DB_Admin = $DB_Query[1];
+			my $DB_Approver = $DB_Query[2];
+			my $DB_Requires_Approval = $DB_Query[3];
+	
+	        $Session->param('User_Name', $User_Name_Form);
+			$Session->param('User_Admin', $DB_Admin);
+			$Session->param('User_Email', $DB_Email);
+			$Session->param('User_Approver', $DB_Approver);
+			$Session->param('User_Requires_Approval', $DB_Requires_Approval);
+
+			if ($Referer ne '') {
+				print "Location: $Referer\n\n";
+				exit(0);
+			}
+			else {
+				print "Location: /index.cgi\n\n";
+				exit(0);
+			}
+
+	    }
+	}
+	else {
+		$Login_Message = 'Fail';
+	}
+}
 
 sub login_user {
 	my $Login_DB_Query = $DB_Management->prepare("SELECT `password`, `salt`, `email`, `admin`, `approver`, `requires_approval`, `lockout`
@@ -102,7 +151,7 @@ sub login_user {
 				exit(0);
 			}
 			else {
-				print "Location: index.cgi\n\n";
+				print "Location: /index.cgi\n\n";
 				exit(0);
 			}
 
@@ -131,7 +180,6 @@ sub email_user_password_reset {
 	}
 	## / Grabbing administration details
 
-	## Grabbing user details, sending email
 	my $User_Email_Address_Query = $DB_Management->prepare("SELECT `email` FROM `credentials`
 	WHERE `username` = ?");
 	$User_Email_Address_Query->execute($User_Name_Form);
@@ -179,7 +227,6 @@ $System_Name<br/>
 			$Send_Email->send;
 
 	}
-	## / Grabbing user details, sending email
 } # sub email_user_password_reset
 
 sub html_output {

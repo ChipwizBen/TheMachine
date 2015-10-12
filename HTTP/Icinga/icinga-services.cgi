@@ -3,7 +3,11 @@
 use strict;
 use HTML::Table;
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
 my $DB_Icinga = DB_Icinga();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -11,9 +15,8 @@ my $Add_Service = $CGI->param("Add_Service");
 my $Edit_Service = $CGI->param("Edit_Service");
 
 my $Template_Add = $CGI->param("Template_Add");
-my $Description_Add = $CGI->param("Description_Add");
+my $Name_Add = $CGI->param("Name_Add");
 my $Service_Group_Add = $CGI->param("Service_Group_Add");
-my $Notification_Period_Add = $CGI->param("Notification_Period_Add");
 my $Contact_Add = $CGI->param("Contact_Add");
 my $Contact_Group_Add = $CGI->param("Contact_Group_Add");
 my $Check_Period_Add = $CGI->param("Check_Period_Add");
@@ -50,8 +53,7 @@ my $Notification_Add_Inherit = $CGI->param("Notification_Add_Inherit");
 my $Active_Add = $CGI->param("Active_Add");
 
 my $Service_Edit_Post = $CGI->param("Service_Edit_Post");
-my $Service_Edit = $CGI->param("Service_Edit");
-my $Service_Description_Edit = $CGI->param("Service_Description_Edit");
+my $Service_Name_Edit = $CGI->param("Service_Name_Edit");
 my $Active_Edit = $CGI->param("Active_Edit");
 
 my $Delete_Service = $CGI->param("Delete_Service");
@@ -72,50 +74,50 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 	}
 
 if (!$Username) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: index.cgi\n\n";
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
 if ($Add_Service) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_add_service;
 }
-elsif ($Description_Add) {
+elsif ($Name_Add) {
 	&add_service;
 	if ($Active_Add) {
-		my $Message_Green="$Description_Add added successfully and set active";
+		my $Message_Green="$Name_Add added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
 	}
 	else {
-		my $Message_Orange="$Description_Add added successfully but set inactive";
+		my $Message_Orange="$Name_Add added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
 	}
 	
-	print "Location: nagios-services.cgi\n\n";
+	print "Location: /Icinga/icinga-services.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Service) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_edit_service;
 }
 elsif ($Service_Edit_Post) {
 	&edit_service;
-	my $Message_Green="$Service_Edit ($Service_Description_Edit) edited successfully";
+	my $Message_Green="$Service_Name_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-services.cgi\n\n";
+	print "Location: /Icinga/icinga-services.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Service) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_delete_service;
 }
@@ -123,21 +125,21 @@ elsif ($Service_Delete_Post) {
 	&delete_service;
 	my $Message_Green="$Service_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: nagios-services.cgi\n\n";
+	print "Location: /Icinga/icinga-services.cgi\n\n";
 	exit(0);
 }
 elsif ($Linked_Hosts) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_linked_hosts;
 }
 elsif ($Display_Config) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 	&html_display_config;
 }
 else {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
 }
 
@@ -147,14 +149,14 @@ sub html_add_service {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="Icinga/icinga-services.cgi">
+<a href="/Icinga/icinga-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Service</h3>
 
-<form action='Icinga/icinga-services.cgi' method='post' >
+<form action='/Icinga/icinga-services.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -186,8 +188,8 @@ print <<ENDHTML;
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Description:</td>
-					<td colspan="3"><input type='text' name='Description_Add' style="width: 200px" maxlength='255' placeholder="Name" required autofocus></td>
+					<td style="text-align: right;">Name:</td>
+					<td colspan="3"><input type='text' name='Name_Add' style="width: 200px" maxlength='255' placeholder="Name" required autofocus></td>
 				</tr>
 				<tr>
 					<td style="text-align: right;">Service Group:</td>
@@ -533,7 +535,7 @@ sub add_service {
 		?, ?, ?, ?,	NOW(), '$Username'
 	)");
 
-	$Service_Insert->execute($Description_Add, $Active_Checks_Add, $Check_Freshness_Add, $Check_Period_Add, $Event_Handler_Add, $Flap_Detection_Add,
+	$Service_Insert->execute($Name_Add, $Active_Checks_Add, $Check_Freshness_Add, $Check_Period_Add, $Event_Handler_Add, $Flap_Detection_Add,
 	$Check_Command_Add, $Is_Volatile_Add, $Max_Check_Attempts_Add, $Normal_Check_Interval_Add, $Notification_Interval_Add, $Notification_Options_Add, $Notification_Period_Add,
 	$Notifications_Add, $Obsess_Over_Service_Add, $Parallelize_Checks_Add, $Passive_Checks_Add, $Process_Performance_Data_Add,
 	$Retain_NonStatus_Information_Add, $Retain_Status_Information_Add, $Retry_Check_Interval_Add, $Active_Add);
@@ -606,28 +608,24 @@ sub html_edit_service {
 	{
 	
 		my $Service_Extract = $DB_Service[0];
-		my $Service_Description_Extract = $DB_Service[1];
+		my $Service_Name_Extract = $DB_Service[1];
 		my $Active_Extract = $DB_Service[2];
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-services.cgi">
+<a href="/Icinga/icinga-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Service <span style="color: #00FF00;">$Service_Extract</span></h3>
 
-<form action='Icinga/icinga-services.cgi' method='post' >
+<form action='/Icinga/icinga-services.cgi' method='post' >
 
 <table align = "center">
 	<tr>
-		<td style="text-align: right;">Service Name:</td>
-		<td colspan="2"><input type='text' name='Service_Edit' value='$Service_Extract' size='15' maxlength='100' placeholder="Service Name" required></td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Description/Description:</td>
-		<td colspan="2"><input type='text' name='Service_Description_Edit' value='$Service_Description_Extract' size='15' maxlength='100' placeholder="Description" required></td>
+		<td style="text-align: right;">Name:</td>
+		<td colspan="2"><input type='text' name='Service_Name_Edit' value='$Service_Name_Extract' size='15' maxlength='100' placeholder="Service Name" required></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Active?:</td>
@@ -667,7 +665,7 @@ sub edit_service {
 
 	my $Service_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `service_description`
 	FROM `nagios_service`
-	WHERE `config_name` = '$Service_Edit'
+	WHERE `config_name` = '$Service_Name_Edit'
 	AND `id` != '$Service_Edit_Post'");
 
 	$Service_Insert_Check->execute( );
@@ -678,11 +676,11 @@ sub edit_service {
 			{
 
 			my $ID_Extract = $DB_Service[0];
-			my $Service_Description_Extract = $DB_Service[1];
+			my $Service_Name_Extract = $DB_Service[1];
 
-			my $Message_Red="$Service_Edit already exists - Conflicting Service ID (This entry): $Service_Edit_Post, Existing Service ID: $ID_Extract, Existing Service Description: $Service_Description_Extract";
+			my $Message_Red="$Service_Name_Edit already exists - Conflicting Service ID (This entry): $Service_Edit_Post, Existing Service ID: $ID_Extract, Existing Service Description: $Service_Name_Extract";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: nagios-services.cgi\n\n";
+			print "Location: /Icinga/icinga-services.cgi\n\n";
 			exit(0);
 
 		}
@@ -691,14 +689,13 @@ sub edit_service {
 
 		my $Service_Update = $DB_Icinga->prepare("UPDATE `nagios_service` SET
 			`config_name` = ?,
-			`service_description` = ?,
 			`active` = ?,
 			`last_modified` = NOW(),
 			`modified_by` = '$Username'
 			WHERE `id` = ?"
 		);
 		
-		$Service_Update->execute($Service_Edit, $Service_Description_Edit, $Active_Edit, $Service_Edit_Post)
+		$Service_Update->execute($Service_Name_Edit, $Active_Edit, $Service_Edit_Post)
 	}
 
 } # sub edit_service
@@ -714,18 +711,18 @@ sub html_delete_service {
 	{
 
 		my $Service_ID_Extract = $DB_Service[0];
-		my $Service_Description_Extract = $DB_Service[1];
+		my $Service_Name_Extract = $DB_Service[1];
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-services.cgi">
+<a href="/Icinga/icinga-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Service</h3>
 
-<form action='Icinga/icinga-services.cgi' method='post' >
+<form action='/Icinga/icinga-services.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
@@ -734,12 +731,12 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">Service Description:</td>
-		<td style="text-align: left; color: #00FF00;">$Service_Description_Extract</td>
+		<td style="text-align: left; color: #00FF00;">$Service_Name_Extract</td>
 	</tr>
 </table>
 
 <input type='hidden' name='Service_Delete_Post' value='$Delete_Service'>
-<input type='hidden' name='Service_Delete' value='$Service_Description_Extract'>
+<input type='hidden' name='Service_Delete' value='$Service_Name_Extract'>
 
 <hr width="50%">
 <div style="text-align: center"><input type=submit name='ok' value='Delete Service'></div>
@@ -791,7 +788,7 @@ sub html_display_config {
 	while ( my @DB_Service = $Select_Service->fetchrow_array() )
 	{
 	
-		my $Service_Description_Extract = $DB_Service[0];
+		my $Service_Name_Extract = $DB_Service[0];
 		my $Active_Checks_Enabled_Extract = $DB_Service[1];
 		my $Check_Freshness_Extract = $DB_Service[2];
 		my $Check_Period_Extract = $DB_Service[3];
@@ -928,7 +925,7 @@ sub html_display_config {
 		## Service Template Values
 
 		my $Service_Template_ID;
-		my $Service_Description_Extract_Template;
+		my $Service_Name_Extract_Template;
 		my $Last_Modified_Extract_Template;
 		my $Modified_By_Extract_Template;
 		my $Check_Period_Extract_Template;
@@ -956,7 +953,7 @@ sub html_display_config {
 			while ( my @DB_Service_Template = $Select_Service_Template->fetchrow_array() )
 			{
 	
-				$Service_Description_Extract_Template = "<span style='color: #FF8800;'>$DB_Service_Template[0]</span>";
+				$Service_Name_Extract_Template = "<span style='color: #FF8800;'>$DB_Service_Template[0]</span>";
 				my $Active_Checks_Enabled_Extract_Template = "<span style='color: #FF8800;'>$DB_Service_Template[1]</span>";
 				my $Check_Freshness_Extract_Template = "<span style='color: #FF8800;'>$DB_Service_Template[2]</span>";
 				$Check_Period_Extract_Template = $DB_Service_Template[3];
@@ -1120,7 +1117,7 @@ sub html_display_config {
 		## Service Template's Template Values
 
 		my $Service_Templates_Template_ID;
-		my $Service_Description_Extract_Templates_Template;
+		my $Service_Name_Extract_Templates_Template;
 		my $Last_Modified_Extract_Templates_Template;
 		my $Modified_By_Extract_Templates_Template;
 		my $Check_Period_Extract_Templates_Template;
@@ -1149,7 +1146,7 @@ sub html_display_config {
 			while ( my @DB_Service_Templates_Template = $Select_Service_Templates_Template->fetchrow_array() )
 			{
 	
-				$Service_Description_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Service_Templates_Template[0]</span>";
+				$Service_Name_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Service_Templates_Template[0]</span>";
 				my $Active_Checks_Enabled_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Service_Templates_Template[1]</span>";
 				my $Check_Freshness_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Service_Templates_Template[2]</span>";
 				$Check_Period_Extract_Templates_Template = $DB_Service_Templates_Template[3];
@@ -1381,12 +1378,12 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="full-width-popup-box">
-<a href="Icinga/icinga-services.cgi">
+<a href="/Icinga/icinga-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Live Config for <span style="color: #00FF00;">$Service_Description_Extract</span></h3>
+<h3 align="center">Live Config for <span style="color: #00FF00;">$Service_Name_Extract</span></h3>
 <p>This config is automatically applied regularly. The config below illustrates how this service's config will be written.<br />
 ENDHTML
 
@@ -1418,7 +1415,7 @@ if ($Service_Template_ID !~ /></) {
 		<td colspan='3'>## Template ID: $Service_Template_ID</td>
 	</tr>
 	<tr>
-		<td colspan='3'>## Template Name: $Service_Description_Extract_Template</td>
+		<td colspan='3'>## Template Name: $Service_Name_Extract_Template</td>
 	</tr>
 	<tr>
 		<td colspan='3'>## Template Modified: $Last_Modified_Extract_Template by $Modified_By_Extract_Template</td>
@@ -1433,7 +1430,7 @@ if ($Service_Templates_Template_ID !~ /></) {
 		<td colspan='3'>## Template's Template ID: $Service_Templates_Template_ID</td>
 	</tr>
 	<tr>
-		<td colspan='3'>## Template's Template Name: $Service_Description_Extract_Templates_Template</td>
+		<td colspan='3'>## Template's Template Name: $Service_Name_Extract_Templates_Template</td>
 	</tr>
 	<tr>
 		<td colspan='3'>## Template's Template Modified: $Last_Modified_Extract_Templates_Template by $Modified_By_Extract_Templates_Template</td>
@@ -1448,11 +1445,11 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style='padding-left: 2em;'>use</td>
-		<td style='padding-left: 2em;'>$Service_Description_Extract_Template</td>
+		<td style='padding-left: 2em;'>$Service_Name_Extract_Template</td>
 	</tr>
 	<tr>
 		<td style='padding-left: 2em;'>service_description</td>
-		<td style='padding-left: 2em;'>$Service_Description_Extract</td>
+		<td style='padding-left: 2em;'>$Service_Name_Extract</td>
 	</tr>
 	<tr>
 		<td style='padding-left: 2em;'>host_name</td>
@@ -1625,7 +1622,7 @@ sub html_linked_hosts {
 					if ($Host_Active) {$Host_Active = "<span style='color: #00FF00;'>Yes</span>"}
 					else {$Host_Active = "<span style='color: #FF0000;'>No</span>"}
 
-					my $View_Host = "<a href='Icinga/icinga-hosts.cgi?Filter=$Host_Name'><img src=\"resorcs/imgs/forward.png\" alt=\"View Host $Host_Name\" ></a>";
+					my $View_Host = "<a href='/Icinga/icinga-hosts.cgi?Filter=$Host_Name'><img src=\"/resources/imgs/forward.png\" alt=\"View Host $Host_Name\" ></a>";
 
 				$Table->addRow ( "$Host_ID", "$Host_Name", "$Host_Active", "$View_Host" );
 
@@ -1637,7 +1634,7 @@ sub html_linked_hosts {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="Icinga/icinga-services.cgi">
+<a href="/Icinga/icinga-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1656,20 +1653,18 @@ ENDHTML
 sub html_output {
 
 	my $Table = new HTML::Table(
-                            -cols=>12,
-                            -align=>'center',
-                            -rules=>'all',
-                            -border=>0,
-                            -bgcolor=>'25aae1',
-                            -evenrowclass=>'tbeven',
-                            -oddrowclass=>'tbodd',
-                            -class=>'statustable',
-                            -width=>'100%',
-                            -spacing=>0,
-                            -padding=>1 );
+		-cols=>13,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'100%',
+		-spacing=>0,
+		-padding=>1
+	);
 
-
-	$Table->addRow ( "ID", "Description", "Check Command", "Service Groups", "Service Templates", "Active",
+	$Table->addRow ( "ID", "Name", "Description", "Check Command", "Service Groups", "Service Templates", "Active",
 		"Last Modified", "Modified By", "Linked Hosts", "View Config", "Edit (todo)", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
@@ -1677,10 +1672,11 @@ sub html_output {
 		$Select_Services_Count->execute( );
 		my $Total_Rows = $Select_Services_Count->rows();
 
-	my $Select_Services = $DB_Icinga->prepare("SELECT `id`, `service_description`, `check_command`,
+	my $Select_Services = $DB_Icinga->prepare("SELECT `id`, `config_name`, `service_description`, `check_command`,
 	`active`, `last_modified`, `modified_by`
 	FROM `nagios_service`
 	WHERE (`id` LIKE '%$Filter%'
+	OR `config_name` LIKE '%$Filter%'
 	OR `service_description` LIKE '%$Filter%')
 	ORDER BY `config_name` ASC
 	LIMIT 0 , $Rows_Returned");
@@ -1699,12 +1695,15 @@ sub html_output {
 		my $ID_Extract = $DB_Service[0];
 			my $ID_Extract_Display = $ID_Extract;
 			$ID_Extract_Display =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Service_Description_Extract = $DB_Service[1];
+		my $Service_Name_Extract = $DB_Service[1];
+			my $Service_Name = $Service_Name_Extract;
+			$Service_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Service_Description_Extract = $DB_Service[2];
 			$Service_Description_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Check_Command_Extract = $DB_Service[2];
-		my $Active_Extract = $DB_Service[3];
-		my $Last_Modified_Extract = $DB_Service[4];
-		my $Modified_By_Extract = $DB_Service[5];
+		my $Check_Command_Extract = $DB_Service[3];
+		my $Active_Extract = $DB_Service[4];
+		my $Last_Modified_Extract = $DB_Service[5];
+		my $Modified_By_Extract = $DB_Service[6];
 
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
@@ -1730,7 +1729,7 @@ sub html_output {
 				{
 
 					my $Service_Template = $DB_Template[0];
-					$Service_Templates = "<a href='Icinga/icinga-service-templates.cgi?Filter=$Service_Template'>$Service_Template</a><br />".$Service_Templates;
+					$Service_Templates = "<a href='/Icinga/icinga-service-templates.cgi?Filter=$Service_Template'>$Service_Template</a><br />".$Service_Templates;
 
 				}
 
@@ -1759,7 +1758,7 @@ sub html_output {
 				{
 
 					my $Service_Group = $DB_Group[0];
-					$Service_Groups = "<a href='Icinga/icinga-service-groups.cgi?Filter=$Service_Group'>$Service_Group</a><br />".$Service_Groups;
+					$Service_Groups = "<a href='/Icinga/icinga-service-groups.cgi?Filter=$Service_Group'>$Service_Group</a><br />".$Service_Groups;
 
 				}
 
@@ -1784,7 +1783,7 @@ sub html_output {
 			{
 
 				$Check_Command = $DB_Command[0];
-				$Check_Command = "<a href='Icinga/icinga-commands.cgi?Filter=$Check_Command'><span style='color: #FFFF00;'>$Check_Command</span></a>";
+				$Check_Command = "<a href='/Icinga/icinga-commands.cgi?Filter=$Check_Command'><span style='color: #FFFF00;'>$Check_Command</span></a>";
 				$Check_Command = $Check_Command.$Check_Command_Extract_Command_Remaining;
 
 			}
@@ -1793,7 +1792,8 @@ sub html_output {
 
 
 		$Table->addRow(
-			"<a href='Icinga/icinga-services.cgi?Edit_Service=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga-services.cgi?Edit_Service=$ID_Extract'>$ID_Extract_Display</a>",
+			$Service_Name,
 			$Service_Description_Extract,
 			$Check_Command,
 			$Service_Groups,
@@ -1801,22 +1801,22 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='Icinga/icinga-services.cgi?Linked_Hosts=$ID_Extract'><img src=\"resorcs/imgs/linked.png\" alt=\"View Linked Hosts for $Service_Description_Extract\" ></a>",
-			"<a href='Icinga/icinga-services.cgi?Display_Config=$ID_Extract'><img src=\"resorcs/imgs/view-notes.png\" alt=\"View Config for $Service_Description_Extract\" ></a>",
-			"<a href='Icinga/icinga-services.cgi?Edit_Service=$ID_Extract'><img src=\"resorcs/imgs/edit.png\" alt=\"Edit $Service_Description_Extract\" ></a>",
-			"<a href='Icinga/icinga-services.cgi?Delete_Service=$ID_Extract'><img src=\"resorcs/imgs/delete.png\" alt=\"Delete $Service_Description_Extract\" ></a>"
+			"<a href='/Icinga/icinga-services.cgi?Linked_Hosts=$ID_Extract'><img src=\"/resources/imgs/linked.png\" alt=\"View Linked Hosts for $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-services.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-services.cgi?Edit_Service=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-services.cgi?Delete_Service=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Service_Name_Extract\" ></a>"
 		);
 
-		for (6 .. 12) {
+		for (7 .. 13) {
 			$Table->setColWidth($_, '1px');
 			$Table->setColAlign($_, 'center');
 		}
 
 		if ($Active_Extract eq 'Yes') {
-			$Table->setCellClass ($User_Row_Count, 6, 'tbrowgreen');
+			$Table->setCellClass ($User_Row_Count, 7, 'tbrowgreen');
 		}
 		else {
-			$Table->setCellClass ($User_Row_Count, 6, 'tbroworange');
+			$Table->setCellClass ($User_Row_Count, 7, 'tbroworange');
 		}
 
 	}
@@ -1827,7 +1827,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='Icinga/icinga-services.cgi' method='post' >
+			<form action='/Icinga/icinga-services.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1843,23 +1843,57 @@ if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";}
 if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
 
 print <<ENDHTML;
+						</select>
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Search:</td>
-					<td style="text-align: right;"><input type='search' style="width: 150px" name='Filter' maxlength='100' value="$Filter" title="Search" placeholder="Search"></td>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td style="text-align: right;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Services" placeholder="Search">
+					</td>
 				</tr>
-				</form>
+			</form>
 			</table>
 		</td>
-		<td align="right">
-			<form action='Icinga/icinga-services.cgi' method='post' >
+		<td align="center">
+			<form action='/Icinga/icinga-services.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Service</span></td>
 				</tr>
 				<tr>
 					<td align="center"><input type='submit' name='Add_Service' value='Add Service'></td>
+				</tr>
+			</table>
+			</form>
+		</td>
+		<td align="right">
+			<form action='/Icinga/icinga-services.cgi' method='post' >
+			<table>
+				<tr>
+					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Service</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;"><input type=submit name='Edit Service' value='Edit Service'></td>
+					<td align="center">
+						<select name='Edit_Service' style="width: 150px">
+ENDHTML
+
+						my $Service_List_Query = $DB_Icinga->prepare("SELECT `id`, `config_name`
+						FROM `nagios_service`
+						ORDER BY `config_name` ASC");
+						$Service_List_Query->execute( );
+						
+						while ( (my $ID, my $Service_Name) = my @Service_List_Query = $Service_List_Query->fetchrow_array() )
+						{
+							print "<option value='$ID'>$Service_Name</option>";
+						}
+
+print <<ENDHTML;
+						</select>
+					</td>
 				</tr>
 			</table>
 			</form>

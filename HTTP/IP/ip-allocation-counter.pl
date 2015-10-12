@@ -5,7 +5,10 @@ use DBI;
 use MIME::Lite;
 use Net::IP::XS;
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
 my $DB_IP_Allocation = DB_IP_Allocation();
 
 my $Select_Block = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block`

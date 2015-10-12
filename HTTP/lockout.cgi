@@ -105,7 +105,7 @@ sub unlock_check {
 				$Session->param('User_Admin', $User_Admin);
 				my $Message_Green = "Your account has been unlocked and your password has been changed";
 				$Session->param('Message_Green', $Message_Green);
-				print "Location: index.cgi\n\n";
+				print "Location: /index.cgi\n\n";
 				exit(0);
 			}
 			else {

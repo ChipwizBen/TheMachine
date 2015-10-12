@@ -5,7 +5,12 @@ use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
-require '../common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
+my $Footer = Footer();
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -61,7 +66,7 @@ my $User_Admin = $Session->param("User_Admin");
 my $User_Approver = $Session->param("User_Approver");
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
@@ -74,68 +79,68 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Host) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_add_host;
 }
 elsif ($Host_Name_Add && $IP_Add) {
 	my $Host_ID = &add_host;
 	my $Message_Green="$Host_Name_Add ($IP_Add) added successfully as ID $Host_ID";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-hosts.cgi\n\n";
+	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Host) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_edit_host;
 }
 elsif ($Edit_Host_Post) {
 	&edit_host;
 	my $Message_Green="$Host_Name_Edit ($IP_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-hosts.cgi\n\n";
+	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Host) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_delete_host;
 }
 elsif ($Delete_Host_Confirm) {
 	&delete_host;
 	my $Message_Green="$Host_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: sudoers-hosts.cgi\n\n";
+	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Show_Links) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_show_links;
 }
 elsif ($View_Notes) {
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	&html_notes;
 }
 elsif ($New_Note && $New_Note_ID) {
 	&add_note;
-	require "../header.cgi";
+	require $Header;
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 	$View_Notes = $New_Note_ID;
 	&html_notes;
 }
 else {
-	require "../header.cgi"; ## no critic
+	require $Header; ## no critic
 	&html_output;
-	require "footer.cgi";
+	require $Footer;
 }
 
 
@@ -147,7 +152,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 print <<ENDHTML;
 
 <div id="small-popup-box">
-<a href="DSMS/sudoers-hosts.cgi">
+<a href="/DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -180,7 +185,7 @@ function DHCP_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='DSMS/sudoers-hosts.cgi' name='Add_Hosts' method='post' >
+<form action='/DSMS/sudoers-hosts.cgi' name='Add_Hosts' method='post' >
 
 <table align = "center">
 	<tr>
@@ -244,7 +249,7 @@ sub add_host {
 		}
 		my $Message_Red="Host Name: $Host_Name_Add already exists as ID: $Existing_ID, IP: $Existing_IP";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-hosts.cgi\n\n";
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Host_Name Check
@@ -267,7 +272,7 @@ sub add_host {
 			}
 			my $Message_Red="IP: $IP_Add already exists as ID: $Existing_ID, Host_Name: $Existing_Host_Name";
 			$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-			print "Location: sudoers-hosts.cgi\n\n";
+			print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 			exit(0);
 		}
 	}
@@ -390,7 +395,7 @@ sub html_edit_host {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="DSMS/sudoers-hosts.cgi">
+<a href="/DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -423,7 +428,7 @@ function DHCP_Toggle() {
 //-->
 </SCRIPT>
 
-<form action='DSMS/sudoers-hosts.cgi' name='Edit_Hosts' method='post' >
+<form action='/DSMS/sudoers-hosts.cgi' name='Edit_Hosts' method='post' >
 
 <table align = "center">
 	<tr>
@@ -507,7 +512,7 @@ sub edit_host {
 		}
 		my $Message_Red="Host Name: $Host_Name_Edit already exists as ID: $Existing_ID, IP: $Existing_IP";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-		print "Location: sudoers-hosts.cgi\n\n";
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Host_Name Check
@@ -531,7 +536,7 @@ sub edit_host {
 			}
 			my $Message_Red="IP: $IP_Edit already exists as ID: $Existing_ID, Host_Name: $Existing_Host_Name";
 			$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-			print "Location: sudoers-hosts.cgi\n\n";
+			print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 			exit(0);
 		}
 	}
@@ -614,14 +619,14 @@ sub html_delete_host {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="DSMS/sudoers-hosts.cgi">
+<a href="/DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Host</h3>
 
-<form action='DSMS/sudoers-hosts.cgi' method='post' >
+<form action='/DSMS/sudoers-hosts.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host?</p>
 <table align = "center">
 	<tr>
@@ -783,7 +788,7 @@ sub html_show_links {
 			"Host Group",
 			"$Group",
 			"$Active",
-			"<a href='DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
+			"<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
 			);
 		}
 	}
@@ -824,7 +829,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -834,7 +839,7 @@ if ($Counter eq undef) {$Counter = 0};
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-hosts.cgi">
+<a href="/DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -923,13 +928,13 @@ sub html_notes {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="DSMS/sudoers-hosts.cgi">
+<a href="/DSMS/sudoers-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Notes for $Host_Name</h3>
-<form action='DSMS/sudoers-hosts.cgi' method='post'>
+<form action='/DSMS/sudoers-hosts.cgi' method='post'>
 
 <table align='center'>
 	<tr>
@@ -1063,16 +1068,16 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='DSMS/sudoers-hosts.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Host_Name_Clean'><img src=\"resources/imgs/linked.png\" alt=\"Linked Objects to Host ID $DBID_Clean\" ></a>",
-			"<a href='DSMS/sudoers-hosts.cgi?View_Notes=$DBID_Clean'>
-				<div style='position: relative; background: url(\"resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+			"<a href='/DSMS/sudoers-hosts.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Host_Name_Clean'><img src=\"/resources/imgs/linked.png\" alt=\"Linked Objects to Host ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-hosts.cgi?View_Notes=$DBID_Clean'>
+				<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='DSMS/sudoers-hosts.cgi?Edit_Host=$DBID_Clean'><img src=\"resources/imgs/edit.png\" alt=\"Edit Host ID $DBID_Clean\" ></a>",
-			"<a href='DSMS/sudoers-hosts.cgi?Delete_Host=$DBID_Clean'><img src=\"resources/imgs/delete.png\" alt=\"Delete Host ID $DBID_Clean\" ></a>"
+			"<a href='/DSMS/sudoers-hosts.cgi?Edit_Host=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-hosts.cgi?Delete_Host=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Host ID $DBID_Clean\" ></a>"
 		);
 
 
@@ -1111,7 +1116,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='DSMS/sudoers-hosts.cgi' method='post' >
+			<form action='/DSMS/sudoers-hosts.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1142,7 +1147,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='DSMS/sudoers-hosts.cgi' method='post' >
+			<form action='/DSMS/sudoers-hosts.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Host</span></td>
@@ -1154,7 +1159,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='DSMS/sudoers-hosts.cgi' method='post' >
+			<form action='/DSMS/sudoers-hosts.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Host</span></td>

@@ -3,21 +3,27 @@
 use strict;
 use HTML::Table;
 
-require 'common.pl';
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+my $Header = Header();
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $User_Name = $Session->param("User_Name");
 
 if (!$User_Name) {
-	print "Location: logout.cgi\n\n";
+	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
                  
 my $Search = $CGI->param("Search");
 my $Referer = $ENV{HTTP_REFERER};
-	$Referer =~ s/^.*\/(.*\.cgi)/$1/i; # Removes string before filename
+	#$Referer =~ s/^.*\/(.*\.cgi)/$1/i; # Removes string before filename
+	my $Server_Name = $ENV{HTTP_HOST};
+	$Referer =~ s/^.*\/$Server_Name(\/.*\.cgi)/$1/i; # Removes hostname
 	$Referer =~ s/(.*\.cgi)?.*/$1/i; # Removes arguments after ?
+
 
 if (($Referer eq '') || ($Referer eq 'search.cgi')) {
 	$Referer="index.cgi";
@@ -32,9 +38,9 @@ if ($Search eq '') {
 
 if ($Search) {
 	
-	require "header.cgi";
+	require $Header;
 	&html_output;
-	require "$Referer";
+	require $Referer;
 
 }
 
@@ -65,7 +71,7 @@ print <<ENDHTML;
 </div>
 </a>
 
-<h2 style="text-align: center; font-weight: bold;">Search Results for <span style="color: #00FF00;">$Search</span></h2>
+<h2 style="text-align: center; font-weight: bold;">$Referer Search Results for <span style="color: #00FF00;">$Search</span></h2>
 ENDHTML
 
 ### Host Groups
