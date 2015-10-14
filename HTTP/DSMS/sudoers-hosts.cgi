@@ -335,7 +335,6 @@ sub add_host {
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
-	my $DB_Management = DB_Management();
 	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
@@ -765,7 +764,7 @@ sub html_show_links {
 	while ( my @Select_Links = $Select_Links->fetchrow_array() )
 	{
 		
-		my $Group_ID = @Select_Links[0];
+		my $Group_ID = $Select_Links[0];
 
 		my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`, `active`
 			FROM `host_groups`
@@ -795,16 +794,16 @@ sub html_show_links {
 
 	### Rules
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `rule`
+	my $Select_Rule_Links = $DB_Sudoers->prepare("SELECT `rule`
 		FROM `lnk_rules_to_hosts`
 		WHERE `host` = ?"
 	);
-	$Select_Links->execute($Show_Links);
+	$Select_Rule_Links->execute($Show_Links);
 
-	while ( my @Select_Links = $Select_Links->fetchrow_array() )
+	while ( my @Select_Links = $Select_Rule_Links->fetchrow_array() )
 	{
 		
-		my $Rule_ID = @Select_Links[0];
+		my $Rule_ID = $Select_Links[0];
 
 		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`
@@ -1022,22 +1021,22 @@ sub html_output {
 
 		$Host_Row_Count++;
 
-		my $DBID = @Select_Hosts[0];
+		my $DBID = $Select_Hosts[0];
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($ID_Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Host_Name = @Select_Hosts[1];
+		my $Host_Name = $Select_Hosts[1];
 			my $Host_Name_Clean = $Host_Name;
 			$Host_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $IP = @Select_Hosts[2];
+		my $IP = $Select_Hosts[2];
 			$IP =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Expires = @Select_Hosts[3];
+		my $Expires = $Select_Hosts[3];
 			my $Expires_Clean = $Expires;
 			$Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = @Select_Hosts[4];
+		my $Active = $Select_Hosts[4];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = @Select_Hosts[5];
-		my $Modified_By = @Select_Hosts[6];
+		my $Last_Modified = $Select_Hosts[5];
+		my $Modified_By = $Select_Hosts[6];
 
 		### Discover Note Count
 

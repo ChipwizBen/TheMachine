@@ -228,11 +228,11 @@ ENDHTML
 					ORDER BY `timeperiod_name` ASC");
 					$Select_Time_Periods->execute();
 			
-					while ( my @DB_Contact = $Select_Time_Periods->fetchrow_array() )
+					while ( my @DB_Host_Notification_Period = $Select_Time_Periods->fetchrow_array() )
 					{
-						my $ID_Extract = $DB_Contact[0];
-						my $Name_Extract = $DB_Contact[1];
-						my $Alias_Extract = $DB_Contact[2];
+						my $ID_Extract = $DB_Host_Notification_Period[0];
+						my $Name_Extract = $DB_Host_Notification_Period[1];
+						my $Alias_Extract = $DB_Host_Notification_Period[2];
 						print "<option value='$ID_Extract'>$Name_Extract ($Alias_Extract)</option>";
 					}
 			
@@ -247,17 +247,17 @@ ENDHTML
 ENDHTML
 		
 		
-							my $Select_Time_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Notification_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Time_Periods->execute();
+							$Select_Notification_Periods->execute();
 					
-							while ( my @DB_Contact = $Select_Time_Periods->fetchrow_array() )
+							while ( my @DB_Service_Notification_Period = $Select_Notification_Periods->fetchrow_array() )
 							{
-								my $ID_Extract = $DB_Contact[0];
-								my $Name_Extract = $DB_Contact[1];
-								my $Alias_Extract = $DB_Contact[2];
+								my $ID_Extract = $DB_Service_Notification_Period[0];
+								my $Name_Extract = $DB_Service_Notification_Period[1];
+								my $Alias_Extract = $DB_Service_Notification_Period[2];
 								print "<option value='$ID_Extract'>$Name_Extract ($Alias_Extract)</option>";
 							}
 
@@ -548,17 +548,17 @@ ENDHTML
 								<select name='Host_Notification_Period_Edit' style="width: 200px">
 ENDHTML
 
-							my $Select_Time_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Host_Notification_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Time_Periods->execute();
+							$Select_Host_Notification_Periods->execute();
 					
-							while ( my @DB_Contact = $Select_Time_Periods->fetchrow_array() )
+							while ( my @DB_Host_Notification_Period = $Select_Host_Notification_Periods->fetchrow_array() )
 							{
-								my $ID_Extract = $DB_Contact[0];
-								my $Name_Extract = $DB_Contact[1];
-								my $Alias_Extract = $DB_Contact[2];
+								my $ID_Extract = $DB_Host_Notification_Period[0];
+								my $Name_Extract = $DB_Host_Notification_Period[1];
+								my $Alias_Extract = $DB_Host_Notification_Period[2];
 
 								if ($ID_Extract == $Host_Notification_Period_Extract) {
 									print "<option style='background-color: #00FF00;' value='$ID_Extract' selected>$Name_Extract ($Alias_Extract)</option>";
@@ -578,17 +578,17 @@ ENDHTML
 								<select name='Service_Notification_Period_Edit' style="width: 200px">
 ENDHTML
 
-							my $Select_Time_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Service_Notification_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Time_Periods->execute();
+							$Select_Service_Notification_Periods->execute();
 					
-							while ( my @DB_Contact = $Select_Time_Periods->fetchrow_array() )
+							while ( my @DB_Service_Notification_Period = $Select_Service_Notification_Periods->fetchrow_array() )
 							{
-								my $ID_Extract = $DB_Contact[0];
-								my $Name_Extract = $DB_Contact[1];
-								my $Alias_Extract = $DB_Contact[2];
+								my $ID_Extract = $DB_Service_Notification_Period[0];
+								my $Name_Extract = $DB_Service_Notification_Period[1];
+								my $Alias_Extract = $DB_Service_Notification_Period[2];
 
 								if ($ID_Extract == $Service_Notification_Period_Extract) {
 									print "<option style='background-color: #00FF00;' value='$ID_Extract' selected>$Name_Extract ($Alias_Extract)</option>";
@@ -895,11 +895,11 @@ sub delete_contact {
 		WHERE `id` = ?");
 	$Delete->execute($Contact_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkContactToCommandHost`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkContactToCommandHost`
 		WHERE `idMaster` = ?");
 	$Delete->execute($Contact_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkContactToCommandService`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkContactToCommandService`
 		WHERE `idMaster` = ?");
 	$Delete->execute($Contact_Delete_Post);
 

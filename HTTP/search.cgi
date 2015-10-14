@@ -76,15 +76,15 @@ ENDHTML
 
 ### Host Groups
 
-	my $Search_DB = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`
+	my $Search_Host_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`
 		FROM `host_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
 	");
 	
-	$Search_DB->execute("%$Search%", "%$Search%");
+	$Search_Host_Groups->execute("%$Search%", "%$Search%");
 
-while ( my @Search = $Search_DB->fetchrow_array() ) {
+while ( my @Search = $Search_Host_Groups->fetchrow_array() ) {
 	my $ID = $Search[0];
 	my $Name = $Search[1];
 		$Name =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -115,15 +115,15 @@ while ( my @Search = $Search_DB->fetchrow_array() ) {
 
 ### User Groups
 
-	my $Search_DB = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `active`
+	my $Search_User_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `active`
 		FROM `user_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
 	");
 	
-	$Search_DB->execute("%$Search%", "%$Search%");
+	$Search_User_Groups->execute("%$Search%", "%$Search%");
 
-while ( my @Search = $Search_DB->fetchrow_array() ) {
+while ( my @Search = $Search_User_Groups->fetchrow_array() ) {
 	my $ID = $Search[0];
 	my $Name = $Search[1];
 		$Name =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -156,19 +156,18 @@ while ( my @Search = $Search_DB->fetchrow_array() ) {
 
 ### Command Groups
 
-	my $Search_DB = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`
+	my $Search_Command_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`
 		FROM `command_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
 	");
 	
-	$Search_DB->execute("%$Search%", "%$Search%");
+	$Search_Command_Groups->execute("%$Search%", "%$Search%");
 
-while ( my @Search = $Search_DB->fetchrow_array() ) {
+while ( my @Search = $Search_Command_Groups->fetchrow_array() ) {
 	my $ID = $Search[0];
 	my $Name = $Search[1];
 		$Name =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-	my $Active = $Search[2];
 	my $Expires = $Search[2];
 	my $Active = $Search[3];
 
@@ -196,16 +195,16 @@ while ( my @Search = $Search_DB->fetchrow_array() ) {
 
 ### Hosts
 
-	my $Search_DB = $DB_Sudoers->prepare("SELECT `id`, `hostname`, `ip`, `expires`, `active`
+	my $Search_Hosts = $DB_Sudoers->prepare("SELECT `id`, `hostname`, `ip`, `expires`, `active`
 		FROM `hosts`
 		WHERE `id` LIKE ?
 		OR `hostname` LIKE ?
 		OR `ip` LIKE ?
 	");
 	
-	$Search_DB->execute("%$Search%", "%$Search%", "%$Search%");
+	$Search_Hosts->execute("%$Search%", "%$Search%", "%$Search%");
 
-while ( my @Search = $Search_DB->fetchrow_array() ) {
+while ( my @Search = $Search_Hosts->fetchrow_array() ) {
 	my $ID = $Search[0];
 	my $Name = $Search[1];
 		$Name =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -238,15 +237,15 @@ while ( my @Search = $Search_DB->fetchrow_array() ) {
 
 ### Users
 
-	my $Search_DB = $DB_Sudoers->prepare("SELECT `id`, `username`, `expires`, `active`
+	my $Search_Users = $DB_Sudoers->prepare("SELECT `id`, `username`, `expires`, `active`
 		FROM `users`
 		WHERE `id` LIKE ?
 		OR `username` LIKE ?
 	");
 	
-	$Search_DB->execute("%$Search%", "%$Search%");
+	$Search_Users->execute("%$Search%", "%$Search%");
 
-while ( my @Search = $Search_DB->fetchrow_array() ) {
+while ( my @Search = $Search_Users->fetchrow_array() ) {
 	my $ID = $Search[0];
 	my $Name = $Search[1];
 		$Name =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -277,16 +276,16 @@ while ( my @Search = $Search_DB->fetchrow_array() ) {
 
 ### Commands
 
-	my $Search_DB = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
+	my $Search_Commands = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
 		FROM `commands`
 		WHERE `id` LIKE ?
 		OR `command_alias` LIKE ?
 		OR `command` LIKE ?
 	");
 	
-	$Search_DB->execute("%$Search%", "%$Search%", "%$Search%");
+	$Search_Commands->execute("%$Search%", "%$Search%", "%$Search%");
 
-while ( my @Search = $Search_DB->fetchrow_array() ) {
+while ( my @Search = $Search_Commands->fetchrow_array() ) {
 	my $ID = $Search[0];
 	my $Name = $Search[1];
 		$Name =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -319,14 +318,14 @@ while ( my @Search = $Search_DB->fetchrow_array() ) {
 
 ### Rules
 
-	my $Search_DB = $DB_Sudoers->prepare("SELECT `id`, `name`, `expires`, `active`, `approved`
+	my $Search_Rules = $DB_Sudoers->prepare("SELECT `id`, `name`, `expires`, `active`, `approved`
 		FROM `rules`
 		WHERE `name` LIKE ?
 	");
 	
-	$Search_DB->execute("%$Search%");
+	$Search_Rules->execute("%$Search%");
 
-while ( my @Search = $Search_DB->fetchrow_array() ) {
+while ( my @Search = $Search_Rules->fetchrow_array() ) {
 	my $ID = $Search[0];
 	my $Name = $Search[1];
 		$Name =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;

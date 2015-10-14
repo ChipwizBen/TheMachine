@@ -246,15 +246,15 @@ sub add_user {
 		FROM `credentials`
 		WHERE `username` = ?");
 		$Existing_User_Name_Check->execute($User_Name_Add);
-		my $Existing_Users = $Existing_User_Name_Check->rows();
+		my $Existing_User_Name_Count = $Existing_User_Name_Check->rows();
 
-	if ($Existing_Users > 0)  {
+	if ($Existing_User_Name_Count > 0)  {
 		my $Existing_ID;
 		my $Existing_Email;
 		while ( my @Select_User_Names = $Existing_User_Name_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_User_Names[0];
-			$Existing_Email = @Select_User_Names[1];
+			$Existing_ID = $Select_User_Names[0];
+			$Existing_Email = $Select_User_Names[1];
 		}
 		my $Message_Red="User Name $User_Name_Add already exists as ID $Existing_ID, with email address $Existing_Email";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
@@ -268,15 +268,15 @@ sub add_user {
 		FROM `credentials`
 		WHERE `email` = ?");
 		$Existing_Email_Check->execute($Email_Add);
-		my $Existing_Users = $Existing_Email_Check->rows();
+		my $Existing_User_Email_Count = $Existing_Email_Check->rows();
 
-	if ($Existing_Users > 0)  {
+	if ($Existing_User_Email_Count > 0)  {
 		my $Existing_ID;
 		my $Existing_User;
 		while ( my @Select_User_Names = $Existing_Email_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_User_Names[0];
-			$Existing_User = @Select_User_Names[1];
+			$Existing_ID = $Select_User_Names[0];
+			$Existing_User = $Select_User_Names[1];
 		}
 		my $Message_Red="User Email $Email_Add already exists as ID $Existing_ID, User Name: $Existing_User";
 		$Session->param('Message_Red', $Message_Red);
@@ -701,15 +701,15 @@ sub edit_user {
 		WHERE `username` = ?
 		AND `id` != ?");
 		$Existing_User_Name_Check->execute($User_Name_Edit, $Edit_User_Post);
-		my $Existing_Users = $Existing_User_Name_Check->rows();
+		my $Existing_User_Name_Count = $Existing_User_Name_Check->rows();
 
-	if ($Existing_Users > 0)  {
+	if ($Existing_User_Name_Count > 0)  {
 		my $Existing_ID;
 		my $Existing_Email;
 		while ( my @Select_User_Names = $Existing_User_Name_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_User_Names[0];
-			$Existing_Email = @Select_User_Names[1];
+			$Existing_ID = $Select_User_Names[0];
+			$Existing_Email = $Select_User_Names[1];
 		}
 		my $Message_Red="User Name $User_Name_Edit already exists as ID $Existing_ID, with email address $Existing_Email";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
@@ -724,15 +724,15 @@ sub edit_user {
 		WHERE `email` = ?
 		AND `id` != ?");
 		$Existing_Email_Check->execute($Email_Edit, $Edit_User_Post);
-		my $Existing_Users = $Existing_Email_Check->rows();
+		my $Existing_User_Email_Count = $Existing_Email_Check->rows();
 
-	if ($Existing_Users > 0)  {
+	if ($Existing_User_Email_Count > 0)  {
 		my $Existing_ID;
 		my $Existing_User;
 		while ( my @Select_User_Names = $Existing_Email_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_User_Names[0];
-			$Existing_User = @Select_User_Names[1];
+			$Existing_ID = $Select_User_Names[0];
+			$Existing_User = $Select_User_Names[1];
 		}
 		my $Message_Red="User Email $Email_Edit already exists as ID $Existing_ID, User Name: $Existing_User";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var

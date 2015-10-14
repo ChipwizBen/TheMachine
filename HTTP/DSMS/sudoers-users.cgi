@@ -597,13 +597,13 @@ sub html_show_links {
 
 	### User Groups
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `group`
+	my $Select_Group_Links = $DB_Sudoers->prepare("SELECT `group`
 		FROM `lnk_user_groups_to_users`
 		WHERE `user` = ?"
 	);
-	$Select_Links->execute($Show_Links);
+	$Select_Group_Links->execute($Show_Links);
 
-	while ( my @Select_Links = $Select_Links->fetchrow_array() )
+	while ( my @Select_Links = $Select_Group_Links->fetchrow_array() )
 	{
 		
 		my $Group_ID = $Select_Links[0];
@@ -636,13 +636,13 @@ sub html_show_links {
 
 	### Rules
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `rule`
+	my $Select_Rule_Links = $DB_Sudoers->prepare("SELECT `rule`
 		FROM `lnk_rules_to_users`
 		WHERE `user` = ?"
 	);
-	$Select_Links->execute($Show_Links);
+	$Select_Rule_Links->execute($Show_Links);
 
-	while ( my @Select_Links = $Select_Links->fetchrow_array() )
+	while ( my @Select_Links = $Select_Rule_Links->fetchrow_array() )
 	{
 		
 		my $Rule_ID = $Select_Links[0];

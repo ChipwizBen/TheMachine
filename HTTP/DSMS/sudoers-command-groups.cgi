@@ -355,7 +355,7 @@ sub add_group {
 		my $Existing_ID;
 		while ( my @Select_Group_Names = $Existing_Group_Name_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_Group_Names[0];
+			$Existing_ID = $Select_Group_Names[0];
 		}
 		my $Message_Red="Group Name: $Group_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
@@ -478,7 +478,7 @@ $Select_Links->execute($Edit_Group);
 
 while ( my @Select_Links = $Select_Links->fetchrow_array() )
 {
-	my $Link = @Select_Links[0];
+	my $Link = $Select_Links[0];
 
 	my $Command_Alias_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 		FROM `commands`
@@ -600,9 +600,9 @@ if (!$Group_Name_Edit) {
 
 	while ( my @Select_Details = $Select_Group_Details->fetchrow_array() )
 	{
-		$Group_Name_Edit = @Select_Details[0];
-		$Expires_Date_Edit = @Select_Details[1];
-		$Active_Edit = @Select_Details[2];
+		$Group_Name_Edit = $Select_Details[0];
+		$Expires_Date_Edit = $Select_Details[1];
+		$Active_Edit = $Select_Details[2];
 	}
 }
 
@@ -818,7 +818,7 @@ sub edit_group {
 		my $Existing_ID;
 		while ( my @Select_Group_Names = $Existing_Group_Name_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_Group_Names[0];
+			$Existing_ID = $Select_Group_Names[0];
 		}
 		my $Message_Red="Group Name: $Group_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
@@ -1159,16 +1159,16 @@ sub html_show_links {
 
 	### Commands
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
+	my $Select_Command_Links = $DB_Sudoers->prepare("SELECT `command`
 		FROM `lnk_command_groups_to_commands`
 		WHERE `group` = ?"
 	);
-	$Select_Links->execute($Show_Links);
+	$Select_Command_Links->execute($Show_Links);
 
-	while ( my @Select_Links = $Select_Links->fetchrow_array() )
+	while ( my @Select_Command_Links = $Select_Command_Links->fetchrow_array() )
 	{
 		
-		my $Command_Alias_ID = @Select_Links[0];
+		my $Command_Alias_ID = $Select_Command_Links[0];
 
 		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `active`
 			FROM `commands`
@@ -1199,16 +1199,16 @@ sub html_show_links {
 
 	### Rules
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `rule`
+	my $Select_Rule_Links = $DB_Sudoers->prepare("SELECT `rule`
 		FROM `lnk_rules_to_command_groups`
 		WHERE `command_group` = ?"
 	);
-	$Select_Links->execute($Show_Links);
+	$Select_Rule_Links->execute($Show_Links);
 
-	while ( my @Select_Links = $Select_Links->fetchrow_array() )
+	while ( my @Select_Links = $Select_Rule_Links->fetchrow_array() )
 	{
 		
-		my $Rule_ID = @Select_Links[0];
+		my $Rule_ID = $Select_Links[0];
 
 		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`
@@ -1426,20 +1426,20 @@ sub html_output {
 		$Group_Row_Count++;
 		my $Commands;
 
-		my $DBID = @Select_Groups[0];
+		my $DBID = $Select_Groups[0];
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($ID_Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Group_Name = @Select_Groups[1];
+		my $Group_Name = $Select_Groups[1];
 		my $Group_Name_Clean = $Group_Name;
 			$Group_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Group_Expires = @Select_Groups[2];
+		my $Group_Expires = $Select_Groups[2];
 		my $Group_Expires_Clean = $Group_Expires;
 			$Group_Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = @Select_Groups[3];
+		my $Active = $Select_Groups[3];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = @Select_Groups[4];
-		my $Modified_By = @Select_Groups[5];
+		my $Last_Modified = $Select_Groups[4];
+		my $Modified_By = $Select_Groups[5];
 
 		### Discover Note Count
 
@@ -1462,7 +1462,7 @@ sub html_output {
 		while ( my @Select_Links = $Select_Links->fetchrow_array() )
 		{
 			
-			my $Command_Alias_ID = @Select_Links[0];
+			my $Command_Alias_ID = $Select_Links[0];
 
 			my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 				FROM `commands`
@@ -1473,11 +1473,11 @@ sub html_output {
 			while ( my @Select_Commands = $Select_Commands->fetchrow_array() )
 			{
 
-				my $Command_Alias = @Select_Commands[0];
+				my $Command_Alias = $Select_Commands[0];
 					my $Command_Alias_Clean = $Command_Alias;
-				my $Command = @Select_Commands[1];
-				my $Expires = @Select_Commands[2];
-				my $Active = @Select_Commands[3];
+				my $Command = $Select_Commands[1];
+				my $Expires = $Select_Commands[2];
+				my $Active = $Select_Commands[3];
 
 				my $Expires_Epoch;
 				my $Today_Epoch = time;

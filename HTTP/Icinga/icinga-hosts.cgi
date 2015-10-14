@@ -8,6 +8,7 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $Header = Header();
+my $Footer = Footer();
 my $DB_Icinga = DB_Icinga();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -123,6 +124,7 @@ elsif ($Host_Edit_Post) {
 elsif ($Delete_Host) {
 	require $Header;
 	&html_output;
+	require $Footer;
 	&html_delete_host;
 }
 elsif ($Host_Delete_Post) {
@@ -524,8 +526,6 @@ ENDHTML
 <hr width="50%">
 <div style="text-align: center"><input type=submit name='ok' value='Add Host'></div>
 </form>
-
-</div>
 
 ENDHTML
 

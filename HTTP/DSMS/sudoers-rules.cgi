@@ -1402,13 +1402,13 @@ if ($Edit_Host_Group_Temp_Existing eq 'ALL') {$New_Host_Groups = "<tr><td align=
 ### Currently Attached Host Retrieval and Conversion
 
 my $Existing_Hosts;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `host`
+my $Select_Host_Links = $DB_Sudoers->prepare("SELECT `host`
 	FROM `lnk_rules_to_hosts`
 	WHERE `rule` = ? "
 );
-$Select_Links->execute($Edit_Rule);
+$Select_Host_Links->execute($Edit_Rule);
 
-while ( my @Select_Links = $Select_Links->fetchrow_array() )
+while ( my @Select_Links = $Select_Host_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
@@ -1485,13 +1485,13 @@ if ($Edit_Host_Temp_Existing eq 'ALL') {$New_Hosts = "<tr><td align='left' style
 ### Currently Attached User Groups Retrieval and Conversion
 
 my $Existing_User_Groups;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `user_group`
+my $Select_User_Group_Links = $DB_Sudoers->prepare("SELECT `user_group`
 	FROM `lnk_rules_to_user_groups`
 	WHERE `rule` = ? "
 );
-$Select_Links->execute($Edit_Rule);
+$Select_User_Group_Links->execute($Edit_Rule);
 
-while ( my @Select_Links = $Select_Links->fetchrow_array() )
+while ( my @Select_Links = $Select_User_Group_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
@@ -1566,13 +1566,13 @@ foreach my $User_Group (@User_Groups) {
 ### Currently Attached User Retrieval and Conversion
 
 my $Existing_Users;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+my $Select_User_Links = $DB_Sudoers->prepare("SELECT `user`
 	FROM `lnk_rules_to_users`
 	WHERE `rule` = ? "
 );
-$Select_Links->execute($Edit_Rule);
+$Select_User_Links->execute($Edit_Rule);
 
-while ( my @Select_Links = $Select_Links->fetchrow_array() )
+while ( my @Select_Links = $Select_User_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
@@ -1644,13 +1644,13 @@ foreach my $User (@Users) {
 ### Currently Attached Command Groups Retrieval and Conversion
 
 my $Existing_Command_Groups;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `command_group`
+my $Select_Command_Group_Links = $DB_Sudoers->prepare("SELECT `command_group`
 	FROM `lnk_rules_to_command_groups`
 	WHERE `rule` = ? "
 );
-$Select_Links->execute($Edit_Rule);
+$Select_Command_Group_Links->execute($Edit_Rule);
 
-while ( my @Select_Links = $Select_Links->fetchrow_array() )
+while ( my @Select_Links = $Select_Command_Group_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
@@ -1723,13 +1723,13 @@ foreach my $Command_Group (@Command_Groups) {
 ### Currently Attached Command Retrieval and Conversion
 
 my $Existing_Commands;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
+my $Select_Command_Links = $DB_Sudoers->prepare("SELECT `command`
 	FROM `lnk_rules_to_commands`
 	WHERE `rule` = ? "
 );
-$Select_Links->execute($Edit_Rule);
+$Select_Command_Links->execute($Edit_Rule);
 
-while ( my @Select_Links = $Select_Links->fetchrow_array() )
+while ( my @Select_Links = $Select_Command_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 

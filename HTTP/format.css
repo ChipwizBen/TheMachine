@@ -771,13 +771,13 @@ table {
 	}
 
 #small-popup-box {
+	position: absolute;
 	margin: 0 auto;
 	top: 100px;
 	left: 50%;
 	margin-left: -200px;
 	padding-bottom: 20px;
 	margin-bottom: 120px;
-	position: absolute;	
 	width: 400px;
 	font-size: 1.0em;	
 	text-align: center;
@@ -795,13 +795,13 @@ table {
 	}
 
 #wide-popup-box {
+	position: absolute;
 	margin: 0 auto;
 	top: 100px;
 	left: 50%;
 	margin-left: -350px;
 	padding-bottom: 20px;
 	margin-bottom: 120px;
-	position: relative;	
 	width: 700px;
 	font-size: 1.0em;	
 	text-align: center;
@@ -819,7 +819,7 @@ table {
 	}
 
 #full-width-popup-box {
-	position: relative;
+	position: absolute;
 	top: 100px;
 	left: 0;
 	right: 0;

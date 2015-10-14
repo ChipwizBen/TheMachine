@@ -348,7 +348,7 @@ sub add_group {
 		my $Existing_ID;
 		while ( my @Select_Group_Names = $Existing_Group_Name_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_Group_Names[0];
+			$Existing_ID = $Select_Group_Names[0];
 		}
 		my $Message_Red="Group Name: $Group_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
@@ -467,7 +467,7 @@ $Select_Links->execute($Edit_Group);
 
 while ( my @Select_Links = $Select_Links->fetchrow_array() )
 {
-	my $Link = @Select_Links[0];
+	my $Link = $Select_Links[0];
 
 	my $Host_Query = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
 		FROM `hosts`
@@ -581,9 +581,9 @@ if (!$Group_Name_Edit) {
 
 	while ( my @Select_Details = $Select_Group_Details->fetchrow_array() )
 	{
-		$Group_Name_Edit = @Select_Details[0];
-		$Expires_Date_Edit = @Select_Details[1];
-		$Active_Edit = @Select_Details[2];
+		$Group_Name_Edit = $Select_Details[0];
+		$Expires_Date_Edit = $Select_Details[1];
+		$Active_Edit = $Select_Details[2];
 	}
 }
 
@@ -795,7 +795,7 @@ sub edit_group {
 		my $Existing_ID;
 		while ( my @Select_Group_Names = $Existing_Group_Name_Check->fetchrow_array() )
 		{
-			$Existing_ID = @Select_Group_Names[0];
+			$Existing_ID = $Select_Group_Names[0];
 		}
 		my $Message_Red="Group Name: $Group_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
@@ -1137,16 +1137,16 @@ sub html_show_links {
 
 	### Hosts
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `host`
+	my $Select_Host_Links = $DB_Sudoers->prepare("SELECT `host`
 		FROM `lnk_host_groups_to_hosts`
 		WHERE `group` = ?"
 	);
-	$Select_Links->execute($Show_Links);
+	$Select_Host_Links->execute($Show_Links);
 
-	while ( my @Select_Links = $Select_Links->fetchrow_array() )
+	while ( my @Select_Links = $Select_Host_Links->fetchrow_array() )
 	{
 		
-		my $Host_ID = @Select_Links[0];
+		my $Host_ID = $Select_Links[0];
 
 		my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `active`
 			FROM `hosts`
@@ -1186,7 +1186,7 @@ sub html_show_links {
 	while ( my @Select_Links = $Select_Links->fetchrow_array() )
 	{
 		
-		my $Rule_ID = @Select_Links[0];
+		my $Rule_ID = $Select_Links[0];
 
 		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`
@@ -1404,20 +1404,20 @@ sub html_output {
 		$Group_Row_Count++;
 		my $Hosts;
 
-		my $DBID = @Select_Groups[0];
+		my $DBID = $Select_Groups[0];
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($ID_Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Group_Name = @Select_Groups[1];
+		my $Group_Name = $Select_Groups[1];
 		my $Group_Name_Clean = $Group_Name;
 			$Group_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Group_Expires = @Select_Groups[2];
+		my $Group_Expires = $Select_Groups[2];
 		my $Group_Expires_Clean = $Group_Expires;
 			$Group_Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = @Select_Groups[3];
+		my $Active = $Select_Groups[3];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = @Select_Groups[4];
-		my $Modified_By = @Select_Groups[5];
+		my $Last_Modified = $Select_Groups[4];
+		my $Modified_By = $Select_Groups[5];
 
 		### Discover Note Count
 
@@ -1440,7 +1440,7 @@ sub html_output {
 		while ( my @Select_Links = $Select_Links->fetchrow_array() )
 		{
 			
-			my $Host_ID = @Select_Links[0];
+			my $Host_ID = $Select_Links[0];
 
 			my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
 				FROM `hosts`
@@ -1451,11 +1451,11 @@ sub html_output {
 			while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 			{
 
-				my $Host = @Select_Hosts[0];
+				my $Host = $Select_Hosts[0];
 					my $Host_Clean = $Host;
-				my $IP = @Select_Hosts[1];
-				my $Expires = @Select_Hosts[2];
-				my $Active = @Select_Hosts[3];
+				my $IP = $Select_Hosts[1];
+				my $Expires = $Select_Hosts[2];
+				my $Active = $Select_Hosts[3];
 
 				my $Expires_Epoch;
 				my $Today_Epoch = time;

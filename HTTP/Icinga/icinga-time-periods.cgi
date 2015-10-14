@@ -419,7 +419,7 @@ sub delete_time_period {
 
 	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_timeperiod` WHERE `id` = ?");
 		$Delete->execute($Time_Delete_Post);
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_timedefinition` WHERE `tipId` = ?");
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_timedefinition` WHERE `tipId` = ?");
 		$Delete->execute($Time_Delete_Post);
 
 } # sub delete_time_period

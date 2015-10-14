@@ -691,16 +691,16 @@ sub html_show_links {
 
 	### Command Groups
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `group`
+	my $Select_Group_Links = $DB_Sudoers->prepare("SELECT `group`
 		FROM `lnk_command_groups_to_commands`
 		WHERE `command` = ?"
 	);
-	$Select_Links->execute($Show_Links);
+	$Select_Group_Links->execute($Show_Links);
 
-	while ( my @Select_Links = $Select_Links->fetchrow_array() )
+	while ( my @Select_Links = $Select_Group_Links->fetchrow_array() )
 	{
 		
-		my $Group_ID = @Select_Links[0];
+		my $Group_ID = $Select_Links[0];
 
 		my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`, `active`
 			FROM `command_groups`
@@ -739,7 +739,7 @@ sub html_show_links {
 	while ( my @Select_Links = $Select_Links->fetchrow_array() )
 	{
 		
-		my $Rule_ID = @Select_Links[0];
+		my $Rule_ID = $Select_Links[0];
 
 		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`

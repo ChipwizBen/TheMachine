@@ -17,7 +17,6 @@ my $Edit_Service_Template = $CGI->param("Edit_Service_Template");
 my $Name_Template_Add = $CGI->param("Name_Template_Add");
 my $Service_Templates_Template_Add = $CGI->param("Service_Templates_Template_Add");
 my $Service_Group_Template_Add = $CGI->param("Service_Group_Template_Add");
-my $Notification_Period_Template_Add = $CGI->param("Notification_Period_Template_Add");
 my $Contact_Template_Add = $CGI->param("Contact_Template_Add");
 my $Contact_Group_Template_Add = $CGI->param("Contact_Group_Template_Add");
 my $Check_Period_Template_Add = $CGI->param("Check_Period_Template_Add");
@@ -221,13 +220,13 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Time_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Check_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Time_Periods->execute();
+							$Select_Check_Periods->execute();
 					
-							while ( my @DB_Service = $Select_Time_Periods->fetchrow_array() )
+							while ( my @DB_Service = $Select_Check_Periods->fetchrow_array() )
 							{
 								my $ID_Extract = $DB_Service[0];
 								my $Name_Extract = $DB_Service[1];
@@ -247,13 +246,13 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Time_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Notification_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Time_Periods->execute();
+							$Select_Notification_Periods->execute();
 					
-							while ( my @DB_Service = $Select_Time_Periods->fetchrow_array() )
+							while ( my @DB_Service = $Select_Notification_Periods->fetchrow_array() )
 							{
 								my $ID_Extract = $DB_Service[0];
 								my $Name_Extract = $DB_Service[1];
@@ -723,19 +722,19 @@ sub delete_service_template {
 				WHERE `id` = ?");
 	$Delete->execute($Service_Template_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServicetemplateToServicetemplate`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServicetemplateToServicetemplate`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Service_Template_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServicetemplateToContact`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServicetemplateToContact`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Service_Template_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServicetemplateToContactgroup`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServicetemplateToContactgroup`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Service_Template_Delete_Post);
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServicetemplateToServicegroup`
+	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServicetemplateToServicegroup`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Service_Template_Delete_Post);
 
@@ -1019,12 +1018,12 @@ sub html_display_config {
 			$Check_Period = $Check_Period_Extract_Templates_Template;
 		}
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Check_Period);
+		$Select_Check_Period->execute($Check_Period);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Check_Period->fetchrow_array() )
 		{
 			my $DB_Check_Period = $DB_Time_Period[0];
 
@@ -1050,12 +1049,12 @@ sub html_display_config {
 			$Notification_Period = $Notification_Period_Extract_Templates_Template;
 		}
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Notification_Period);
+		$Select_Notification_Period->execute($Notification_Period);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Notification_Period->fetchrow_array() )
 		{
 			my $DB_Notification_Period = $DB_Time_Period[0];
 
