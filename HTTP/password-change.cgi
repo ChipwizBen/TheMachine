@@ -141,7 +141,9 @@ print <<ENDHTML;
 
 <div id="singlecenterblock">
 <h3>Change Login Password</h3>
-<div id="formusermanagement">
+
+<p>Note that this is your local password - if you authenticated using LDAP changing your password here will have no effect on your login.</p> 
+
 <form action='password-change.cgi' method='post' >
 
 <table align = "center">
@@ -169,7 +171,6 @@ print <<ENDHTML;
 <br />
 
 </form>
-</div> <!-- formusermanagement -->
 </div> <!-- singlecenterblock -->
 
 </div> <!-- body -->

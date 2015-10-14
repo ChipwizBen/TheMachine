@@ -16,7 +16,8 @@ my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Filter = $CGI->param("Filter");
-my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
+my $User_Name = $Session->param("User_Name");
+my $User_IP_Admin = $Session->param("User_IP_Admin");
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
 	if ($Rows_Returned eq '') {
@@ -25,6 +26,13 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
+	exit(0);
+}
+
+if ($User_IP_Admin != 1) {
+	my $Message_Red = 'You do not have sufficient privileges to access that page.';
+	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 

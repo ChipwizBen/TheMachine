@@ -15,10 +15,18 @@ my $Header = Header();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
 
-my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
+my $User_Name = $Session->param("User_Name");
+my $User_IP_Admin = $Session->param("User_IP_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
+	exit(0);
+}
+
+if ($User_IP_Admin != 1) {
+	my $Message_Red = 'You do not have sufficient privileges to access that page.';
+	$Session->param('Message_Red', $Message_Red);
+	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
@@ -29,10 +37,10 @@ my $Manual_Override = $CGI->param("Manual_Override");
 
 if ($Reset eq '1') {
 	$Location_Input='';
-	$Session->param('Location_Input', $Location_Input); #Posting Location_Input session var
+	$Session->param('Location_Input', $Location_Input);
 	$CIDR_Input='';
-	$Session->param('CIDR_Input', $CIDR_Input); #Posting CIDR_Input session var
-	print "Location: /IP/ipv4-allocation.cgi\n\n";
+	$Session->param('CIDR_Input', $CIDR_Input);
+	print "Location: /IP/ipv4-allocations.cgi\n\n";
 	exit(0);
 }
 elsif ($Location_Input) {
@@ -108,7 +116,7 @@ sub allocation {
 				{
 					my $Message_Red="Problem with IP range $Overlap_Check, it is not properly defined.";
 					$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-					print "Location: /IP/ipv4-allocation.cgi?Reset=1\n\n";
+					print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
 					exit(0);
 				}
 				elsif ( $Overlap_Check == $IP_IDENTICAL )
@@ -156,7 +164,7 @@ sub allocation {
 		if ($IP_Block_Limit_Integer < $IP_Block_Limit_Integer_Final) {
 			my $Message_Red="There are no more available blocks in $IP_Block for a $CIDR_Input notation. Either reduce the block size or use a different block";
 			$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-			print "Location: /IP/ipv4-allocation.cgi?Reset=1\n\n";
+			print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
 			exit(0);
 		}
 
@@ -220,7 +228,7 @@ my ($Allocation_Range_Error, $IP_Block) = @_;
 	Error Details: $Allocation_Range_Error<br/>
 	--------------- You must select a CIDR that fits within the boundaries of $IP_Block ---------------";
 	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
-	print "Location: /IP/ipv4-allocation.cgi?Reset=1\n\n";
+	print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
 	exit(0);
 } # sub allocation_error
 
@@ -248,9 +256,9 @@ print <<ENDHTML;
 <div id="full-page-block">
 <p><b>IPv4 Allocation</b></p>
 
-	<a href="ipv4-allocation.cgi?Manual_Override=1">Switch to Manual Allocation</a>
+	<a href="ipv4-allocations.cgi?Manual_Override=1">Switch to Manual Allocation</a>
 	
-	<form action='ipv4-allocation.cgi' method='post'>
+	<form action='ipv4-allocations.cgi' method='post'>
 		<p>Block:</p>		
 		<select name='Location_Input'>
 ENDHTML
@@ -366,7 +374,7 @@ print <<ENDHTML;
 <br/>
 <p><b>IPv4 Allocation</b></p>
 
-<a href='ipv4-allocation.cgi'>Switch to Automatic Allocation</a>
+<a href='ipv4-allocations.cgi'>Switch to Automatic Allocation</a>
 
 <form action='customer-ipv4-allocation-submission.cgi' method='post'>
 <table align = "center">

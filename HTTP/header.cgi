@@ -97,7 +97,7 @@ print <<ENDHTML;
 	<div id="loginlink">
 
 		<div id="loginlinkleft">
-			$System_Short_Name version <span style="color: #00FF00;">$Version</span> on <span style="color: #00FF00;">$Server_Hostname</span> | Welcome <a href="password-change.cgi">$Username</a> <span id="logoutlink"><a href="logout.cgi">[ Logout ]</a></span>
+			$System_Short_Name version <span style="color: #00FF00;">$Version</span> on <span style="color: #00FF00;">$Server_Hostname</span> | Welcome <a href="password-change.cgi">$Username</a> <span id="logoutlink"><a href="/logout.cgi">[ Logout ]</a></span>
 		</div> <!-- loginlinkleft -->
 
 			<form action='/search.cgi' method='post' >
@@ -128,8 +128,8 @@ print <<ENDHTML;
 			<li><a href="/#"><span>&nbsp; IP</span></a>
 				<ul>
 					<li><a href="/IP/ipv4-blocks.cgi">IPv4 Blocks</a></li>
-					<li><a href="/IP/ipv4-allocation.cgi">IPv4 Allocations</a></li>
-					<li><a href="/IP/ipv6-allocation.cgi">#IPv6 Allocations</a></li>
+					<li><a href="/IP/ipv4-allocations.cgi">IPv4 Allocations</a></li>
+					<li><a href="/IP/ipv6-allocations.cgi">#IPv6 Allocations</a></li>
 				</ul>
 			</li>
 			<li><a href="/#"><span>&nbsp; Icinga</span></a>

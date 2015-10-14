@@ -26,10 +26,10 @@ my $User_Password_Form = $CGI->param("Password_Form");
 
 my $Login_Message;
 
-if ($User_Name_Form && $LDAP_Check =~ /on/i) {
+if ($User_Name_Form && $LDAP_Check !~ /on/i) {
 	&login_user;
 }
-else {
+elsif ($User_Name_Form && $LDAP_Check =~ /on/i) {
 	&ldap_login;
 }
 &html_output;
@@ -39,46 +39,78 @@ sub ldap_login {
 
 	my $LDAP_Login = LDAP_Login($User_Name_Form, $User_Password_Form);
 
-	if ($LDAP_Login = 'Success') {
-		$Login_Message = "Success";
+	if ($LDAP_Login =~ /^Success/) {
 
-		my $Permissions_Query = $DB_Management->prepare("SELECT `email`, `admin`, `approver`, `requires_approval`, `lockout`
+		my @LDAP_Details = split(/\,/, $LDAP_Login);
+			my $LDAP_User_Name = $LDAP_Details[1];
+			my $LDAP_Email = $LDAP_Details[2];
+
+		$Session->param('User_Name', $LDAP_User_Name);
+
+		my $Details_Update = $DB_Management->prepare("INSERT INTO `credentials` (
+			`username`,
+			`email`,
+			`last_login`,
+			`last_modified`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?,
+			NOW(),
+			NOW(),
+			'LDAP'
+		)
+		ON DUPLICATE KEY UPDATE
+    		`username` = ?,
+    		`email` = ?,
+    		`last_login` = NOW(),
+    		`lockout_counter` = 0");
+    	$Details_Update->execute($LDAP_User_Name, $LDAP_Email, $LDAP_User_Name, $LDAP_Email);
+
+		my $Permissions_Query = $DB_Management->prepare("SELECT `admin`, `ip_admin`, `icinga_admin`, `bind_admin`, `approver`, `requires_approval`, `lockout`
 		FROM `credentials`
 		WHERE `username` = ?");
-		$Permissions_Query->execute($User_Name_Form);
+		$Permissions_Query->execute($LDAP_User_Name);
 
 		my $User_Admin;
 		while ( my @DB_Query = $Permissions_Query->fetchrow_array( ) )
 		{
-			my $DB_Email = $DB_Query[0];
-			my $DB_Admin = $DB_Query[1];
-			my $DB_Approver = $DB_Query[2];
-			my $DB_Requires_Approval = $DB_Query[3];
-	
-	        $Session->param('User_Name', $User_Name_Form);
+			my $DB_Admin = $DB_Query[0];
+			my $DB_IP_Admin = $DB_Query[1];
+			my $DB_Icinga_Admin = $DB_Query[2];
+			my $DB_BIND_Admin = $DB_Query[3];
+			my $DB_Approver = $DB_Query[4];
+			my $DB_Requires_Approval = $DB_Query[5];
+			my $DB_Lockout = $DB_Query[6];
+
+			if ($DB_Lockout == 1) {
+				$Login_Message = "Your account is locked out.<br/>Please contact your administrator.";
+				&html_output;
+				exit(0);
+			}
 			$Session->param('User_Admin', $DB_Admin);
-			$Session->param('User_Email', $DB_Email);
+			$Session->param('User_IP_Admin', $DB_Admin);
+			$Session->param('User_Icinga_Admin', $DB_Icinga_Admin);
+			$Session->param('User_BIND_Admin', $DB_BIND_Admin);
 			$Session->param('User_Approver', $DB_Approver);
 			$Session->param('User_Requires_Approval', $DB_Requires_Approval);
-
-			if ($Referer ne '') {
-				print "Location: $Referer\n\n";
-				exit(0);
-			}
-			else {
-				print "Location: /index.cgi\n\n";
-				exit(0);
-			}
-
 	    }
+	    if ($Referer ne '' && $Referer !~ /logout/) {
+			print "Location: $Referer\n\n";
+			exit(0);
+		}
+		else {
+			print "Location: /index.cgi\n\n";
+			exit(0);
+		}
 	}
 	else {
-		$Login_Message = 'Fail';
+		$Login_Message = "Login Failed";
 	}
 }
 
 sub login_user {
-	my $Login_DB_Query = $DB_Management->prepare("SELECT `password`, `salt`, `email`, `admin`, `approver`, `requires_approval`, `lockout`
+	my $Login_DB_Query = $DB_Management->prepare("SELECT `password`, `salt`, `email`, `admin`, `ip_admin`, `icinga_admin`, `bind_admin`, `approver`, `requires_approval`, `lockout`
 	FROM `credentials`
 	WHERE `username` = ?");
 	$Login_DB_Query->execute($User_Name_Form);
@@ -90,9 +122,12 @@ sub login_user {
 		my $DB_Salt = $DB_Query[1];
 		my $DB_Email = $DB_Query[2];
 		my $DB_Admin = $DB_Query[3];
-		my $DB_Approver = $DB_Query[4];
-		my $DB_Requires_Approval = $DB_Query[5];
-		my $DB_Lockout = $DB_Query[6];
+		my $DB_IP_Admin = $DB_Query[4];
+		my $DB_Icinga_Admin = $DB_Query[5];
+		my $DB_BIND_Admin = $DB_Query[6];
+		my $DB_Approver = $DB_Query[7];
+		my $DB_Requires_Approval = $DB_Query[8];
+		my $DB_Lockout = $DB_Query[9];
 
 		$User_Password_Form = $User_Password_Form . $DB_Salt;
 			$User_Password_Form = sha512_hex($User_Password_Form);
@@ -134,8 +169,11 @@ sub login_user {
 		elsif ("$DB_Password" eq "$User_Password_Form") {
 
 			$Session->param('User_Name', $User_Name_Form);
-			$Session->param('User_Admin', $DB_Admin);
 			$Session->param('User_Email', $DB_Email);
+			$Session->param('User_Admin', $DB_Admin);
+			$Session->param('User_IP_Admin', $DB_Admin);
+			$Session->param('User_Icinga_Admin', $DB_Icinga_Admin);
+			$Session->param('User_BIND_Admin', $DB_BIND_Admin);
 			$Session->param('User_Approver', $DB_Approver);
 			$Session->param('User_Requires_Approval', $DB_Requires_Approval);
 
@@ -146,7 +184,7 @@ sub login_user {
 			
 			$Login_User->execute($User_Name_Form);
 
-			if ($Referer ne '') {
+			if ($Referer ne '' && $Referer !~ /logout/) {
 				print "Location: $Referer\n\n";
 				exit(0);
 			}
@@ -275,7 +313,7 @@ $Login_Message<br />
 
 ENDHTML
 
-if ($Referer ne '') {
+if ($Referer ne '' && $Referer !~ /logout/) {
 print <<ENDHTML;
 <div id ="loginreferer">
 You will be redirected to $Referer after you login

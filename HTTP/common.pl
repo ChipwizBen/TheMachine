@@ -57,7 +57,16 @@ sub LDAP_Login {
 
 	my $LDAP_Enabled = 'On'; # Set this to 'Off' to disable LDAP/AD authentication
 
-	my $LDAP_Query = $_[0]; 
+	my $LDAP_Server = '192.168.59.235';
+	my $LDAP_Port = 389;
+	my $Timeout = 5;
+	my $LDAP_User_Name_Prefix = '\\';
+	my $LDAP_Filter = '(&(objectClass=inetOrgPerson)(memberOf=cn=LibreNMS_Users,ou=Application Groups,ou=Groups,dc=,dc=local))';
+	my $LDAP_Search_Base = "ou=User Accounts,dc=,dc=local";
+
+	# ---- Do not edit vaules below this line ---- #
+
+	my $LDAP_Query = $_[0];
 	if ($LDAP_Query eq 'Status_Check') {
 		return $LDAP_Enabled;
 		exit(0);
@@ -65,26 +74,45 @@ sub LDAP_Login {
 	elsif ($LDAP_Enabled =~ /on/i) {
 
 		my $LDAP_User_Name = $_[0];
+			my $LDAP_User_Name_Prefixed = $LDAP_User_Name_Prefix.$LDAP_User_Name;
 		my $LDAP_Password = $_[1];
 
-		use Authen::Simple::LDAP;
+		use Net::LDAP;
+		my $LDAP_Connection = Net::LDAP->new(
+			$LDAP_Server,
+			port => $LDAP_Port,
+			timeout => $Timeout,
+			#filter => $LDAP_Filter,
+		) or die "Can't connect to LDAP server: $@";
+		my $Bind = $LDAP_Connection->bind(
+			$LDAP_User_Name_Prefixed,
+			password => $LDAP_Password,
+			);
 
-		my $LDAP_Connection = Authen::Simple::LDAP->new(
-			version => 3,
-			host =>	'welwdc01.nwk1.com',
-			port => 389,
-			timeout => 60,
-			binddn => 'cn=zldapsearch,ou=Service Accounts,ou=Elevated Users,dc=,dc=local',
-			bindpw => 'routineldapquery',
-			basedn => 'ou=Unix Groups,ou=Groups,dc=,dc=local',
-			filter => '(uid=%s)',
-			scope => 'sub'
-		);
+		my $Authentication_Outcome = sprintf("%s",$Bind->error);
 
-		if ( $LDAP_Connection->authenticate( $LDAP_User_Name, $LDAP_Password ) ) {
-			return 'Success'; 
+		if ( $Authentication_Outcome =~ /Success/ ) {
+
+			 my $Get_User_Details = $LDAP_Connection->search(
+			 	base   => $LDAP_Search_Base,
+			 	filter => "(uid=$LDAP_User_Name)"
+			 );
+
+			die $Get_User_Details->error if $Get_User_Details->code;
+
+			my $Display_Name;
+			my $Email;
+			foreach my $User_Values ($Get_User_Details->entries) {
+
+				$Display_Name = $User_Values->get_value("displayName");
+				$Email = $User_Values->get_value("mail");
+			}
+
+				$LDAP_Connection->unbind;
+				return "Success,$Display_Name,$Email"; 
+
 		}
-		
+		$LDAP_Connection->unbind;
 	}
 	else {
 		return 'Off';
