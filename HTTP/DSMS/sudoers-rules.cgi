@@ -122,7 +122,7 @@ if ($Add_Rule && !$Add_Rule_Final) {
 elsif ($Add_Rule_Final) {
 	my $Rule_ID = &add_rule;
 	my $Message_Green="$Rule_Name_Add added successfully as ID $Rule_ID";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
@@ -135,7 +135,7 @@ elsif ($Edit_Rule && !$Edit_Rule_Final) {
 elsif ($Edit_Rule_Final) {
 	&edit_rule;
 	my $Message_Green="$Rule_Name_Edit edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
@@ -148,7 +148,7 @@ elsif ($Delete_Rule) {
 elsif ($Delete_Rule_Confirm) {
 	&delete_rule;
 	my $Message_Green="$Rule_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
@@ -161,7 +161,7 @@ elsif ($Delete_Rule_Item_ID) {
 elsif ($Approve_Rule_ID && $User_Approver) {
 	&approve_rule;
 	my $Message_Green="$Approve_Rule_Name rule approved successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }

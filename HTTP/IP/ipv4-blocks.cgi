@@ -12,6 +12,7 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $Header = Header();
+my $DB_Management = DB_Management();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -20,9 +21,10 @@ my $Edit_Block = $CGI->param("Edit_Block");
 
 my $Block_Name_Add = $CGI->param("Block_Name_Add");
 my $Block_Description_Add = $CGI->param("Block_Description_Add");
-my $Block_Add = $CGI->param("Block_Add");
-	$Block_Add =~ s/\s//g;
-	$Block_Add =~ s/[^0-9\.]//g;
+my $Block_Network_Add = $CGI->param("Block_Network_Add");
+	$Block_Network_Add =~ s/\s//g;
+	$Block_Network_Add =~ s/[^0-9\.]//g;
+my $Block_CIDR_Add = $CGI->param("Block_CIDR_Add");
 my $Gateway_Add = $CGI->param("Gateway_Add");
 	$Gateway_Add =~ s/\s//g;
 	$Gateway_Add =~ s/[^0-9\.]//g;
@@ -35,12 +37,26 @@ my $Range_For_Use_End_Add = $CGI->param("Range_For_Use_End_Add");
 my $Range_For_Use_Subnet_Add = $CGI->param("Range_For_Use_Subnet_Add");
 	$Range_For_Use_Subnet_Add =~ s/\s//g;
 	$Range_For_Use_Subnet_Add =~ s/[^0-9\.]//g;
+my $DNS_1_Add = $CGI->param("DNS_1_Add");
+	$DNS_1_Add =~ s/\s//g;
+	$DNS_1_Add =~ s/[^0-9\.]//g;
+my $DNS_2_Add = $CGI->param("DNS_2_Add");
+	$DNS_2_Add =~ s/\s//g;
+	$DNS_2_Add =~ s/[^0-9\.]//g;
+my $NTP_1_Add = $CGI->param("NTP_1_Add");
+	$NTP_1_Add =~ s/\s//g;
+	$NTP_1_Add =~ s/[^0-9\.]//g;
+my $NTP_2_Add = $CGI->param("NTP_2_Add");
+	$NTP_2_Add =~ s/\s//g;
+	$NTP_2_Add =~ s/[^0-9\.]//g;
 
+my $Block_Edit = $CGI->param("Block_Edit");
 my $Block_Name_Edit = $CGI->param("Block_Name_Edit");
 my $Block_Description_Edit = $CGI->param("Block_Description_Edit");
-my $Block_Edit = $CGI->param("Block_Edit");
-	$Block_Edit =~ s/\s//g;
-	$Block_Edit =~ s/[^0-9\.]//g;
+my $Block_Network_Edit = $CGI->param("Block_Network_Edit");
+	$Block_Network_Edit =~ s/\s//g;
+	$Block_Network_Edit =~ s/[^0-9\.]//g;
+my $Block_CIDR_Edit = $CGI->param("Block_CIDR_Edit");
 my $Gateway_Edit = $CGI->param("Gateway_Edit");
 	$Gateway_Edit =~ s/\s//g;
 	$Gateway_Edit =~ s/[^0-9\.]//g;
@@ -53,6 +69,18 @@ my $Range_For_Use_End_Edit = $CGI->param("Range_For_Use_End_Edit");
 my $Range_For_Use_Subnet_Edit = $CGI->param("Range_For_Use_Subnet_Edit");
 	$Range_For_Use_Subnet_Edit =~ s/\s//g;
 	$Range_For_Use_Subnet_Edit =~ s/[^0-9\.]//g;
+my $DNS_1_Edit = $CGI->param("DNS_1_Edit");
+	$DNS_1_Edit =~ s/\s//g;
+	$DNS_1_Edit =~ s/[^0-9\.]//g;
+my $DNS_2_Edit = $CGI->param("DNS_2_Edit");
+	$DNS_2_Edit =~ s/\s//g;
+	$DNS_2_Edit =~ s/[^0-9\.]//g;
+my $NTP_1_Edit = $CGI->param("NTP_1_Edit");
+	$NTP_1_Edit =~ s/\s//g;
+	$NTP_1_Edit =~ s/[^0-9\.]//g;
+my $NTP_2_Edit = $CGI->param("NTP_2_Edit");
+	$NTP_2_Edit =~ s/\s//g;
+	$NTP_2_Edit =~ s/[^0-9\.]//g;
 
 my $Filter = $CGI->param("Filter");
 my $User_Name = $Session->param("User_Name");
@@ -80,9 +108,9 @@ if ($Add_Block) {
 	&html_output;
 	&html_add_block;
 }
-elsif ($Block_Add) {
+elsif ($Block_Network_Add) {
 	my $Block_ID = &add_block;
-	my $Message_Green="$Block_Name_Add ($Block_Add) added successfully as ID $Block_ID";
+	my $Message_Green="$Block_Name_Add ($Block_Network_Add$Block_CIDR_Add) added successfully as ID $Block_ID";
 	$Session->param('Message_Green', $Message_Green);
 	print "Location: /IP/ipv4-blocks.cgi\n\n";
 	exit(0);
@@ -92,9 +120,9 @@ elsif ($Edit_Block) {
 	&html_output;
 	&html_edit_block;
 }
-elsif ($Block_Edit) {
-	my $Block_ID = &edit_block;
-	my $Message_Green="$Block_Name_Edit ($Block_Edit) edited successfully.";
+elsif ($Block_Edit && $Block_Network_Edit) {
+	&edit_block;
+	my $Message_Green="$Block_Name_Edit ($Block_Network_Edit) edited successfully.";
 	$Session->param('Message_Green', $Message_Green);
 	print "Location: /IP/ipv4-blocks.cgi\n\n";
 	exit(0);
@@ -107,19 +135,17 @@ else {
 
 sub html_add_block {
 
-my $Date = strftime "%Y-%m-%d", localtime;
-
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="/IP/ipv4_blocks.cgi">
+<a href="/IP/ipv4-blocks.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Block</h3>
 
-<form action='/IP/ipv4-blocks.cgi' name='Add_Hosts' method='post' >
+<form action='/IP/ipv4-blocks.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -131,29 +157,78 @@ print <<ENDHTML;
 		<td colspan="3"><input type='text' name='Block_Description_Add' style="width:100%" maxlength='128' placeholder="Block for IT test systems"></td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Block:</td>
-		<td colspan="3"><input type='text' name='Block_Add' style="width:100%" maxlength='18' placeholder="192.168.0.0/21" required></td>
+		<td style="text-align: right;">Block Network:</td>
+		<td><input type='text' name='Block_Network_Add' style="width:100%" maxlength='15' placeholder="192.168.0.0" required></td>
+		<td colspan="2" style="text-align: left;">
+			<select name='Block_CIDR_Add'>
+				<option value='/30'>/30</option>
+				<option value='/29'>/29</option>
+				<option value='/28'>/28</option>
+				<option value='/27'>/27</option>
+				<option value='/26'>/26</option>
+				<option value='/25'>/25</option>
+				<option value='/24' selected>/24</option>
+				<option value='/23'>/23</option>
+				<option value='/22'>/22</option>
+				<option value='/21'>/21</option>
+				<option value='/20'>/20</option>
+				<option value='/19'>/19</option>
+				<option value='/18'>/18</option>
+				<option value='/17'>/17</option>
+				<option value='/16'>/16</option>
+				<option value='/15'>/15</option>
+				<option value='/14'>/14</option>
+				<option value='/13'>/13</option>
+				<option value='/12'>/12</option>
+				<option value='/11'>/11</option>
+				<option value='/10'>/10</option>
+				<option value='/9'>/9</option>
+				<option value='/8'>/8</option>
+			</select>
+		</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Block Gateway:</td>
-		<td colspan="3"><input type='text' name='Gateway_Add' style="width:100%" maxlength='15' placeholder="192.168.7.254"></td>
+		<td><input type='text' name='Gateway_Add' style="width:100%" maxlength='15' placeholder="192.168.0.1"></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td colspan="4"><hr style="width: 50%;"/></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Range for Use:</td>
 		<td><input type='text' name='Range_For_Use_Begin_Add' style="width:100%" maxlength='15' placeholder="192.168.0.10"></td>
-		<td>&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+		<td>&nbsp;&nbsp;to&nbsp;&nbsp;</td>
 		<td><input type='text' name='Range_For_Use_End_Add' style="width:100%" maxlength='15' placeholder="192.168.7.200"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Range for Use Subnet:</td>
-		<td colspan="3"><input type='text' name='Range_For_Use_Subnet_Add' style="width:100%" maxlength='15' placeholder="255.255.248.0"></td>
+		<td><input type='text' name='Range_For_Use_Subnet_Add' style="width:100%" maxlength='15' placeholder="255.255.248.0"></td>
+		<td></td>
+		<td></td>
 	</tr>
-
+	<tr>
+		<td colspan="4"><hr style="width: 50%;"/></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Nearest DNS Server:</td>
+		<td><input type='text' name='DNS_1_Add' style="width:100%" maxlength='15' placeholder="192.168.0.2"></td>
+		<td>&nbsp;DNS2:</td>
+		<td><input type='text' name='DNS_2_Add' style="width:100%" maxlength='15' placeholder="192.168.0.3"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;"> Nearest NTP Server:</td>
+		<td><input type='text' name='NTP_1_Add' style="width:100%" maxlength='15' placeholder="192.168.0.4"></td>
+		<td>&nbsp;NTP2:</td>
+		<td><input type='text' name='NTP_2_Add' style="width:100%" maxlength='15' placeholder="192.168.0.5"></td>
+	</tr>
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-<li>Block names must be unique.</li>
-<li>Gateway and Range data are optional fields, although defining a Gateway is useful for later allocation automation.</li>
+<li>Block Names must be unique.</li>
+<li>Range data, Gateway, DNS and NTP records are optional, although defining the correct Gateway, DNS and NTP servers 
+for the block will be useful for later automation.</li>
 <li>By setting a Range for Use, you can disclude IP addresses in a block from being allocated. For example, you may
 wish to reserve the first 10 IP addresses in a block to reserve the block's network address (the first IP address in the 
 block) and to manually allocate the first parts of a block to network devices, or you may wish to reserve the broadcast 
@@ -163,7 +238,7 @@ broadcast addresses.</li>
 </ul>
 
 <hr width="50%">
-<div style="text-align: center"><input type=submit name='ok' value='Add Host'></div>
+<div style="text-align: center"><input type=submit name='ok' value='Add Block'></div>
 
 </form>
 
@@ -172,13 +247,292 @@ ENDHTML
 } #sub html_add_block
 
 sub add_block {
+
+	### Existing Block Check
+	my $Existing_Block_Check = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`
+		FROM `ipv4_blocks`
+		WHERE `ip_block_name` = ?");
+		$Existing_Block_Check->execute($Block_Name_Add);
+		my $Existing_Blocks = $Existing_Block_Check->rows();
+
+	if ($Existing_Blocks > 0)  {
+		my $Existing_ID;
+		my $Existing_Block_Name;
+		while ( my @Select_Blocks = $Existing_Block_Check->fetchrow_array() )
+		{
+			$Existing_ID = $Select_Blocks[0];
+			$Existing_Block_Name = $Select_Blocks[1];
+		}
+		my $Message_Red="Host Name: $Existing_Block_Name already exists as ID: $Existing_ID";
+		$Session->param('Message_Red', $Message_Red);
+		print "Location: /IP/ipv4-blocks.cgi\n\n";
+		exit(0);
+	}
+	### / Existing Block Check
+
+	my $Block_Insert = $DB_IP_Allocation->prepare("INSERT INTO `ipv4_blocks` (
+		`ip_block_name`,
+		`ip_block_description`,
+		`ip_block`,
+		`gateway`,
+		`range_for_use`,
+		`range_for_use_subnet`,
+		`dns1`,
+		`dns2`,
+		`ntp1`,
+		`ntp2`,
+		`modified_by`
+	)
+	VALUES (
+		?, ?, ?, ?,
+		?, ?, ?, ?,
+		?, ?, ?
+	)");
+
+	my $Range_For_Use_Add;
+	if ($Range_For_Use_Begin_Add && $Range_For_Use_End_Add) {
+		$Range_For_Use_Add = $Range_For_Use_Begin_Add . " - " . $Range_For_Use_End_Add;
+	}
+
+	$Block_Insert->execute($Block_Name_Add, $Block_Description_Add, "$Block_Network_Add$Block_CIDR_Add", $Gateway_Add, 
+		$Range_For_Use_Add, $Range_For_Use_Subnet_Add, $DNS_1_Add, $DNS_2_Add, 
+		$NTP_1_Add, $NTP_2_Add, $User_Name);
+
+	my $Block_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
+
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
 	
+	$Audit_Log_Submission->execute("IP", "Add", "$User_Name added $Block_Name_Add ($Block_Network_Add$Block_CIDR_Add). The system assigned it Block ID $Block_Insert_ID.", $User_Name);
+
 } # sub add_block
+
+sub html_edit_block {
+
+	my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `ip_block_name`, `ip_block_description`, `ip_block`, `gateway`, `range_for_use`, `range_for_use_subnet`, `dns1`, `dns2`, `ntp1`, `ntp2`
+	FROM `ipv4_blocks`
+	WHERE `id` LIKE ?");
+
+	$IPv4_Block_Query->execute($Edit_Block);
+	
+	my $Row_Count=1;
+	while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
+	{
+
+	my $Block_Name = $IPv4_Block_Query_Output[0];
+	my $Block_Description = $IPv4_Block_Query_Output[1];
+	my $Block_Extract = $IPv4_Block_Query_Output[2];
+		my $Block_Network = $Block_Extract;
+			$Block_Network =~ s/(.*)\/.*/$1/;
+		my $Block_CIDR = $Block_Extract;
+			$Block_CIDR =~ s/.*(\/.*)/$1/;
+	my $Gateway_Extract = $IPv4_Block_Query_Output[3];
+	my $Range_For_Use = $IPv4_Block_Query_Output[4];
+		my $Range_For_Use_Begin = $Range_For_Use;
+			$Range_For_Use_Begin =~ s/(.*)\s-\s.*/$1/;
+		my $Range_For_Use_End = $Range_For_Use;
+			$Range_For_Use_End =~ s/.*\s-\s(.*)/$1/;
+	my $Range_For_Use_Subnet = $IPv4_Block_Query_Output[5];
+	my $DNS1 = $IPv4_Block_Query_Output[6];
+	my $DNS2 = $IPv4_Block_Query_Output[7];
+	my $NTP1 = $IPv4_Block_Query_Output[8];
+	my $NTP2 = $IPv4_Block_Query_Output[9];
+
+
+print <<ENDHTML;
+
+<div id="wide-popup-box">
+<a href="/IP/ipv4-blocks.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Edit Block ID $Edit_Block</h3>
+
+<form action='/IP/ipv4-blocks.cgi' method='post' >
+
+<table align = "center">
+	<tr>
+		<td style="text-align: right;">Block Name:</td>
+		<td colspan="3"><input type='text' name='Block_Name_Edit' value="$Block_Name" style="width:100%" maxlength='128' placeholder="$Block_Name" required autofocus></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Block Description:</td>
+		<td colspan="3"><input type='text' name='Block_Description_Edit' value="$Block_Description" style="width:100%" maxlength='128' placeholder="$Block_Description"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Block Network:</td>
+		<td><input type='text' name='Block_Network_Edit' value="$Block_Network" style="width:100%" maxlength='15' placeholder="$Block_Network" required></td>
+		<td colspan="2" style="text-align: left;">
+			<select name='Block_CIDR_Edit'>
+ENDHTML
+
+if ($Block_CIDR eq '/30') {print "<option style='background-color: #00FF00;' value='/30' selected>/30</option>";} else {print "<option value='/30'>/30</option>";}
+if ($Block_CIDR eq '/29') {print "<option style='background-color: #00FF00;' value='/29' selected>/29</option>";} else {print "<option value='/29'>/29</option>";}
+if ($Block_CIDR eq '/28') {print "<option style='background-color: #00FF00;' value='/28' selected>/28</option>";} else {print "<option value='/28'>/28</option>";}
+if ($Block_CIDR eq '/27') {print "<option style='background-color: #00FF00;' value='/27' selected>/27</option>";} else {print "<option value='/27'>/27</option>";}
+if ($Block_CIDR eq '/26') {print "<option style='background-color: #00FF00;' value='/26' selected>/26</option>";} else {print "<option value='/26'>/26</option>";}
+if ($Block_CIDR eq '/25') {print "<option style='background-color: #00FF00;' value='/25' selected>/25</option>";} else {print "<option value='/25'>/25</option>";}
+if ($Block_CIDR eq '/24') {print "<option style='background-color: #00FF00;' value='/24' selected>/24</option>";} else {print "<option value='/24'>/24</option>";}
+if ($Block_CIDR eq '/23') {print "<option style='background-color: #00FF00;' value='/23' selected>/23</option>";} else {print "<option value='/23'>/23</option>";}
+if ($Block_CIDR eq '/22') {print "<option style='background-color: #00FF00;' value='/22' selected>/22</option>";} else {print "<option value='/22'>/22</option>";}
+if ($Block_CIDR eq '/21') {print "<option style='background-color: #00FF00;' value='/21' selected>/21</option>";} else {print "<option value='/21'>/21</option>";}
+if ($Block_CIDR eq '/20') {print "<option style='background-color: #00FF00;' value='/20' selected>/20</option>";} else {print "<option value='/20'>/20</option>";}
+if ($Block_CIDR eq '/19') {print "<option style='background-color: #00FF00;' value='/19' selected>/19</option>";} else {print "<option value='/19'>/19</option>";}
+if ($Block_CIDR eq '/18') {print "<option style='background-color: #00FF00;' value='/18' selected>/18</option>";} else {print "<option value='/18'>/18</option>";}
+if ($Block_CIDR eq '/17') {print "<option style='background-color: #00FF00;' value='/17' selected>/17</option>";} else {print "<option value='/17'>/17</option>";}
+if ($Block_CIDR eq '/16') {print "<option style='background-color: #00FF00;' value='/16' selected>/16</option>";} else {print "<option value='/16'>/16</option>";}
+if ($Block_CIDR eq '/15') {print "<option style='background-color: #00FF00;' value='/15' selected>/15</option>";} else {print "<option value='/15'>/15</option>";}
+if ($Block_CIDR eq '/14') {print "<option style='background-color: #00FF00;' value='/14' selected>/14</option>";} else {print "<option value='/14'>/14</option>";}
+if ($Block_CIDR eq '/13') {print "<option style='background-color: #00FF00;' value='/13' selected>/13</option>";} else {print "<option value='/13'>/13</option>";}
+if ($Block_CIDR eq '/12') {print "<option style='background-color: #00FF00;' value='/12' selected>/12</option>";} else {print "<option value='/12'>/12</option>";}
+if ($Block_CIDR eq '/11') {print "<option style='background-color: #00FF00;' value='/11' selected>/11</option>";} else {print "<option value='/11'>/11</option>";}
+if ($Block_CIDR eq '/10') {print "<option style='background-color: #00FF00;' value='/10' selected>/10</option>";} else {print "<option value='/10'>/10</option>";}
+if ($Block_CIDR eq '/9') {print "<option style='background-color: #00FF00;' value='/9' selected>/9</option>";} else {print "<option value='/9'>/9</option>";}
+if ($Block_CIDR eq '/8') {print "<option style='background-color: #00FF00;' value='/8' selected>/8</option>";} else {print "<option value='/8'>/8</option>";}
+
+print <<ENDHTML
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Block Gateway:</td>
+		<td><input type='text' name='Gateway_Edit' value="$Gateway_Extract" style="width:100%" maxlength='15' placeholder="$Gateway_Extract"></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td colspan="4"><hr style="width: 50%;"/></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Range for Use:</td>
+		<td><input type='text' name='Range_For_Use_Begin_Edit' value="$Range_For_Use_Begin" style="width:100%" maxlength='15' placeholder="$Range_For_Use_Begin"></td>
+		<td>&nbsp;&nbsp;to&nbsp;&nbsp;</td>
+		<td><input type='text' name='Range_For_Use_End_Edit' value="$Range_For_Use_End" style="width:100%" maxlength='15' placeholder="$Range_For_Use_End"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Range for Use Subnet:</td>
+		<td><input type='text' name='Range_For_Use_Subnet_Edit' value="$Range_For_Use_Subnet" style="width:100%" maxlength='15' placeholder="$Range_For_Use_Subnet"></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td colspan="4"><hr style="width: 50%;"/></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Nearest DNS Server:</td>
+		<td><input type='text' name='DNS_1_Edit' value="$DNS1" style="width:100%" maxlength='15' placeholder="$DNS1"></td>
+		<td>&nbsp;DNS2:</td>
+		<td><input type='text' name='DNS_2_Edit' value="$DNS2" style="width:100%" maxlength='15' placeholder="$DNS2"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;"> Nearest NTP Server:</td>
+		<td><input type='text' name='NTP_1_Edit' value="$NTP1" style="width:100%" maxlength='15' placeholder="$NTP1"></td>
+		<td>&nbsp;NTP2:</td>
+		<td><input type='text' name='NTP_2_Edit' value="$NTP2" style="width:100%" maxlength='15' placeholder="$NTP2"></td>
+	</tr>
+</table>
+
+<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
+<li>Block Names must be unique.</li>
+<li>Range data, Gateway, DNS and NTP records are optional, although defining the correct Gateway, DNS and NTP servers 
+for the block will be useful for later automation.</li>
+<li>By setting a Range for Use, you can disclude IP addresses in a block from being allocated. For example, you may
+wish to reserve the first 10 IP addresses in a block to reserve the block's network address (the first IP address in the 
+block) and to manually allocate the first parts of a block to network devices, or you may wish to reserve the broadcast 
+address (the last IP address in a block). It really depends on what you intend to do with the block - allocate 
+individual addresses from the block, or breaking the block down into smaller blocks with individual network and 
+broadcast addresses.</li>
+</ul>
+
+<input type='hidden' name='Block_Edit' value="$Edit_Block">
+
+<hr width="50%">
+<div style="text-align: center"><input type=submit name='ok' value='Edit Block'></div>
+
+</form>
+
+ENDHTML
+
+	}
+
+} # sub html_edit_block
+
+sub edit_block {
+
+	### Existing Block Check
+	my $Existing_Block_Check = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block`
+		FROM `ipv4_blocks`
+		WHERE `ip_block_name` = ?
+		AND `id` != ?");
+		$Existing_Block_Check->execute($Block_Name_Edit, $Block_Edit);
+		my $Existing_Blocks = $Existing_Block_Check->rows();
+
+	if ($Existing_Blocks > 0)  {
+		my $Existing_ID;
+		my $Existing_Block_Name;
+		my $Existing_Block_IP;
+		while ( my @Select_Blocks = $Existing_Block_Check->fetchrow_array() )
+		{
+			$Existing_ID = $Select_Blocks[0];
+			$Existing_Block_Name = $Select_Blocks[1];
+			$Existing_Block_IP = $Select_Blocks[2];
+		}
+		my $Message_Red="Block Name: $Existing_Block_Name already exists as ID: $Existing_ID, Block: $Existing_Block_IP";
+		$Session->param('Message_Red', $Message_Red);
+		print "Location: /IP/ipv4-blocks.cgi\n\n";
+		exit(0);
+	}
+	### / Existing Block Check
+
+	my $Range_For_Use;
+	if ($Range_For_Use_Begin_Edit && $Range_For_Use_End_Edit) {
+		$Range_For_Use = $Range_For_Use_Begin_Edit . " - " . $Range_For_Use_End_Edit;
+	}
+
+	my $Update_Block = $DB_IP_Allocation->prepare("UPDATE `ipv4_blocks` SET
+		`ip_block_name` = ?,
+		`ip_block_description` = ?,
+		`ip_block` = ?,
+		`gateway` = ?,
+		`range_for_use` = ?,
+		`range_for_use_subnet` = ?,
+		`dns1` = ?,
+		`dns2` = ?,
+		`ntp1` = ?,
+		`ntp2` = ?,
+		`modified_by` = ?
+		WHERE `id` = ?");
+	
+	$Update_Block->execute($Block_Name_Edit, $Block_Description_Edit, "$Block_Network_Edit$Block_CIDR_Edit", 
+		$Gateway_Edit, $Range_For_Use, $Range_For_Use_Subnet_Edit, $DNS_1_Edit, $DNS_2_Edit, $NTP_1_Edit, 
+		$NTP_2_Edit, $User_Name, $Block_Edit);
+
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+	
+	$Audit_Log_Submission->execute("IP", "Modify", "$User_Name modified $Block_Name_Edit ($Block_Network_Edit$Block_CIDR_Edit).", $User_Name);
+
+} # sub edit_block
 
 sub html_output {
 
 my $Table = new HTML::Table(
-	-cols=>8,
+	-cols=>11,
 	-align=>'center',
 	-border=>0,
 	-rules=>'cols',
@@ -188,27 +542,33 @@ my $Table = new HTML::Table(
 	-spacing=>0,
 	-padding=>1
 );
-$Table->addRow ( "Block Name", "Block Description", "IPv4 Block", "Gateway", "Range for Use", "Range for Use Subnet", "Used", "Delete" );
+$Table->addRow ( "ID", "Block Name", "Block Description", "IPv4 Block", "Gateway", "Range for Use", 
+	"Range for Use Subnet", "DNS Servers", "NTP Servers", "Used", "Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
 $Table->setRowStyle(1, "background-color:#293E77;");
 
-my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`, `gateway`, `range_for_use`, `range_for_use_subnet`, `percent_used`
-FROM `ipv4_address_blocks`
+my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`, `gateway`, `range_for_use`, `range_for_use_subnet`, `dns1`, `dns2`, `ntp1`, `ntp2`, `percent_used`
+FROM `ipv4_blocks`
 WHERE `ip_block` LIKE ?
 	OR `ip_block_name` LIKE ?
 	OR `ip_block_description` LIKE ?
 	OR `range_for_use` LIKE ?
 	OR `range_for_use_subnet` LIKE ?
 	OR `percent_used` LIKE ?
+	OR `dns1` LIKE ?
+	OR `dns2` LIKE ?
+	OR `ntp1` LIKE ?
+	OR `ntp2` LIKE ?
 ORDER BY
 	SUBSTRING_INDEX(`ip_block`,'.',1)+0,
     SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-3),'.',1)+0,
     SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-2),'.',1)+0,
     SUBSTRING_INDEX(`ip_block`,'.',-1)+0 ASC");
-$IPv4_Block_Query->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+$IPv4_Block_Query->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
+	"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
 
 my $Rows = $IPv4_Block_Query->rows();
-my $IP_Block_Total_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `ipv4_address_blocks`");
+my $IP_Block_Total_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `ipv4_blocks`");
 	$IP_Block_Total_Count->execute( );
 	my $Total_Rows = $IP_Block_Total_Count->rows();
 
@@ -218,7 +578,7 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 
 	$Row_Count++;
 	
-	my $ID =$IPv4_Block_Query_Output[0];
+	my $ID = $IPv4_Block_Query_Output[0];
 	my $Block_Name = $IPv4_Block_Query_Output[1];
 		$Block_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 	my $Block_Description = $IPv4_Block_Query_Output[2];
@@ -231,33 +591,46 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 		$Range_For_Use =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 	my $Range_For_Use_Subnet = $IPv4_Block_Query_Output[6];
 		$Range_For_Use_Subnet =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-	my $Percent_Used = $IPv4_Block_Query_Output[7];
+	my $DNS1 = $IPv4_Block_Query_Output[7];
+		$DNS1 =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+	my $DNS2 = $IPv4_Block_Query_Output[8];
+		$DNS2 =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+	my $NTP1 = $IPv4_Block_Query_Output[9];
+		$NTP1 =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+	my $NTP2 = $IPv4_Block_Query_Output[10];
+		$NTP2 =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+	my $Percent_Used = $IPv4_Block_Query_Output[11];
 		$Percent_Used = sprintf("%.2f", $Percent_Used);
 		$Percent_Used =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 	
 	
-	$Table->addRow( $Block_Name, $Block_Description, $Block, $Gateway_Extract,
-		$Range_For_Use, $Range_For_Use_Subnet, $Percent_Used."%", 
+	$Table->addRow( $ID, $Block_Name, $Block_Description, $Block, $Gateway_Extract,
+		$Range_For_Use, $Range_For_Use_Subnet, "$DNS1<br />$DNS2", "$NTP1<br />$NTP2", $Percent_Used."%", 
+		"<a href='/IP/ipv4-blocks.cgi?Edit_Block=$ID'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
 		"<a href='/IP/ipv4-blocks.cgi?Delete=$ID'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>");
-	$Table->setColClass (8, 'tbenablecolumn');
+	$Table->setColClass (9, 'tbenablecolumn');
 	
 	if ($Percent_Used <= 50) {
-		$Table->setCellClass ($Row_Count, 7, 'tbrowgreen');
+		$Table->setCellClass ($Row_Count, 10, 'tbrowgreen');
 	}
 	elsif ($Percent_Used <= 75) {
-		$Table->setCellClass ($Row_Count, 7, 'tbrowyellow');
+		$Table->setCellClass ($Row_Count, 10, 'tbrowyellow');
 	}
 	elsif ($Percent_Used <= 90) {
-		$Table->setCellClass ($Row_Count, 7, 'tbrowwarning');
+		$Table->setCellClass ($Row_Count, 10, 'tbrowwarning');
 	}
 	elsif ($Percent_Used > 90) {
-		$Table->setCellClass ($Row_Count, 7, 'tbrowerror');
+		$Table->setCellClass ($Row_Count, 10, 'tbrowerror');
 	}
 }
 
-	$Table->setColWidth(8, '1px');
-	$Table->setColAlign(7, 'center');
-	$Table->setColAlign(8, 'center');
+	$Table->setColWidth(1, '1px');
+	$Table->setColWidth(11, '1px');
+	$Table->setColWidth(12, '1px');
+	$Table->setColAlign(1, 'center');
+	for (4 .. 12) {
+		$Table->setColAlign($_, 'center');
+	}
 
 print <<ENDHTML;
 
@@ -320,7 +693,7 @@ print <<ENDHTML;
 ENDHTML
 
 						my $Block_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block`
-						FROM `ipv4_address_blocks`
+						FROM `ipv4_blocks`
 						ORDER BY `ip_block_name` ASC");
 						$Block_List_Query->execute( );
 						

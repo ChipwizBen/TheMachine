@@ -155,6 +155,11 @@ print <<ENDHTML;
 					<li><a href="/#">BIND</a></li>
 				</ul>
 			</li>
+			<li><a href="/#"><span>&nbsp; Reverse Proxy</span></a>
+				<ul>
+					<li><a href="/#">Rev</a></li>
+				</ul>
+			</li>
 			<li><a href="/#"><span>&nbsp; DSMS</span></a>
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>

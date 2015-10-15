@@ -16,10 +16,10 @@ my $Recovery_Email_Address = Recovery_Email_Address();
 
 my $Referer = $Session->param("Referer");
 
-if ( $ENV{HTTP_REFERER} !~ m/.login./ ) {
-	$Referer = $ENV{HTTP_REFERER};
-	$Session->param('Referer', $Referer);
-}
+#if ( $ENV{HTTP_REFERER} !~ m/.login./ ) {
+	#$Referer = $ENV{HTTP_REFERER};
+	#$Session->param('Referer', $Referer);
+#}
 
 my $User_Name_Form = $CGI->param("Username_Form");
 my $User_Password_Form = $CGI->param("Password_Form");

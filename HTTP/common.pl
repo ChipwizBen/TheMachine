@@ -336,7 +336,7 @@ sub CGI {
     # '+30s'; # Set to +30s to expire after 30 seconds
 	# '+5s';  # Set to +5s if you're Chuck Norris
 
-	my $Session_Directory = '/tmp/Sudoers-CGI-Sessions';
+	my $Session_Directory = '/tmp/CGI-Sessions';
 	my $Session_Expiry = '+1h';
 
 	use CGI;
