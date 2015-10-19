@@ -18,6 +18,7 @@ my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Block = $CGI->param("Add_Block");
 my $Edit_Block = $CGI->param("Edit_Block");
+my $Query_Block = $CGI->param("Query_Block");
 
 my $Block_Name_Add = $CGI->param("Block_Name_Add");
 my $Block_Description_Add = $CGI->param("Block_Description_Add");
@@ -82,6 +83,83 @@ my $NTP_2_Edit = $CGI->param("NTP_2_Edit");
 	$NTP_2_Edit =~ s/\s//g;
 	$NTP_2_Edit =~ s/[^0-9\.]//g;
 
+my $Enabled_Up_Arrow = '&#9650;';
+my $Disabled_Up_Arrow = '&#9651;';
+my $Enabled_Down_Arrow = '&#9660;';
+my $Disabled_Down_Arrow = '&#9661;';
+my ($Block_Name_Arrow, $Block_IP_Arrow, $Block_Used_Arrow, $Order_By_Host, $Order_By_Block, $Order_By_Percent_Used);
+my $Order_By_SQL;
+my $Order_By = $CGI->param("Order_By");
+	if ($Order_By eq 'Host-ASC') {
+		$Order_By_SQL = "`ip_block_name` ASC";
+		$Block_Name_Arrow = $Enabled_Up_Arrow;
+		$Block_IP_Arrow = $Disabled_Up_Arrow;
+		$Block_Used_Arrow = $Disabled_Up_Arrow;
+		$Order_By_Host = 'Host-DESC';
+		$Order_By_Block = 'IP-ASC';
+		$Order_By_Percent_Used = 'Used-ASC';
+	}
+	elsif ($Order_By eq 'Host-DESC') {
+		$Order_By_SQL = "`ip_block_name` DESC";
+		$Block_Name_Arrow = $Enabled_Down_Arrow;
+		$Block_IP_Arrow = $Disabled_Up_Arrow;
+		$Block_Used_Arrow = $Disabled_Up_Arrow;
+		$Order_By_Host = 'Host-ASC';
+		$Order_By_Block = 'IP-ASC';
+		$Order_By_Percent_Used = 'Used-ASC';
+	}
+	elsif ($Order_By eq 'IP-ASC') {
+		$Order_By_SQL = "SUBSTRING_INDEX(`ip_block`,'.',1)+0 ASC,
+			SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-3),'.',1)+0 ASC,
+			SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-2),'.',1)+0 ASC,
+			SUBSTRING_INDEX(`ip_block`,'.',-1)+0 ASC";
+		$Block_Name_Arrow = $Disabled_Up_Arrow;
+		$Block_IP_Arrow = $Enabled_Up_Arrow;
+		$Block_Used_Arrow = $Disabled_Up_Arrow;
+		$Order_By_Host = 'Host-ASC';
+		$Order_By_Block = 'IP-DESC';
+		$Order_By_Percent_Used = 'Used-ASC';
+	}
+	elsif ($Order_By eq 'IP-DESC') {
+		$Order_By_SQL = "SUBSTRING_INDEX(`ip_block`,'.',1)+0 DESC,
+			SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-3),'.',1)+0 DESC,
+			SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-2),'.',1)+0 DESC,
+			SUBSTRING_INDEX(`ip_block`,'.',-1)+0 DESC";
+		$Block_Name_Arrow = $Disabled_Up_Arrow;
+		$Block_IP_Arrow = $Enabled_Down_Arrow;
+		$Block_Used_Arrow = $Disabled_Up_Arrow;
+		$Order_By_Host = 'Host-ASC';
+		$Order_By_Block = 'IP-ASC';
+		$Order_By_Percent_Used = 'Used-ASC';
+	}
+	elsif ($Order_By eq 'Used-ASC') {
+		$Order_By_SQL = "`percent_used` ASC";
+		$Block_Name_Arrow = $Disabled_Up_Arrow;
+		$Block_IP_Arrow = $Disabled_Up_Arrow;
+		$Block_Used_Arrow = $Enabled_Up_Arrow;
+		$Order_By_Host = 'Host-ASC';
+		$Order_By_Block = 'IP-ASC';
+		$Order_By_Percent_Used = 'Used-DESC';
+	}
+	elsif ($Order_By eq 'Used-DESC') {
+		$Order_By_SQL = "`percent_used` DESC";
+		$Block_Name_Arrow = $Disabled_Up_Arrow;
+		$Block_IP_Arrow = $Disabled_Up_Arrow;
+		$Block_Used_Arrow = $Enabled_Down_Arrow;
+		$Order_By_Host = 'Host-ASC';
+		$Order_By_Block = 'IP-ASC';
+		$Order_By_Percent_Used = 'Used-ASC';
+	}
+	else {
+		$Order_By_SQL = "`ip_block_name` ASC";
+		$Block_Name_Arrow = $Enabled_Up_Arrow;
+		$Block_IP_Arrow = $Disabled_Up_Arrow;
+		$Block_Used_Arrow = $Disabled_Up_Arrow;
+		$Order_By_Host = 'Host-DESC';
+		$Order_By_Block = 'IP-ASC';
+		$Order_By_Percent_Used = 'Used-ASC';
+	}
+
 my $Filter = $CGI->param("Filter");
 my $User_Name = $Session->param("User_Name");
 my $User_IP_Admin = $Session->param("User_IP_Admin");
@@ -126,6 +204,11 @@ elsif ($Block_Edit && $Block_Network_Edit) {
 	$Session->param('Message_Green', $Message_Green);
 	print "Location: /IP/ipv4-blocks.cgi\n\n";
 	exit(0);
+}
+elsif ($Query_Block) {
+	require $Header;
+	&html_output;
+	&html_query_block($Query_Block);
 }
 else {
 	require $Header;
@@ -529,6 +612,119 @@ sub edit_block {
 
 } # sub edit_block
 
+sub html_query_block {
+
+my ($Block) = @_;
+
+my $Block_Query = new Net::IP::XS ($Block) || die (Net::IP::XS::Error);
+
+	my ($Block_Prefix,$CIDR)=Net::IP::XS::ip_splitprefix($Block);
+	my $Block_Version=$Block_Query->version();
+	my $Block_Type=$Block_Query->iptype();
+	my $Short_Format=$Block_Query->short();
+	my $Block_Addresses=$Block_Query->size();
+		my $Usable_Addresses=$Block_Addresses-3; # Excludes gateway
+			if ($Usable_Addresses < 1) {$Usable_Addresses = 'N/A'}
+	my $Decimal_Subnet=$Block_Query->mask();
+	my $Range_Min=$Block_Query->ip();
+	my $Range_Max=$Block_Query->last_ip();
+	my $Reverse_IP=$Block_Query->reverse_ip();
+	my $Hex_IP=$Block_Query->hexip();
+	my $Hex_Mask=$Block_Query->hexmask();
+	
+my $Usable_Range_Begin=$Block_Query->intip();
+	$Usable_Range_Begin=$Usable_Range_Begin+1;
+		my $Octet1=($Usable_Range_Begin/16777216)%256;
+		my $Octet2=($Usable_Range_Begin/65536)%256;
+		my $Octet3=($Usable_Range_Begin/256)%256;
+		my $Octet4=$Usable_Range_Begin%256;
+		$Usable_Range_Begin = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
+	
+my $Usable_Range_End=$Block_Query->last_ip();
+my $Block_Query_End = new Net::IP::XS ($Usable_Range_End) || die (Net::IP::XS::Error);
+	$Usable_Range_End=$Block_Query_End->intip();
+	$Usable_Range_End=$Usable_Range_End-1;
+		$Octet1=($Usable_Range_End/16777216)%256;
+		$Octet2=($Usable_Range_End/65536)%256;
+		$Octet3=($Usable_Range_End/256)%256;
+		$Octet4=$Usable_Range_End%256;
+		$Usable_Range_End = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
+
+print <<ENDHTML;
+<body>
+
+<div id="small-popup-box">
+<a href="ipv4-blocks.cgi">
+<div id="blockclosebutton"> 
+</div>
+</a>
+<h3>Block Query</h3>
+
+<p>The data here relates to the overall block, and does not consider the enforced Range for Use, if applicable. 
+During allocation, the Range for Use is enforced. The gateway address is already discounted from Usable Addresses.</p>
+
+<table align="center" style="font-size: 12px;">
+	<tr>
+		<td style="text-align: right;">Queried Block</td>
+		<td style="text-align: left; color: #00FF00;">$Block</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Block Version</td>
+		<td style="text-align: left; color: #00FF00;">IPv$Block_Version</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Block Type</td>
+		<td style="text-align: left; color: #00FF00;">$Block_Type</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Short Format</td>
+		<td style="text-align: left; color: #00FF00;">$Short_Format/$CIDR</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Decimal Mask</td>
+		<td style="text-align: left; color: #00FF00;">$Decimal_Subnet</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Network Address</td>
+		<td style="text-align: left; color: #00FF00;">$Range_Min</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Broadcast Address</td>
+		<td style="text-align: left; color: #00FF00;">$Range_Max</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Block Addresses</td>
+		<td style="text-align: left; color: #00FF00;">$Block_Addresses</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Usable Addresses</td>
+		<td style="text-align: left; color: #00FF00;">$Usable_Addresses</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Usable Range</td>
+		<td style="text-align: left; color: #00FF00;">$Usable_Range_Begin to $Usable_Range_End</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Reverse</td>
+		<td style="text-align: left; color: #00FF00;">$Reverse_IP</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Hex IP</td>
+		<td style="text-align: left; color: #00FF00;">$Hex_IP</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Hex Mask</td>
+		<td style="text-align: left; color: #00FF00;">$Hex_Mask</td>
+	</tr>
+</table>
+
+
+</div>
+
+ENDHTML
+
+} # sub html_query_block
+
 sub html_output {
 
 my $Table = new HTML::Table(
@@ -542,10 +738,14 @@ my $Table = new HTML::Table(
 	-spacing=>0,
 	-padding=>1
 );
-$Table->addRow ( "ID", "Block Name", "Block Description", "IPv4 Block", "Gateway", "Range for Use", 
-	"Range for Use Subnet", "DNS Servers", "NTP Servers", "Used", "Edit", "Delete" );
+$Table->addRow ( "ID", 
+"Block Name <a href='/IP/ipv4-blocks.cgi?Order_By=$Order_By_Host&Filter=$Filter'>$Block_Name_Arrow</a>", 
+"Block Description", 
+"IPv4 Block <a href='/IP/ipv4-blocks.cgi?Order_By=$Order_By_Block&Filter=$Filter'>$Block_IP_Arrow</a>", 
+"Gateway", "Range for Use",	"Range for Use Subnet", "DNS Servers", "NTP Servers", 
+"Used <a href='/IP/ipv4-blocks.cgi?Order_By=$Order_By_Percent_Used&Filter=$Filter'>$Block_Used_Arrow</a>", 
+"Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
-$Table->setRowStyle(1, "background-color:#293E77;");
 
 my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`, `gateway`, `range_for_use`, `range_for_use_subnet`, `dns1`, `dns2`, `ntp1`, `ntp2`, `percent_used`
 FROM `ipv4_blocks`
@@ -560,10 +760,7 @@ WHERE `ip_block` LIKE ?
 	OR `ntp1` LIKE ?
 	OR `ntp2` LIKE ?
 ORDER BY
-	SUBSTRING_INDEX(`ip_block`,'.',1)+0,
-    SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-3),'.',1)+0,
-    SUBSTRING_INDEX(SUBSTRING_INDEX(`ip_block`,'.',-2),'.',1)+0,
-    SUBSTRING_INDEX(`ip_block`,'.',-1)+0 ASC");
+	$Order_By_SQL");
 $IPv4_Block_Query->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
 	"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
 
@@ -604,8 +801,9 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 		$Percent_Used =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 	
 	
-	$Table->addRow( $ID, $Block_Name, $Block_Description, $Block, $Gateway_Extract,
-		$Range_For_Use, $Range_For_Use_Subnet, "$DNS1<br />$DNS2", "$NTP1<br />$NTP2", $Percent_Used."%", 
+	$Table->addRow( $ID, $Block_Name, $Block_Description, 
+		"<a href='/IP/ipv4-blocks.cgi?Query_Block=$Block_Extract'>$Block</a>", 
+		$Gateway_Extract, $Range_For_Use, $Range_For_Use_Subnet, "$DNS1<br />$DNS2", "$NTP1<br />$NTP2", $Percent_Used."%", 
 		"<a href='/IP/ipv4-blocks.cgi?Edit_Block=$ID'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
 		"<a href='/IP/ipv4-blocks.cgi?Delete=$ID'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>");
 	$Table->setColClass (9, 'tbenablecolumn');
@@ -663,6 +861,7 @@ print <<ENDHTML;
 					</td>
 					<td style="text-align: right;">
 						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Blocks" placeholder="Search">
+						<input type='hidden' name='Order_By' value='$Order_By'>
 					</td>
 				</tr>
 			</form>

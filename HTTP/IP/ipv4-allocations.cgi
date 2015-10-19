@@ -23,6 +23,13 @@ if (!$User_Name) {
 	exit(0);
 }
 
+my $Rows_Returned = $CGI->param("Rows_Returned");
+my $Filter = $CGI->param("Filter");
+
+if ($Rows_Returned eq '') {
+	$Rows_Returned='100';
+}
+
 if ($User_IP_Admin != 1) {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red);
@@ -44,9 +51,11 @@ if ($Reset eq '1') {
 	exit(0);
 }
 elsif ($Location_Input) {
+	`echo Here >> /tmp/output`;
 	my ($IP_Block_Name, $Final_Allocated_IP) = &allocation;
+	`echo "BN $IP_Block_Name FAI $Final_Allocated_IP" >> /tmp/output`;
 	require $Header;
-	&html_output ($IP_Block_Name, $Final_Allocated_IP);
+	&html_auto_block ($IP_Block_Name, $Final_Allocated_IP);
 }
 else {
 	if ($Manual_Override eq '1') {
@@ -63,7 +72,7 @@ else {
 sub allocation {
 
 	my $Discover_Allocatable_Blocks = $DB_IP_Allocation->prepare("SELECT `ip_block_name`, `ip_block`, `ip_block_description`, `range_for_use`, `range_for_use_subnet`
-	FROM `ipv4_address_blocks`
+	FROM `ipv4_blocks`
 	WHERE `id` = ?");
 
 	$Discover_Allocatable_Blocks->execute($Location_Input);
@@ -90,14 +99,11 @@ sub allocation {
 		LOOP: while ($Counter != $Rows) {
 			
 			$IP_Block =~ s/\/..//;
-			my $IP_Block_Truncate = $IP_Block;
-				$IP_Block_Truncate =~ s/^(\d*\.\d*\.).*$/$1/;
 
 			my $IP_Block_Check_Cycle = $DB_IP_Allocation->prepare("SELECT `network_block`
 				FROM `ipv4_allocations`
-				WHERE `network_block` LIKE ?
 				ORDER BY `network_block` ASC");
-			$IP_Block_Check_Cycle->execute("$IP_Block_Truncate%");
+			$IP_Block_Check_Cycle->execute();
 			$Rows = $IP_Block_Check_Cycle->rows();
 
 			while ( my @Block_DB_Output = $IP_Block_Check_Cycle->fetchrow_array() )
@@ -232,7 +238,7 @@ my ($Allocation_Range_Error, $IP_Block) = @_;
 	exit(0);
 } # sub allocation_error
 
-sub html_output {
+sub html_auto_block {
 
 my ($IP_Block_Name, $Final_Allocated_IP) = @_;
 
@@ -250,23 +256,25 @@ if ($Final_Allocated_IP) {
 		$Final_Range_Max=$Final_IP_Allocation->last_ip();
 }
 
-
 print <<ENDHTML;
 
-<div id="full-page-block">
-<p><b>IPv4 Allocation</b></p>
+<div id="wide-popup-box">
+<a href="/IP/ipv4-allocations.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
 
-	<a href="ipv4-allocations.cgi?Manual_Override=1">Switch to Manual Allocation</a>
+<h3 align="center">IPv4 Allocation</h3>
+
 	
 	<form action='ipv4-allocations.cgi' method='post'>
 		<p>Block:</p>		
 		<select name='Location_Input'>
 ENDHTML
 
-		my $Location_Retreive = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`
-		FROM `ipv4_address_blocks`
-		WHERE `status` = '1'
-		ORDER BY `ip_block_name`");
+		my $Location_Retreive = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
+		FROM `ipv4_blocks`
+		ORDER BY `ip_block_name` ASC");
 		
 		$Location_Retreive->execute( );
 		
@@ -275,8 +283,9 @@ ENDHTML
 			my $IP_Block_ID = $DB_Output[0];
 			my $IP_Block_Name = $DB_Output[1];
 			my $IP_Block_Description = $DB_Output[2];
+			my $IP_Block = $DB_Output[3];
 		
-			print "<option value='$IP_Block_ID'>$IP_Block_Name ($IP_Block_Description)</option>";
+			print "<option value='$IP_Block_ID'>$IP_Block_Name [$IP_Block] $IP_Block_Description</option>";
 		
 		}
 print <<ENDHTML;
@@ -354,15 +363,117 @@ print <<ENDHTML
 		</table>
 	</form>
 
-	<form action='customer-ipv4-allocation-submission.cgi' method='post'>
+	<form action='ipv4-allocations.cgi' method='post'>
 
-		<input type= name='Allocate' value='Allocate'>
-		<input type=submit name='Allocate' value='Allocate'>
+		<input type= name='Host_Name' placeholder='Hostname'>
+		<input type=submit name='Allocate' value='Allocate Block'>
 
 	</form>
 
 ENDHTML
 }
+
+} # sub html_auto_block
+
+sub html_output {
+
+print <<ENDHTML;
+<table style="width:100%; border: solid 2px; border-color:#293E77; background-color:#808080;">
+	<tr>
+		<td style="text-align: right;">
+			<table cellpadding="3px">
+			<form action='/IP/ipv4-allocations.cgi' method='post' >
+				<tr>
+					<td style="text-align: right;">Returned Rows:</td>
+					<td style="text-align: right;">
+						<select name='Rows_Returned' onchange='this.form.submit()' style="width: 150px">
+ENDHTML
+
+if ($Rows_Returned == 100) {print "<option value=100 selected>100</option>";} else {print "<option value=100>100</option>";}
+if ($Rows_Returned == 250) {print "<option value=250 selected>250</option>";} else {print "<option value=250>250</option>";}
+if ($Rows_Returned == 500) {print "<option value=500 selected>500</option>";} else {print "<option value=500>500</option>";}
+if ($Rows_Returned == 1000) {print "<option value=1000 selected>1000</option>";} else {print "<option value=1000>1000</option>";}
+if ($Rows_Returned == 2500) {print "<option value=2500 selected>2500</option>";} else {print "<option value=2500>2500</option>";}
+if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";} else {print "<option value=5000>5000</option>";}
+if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
+
+print <<ENDHTML;
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td style="text-align: right;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Blocks" placeholder="Search">
+					</td>
+				</tr>
+			</form>
+			</table>
+		</td>
+		<td align="center">
+			<form action='/IP/ipv4-allocations.cgi' method='post' >
+			<table>
+				<tr>
+					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Allocation</span></td>
+				</tr>
+				<tr>
+					<td>
+						<form action='ipv4-allocations.cgi' method='post'>	
+							<select name='Location_Input'>
+ENDHTML
+
+		my $Location_Retreive = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
+		FROM `ipv4_blocks`
+		ORDER BY `ip_block_name` ASC");
+		
+		$Location_Retreive->execute( );
+		
+		while ( my @DB_Output = $Location_Retreive->fetchrow_array() )
+		{
+			my $IP_Block_ID = $DB_Output[0];
+			my $IP_Block_Name = $DB_Output[1];
+			my $IP_Block_Description = $DB_Output[2];
+			my $IP_Block = $DB_Output[3];
+		
+			print "<option value='$IP_Block_ID'>$IP_Block_Name [$IP_Block] $IP_Block_Description</option>";
+		
+		}
+print <<ENDHTML;
+							</select>
+	
+							<select name='CIDR_Input'>
+								<option value='/32' selected>/32</option>
+								<option value='/31'>/31</option>
+								<option value='/30'>/30</option>
+								<option value='/29'>/29</option>
+								<option value='/28'>/28</option>
+								<option value='/27'>/27</option>
+								<option value='/26'>/26</option>
+								<option value='/25'>/25</option>
+								<option value='/24'>/24</option>
+								<option value='/23'>/23</option>
+							</select>
+	
+							<input type=submit name='ok' value='Find Free IP'>
+						</td>
+					</tr>
+				</table>
+			</form>
+		</td>
+		<td align="right">
+			<a href="ipv4-allocations.cgi?Manual_Override=1"><span style="color: #FF8A00;">Switch to Manual Allocation Mode</span></a>
+		</td>
+	</tr>
+</table>
+
+<p style="font-size:14px; font-weight:bold;">IPv4 Allocations | Blocks Displayed: Rows of Total_Rows</p>
+
+Table
+
+ENDHTML
+
 
 } #sub html_output end
 
@@ -374,9 +485,9 @@ print <<ENDHTML;
 <br/>
 <p><b>IPv4 Allocation</b></p>
 
-<a href='ipv4-allocations.cgi'>Switch to Automatic Allocation</a>
+<a href='ipv4-allocations.cgi'>Switch to Automatic Allocation Mode</a>
 
-<form action='customer-ipv4-allocation-submission.cgi' method='post'>
+<form action='ipv4-allocations.cgi' method='post'>
 <table align = "center">
 	<tr>
 		<td style="font-size: 16px; text-align: center; color: #FF0000;">
@@ -384,12 +495,12 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="font-size: 16px; text-align: center; color: #FF0000; ">
+		<td style="font-size: 16px; text-align: center; color: #FF0000;">
 			IT IS POSSIBLE TO CREATE DUPLICATE ALLOCATIONS MANUALLY
 		</td>
 	</tr>
 	<tr>
-		<td style="font-size: 16px; text-align: center; color: #FF0000; ">
+		<td style="font-size: 16px; text-align: center; color: #FF0000;">
 			IT IS ALSO POSSIBLE TO CREATE ALLOCATIONS OUTSIDE OF THE DEFINED RANGES
 		</td>
 	</tr>
@@ -401,7 +512,7 @@ print <<ENDHTML;
 			Usable Block:
 		</td>
 		<td>
-			<input type='text' name='Final_Block_Manual'>
+			<input type='text' name='Final_Block_Manual' required>
 		</td>
 	</tr>
 </table>
@@ -409,7 +520,7 @@ print <<ENDHTML;
 <table align="center">
 	<tr>
 		<td>
-			<div style="text-align: center"><input type=submit name='Internal' value='Submit Internally Only'></div>
+			<div style="text-align: center"><input type=submit name='Internal' value='Submit'></div>
 		</td>
 	</tr>
 </table>

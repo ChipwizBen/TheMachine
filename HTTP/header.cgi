@@ -97,7 +97,7 @@ print <<ENDHTML;
 	<div id="loginlink">
 
 		<div id="loginlinkleft">
-			$System_Short_Name version <span style="color: #00FF00;">$Version</span> on <span style="color: #00FF00;">$Server_Hostname</span> | Welcome <a href="password-change.cgi">$Username</a> <span id="logoutlink"><a href="/logout.cgi">[ Logout ]</a></span>
+			$System_Short_Name version <span style="color: #00FF00;">$Version</span> on <span style="color: #00FF00;">$Server_Hostname</span> | Welcome <a href="account.cgi">$Username</a> <span id="logoutlink"><a href="/logout.cgi">[ Logout ]</a></span>
 		</div> <!-- loginlinkleft -->
 
 			<form action='/search.cgi' method='post' >
@@ -112,7 +112,7 @@ print <<ENDHTML;
 		<ul id="navigation">
 			<li><a href="/index.cgi"><span>&nbsp; Home</span></a>
 				<ul>
-					<li><a href="/password-change.cgi">Change Password</a></li>
+					<li><a href="/account.cgi">My Account</a></li>
 					<li><a href="/#">Management <b style="float:right;">></b></a>
 						<ul>
 							<li><a href="/account-management.cgi">Account Management</a></li>
