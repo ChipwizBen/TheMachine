@@ -10,8 +10,9 @@ sub Maintenance_Mode {
 
 	my $Maintenance_Mode = 'Off';
 
+	my ($CGI, $Session, $Cookie) = CGI();
 	if ($Maintenance_Mode =~ /on/i) {
-		print "Location: maintenance.cgi\n\n";
+		print $CGI->redirect("/maintenance.cgi");
 		exit(0);
 	}
 
@@ -21,7 +22,7 @@ sub System_Name {
 
 	# This is the system's name, used for system identification during login, written to the sudoers file to identify which system owns the sudoers file, is used in password reset emails to identify the source, and other general uses.
 
-	my $System_Name = 'Distributed Sudoers Management System';
+	my $System_Name = 'The Anchor';
 	return $System_Name;
 
 } # sub System_Name
@@ -30,7 +31,7 @@ sub System_Short_Name {
 
 	# This is the system's shortened name, which is used in short descriptions. It can be the same as the full name in System_Name if you want, but it might get busy on some screens if your system name is long. It's encouraged to keep this short (less than 10 characters).
 
-	my $System_Short_Name = 'DSMS';
+	my $System_Short_Name = 'The Anchor';
 	return $System_Short_Name;
 
 } # sub System_Short_Name
@@ -122,7 +123,7 @@ sub LDAP_Login {
 
 sub Recovery_Email_Address {
 
-	# This is the email address that the DSMS System will appear to send emails from during password recoveries. It may be a legitimate address (such as the system administrator's address) or it could be a blocking address, such as noreply@nwk1.com.
+	# This is the email address that the system will appear to send emails from during password recoveries. It may be a legitimate address (such as the system administrator's address) or it could be a blocking address, such as noreply@nwk1.com.
 
 	my $Recovery_Email_Address = 'noreply@nwk1.com';
 	return $Recovery_Email_Address;
@@ -483,9 +484,9 @@ sub Group_ID {
 
 sub Version {
 
-	# This is where the DSMS System discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
+	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
 
-	my $Version = '1.10.0';
+	my $Version = '1.0.0';
 	return $Version;
 
 } # sub Version

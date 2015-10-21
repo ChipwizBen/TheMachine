@@ -482,7 +482,7 @@ print <<ENDHTML;
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this user?</p>
 <table align = "center">
 	<tr>
-		<td style="text-align: right;">User_Name:</td>
+		<td style="text-align: right;">User Name:</td>
 		<td style="text-align: left; color: #00FF00;">$User_Name_Extract</td>
 	</tr>
 </table>

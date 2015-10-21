@@ -32,7 +32,7 @@ my $Show_Linked = $CGI->param("Show_Linked");
 
 my $Filter = $CGI->param("Filter");
 
-my $Username = $Session->param("User_Name");
+my $User_Name = $Session->param("User_Name");
 my $User_Admin = $Session->param("User_Admin");
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
@@ -40,7 +40,7 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 		$Rows_Returned='100';
 	}
 
-if (!$Username) {
+if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
@@ -68,7 +68,7 @@ elsif ($Command_Add && $Command_Add) {
 		$Session->param('Message_Orange', $Message_Orange);
 	}
 	
-	print "Location: /icinga-commands.cgi\n\n";
+	print "Location: /Icinga/icinga-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Command) {
@@ -80,7 +80,7 @@ elsif ($Command_Edit_Post) {
 	&edit_command;
 	my $Message_Green="$Command_Edit ($Command_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: /icinga-commands.cgi\n\n";
+	print "Location: /Icinga/icinga-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Command) {
@@ -92,7 +92,7 @@ elsif ($Command_Delete_Post) {
 	&delete_command;
 	my $Message_Green="$Command_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
-	print "Location: /icinga-commands.cgi\n\n";
+	print "Location: /Icinga/icinga-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
@@ -172,7 +172,7 @@ sub add_command {
 
 			my $Message_Red="$Command_Add already exists (ID: $ID_Extract, Command: $Command_Extract)";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: /icinga-commands.cgi\n\n";
+			print "Location: /Icinga/icinga-commands.cgi\n\n";
 			exit(0);
 
 		}
@@ -192,7 +192,7 @@ sub add_command {
 			?,
 			?,
 			NOW(),
-			'$Username'
+			'$User_Name'
 		)");
 
 		$Command_Insert->execute($Command_Add, $Command_Line_Add, $Active_Add);
@@ -289,7 +289,7 @@ sub edit_command {
 
 			my $Message_Red="$Command_Edit already exists - Conflicting Command ID (This entry): $Command_Edit_Post, Existing Command ID: $ID_Extract, Existing Command Command: $Command_Extract";
 			$Session->param('Message_Red', $Message_Red);
-			print "Location: /icinga-commands.cgi\n\n";
+			print "Location: /Icinga/icinga-commands.cgi\n\n";
 			exit(0);
 
 		}
@@ -301,11 +301,11 @@ sub edit_command {
 			`command_line` = ?,
 			`active` = ?,
 			`last_modified` = NOW(),
-			`modified_by` = '$Username'
+			`modified_by` = ?
 			WHERE `id` = ?"
 		);
 		
-		$Command_Update->execute($Command_Edit, $Command_Line_Edit, $Active_Edit, $Command_Edit_Post)
+		$Command_Update->execute($Command_Edit, $Command_Line_Edit, $Active_Edit, $Command_Edit_Post, $User_Name)
 	}
 
 } # sub edit_command

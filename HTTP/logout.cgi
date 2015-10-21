@@ -6,8 +6,8 @@ require 'common.pl';
 my $DB_Management = DB_Management();
 my ($CGI, $Session, $Cookie) = CGI();
 
-$Session->delete();
+print $CGI->redirect("/login.cgi");
 
-print "Location: /login.cgi\n\n";
+$Session->delete();
 
 exit(0);

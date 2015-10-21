@@ -15,10 +15,10 @@ my $DB_Management = DB_Management();
 my ($CGI, $Session, $Cookie) = CGI();
 my $Server_Hostname = Server_Hostname();
 
-my $Username = $Session->param("User_Name"); #Accessing User_Name session var
+my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
 my $User_Admin = $Session->param("User_Admin"); #Accessing User_Admin session var
 
-if (!$Username) {
+if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
@@ -29,11 +29,10 @@ my $Message_Red = $Session->param("Message_Red");
 
 &access_post;
 &html_header;
-&reset_variables;
 
 sub access_post {
 
-	$DB_Management->do("UPDATE `credentials` SET `last_active` = NOW() WHERE `username` = '$Username'");
+	$DB_Management->do("UPDATE `credentials` SET `last_active` = NOW() WHERE `username` = '$User_Name'");
 	
 	my $Access_Time = strftime "%Y-%m-%d %H:%M:%S", localtime;
 	my $HTTPS=$ENV{HTTPS};
@@ -67,7 +66,7 @@ sub access_post {
 		'$HTTPS',
 		'$ENV{SERVER_NAME}',
 		'$ENV{SERVER_PORT}',
-		'$Username',
+		'$User_Name',
 		'$Access_Time'
 	)");
 
@@ -97,7 +96,7 @@ print <<ENDHTML;
 	<div id="loginlink">
 
 		<div id="loginlinkleft">
-			$System_Short_Name version <span style="color: #00FF00;">$Version</span> on <span style="color: #00FF00;">$Server_Hostname</span> | Welcome <a href="account.cgi">$Username</a> <span id="logoutlink"><a href="/logout.cgi">[ Logout ]</a></span>
+			$System_Short_Name version <span style="color: #00FF00;">$Version</span> on <span style="color: #00FF00;">$Server_Hostname</span> | Welcome <a href="account.cgi">$User_Name</a> <span id="logoutlink"><a href="/logout.cgi">[ Logout ]</a></span>
 		</div> <!-- loginlinkleft -->
 
 			<form action='/search.cgi' method='post' >
@@ -127,6 +126,7 @@ print <<ENDHTML;
 			</li>
 			<li><a href="/#"><span>&nbsp; IP</span></a>
 				<ul>
+					<li><a href="/IP/hosts.cgi">Hosts</a></li>
 					<li><a href="/IP/ipv4-blocks.cgi">IPv4 Blocks</a></li>
 					<li><a href="/IP/ipv4-allocations.cgi">IPv4 Allocations</a></li>
 					<li><a href="/IP/ipv6-allocations.cgi">#IPv6 Allocations</a></li>
@@ -197,18 +197,5 @@ print <<ENDHTML;
 ENDHTML
 
 } #sub html_header end
-
-sub reset_variables {
-
-	$Message_Green = undef;
-		$Session->param('Message_Green', $Message_Green);
-	$Message_Orange = undef;
-		$Session->param('Message_Orange', $Message_Orange);
-	$Message_Red = undef;
-		$Session->param('Message_Red', $Message_Red);
-
-	$Session->clear(["Message_Green", "Message_Orange", "Message_Red"]);
-
-}
 
 1;

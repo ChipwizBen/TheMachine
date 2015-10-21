@@ -70,7 +70,7 @@ my $Display_Config = $CGI->param("Display_Config");
 
 my $Filter = $CGI->param("Filter");
 
-my $Username = $Session->param("User_Name");
+my $User_Name = $Session->param("User_Name");
 my $User_Admin = $Session->param("User_Admin");
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
@@ -78,7 +78,7 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 		$Rows_Returned='100';
 	}
 
-if (!$Username) {
+if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
@@ -565,22 +565,22 @@ sub add_host {
 	if ($Notification_Add_Inherit eq 2) {$Notification_Options_Add = undef};
 
 	my $Host_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_host` (
-		`id`, `host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, `check_period`, `event_handler_enabled`,
-		`flap_detection_enabled`, `check_command`,`max_check_attempts`, `check_interval`, `notification_interval`, `notification_options`,
+		`host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, `check_period`, `event_handler_enabled`,
+		`flap_detection_enabled`, `check_command`, `max_check_attempts`, `check_interval`, `notification_interval`, `notification_options`,
 		`notification_period`, `notifications_enabled`, `obsess_over_host`, `passive_checks_enabled`, `process_perf_data`,
 		`retain_nonstatus_information`, `retain_status_information`, `retry_interval`, `active`, `last_modified`, `modified_by`
 	)
 	VALUES (
-		NULL, ?, ?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?,
-		?, ?, ?, ?,	NOW(), '$Username'
+		?, ?, ?, ?,	NOW(), ?
 	)");
 
 	$Host_Insert->execute($Host_Name_Add, $Alias_Add, $Address_Add, $Active_Checks_Add, $Check_Freshness_Add, $Check_Period_Add, $Event_Handler_Add,
 	$Flap_Detection_Add, $Check_Command_Add, $Max_Check_Attempts_Add, $Normal_Check_Interval_Add, $Notification_Interval_Add, $Notification_Options_Add,
 	$Notification_Period_Add, $Notifications_Add, $Obsess_Over_Host_Add, $Passive_Checks_Add, $Process_Performance_Data_Add,
-	$Retain_NonStatus_Information_Add, $Retain_Status_Information_Add, $Retry_Check_Interval_Add, $Active_Add);
+	$Retain_NonStatus_Information_Add, $Retain_Status_Information_Add, $Retry_Check_Interval_Add, $Active_Add, $User_Name);
 
 	my $Host_Insert_ID = $DB_Icinga->{mysql_insertid};
 
@@ -751,7 +751,7 @@ sub edit_host {
 			`alias` = ?,
 			`active` = ?,
 			`last_modified` = NOW(),
-			`modified_by` = '$Username'
+			`modified_by` = '$User_Name'
 			WHERE `id` = ?"
 		);
 		
@@ -1541,7 +1541,7 @@ sub update_notes {
 		my $Host_Update = $DB_Icinga->prepare("UPDATE `nagios_host` SET
 			`notes` = ?,
 			`last_modified` = NOW(),
-			`modified_by` = '$Username'
+			`modified_by` = '$User_Name'
 			WHERE `id` = ?"
 		);
 

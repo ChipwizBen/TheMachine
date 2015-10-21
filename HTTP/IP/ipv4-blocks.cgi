@@ -12,6 +12,7 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $Header = Header();
+my $Footer = Footer();
 my $DB_Management = DB_Management();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
@@ -82,6 +83,10 @@ my $NTP_1_Edit = $CGI->param("NTP_1_Edit");
 my $NTP_2_Edit = $CGI->param("NTP_2_Edit");
 	$NTP_2_Edit =~ s/\s//g;
 	$NTP_2_Edit =~ s/[^0-9\.]//g;
+
+my $Delete_Block = $CGI->param("Delete");
+my $Delete_Block_Confirm = $CGI->param("Delete_Block_Confirm");
+my $Block_Name_Delete = $CGI->param("Block_Name_Delete");
 
 my $Enabled_Up_Arrow = '&#9650;';
 my $Disabled_Up_Arrow = '&#9651;';
@@ -184,6 +189,7 @@ if ($User_IP_Admin != 1) {
 if ($Add_Block) {
 	require $Header;
 	&html_output;
+	require $Footer;
 	&html_add_block;
 }
 elsif ($Block_Network_Add) {
@@ -196,11 +202,25 @@ elsif ($Block_Network_Add) {
 elsif ($Edit_Block) {
 	require $Header;
 	&html_output;
+	require $Footer;
 	&html_edit_block;
 }
 elsif ($Block_Edit && $Block_Network_Edit) {
 	&edit_block;
-	my $Message_Green="$Block_Name_Edit ($Block_Network_Edit) edited successfully.";
+	my $Message_Green="$Block_Name_Edit ($Block_Network_Edit) edited successfully";
+	$Session->param('Message_Green', $Message_Green);
+	print "Location: /IP/ipv4-blocks.cgi\n\n";
+	exit(0);
+}
+elsif ($Delete_Block) {
+	require $Header;
+	&html_output;
+	require $Footer;
+	&html_delete_block;
+}
+elsif ($Delete_Block_Confirm) {
+	&delete_block;
+	my $Message_Green="$Block_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	print "Location: /IP/ipv4-blocks.cgi\n\n";
 	exit(0);
@@ -208,11 +228,13 @@ elsif ($Block_Edit && $Block_Network_Edit) {
 elsif ($Query_Block) {
 	require $Header;
 	&html_output;
+	require $Footer;
 	&html_query_block($Query_Block);
 }
 else {
 	require $Header;
-	&html_output;	
+	&html_output;
+	require $Footer;
 }
 
 
@@ -409,24 +431,24 @@ sub html_edit_block {
 	while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 	{
 
-	my $Block_Name = $IPv4_Block_Query_Output[0];
-	my $Block_Description = $IPv4_Block_Query_Output[1];
-	my $Block_Extract = $IPv4_Block_Query_Output[2];
-		my $Block_Network = $Block_Extract;
-			$Block_Network =~ s/(.*)\/.*/$1/;
-		my $Block_CIDR = $Block_Extract;
-			$Block_CIDR =~ s/.*(\/.*)/$1/;
-	my $Gateway_Extract = $IPv4_Block_Query_Output[3];
-	my $Range_For_Use = $IPv4_Block_Query_Output[4];
-		my $Range_For_Use_Begin = $Range_For_Use;
-			$Range_For_Use_Begin =~ s/(.*)\s-\s.*/$1/;
-		my $Range_For_Use_End = $Range_For_Use;
-			$Range_For_Use_End =~ s/.*\s-\s(.*)/$1/;
-	my $Range_For_Use_Subnet = $IPv4_Block_Query_Output[5];
-	my $DNS1 = $IPv4_Block_Query_Output[6];
-	my $DNS2 = $IPv4_Block_Query_Output[7];
-	my $NTP1 = $IPv4_Block_Query_Output[8];
-	my $NTP2 = $IPv4_Block_Query_Output[9];
+		my $Block_Name = $IPv4_Block_Query_Output[0];
+		my $Block_Description = $IPv4_Block_Query_Output[1];
+		my $Block_Extract = $IPv4_Block_Query_Output[2];
+			my $Block_Network = $Block_Extract;
+				$Block_Network =~ s/(.*)\/.*/$1/;
+			my $Block_CIDR = $Block_Extract;
+				$Block_CIDR =~ s/.*(\/.*)/$1/;
+		my $Gateway_Extract = $IPv4_Block_Query_Output[3];
+		my $Range_For_Use = $IPv4_Block_Query_Output[4];
+			my $Range_For_Use_Begin = $Range_For_Use;
+				$Range_For_Use_Begin =~ s/(.*)\s-\s.*/$1/;
+			my $Range_For_Use_End = $Range_For_Use;
+				$Range_For_Use_End =~ s/.*\s-\s(.*)/$1/;
+		my $Range_For_Use_Subnet = $IPv4_Block_Query_Output[5];
+		my $DNS1 = $IPv4_Block_Query_Output[6];
+		my $DNS2 = $IPv4_Block_Query_Output[7];
+		my $NTP1 = $IPv4_Block_Query_Output[8];
+		my $NTP2 = $IPv4_Block_Query_Output[9];
 
 
 print <<ENDHTML;
@@ -612,6 +634,88 @@ sub edit_block {
 
 } # sub edit_block
 
+sub html_delete_block {
+
+	my $Select_Block = $DB_IP_Allocation->prepare("SELECT `ip_block_name`, `ip_block`
+	FROM `ipv4_blocks`
+	WHERE `id` = ?");
+
+	$Select_Block->execute($Delete_Block);
+	
+	while ( my @DB_Block = $Select_Block->fetchrow_array() )
+	{
+	
+		my $Block_Name_Extract = $DB_Block[0];
+		my $Block_Extract = $DB_Block[1];
+
+print <<ENDHTML;
+<div id="small-popup-box">
+<a href="/IP/ipv4-blocks.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Delete Block</h3>
+
+<form action='/IP/ipv4-blocks.cgi' method='post' >
+<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this block? Allocations made from this block will still exist.</p>
+<table align = "center">
+	<tr>
+		<td style="text-align: right;">Block Name:</td>
+		<td style="text-align: left; color: #00FF00;">$Block_Name_Extract</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Block:</td>
+		<td style="text-align: left; color: #00FF00;">$Block_Extract</td>
+	</tr>
+</table>
+
+<input type='hidden' name='Delete_Block_Confirm' value='$Delete_Block'>
+<input type='hidden' name='Block_Name_Delete' value='$Block_Name_Extract'>
+
+
+<hr width="50%">
+<div style="text-align: center"><input type=submit name='ok' value='Delete Block'></div>
+
+</form>
+
+ENDHTML
+
+	}
+} # sub html_delete_block
+
+sub delete_block {
+
+	# Audit Log
+	my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `ip_block_name`, `ip_block`
+		FROM `ipv4_blocks`
+		WHERE `id` = ?");
+
+	$Select_Blocks->execute($Delete_Block_Confirm);
+
+	while (( my $Block_Name, my $IP ) = $Select_Blocks->fetchrow_array() )
+	{
+		my $DB_Management = DB_Management();
+		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			`category`,
+			`method`,
+			`action`,
+			`username`
+		)
+		VALUES (
+			?, ?, ?, ?
+		)");
+		$Audit_Log_Submission->execute("IP", "Delete", "$User_Name deleted $Block_Name (Block ID $Delete_Block_Confirm).", $User_Name);
+	}
+	# / Audit Log
+
+	my $Delete_Block = $DB_IP_Allocation->prepare("DELETE from `ipv4_blocks`
+		WHERE `id` = ?");
+	
+	$Delete_Block->execute($Delete_Block_Confirm);
+
+} # sub delete_block
+
 sub html_query_block {
 
 my ($Block) = @_;
@@ -728,7 +832,7 @@ ENDHTML
 sub html_output {
 
 my $Table = new HTML::Table(
-	-cols=>11,
+	-cols=>14,
 	-align=>'center',
 	-border=>0,
 	-rules=>'cols',
@@ -744,10 +848,11 @@ $Table->addRow ( "ID",
 "IPv4 Block <a href='/IP/ipv4-blocks.cgi?Order_By=$Order_By_Block&Filter=$Filter'>$Block_IP_Arrow</a>", 
 "Gateway", "Range for Use",	"Range for Use Subnet", "DNS Servers", "NTP Servers", 
 "Used <a href='/IP/ipv4-blocks.cgi?Order_By=$Order_By_Percent_Used&Filter=$Filter'>$Block_Used_Arrow</a>", 
-"Edit", "Delete" );
+"Last Modified", "Modified By", "Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
 
-my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`, `gateway`, `range_for_use`, `range_for_use_subnet`, `dns1`, `dns2`, `ntp1`, `ntp2`, `percent_used`
+my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`, 
+`gateway`, `range_for_use`, `range_for_use_subnet`, `dns1`, `dns2`, `ntp1`, `ntp2`, `percent_used`, `last_modified`, `modified_by`
 FROM `ipv4_blocks`
 WHERE `ip_block` LIKE ?
 	OR `ip_block_name` LIKE ?
@@ -799,14 +904,15 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 	my $Percent_Used = $IPv4_Block_Query_Output[11];
 		$Percent_Used = sprintf("%.2f", $Percent_Used);
 		$Percent_Used =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-	
+	my $Last_Modified = $IPv4_Block_Query_Output[12];
+	my $Modified_By = $IPv4_Block_Query_Output[13];
 	
 	$Table->addRow( $ID, $Block_Name, $Block_Description, 
 		"<a href='/IP/ipv4-blocks.cgi?Query_Block=$Block_Extract'>$Block</a>", 
-		$Gateway_Extract, $Range_For_Use, $Range_For_Use_Subnet, "$DNS1<br />$DNS2", "$NTP1<br />$NTP2", $Percent_Used."%", 
+		$Gateway_Extract, $Range_For_Use, $Range_For_Use_Subnet, 
+		"$DNS1<br />$DNS2", "$NTP1<br />$NTP2", $Percent_Used."%", $Last_Modified, $Modified_By,
 		"<a href='/IP/ipv4-blocks.cgi?Edit_Block=$ID'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
 		"<a href='/IP/ipv4-blocks.cgi?Delete=$ID'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>");
-	$Table->setColClass (9, 'tbenablecolumn');
 	
 	if ($Percent_Used <= 50) {
 		$Table->setCellClass ($Row_Count, 10, 'tbrowgreen');
@@ -823,10 +929,12 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 }
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(11, '1px');
-	$Table->setColWidth(12, '1px');
+	$Table->setColWidth(11, '110px');
+	$Table->setColWidth(12, '110px');
+	$Table->setColWidth(13, '1px');
+	$Table->setColWidth(14, '1px');
 	$Table->setColAlign(1, 'center');
-	for (4 .. 12) {
+	for (4 .. 14) {
 		$Table->setColAlign($_, 'center');
 	}
 

@@ -66,3 +66,5 @@ print <<ENDHTML;
 ENDHTML
 
 } #sub html_footer
+
+1;

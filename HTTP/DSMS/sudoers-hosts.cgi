@@ -87,7 +87,7 @@ if ($Add_Host) {
 elsif ($Host_Name_Add && $IP_Add) {
 	my $Host_ID = &add_host;
 	my $Message_Green="$Host_Name_Add ($IP_Add) added successfully as ID $Host_ID";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
@@ -100,7 +100,7 @@ elsif ($Edit_Host) {
 elsif ($Edit_Host_Post) {
 	&edit_host;
 	my $Message_Green="$Host_Name_Edit ($IP_Edit) edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
@@ -113,7 +113,7 @@ elsif ($Delete_Host) {
 elsif ($Delete_Host_Confirm) {
 	&delete_host;
 	my $Message_Green="$Host_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
@@ -629,7 +629,7 @@ print <<ENDHTML;
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host?</p>
 <table align = "center">
 	<tr>
-		<td style="text-align: right;">Host_Name:</td>
+		<td style="text-align: right;">Host Name:</td>
 		<td style="text-align: left; color: #00FF00;">$Host_Name_Extract</td>
 	</tr>
 	<tr>

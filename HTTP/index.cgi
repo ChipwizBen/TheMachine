@@ -7,20 +7,22 @@ my $DB_Management = DB_Management();
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
 
+my $Header = Header();
+my $Footer = Footer();
 my $Sudoers_Location = Sudoers_Location();
 my $md5sum = md5sum();
 my $cut = cut();
 
-my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
+my $User_Name = $Session->param("User_Name");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
 
-require "header.cgi";
+require $Header;
 &html_output;
-require "footer.cgi";
+require $Footer;
 
 sub html_output {
 
