@@ -417,6 +417,8 @@ sub add_block {
 	
 	$Audit_Log_Submission->execute("IP", "Add", "$User_Name added $Block_Name_Add ($Block_Network_Add$Block_CIDR_Add). The system assigned it Block ID $Block_Insert_ID.", $User_Name);
 
+	return ($Block_Insert_ID);
+	
 } # sub add_block
 
 sub html_edit_block {
@@ -865,7 +867,8 @@ WHERE `ip_block` LIKE ?
 	OR `ntp1` LIKE ?
 	OR `ntp2` LIKE ?
 ORDER BY
-	$Order_By_SQL");
+	$Order_By_SQL
+LIMIT 0 , $Rows_Returned");
 $IPv4_Block_Query->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
 	"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
 

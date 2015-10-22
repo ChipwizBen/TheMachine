@@ -209,7 +209,7 @@ function DHCP_Toggle() {
 	<tr>
 		<td style="text-align: right;">Active:</td>
 		<td style="text-align: right;"><input type="radio" name="Active_Add" value="1" checked> Yes</td>
-		<td style="text-align: right;"><input type="radio" name="Active_Add" value="0"> No</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Add" value="0"> No</td>
 	</tr>
 </table>
 
@@ -454,14 +454,14 @@ ENDHTML
 
 if ($Active_Extract == 1) {
 print <<ENDHTML;
-		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="1" checked> Yes</td>
-		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="0"> No</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Edit" value="1" checked>Yes</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Edit" value="0">No</td>
 ENDHTML
 }
 else {
 print <<ENDHTML;
-		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="1"> Yes</td>
-		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="0" checked> No</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Edit" value="1">Yes</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Edit" value="0" checked>No</td>
 ENDHTML
 }
 

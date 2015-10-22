@@ -16,7 +16,7 @@ my $Config_Path = '/etc/icinga2/conf.d'; # No trailing slash
 #&write_host_groups;
 #&write_service_groups;
 ##&write_contact_templates; # Omitted for now (not used)
-#&write_host_templates;
+&write_host_templates;
 #&write_service_templates;
 #&write_contacts;
 &write_hosts;
@@ -532,12 +532,12 @@ sub write_host_templates {
 			$Check_Period = $Check_Period_Extract_Template;
 		}
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Check_Period);
+		$Select_Check_Period->execute($Check_Period);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Check_Period->fetchrow_array() )
 		{
 			$Check_Period = $DB_Time_Period[0];
 
@@ -557,12 +557,12 @@ sub write_host_templates {
 			$Notification_Period = $Notification_Period_Extract_Template;
 		}
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Notification_Period);
+		$Select_Notification_Period->execute($Notification_Period);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Notification_Period->fetchrow_array() )
 		{
 			$Notification_Period = $DB_Time_Period[0];
 
@@ -618,76 +618,75 @@ sub write_host_templates {
 			print FILE "## Template's Template Notes: $Notes_Extract_Template\n";
 		}
 
-		print FILE "define host {\n";
+		print FILE "template Host \"$Template_Extract\" {\n";
 
 		if ($Host_Templates) {
 			print FILE "	use				$Host_Templates\n";
 		}
 
-		print FILE "	name				$Template_Extract\n";
 
 		if ($Notification_Interval_Extract) {
-			print FILE "	notification_interval		$Notification_Interval_Extract\n";
+			print FILE "	notification_interval = $Notification_Interval_Extract\n";
 		}
 		if ($Max_Check_Attempts_Extract) {
-			print FILE "	max_check_attempts		$Max_Check_Attempts_Extract\n";
+			print FILE "	max_check_attempts = $Max_Check_Attempts_Extract\n";
 		}
 		if ($Notification_Period) {
-			print FILE "	notification_period		$Notification_Period\n";
+			print FILE "	notification_period = $Notification_Period\n";
 		}
 		if ($Notification_Options_Extract) {
-			print FILE "	notification_options		$Notification_Options_Extract\n";
+			print FILE "	notification_options = $Notification_Options_Extract\n";
 		}
 		if ($Check_Period) {
-			print FILE "	check_period			$Check_Period\n";
+			print FILE "	check_period = $Check_Period\n";
 		}
 		if ($Host_Contact_Groups) {
-			print FILE "	contact_groups			$Host_Contact_Groups\n";
+			print FILE "	contact_groups = $Host_Contact_Groups\n";
 		}
 		if ($Check_Command) {
-			print FILE "	check_command			$Check_Command\n";
+			print FILE "	check_command = $Check_Command\n";
 		}
 		if ($Normal_Check_Interval_Extract) {
-			print FILE "	normal_check_interval		$Normal_Check_Interval_Extract\n";
+			print FILE "	check_interval = $Normal_Check_Interval_Extract\n";
 		}
 		if ($Retry_Check_Interval_Extract) {
-			print FILE "	retry_check_interval		$Retry_Check_Interval_Extract\n";
+			print FILE "	retry_interval = $Retry_Check_Interval_Extract\n";
 		}
 		if ($Active_Checks_Enabled_Extract ne 2) {
-			print FILE "	active_checks_enabled	$Active_Checks_Enabled_Extract\n";
+			print FILE "	active_checks_enabled = $Active_Checks_Enabled_Extract\n";
 		}
 		if ($Passive_Checks_Enabled_Extract ne 2) {
-			print FILE "	passive_checks_enabled	$Passive_Checks_Enabled_Extract\n";
+			print FILE "	passive_checks_enabled = $Passive_Checks_Enabled_Extract\n";
 		}
 		if ($Obsess_Over_Host_Extract ne 2) {
-			print FILE "	obsess_over_host	$Obsess_Over_Host_Extract\n";
+			print FILE "	obsess_over_host = $Obsess_Over_Host_Extract\n";
 		}
 		if ($Check_Freshness_Extract ne 2) {
-			print FILE "	check_freshness	$Check_Freshness_Extract\n";
+			print FILE "	check_freshness = $Check_Freshness_Extract\n";
 		}
 		if ($Event_Handler_Enabled_Extract ne 2) {
-			print FILE "	event_handler_enabled		$Event_Handler_Enabled_Extract\n";
+			print FILE "	event_handler_enabled = $Event_Handler_Enabled_Extract\n";
 		}
 		if ($Flap_Detection_Enabled_Extract ne 2) {
-			print FILE "	flap_detection_enabled		$Flap_Detection_Enabled_Extract\n";
+			print FILE "	flap_detection_enabled = $Flap_Detection_Enabled_Extract\n";
 		}
 		if ($Notifications_Enabled_Extract ne 2) {
-			print FILE "	notifications_enabled		$Notifications_Enabled_Extract\n";
+			print FILE "	notifications_enabled = $Notifications_Enabled_Extract\n";
 		}
 		if ($Process_Perf_Data_Extract ne 2) {
-			print FILE "	process_perf_data		$Process_Perf_Data_Extract\n";
+			print FILE "	process_perf_data = $Process_Perf_Data_Extract\n";
 		}
 		if ($Retain_NonStatus_Information_Extract ne 2) {
-			print FILE "	retain_nonstatus_information	$Retain_NonStatus_Information_Extract\n";
+			print FILE "	retain_nonstatus_information = $Retain_NonStatus_Information_Extract\n";
 		}
 		if ($Retain_Status_Information_Extract ne 2) {
-			print FILE "	retain_status_information	$Retain_Status_Information_Extract\n";
+			print FILE "	retain_status_information = $Retain_Status_Information_Extract\n";
 		}
 		if ($Host_Parents) {
-			print FILE "	parents				$Host_Parents\n";
+			print FILE "	parents = $Host_Parents\n";
 		}
 		
-		print FILE "	register			0\n";
+		#print FILE "	register			0\n";
 		print FILE "}\n";
 		print FILE "\n";
 
@@ -979,12 +978,12 @@ sub write_service_templates {
 	
 		## Check Period Link Collection
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Check_Period_Extract);
+		$Select_Check_Period->execute($Check_Period_Extract);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Check_Period->fetchrow_array() )
 		{
 			$Check_Period_Extract = $DB_Time_Period[0];
 		}
@@ -993,12 +992,12 @@ sub write_service_templates {
 
 		## Notification Period Link Collection
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Notification_Period_Extract);
+		$Select_Notification_Period->execute($Notification_Period_Extract);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Notification_Period->fetchrow_array() )
 		{
 			$Notification_Period_Extract = $DB_Time_Period[0];
 		}
@@ -1513,9 +1512,9 @@ sub write_hosts {
 
 		print FILE "object Host \"$Host_Extract\" {\n";
 	
-			#if ($Host_Template_ID) {
-			#	print FILE "	import				$Host_Templates\n";
-			#}
+			if ($Host_Template_ID) {
+				print FILE "	import				$Host_Templates\n";
+			}
 	
 		print FILE "	display_name = \"$Alias_Extract\"\n";
 		print FILE "	address	= \"$IP_Extract\"\n";
@@ -1788,12 +1787,12 @@ sub write_services {
 		## Check Period Link Collection
 
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Check_Period_Extract);
+		$Select_Check_Period->execute($Check_Period_Extract);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Check_Period->fetchrow_array() )
 		{
 			$Check_Period_Extract = $DB_Time_Period[0];
 		}
@@ -1803,12 +1802,12 @@ sub write_services {
 		## Notification Period Link Collection
 
 
-		my $Select_Time_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
-		$Select_Time_Period->execute($Notification_Period_Extract);
+		$Select_Notification_Period->execute($Notification_Period_Extract);
 		
-		while ( my @DB_Time_Period = $Select_Time_Period->fetchrow_array() )
+		while ( my @DB_Time_Period = $Select_Notification_Period->fetchrow_array() )
 		{
 			$Notification_Period_Extract = $DB_Time_Period[0];
 		}
@@ -1967,7 +1966,7 @@ sub write_commands {
 
 	while ( my @DB_Command = $Select_Command->fetchrow_array() )
 	{
-	
+
 		my $Command_ID_Extract = $DB_Command[0];
 		my $Command_Extract = $DB_Command[1];
 		my $Command_Line_Extract = $DB_Command[2];
@@ -1977,7 +1976,7 @@ sub write_commands {
 		print FILE "## Command ID: $Command_ID_Extract\n";
 		print FILE "## Modified $Last_Modified_Extract by $Modified_By_Extract\n";
 		print FILE "object CheckCommand \"$Command_Extract\" {\n";
-		print FILE "command = \"$Command_Line_Extract\"\n";
+		print FILE "command = \[ SysconfDir \+ \"$Command_Line_Extract\"\]\n";
 		print FILE "}\n\n";
 
 	}

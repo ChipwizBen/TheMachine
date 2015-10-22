@@ -307,11 +307,12 @@ print <<ENDHTML;
 		<td colspan='3'><input type="text" style="width: 300px" name="Expires_Date_Add" value="$Date" placeholder="YYYY-MM-DD" disabled></td>
 	</tr>
 	<tr>
+	<tr>
 		<td style="text-align: right;">Active:</td>
-		<td style="text-align: right;"><input type="radio" name="Active_Add" value="1" checked></td>
-		<td style="text-align: left;">Yes</td>
-		<td style="text-align: right;"><input type="radio" name="Active_Add" value="0"></td>
-		<td style="text-align: left;">No</td>
+		<td></td>
+		<td style="text-align: left;"><input type="radio" name="Active_Add" value="1" checked>Yes</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Add" value="0">No</td>
+		<td></td>
 	</tr>
 </table>
 
@@ -736,22 +737,21 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">Active:</td>
+		<td></td>
 ENDHTML
 
 if ($Active_Edit == 1) {
 print <<ENDHTML;
-		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="1" checked></td>
-		<td style="text-align: left;">Yes</td>
-		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="0"></td>
-		<td style="text-align: left;">No</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Edit" value="1" checked>Yes</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Edit" value="0">No</td>
+		<td></td>
 ENDHTML
 }
 else {
 print <<ENDHTML;
-		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="1"></td>
-		<td style="text-align: left;">Yes</td>
-		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="0" checked></td>
-		<td style="text-align: left;">No</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Edit" value="1">Yes</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Edit" value="0" checked>No</td>
+		<td></td>
 ENDHTML
 }
 

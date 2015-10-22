@@ -1082,8 +1082,7 @@ my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block`, `last_m
 		OR `ip_block` LIKE ?
 	ORDER BY
 		$Order_By_SQL
-	LIMIT 0 , $Rows_Returned"
-);
+	LIMIT 0 , $Rows_Returned");
 
 $Select_Blocks->execute("%$Filter%", "%$Filter%");
 

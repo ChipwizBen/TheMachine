@@ -1,0 +1,849 @@
+#!/usr/bin/perl
+
+use strict;
+use HTML::Table;
+use Date::Parse qw(str2time);
+use POSIX qw(strftime);
+
+my $Common_Config;
+if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
+my $Header = Header();
+my $Footer = Footer();
+my $DB_DNS = DB_DNS();
+my ($CGI, $Session, $Cookie) = CGI();
+
+my $Add_Record = $CGI->param("Add_Record");
+my $Edit_Record = $CGI->param("Edit_Record");
+
+my $Record_Source_Add = $CGI->param("Record_Name_Add");
+	$Record_Source_Add =~ s/\s//g;
+	$Record_Source_Add =~ s/[^a-zA-Z0-9\-\.]//g;
+my $IP_Add = $CGI->param("IP_Add");
+	$IP_Add =~ s/\s//g;
+	$IP_Add =~ s/[^0-9\.]//g;
+my $DHCP_Toggle_Add = $CGI->param("DHCP_Toggle_Add");
+	if ($DHCP_Toggle_Add eq 'on') {
+		$IP_Add = 'DHCP';
+	}
+my $Expires_Toggle_Add = $CGI->param("Expires_Toggle_Add");
+my $Expires_Date_Add = $CGI->param("Expires_Date_Add");
+	$Expires_Date_Add =~ s/\s//g;
+	$Expires_Date_Add =~ s/[^0-9\-]//g;
+my $Active_Add = $CGI->param("Active_Add");
+
+my $Edit_Record_Post = $CGI->param("Edit_Record_Post");
+my $Record_Source_Edit = $CGI->param("Record_Name_Edit");
+	$Record_Source_Edit =~ s/\s//g;
+	$Record_Source_Edit =~ s/[^a-zA-Z0-9\-\.]//g;
+my $IP_Edit = $CGI->param("IP_Edit");
+	$IP_Edit =~ s/\s//g;
+	$IP_Edit =~ s/[^0-9\.]//g;
+my $DHCP_Toggle_Edit = $CGI->param("DHCP_Toggle_Edit");
+	if ($DHCP_Toggle_Edit eq 'on') {
+		$IP_Edit = 'DHCP';
+	}
+my $Expires_Toggle_Edit = $CGI->param("Expires_Toggle_Edit");
+my $Expires_Date_Edit = $CGI->param("Expires_Date_Edit");
+	$Expires_Date_Edit =~ s/\s//g;
+	$Expires_Date_Edit =~ s/[^0-9\-]//g;
+my $Active_Edit = $CGI->param("Active_Edit");
+
+my $Delete_Record = $CGI->param("Delete_Record");
+my $Delete_Record_Confirm = $CGI->param("Delete_Record_Confirm");
+my $Record_Source_Delete = $CGI->param("Record_Name_Delete");
+
+my $User_Name = $Session->param("User_Name");
+my $User_Admin = $Session->param("User_Admin");
+
+if (!$User_Name) {
+	print "Location: /logout.cgi\n\n";
+	exit(0);
+}
+
+my $Rows_Returned = $CGI->param("Rows_Returned");
+my $Filter = $CGI->param("Filter");
+
+if ($Rows_Returned eq '') {
+	$Rows_Returned='100';
+}
+
+if ($Add_Record) {
+	require $Header;
+	&html_output;
+	require $Footer;
+	&html_add_record;
+}
+elsif ($Record_Source_Add && $IP_Add) {
+	my $Record_ID = &add_record;
+	my $Message_Green="$Record_Source_Add ($IP_Add) added successfully as ID $Record_ID";
+	$Session->param('Message_Green', $Message_Green);
+	print "Location: /DNS/zone-records.cgi\n\n";
+	exit(0);
+}
+elsif ($Edit_Record) {
+	require $Header;
+	&html_output;
+	require $Footer;
+	&html_edit_record;
+}
+elsif ($Edit_Record_Post) {
+	&edit_record;
+	my $Message_Green="$Record_Source_Edit ($IP_Edit) edited successfully";
+	$Session->param('Message_Green', $Message_Green);
+	print "Location: /DNS/zone-records.cgi\n\n";
+	exit(0);
+}
+elsif ($Delete_Record) {
+	require $Header;
+	&html_output;
+	require $Footer;
+	&html_delete_record;
+}
+elsif ($Delete_Record_Confirm) {
+	&delete_record;
+	my $Message_Green="$Record_Source_Delete deleted successfully";
+	$Session->param('Message_Green', $Message_Green);
+	print "Location: /DNS/zone-records.cgi\n\n";
+	exit(0);
+}
+else {
+	require $Header; ## no critic
+	&html_output;
+	require $Footer;
+}
+
+
+
+sub html_add_record {
+
+my $Date = strftime "%Y-%m-%d", localtime;
+
+print <<ENDHTML;
+
+<div id="small-popup-box">
+<a href="/DNS/zone-records.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Add New Record</h3>
+
+<SCRIPT LANGUAGE="JavaScript"><!--
+function Expire_Toggle() {
+	if(document.Add_Records.Expires_Toggle_Add.checked)
+	{
+		document.Add_Records.Expires_Date_Add.disabled=false;
+	}
+	else
+	{
+		document.Add_Records.Expires_Date_Add.disabled=true;
+	}
+}
+function Record_Options(value){
+	if(value=="MX"){
+		document.getElementById('Record_Option_MX_Add').style.display='block';
+		document.getElementById('Record_Option_SRV_Add').style.display='none';
+	}
+	else if(value=="SRV"){
+		document.getElementById('Record_Option_MX_Add').style.display='none';
+		document.getElementById('Record_Option_SRV_Add').style.display='block';
+	}
+	else {
+		document.getElementById('Record_Option_MX_Add').style.display='none';
+		document.getElementById('Record_Option_SRV_Add').style.display='none';
+	}
+}
+//-->
+</SCRIPT>
+
+<form action='/DNS/zone-records.cgi' name='Add_Records' method='post' >
+
+<table align = "center">
+	<tr>
+		<td style="text-align: right;">Record Source:</td>
+		<td colspan="2"><input type='text' name='Record_Source_Add' style="width:100%" maxlength='128' placeholder="Source" required autofocus></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Time to Live:</td>
+		<td colspan="2"><input type='text' name='Record_TTL_Add' style="width:100%" maxlength='6' placeholder="86400"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Record Type:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='Record_Type_Add' onchange="Record_Options(this.value);">
+				<option value='A'>A</option>
+				<option value='AAAA'>AAAA</option>
+				<option value='CNAME'>CNAME</option>
+				<option value='MX'>MX</option>
+				<option value='NS'>NS</option>
+				<option value='PTR'>PTR</option>
+				<option value='SRV'>SRV</option>
+				<option value='TXT'>TXT</option>
+			</select>
+		</td>
+	</tr>
+	<tr style="display: none;" id="Record_Option_MX_Add">
+		<td style="text-align: right;">MX Priority:</td>
+		<td colspan="2"><input type='text' name='Record_Option_MX_Add' style="width:100%" maxlength='2' placeholder="10"></td>
+	</tr>
+	<tr style="display: none;" id="Record_Option_SRV_Add">
+		<td style="text-align: right;">SRV Options:</td>
+		<td colspan="2"><input type='text' name='Record_Option_SRV_Add' style="width:100%" maxlength='12' placeholder="10 20 65535"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Target:</td>
+		<td colspan="2"><input type='text' name='Record_Target_Add' style="width:100%" maxlength='128' placeholder="Target" required></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Expires:</td>
+		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Add"></td>
+		<td><input type="text" name="Expires_Date_Add" style="width:100%" value="$Date" placeholder="YYYY-MM-DD" disabled></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Active:</td>
+		<td style="text-align: right;"><input type="radio" name="Active_Add" value="1" checked> Yes</td>
+		<td style="text-align: left;"><input type="radio" name="Active_Add" value="0"> No</td>
+	</tr>
+</table>
+
+<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
+<li>Record Names and IPs must be unique and POSIX compliant.</li>
+<li>Records with an expiry set are automatically removed from sudoers at 23:59:59
+(or the next sudoers refresh thereafter) on the day of expiry. Expired entries are functionally
+equivalent to inactive entries. The date entry format is YYYY-MM-DD.</li>
+<li>Active hosts are eligible for sudoers inclusion.</li>
+</ul>
+
+<hr width="50%">
+<div style="text-align: center"><input type=submit name='ok' value='Add Record'></div>
+
+</form>
+
+ENDHTML
+
+} #sub html_add_record
+
+sub add_record {
+
+	if ($Expires_Toggle_Add ne 'on') {
+		$Expires_Date_Add = '0000-00-00';
+	}
+
+	my $Record_Insert = $DB_DNS->prepare("INSERT INTO `zone_records` (
+		`source`,
+		`ip`,
+		`expires`,
+		`active`,
+		`modified_by`
+	)
+	VALUES (
+		?, ?, ?, ?, ?
+	)");
+
+	$Record_Insert->execute($Record_Source_Add, $IP_Add, $Expires_Date_Add, $Active_Add, $User_Name);
+
+	my $Record_Insert_ID = $DB_DNS->{mysql_insertid};
+
+	# Adding to sudoers distribution database with defaults
+	my $DB_Management = DB_Management();
+	my ($Distribution_Default_SFTP_Port,
+		$Distribution_Default_User,
+		$Distribution_Default_Key_Path, 
+		$Distribution_Default_Timeout,
+		$Distribution_Default_Remote_Sudoers) = Distribution_Defaults();
+
+		my $Distribution_Insert = $DB_Management->prepare("INSERT INTO `distribution` (
+			`host_id`,
+			`sftp_port`,
+			`user`,
+			`key_path`,
+			`timeout`,
+			`remote_sudoers_path`,
+			`last_modified`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, ?, ?, ?, NOW(), ?
+		)");
+
+
+		$Distribution_Insert->execute($Record_Insert_ID, $Distribution_Default_SFTP_Port, $Distribution_Default_User, $Distribution_Default_Key_Path, 
+		$Distribution_Default_Timeout, $Distribution_Default_Remote_Sudoers, $User_Name);
+
+	# / Adding to sudoers distribution database with defaults
+
+	# Audit Log
+	if ($Expires_Date_Add eq '0000-00-00') {
+		$Expires_Date_Add = 'not expire';
+	}
+	else {
+		$Expires_Date_Add = "expire on " . $Expires_Date_Add;
+	}
+
+	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
+
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+	
+	$Audit_Log_Submission->execute("Records", "Add", "$User_Name added $Record_Source_Add ($IP_Add), set it $Active_Add and to $Expires_Date_Add. The system assigned it Record ID $Record_Insert_ID.", $User_Name);
+	$Audit_Log_Submission->execute("Distribution", "Add", "$User_Name added $Record_Source_Add ($IP_Add) [Record ID $Record_Insert_ID] to the sudoers distribution system and assigned it default parameters.", $User_Name);
+
+	# / Audit Log
+
+	return($Record_Insert_ID);
+
+} # sub add_record
+
+sub html_edit_record {
+
+	my $Select_Record = $DB_DNS->prepare("SELECT `source`, `ip`, `expires`, `active`
+	FROM `zone_records`
+	WHERE `id` = ?");
+	$Select_Record->execute($Edit_Record);
+
+	while ( my @DB_Record = $Select_Record->fetchrow_array() )
+	{
+
+		my $Record_Source_Extract = $DB_Record[0];
+		my $IP_Extract = $DB_Record[1];
+		my $Expires_Extract = $DB_Record[2];
+		my $Active_Extract = $DB_Record[3];
+
+		my $Expires_Checked;
+		my $Expires_Disabled;
+		if ($Expires_Extract eq '0000-00-00') {
+			$Expires_Checked = '';
+			$Expires_Disabled = 'disabled';
+			$Expires_Extract = strftime "%Y-%m-%d", localtime;
+		}
+		else {
+			$Expires_Checked = 'checked';
+			$Expires_Disabled = '';
+		}
+
+		my $DHCP_Checked;
+		my $IP_Disabled;
+		if ($IP_Extract eq 'DHCP') {
+			$DHCP_Checked = 'checked';
+			$IP_Disabled = 'disabled';
+		}
+		else {
+			$DHCP_Checked = '';
+			$IP_Disabled = '';
+		}
+
+print <<ENDHTML;
+<div id="small-popup-box">
+<a href="/DNS/zone-records.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Edit Record</h3>
+
+<SCRIPT LANGUAGE="JavaScript"><!--
+function Expire_Toggle() {
+	if(document.Edit_Records.Expires_Toggle_Edit.checked)
+	{
+		document.Edit_Records.Expires_Date_Edit.disabled=false;
+	}
+	else
+	{
+		document.Edit_Records.Expires_Date_Edit.disabled=true;
+	}
+}
+function DHCP_Toggle() {
+	if(document.Edit_Records.DHCP_Toggle_Edit.checked)
+	{
+		document.Edit_Records.IP_Edit.disabled=true;
+		document.Edit_Records.IP_Edit.placeholder="DHCP";
+	}
+	else
+	{
+		document.Edit_Records.IP_Edit.disabled=false;
+		document.Edit_Records.IP_Edit.placeholder="$IP_Extract";
+	}
+}
+//-->
+</SCRIPT>
+
+<form action='/DNS/zone-records.cgi' name='Edit_Records' method='post' >
+
+<table align = "center">
+	<tr>
+		<td style="text-align: right;">Record Name:</td>
+		<td colspan="2"><input type='text' name='Record_Name_Edit' style="width:100%" value='$Record_Source_Extract' maxlength='128' placeholder="$Record_Source_Extract" required autofocus></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">DHCP?:</td>
+		<td><input type="checkbox" onclick="DHCP_Toggle()" name="DHCP_Toggle_Edit" $DHCP_Checked></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">IP:</td>
+		<td colspan="2"><input type='text' name='IP_Edit' style="width:100%" value='$IP_Extract' maxlength='15' placeholder="$IP_Extract" required $IP_Disabled></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Expires:</td>
+		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Edit" $Expires_Checked></td>
+		<td><input type="text" name="Expires_Date_Edit" style="width:100%" value="$Expires_Extract" placeholder="$Expires_Extract" $Expires_Disabled></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Active:</td>
+ENDHTML
+
+if ($Active_Extract == 1) {
+print <<ENDHTML;
+		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="1" checked> Yes</td>
+		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="0"> No</td>
+ENDHTML
+}
+else {
+print <<ENDHTML;
+		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="1"> Yes</td>
+		<td style="text-align: right;"><input type="radio" name="Active_Edit" value="0" checked> No</td>
+ENDHTML
+}
+
+print <<ENDHTML;
+	</tr>
+</table>
+
+<input type='hidden' name='Edit_Record_Post' value='$Edit_Record'>
+
+<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
+<li>Record Names and IPs must be unique and POSIX compliant.</li>
+<li>You can only activate a modified host if you are an Approver. If you are not an
+Approver and you modify this entry, it will automatically be set to Inactive.</li>
+<li>Records with an expiry set are automatically removed from sudoers at 23:59:59
+(or the next sudoers refresh thereafter) on the day of expiry. Expired entries are functionally
+equivalent to inactive entries. The date entry format is YYYY-MM-DD.</li>
+<li>Active hosts are eligible for sudoers inclusion.</li>
+</ul>
+
+<hr width="50%">
+<div style="text-align: center"><input type=submit name='ok' value='Edit Record'></div>
+
+</form>
+
+ENDHTML
+
+	}
+} # sub html_edit_record
+
+sub edit_record {
+
+	if ($Expires_Toggle_Edit ne 'on') {
+		$Expires_Date_Edit = '0000-00-00';
+	}
+
+	### Revoke Rule Approval ###
+
+	my $Update_Rule = $DB_DNS->prepare("UPDATE `rules`
+	INNER JOIN `lnk_rules_to_records`
+	ON `rules`.`id` = `lnk_rules_to_records`.`rule`
+	SET
+	`modified_by` = '$User_Name',
+	`approved` = '0',
+	`approved_by` = 'Approval Revoked by $User_Name when modifying Record ID $Edit_Record_Post'
+	WHERE `lnk_rules_to_records`.`host` = ?");
+
+	my $Rules_Revoked = $Update_Rule->execute($Edit_Record_Post);
+
+	if ($Rules_Revoked eq '0E0') {$Rules_Revoked = 0}
+
+	### / Revoke Rule Approval ###
+
+	my $Update_Record = $DB_DNS->prepare("UPDATE `zone_records` SET
+		`source` = ?,
+		`ip` = ?,
+		`expires` = ?,
+		`active` = ?,
+		`modified_by` = ?
+		WHERE `id` = ?");
+		
+	$Update_Record->execute($Record_Source_Edit, $IP_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_Record_Post);
+
+	# Audit Log
+	if ($Expires_Date_Edit eq '0000-00-00') {
+		$Expires_Date_Edit = 'does not expire';
+	}
+	else {
+		$Expires_Date_Edit = "expires on " . $Expires_Date_Edit;
+	}
+
+	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
+
+	my $DB_Management = DB_Management();
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+
+	if ($Rules_Revoked > 0) {
+		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified Record ID $Edit_Record_Post, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
+	}
+
+	$Audit_Log_Submission->execute("Records", "Modify", "$User_Name modified Record ID $Edit_Record_Post. The new entry is recorded as $Record_Source_Edit ($IP_Edit), set $Active_Edit and $Expires_Date_Edit.", $User_Name);
+	# / Audit Log
+
+} # sub edit_record
+
+sub html_delete_record {
+
+	my $Select_Record = $DB_DNS->prepare("SELECT `source`, `ip`
+	FROM `zone_records`
+	WHERE `id` = ?");
+
+	$Select_Record->execute($Delete_Record);
+	
+	while ( my @DB_Record = $Select_Record->fetchrow_array() )
+	{
+	
+		my $Record_Source_Extract = $DB_Record[0];
+		my $IP_Extract = $DB_Record[1];
+
+print <<ENDHTML;
+<div id="small-popup-box">
+<a href="/DNS/zone-records.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Delete Record</h3>
+
+<form action='/DNS/zone-records.cgi' method='post' >
+<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host?</p>
+<table align = "center">
+	<tr>
+		<td style="text-align: right;">Record Name:</td>
+		<td style="text-align: left; color: #00FF00;">$Record_Source_Extract</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">IP:</td>
+		<td style="text-align: left; color: #00FF00;">$IP_Extract</td>
+	</tr>
+</table>
+
+<input type='hidden' name='Delete_Record_Confirm' value='$Delete_Record'>
+<input type='hidden' name='Record_Name_Delete' value='$Record_Source_Extract'>
+
+
+<hr width="50%">
+<div style="text-align: center"><input type=submit name='ok' value='Delete Record'></div>
+
+</form>
+
+ENDHTML
+
+	}
+} # sub html_delete_record
+
+sub delete_record {
+
+	# Audit Log
+	my $Select_Records = $DB_DNS->prepare("SELECT `source`, `ip`, `expires`, `active`
+		FROM `zone_records`
+		WHERE `id` = ?");
+
+	$Select_Records->execute($Delete_Record_Confirm);
+
+	### Revoke Rule Approval ###
+
+	my $Update_Rule = $DB_DNS->prepare("UPDATE `rules`
+	INNER JOIN `lnk_rules_to_records`
+	ON `rules`.`id` = `lnk_rules_to_records`.`rule`
+	SET
+	`modified_by` = '$User_Name',
+	`approved` = '0',
+	`approved_by` = 'Approval Revoked by $User_Name when deleting Record ID $Delete_Record_Confirm'
+	WHERE `lnk_rules_to_records`.`host` = ?");
+
+	my $Rules_Revoked = $Update_Rule->execute($Delete_Record_Confirm);
+
+	if ($Rules_Revoked eq '0E0') {$Rules_Revoked = 0}
+
+	### / Revoke Rule Approval ###
+
+	while (( my $Recordname, my $IP, my $Expires, my $Active ) = $Select_Records->fetchrow_array() )
+	{
+
+		if ($Expires eq '0000-00-00') {
+			$Expires = 'does not expire';
+		}
+		else {
+			$Expires = "expires on " . $Expires;
+		}
+	
+		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
+
+		my $DB_Management = DB_Management();
+		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			`category`,
+			`method`,
+			`action`,
+			`username`
+		)
+		VALUES (
+			?, ?, ?, ?
+		)");
+
+		if ($Rules_Revoked > 0) {
+			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Record ID $Delete_Record_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
+		}
+		$Audit_Log_Submission->execute("Records", "Delete", "$User_Name deleted Record ID $Delete_Record_Confirm. The deleted entry's last values were $Recordname ($IP), set $Active and $Expires.", $User_Name);
+		$Audit_Log_Submission->execute("Distribution", "Delete", "$User_Name deleted $Recordname ($IP) [Record ID $Delete_Record_Confirm] from the sudoers distribution system.", $User_Name);
+
+	}
+	# / Audit Log
+
+	my $Delete_Record = $DB_DNS->prepare("DELETE from `zone_records`
+		WHERE `id` = ?");
+	
+	$Delete_Record->execute($Delete_Record_Confirm);
+
+	my $Delete_Record_From_Groups = $DB_DNS->prepare("DELETE from `lnk_record_groups_to_records`
+			WHERE `host` = ?");
+		
+	$Delete_Record_From_Groups->execute($Delete_Record_Confirm);
+
+	my $Delete_Record_From_Rules = $DB_DNS->prepare("DELETE from `lnk_rules_to_records`
+			WHERE `host` = ?");
+		
+	$Delete_Record_From_Rules->execute($Delete_Record_Confirm);
+
+	my $DB_Management = DB_Management();
+	my $Delete_Record_From_Distribution = $DB_Management->prepare("DELETE from `distribution`
+			WHERE `host_id` = ?");
+
+	$Delete_Record_From_Distribution->execute($Delete_Record_Confirm);
+
+
+} # sub delete_record
+
+sub html_output {
+
+	my $Table = new HTML::Table(
+		-cols=>13,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'100%',
+		-spacing=>0,
+		-padding=>1
+	);
+
+
+	my $Select_Record_Count = $DB_DNS->prepare("SELECT `id` FROM `zone_records`");
+		$Select_Record_Count->execute( );
+		my $Total_Rows = $Select_Record_Count->rows();
+
+
+	my $Select_Records = $DB_DNS->prepare("SELECT `id`, `source`, `time_to_live`, `type`, `options`, 
+	`target`, `zone`, `expires`, `active`, `last_modified`, `modified_by`
+		FROM `zone_records`
+			WHERE `id` LIKE ?
+			OR `source` LIKE ?
+			OR `time_to_live` LIKE ?
+			OR `type` LIKE ?
+			OR `target` LIKE ?
+			OR `expires` LIKE ?
+		ORDER BY `source` ASC
+		LIMIT 0 , $Rows_Returned"
+	);
+
+	$Select_Records->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+
+	my $Rows = $Select_Records->rows();
+
+	$Table->addRow( "ID", "Source", "TTL", "Type", "Options", "Target", "Zone", "Expires", "Active", "Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->setRowClass (1, 'tbrow1');
+
+	my $Record_Row_Count=1;
+
+	while ( my @Select_Records = $Select_Records->fetchrow_array() )
+	{
+
+		$Record_Row_Count++;
+
+		my $DBID = $Select_Records[0];
+			my $DBID_Clean = $DBID;
+			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Source = $Select_Records[1];
+			my $Source_Clean = $Source;
+			$Source =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $TTL = $Select_Records[2];
+			$TTL =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Type = $Select_Records[3];
+			$Type =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Options = $Select_Records[4];
+		my $Target = $Select_Records[5];
+			$Target =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Zone = $Select_Records[6];
+		my $Expires = $Select_Records[7];
+			my $Expires_Clean = $Expires;
+			$Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Active = $Select_Records[8];
+			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
+		my $Last_Modified = $Select_Records[9];
+		my $Modified_By = $Select_Records[10];
+
+		my $Expires_Epoch;
+		my $Today_Epoch = time;
+		if ($Expires_Clean =~ /^0000-00-00$/) {
+			$Expires = 'Never';
+		}
+		else {
+			$Expires_Epoch = str2time("$Expires_Clean"."T23:59:59");
+		}
+
+		$Table->addRow(
+			"$DBID",
+			"$Source",
+			"$TTL",
+			"$Type",
+			"$Options",
+			"$Target",
+			"$Zone",
+			"$Expires",
+			"$Active",
+			"$Last_Modified",
+			"$Modified_By",
+			"<a href='/DNS/zone-records.cgi?Edit_Record=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Record ID $DBID_Clean\" ></a>",
+			"<a href='/DNS/zone-records.cgi?Delete_Record=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Record ID $DBID_Clean\" ></a>"
+		);
+
+
+		if ($Active eq 'Yes') {
+			$Table->setCellClass ($Record_Row_Count, 9, 'tbrowgreen');
+		}
+		else {
+			$Table->setCellClass ($Record_Row_Count, 9, 'tbrowerror');
+		}
+
+		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
+			$Table->setCellClass ($Record_Row_Count, 8, 'tbrowdisabled');
+		}
+
+	}
+
+	$Table->setColWidth(1, '1px');
+	$Table->setColWidth(3, '1px');
+	$Table->setColWidth(4, '1px');
+	$Table->setColWidth(5, '1px');
+	$Table->setColWidth(8, '60px');
+	$Table->setColWidth(9, '1px');
+	$Table->setColWidth(12, '1px');
+	$Table->setColWidth(13, '1px');
+
+	$Table->setColAlign(1, 'center');
+	$Table->setColAlign(3, 'center');
+	$Table->setColAlign(4, 'center');
+	$Table->setColAlign(5, 'center');
+	for (7..13) {
+		$Table->setColAlign($_, 'center');
+	}
+
+
+
+print <<ENDHTML;
+<table style="width:100%; border: solid 2px; border-color:#293E77; background-color:#808080;">
+	<tr>
+		<td style="text-align: right;">
+			<table cellpadding="3px">
+			<form action='/DNS/zone-records.cgi' method='post' >
+				<tr>
+					<td style="text-align: right;">Returned Rows:</td>
+					<td style="text-align: right;">
+						<select name='Rows_Returned' onchange='this.form.submit()' style="width: 150px">
+ENDHTML
+
+if ($Rows_Returned == 100) {print "<option value=100 selected>100</option>";} else {print "<option value=100>100</option>";}
+if ($Rows_Returned == 250) {print "<option value=250 selected>250</option>";} else {print "<option value=250>250</option>";}
+if ($Rows_Returned == 500) {print "<option value=500 selected>500</option>";} else {print "<option value=500>500</option>";}
+if ($Rows_Returned == 1000) {print "<option value=1000 selected>1000</option>";} else {print "<option value=1000>1000</option>";}
+if ($Rows_Returned == 2500) {print "<option value=2500 selected>2500</option>";} else {print "<option value=2500>2500</option>";}
+if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";} else {print "<option value=5000>5000</option>";}
+if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
+
+print <<ENDHTML;
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td style="text-align: right;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Records" placeholder="Search">
+					</td>
+				</tr>
+			</form>
+			</table>
+		</td>
+		<td align="center">
+			<form action='/DNS/zone-records.cgi' method='post' >
+			<table>
+				<tr>
+					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Record</span></td>
+				</tr>
+				<tr>
+					<td align="center"><input type='submit' name='Add_Record' value='Add Record'></td>
+				</tr>
+			</table>
+			</form>
+		</td>
+		<td align="right">
+			<form action='/DNS/zone-records.cgi' method='post' >
+			<table>
+				<tr>
+					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Record</span></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;"><input type=submit name='Edit Record' value='Edit Record'></td>
+					<td align="center">
+						<select name='Edit_Record' style="width: 150px">
+ENDHTML
+
+						my $Record_List_Query = $DB_DNS->prepare("SELECT `id`, `source`
+						FROM `zone_records`
+						ORDER BY `source` ASC");
+						$Record_List_Query->execute( );
+						
+						while ( (my $ID, my $Record_Source) = my @Record_List_Query = $Record_List_Query->fetchrow_array() )
+						{
+							print "<option value='$ID'>$Record_Source</option>";
+						}
+
+print <<ENDHTML;
+						</select>
+					</td>
+				</tr>
+			</table>
+			</form>
+		</td>
+	</tr>
+</table>
+
+<p style="font-size:14px; font-weight:bold;">Records | Records Displayed: $Rows of $Total_Rows</p>
+
+$Table
+
+ENDHTML
+} # sub html_output

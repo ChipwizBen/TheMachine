@@ -15,8 +15,8 @@ my $DB_Management = DB_Management();
 my ($CGI, $Session, $Cookie) = CGI();
 my $Server_Hostname = Server_Hostname();
 
-my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
-my $User_Admin = $Session->param("User_Admin"); #Accessing User_Admin session var
+my $User_Name = $Session->param("User_Name");
+my $User_Admin = $Session->param("User_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -150,9 +150,10 @@ print <<ENDHTML;
 					<li><a href="/Icinga/icinga-time-periods.cgi">Time Periods</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; BIND</span></a>
+			<li><a href="/#"><span>&nbsp; DNS</span></a>
 				<ul>
-					<li><a href="/#">BIND</a></li>
+					<li><a href="/DNS/zones.cgi">Zones</a></li>
+					<li><a href="/DNS/zone-records.cgi">Zone Records</a></li>
 				</ul>
 			</li>
 			<li><a href="/#"><span>&nbsp; Reverse Proxy</span></a>

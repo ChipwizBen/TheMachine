@@ -228,6 +228,26 @@ sub DB_Icinga {
 
 } # sub DB_Icinga
 
+sub DB_DNS {
+
+	#  This is your DNS database's connection information. This is where your sudoers data is stored.
+
+	use DBI;
+
+	my $Host = 'localhost';
+	my $Port = '3306';
+	my $DB = 'DNS';
+	my $User = 'Sudoers';
+	my $Password = '<Password>';
+
+	my $DB_DNS = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
+		$User,
+		$Password)
+		or die "Can't connect to database: $DBI::errstr\n";
+	return $DB_DNS;
+
+} # sub DB_DNS
+
 sub Distribution_Defaults {
 
 	# These are the default sudoers distribution settings for new hosts. Keep in mind that any active host is automatically tried for sudoers pushes with their distribution settings. Unless you are confident that all new hosts will have the same settings, you might want to set fail-safe defaults here and manually override each host individually on the Distribution Status page.
@@ -338,7 +358,7 @@ sub CGI {
 	# '+5s';  # Set to +5s if you're Chuck Norris
 
 	my $Session_Directory = '/tmp/CGI-Sessions';
-	my $Session_Expiry = '+1h';
+	my $Session_Expiry = '+1w';
 
 	use CGI;
 	use CGI::Carp qw(fatalsToBrowser);
