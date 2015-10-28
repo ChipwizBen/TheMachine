@@ -361,10 +361,10 @@ sub add_user {
 	)");
 
 	$User_Insert->execute(
-	$User_Name_Add, $Password_Add, $Salt, $Email_Add, 
-	$Admin_Add, $IP_Admin_Add, $Icinga_Admin_Add, $BIND_Admin_Add,
-	$Approver_Add, $Requires_Approval_Add, 
-	$Lockout_Add, $User_Name);
+		$User_Name_Add, $Password_Add, $Salt, $Email_Add, 
+		$Admin_Add, $IP_Admin_Add, $Icinga_Admin_Add, $BIND_Admin_Add,
+		$Approver_Add, $Requires_Approval_Add, $Lockout_Add, 
+		$User_Name);
 
 	# Audit Log
 	if ($Admin_Add == 1) {

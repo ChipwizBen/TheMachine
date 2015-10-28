@@ -2,7 +2,6 @@
 
 use strict;
 use HTML::Table;
-use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
 my $Common_Config;
@@ -17,16 +16,18 @@ my ($CGI, $Session, $Cookie) = CGI();
 my $Add_Record = $CGI->param("Add_Record");
 my $Edit_Record = $CGI->param("Edit_Record");
 
-my $Record_Source_Add = $CGI->param("Record_Name_Add");
+my $Record_Source_Add = $CGI->param("Record_Source_Add");
 	$Record_Source_Add =~ s/\s//g;
-	$Record_Source_Add =~ s/[^a-zA-Z0-9\-\.]//g;
-my $IP_Add = $CGI->param("IP_Add");
-	$IP_Add =~ s/\s//g;
-	$IP_Add =~ s/[^0-9\.]//g;
-my $DHCP_Toggle_Add = $CGI->param("DHCP_Toggle_Add");
-	if ($DHCP_Toggle_Add eq 'on') {
-		$IP_Add = 'DHCP';
-	}
+my $Record_TTL_Add = $CGI->param("Record_TTL_Add");
+	$Record_TTL_Add =~ s/\s//g;
+	$Record_TTL_Add =~ s/[0-9]//g;
+my $Record_Type_Add = $CGI->param("Record_Type_Add");
+	my $Record_Option_MX_Add = $CGI->param("Record_Option_MX_Add");
+	my $Record_Option_SRV_Add = $CGI->param("Record_Option_SRV_Add");
+my $Record_Target_Add = $CGI->param("Record_Target_Add");
+	$Record_Target_Add =~ s/\s//g;
+my $Record_Zone_Add = $CGI->param("Record_Zone_Add");
+	$Record_Zone_Add =~ s/\s//g;
 my $Expires_Toggle_Add = $CGI->param("Expires_Toggle_Add");
 my $Expires_Date_Add = $CGI->param("Expires_Date_Add");
 	$Expires_Date_Add =~ s/\s//g;
@@ -75,9 +76,9 @@ if ($Add_Record) {
 	require $Footer;
 	&html_add_record;
 }
-elsif ($Record_Source_Add && $IP_Add) {
+elsif ($Record_Source_Add && $Record_Target_Add) {
 	my $Record_ID = &add_record;
-	my $Message_Green="$Record_Source_Add ($IP_Add) added successfully as ID $Record_ID";
+	my $Message_Green="$Record_Type_Add record $Record_Source_Add to $Record_Target_Add added successfully as ID $Record_ID";
 	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DNS/zone-records.cgi\n\n";
 	exit(0);
@@ -143,12 +144,12 @@ function Expire_Toggle() {
 }
 function Record_Options(value){
 	if(value=="MX"){
-		document.getElementById('Record_Option_MX_Add').style.display='block';
+		document.getElementById('Record_Option_MX_Add').style.display='table-row';
 		document.getElementById('Record_Option_SRV_Add').style.display='none';
 	}
 	else if(value=="SRV"){
 		document.getElementById('Record_Option_MX_Add').style.display='none';
-		document.getElementById('Record_Option_SRV_Add').style.display='block';
+		document.getElementById('Record_Option_SRV_Add').style.display='table-row';
 	}
 	else {
 		document.getElementById('Record_Option_MX_Add').style.display='none';
@@ -197,6 +198,16 @@ function Record_Options(value){
 		<td colspan="2"><input type='text' name='Record_Target_Add' style="width:100%" maxlength='128' placeholder="Target" required></td>
 	</tr>
 	<tr>
+		<td style="text-align: right;">Zone:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='Record_Zone_Add'>
+				<option value='0'>Internal</option>
+				<option value='1'>External</option>
+				<option value='2'>Both</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Expires:</td>
 		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Add"></td>
 		<td><input type="text" name="Expires_Date_Add" style="width:100%" value="$Date" placeholder="YYYY-MM-DD" disabled></td>
@@ -209,11 +220,11 @@ function Record_Options(value){
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-<li>Record Names and IPs must be unique and POSIX compliant.</li>
-<li>Records with an expiry set are automatically removed from sudoers at 23:59:59
-(or the next sudoers refresh thereafter) on the day of expiry. Expired entries are functionally
+<li>Record hostnames and IPs must be POSIX compliant.</li>
+<li>Records with an expiry set are automatically removed from DNS at 23:59:59
+(or the next DNS refresh thereafter) on the day of expiry. Expired entries are functionally
 equivalent to inactive entries. The date entry format is YYYY-MM-DD.</li>
-<li>Active hosts are eligible for sudoers inclusion.</li>
+<li>Active records are eligible for DNS inclusion.</li>
 </ul>
 
 <hr width="50%">
@@ -231,48 +242,34 @@ sub add_record {
 		$Expires_Date_Add = '0000-00-00';
 	}
 
+	my $Record_Options_Add;
+	if ($Record_Option_MX_Add) {
+		$Record_Options_Add = $Record_Option_MX_Add;
+	}
+	elsif ($Record_Option_SRV_Add) {
+		$Record_Options_Add = $Record_Option_SRV_Add;
+	}
+
 	my $Record_Insert = $DB_DNS->prepare("INSERT INTO `zone_records` (
 		`source`,
-		`ip`,
+		`time_to_live`,
+		`type`,
+		`options`,
+		`target`,
+		`zone`,
 		`expires`,
 		`active`,
 		`modified_by`
 	)
 	VALUES (
+		?, ?, ?, ?,
 		?, ?, ?, ?, ?
 	)");
 
-	$Record_Insert->execute($Record_Source_Add, $IP_Add, $Expires_Date_Add, $Active_Add, $User_Name);
+	$Record_Insert->execute($Record_Source_Add, $Record_TTL_Add, $Record_Type_Add, $Record_Options_Add, 
+	$Record_Target_Add, $Record_Zone_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
 	my $Record_Insert_ID = $DB_DNS->{mysql_insertid};
-
-	# Adding to sudoers distribution database with defaults
-	my $DB_Management = DB_Management();
-	my ($Distribution_Default_SFTP_Port,
-		$Distribution_Default_User,
-		$Distribution_Default_Key_Path, 
-		$Distribution_Default_Timeout,
-		$Distribution_Default_Remote_Sudoers) = Distribution_Defaults();
-
-		my $Distribution_Insert = $DB_Management->prepare("INSERT INTO `distribution` (
-			`host_id`,
-			`sftp_port`,
-			`user`,
-			`key_path`,
-			`timeout`,
-			`remote_sudoers_path`,
-			`last_modified`,
-			`modified_by`
-		)
-		VALUES (
-			?, ?, ?, ?, ?, ?, NOW(), ?
-		)");
-
-
-		$Distribution_Insert->execute($Record_Insert_ID, $Distribution_Default_SFTP_Port, $Distribution_Default_User, $Distribution_Default_Key_Path, 
-		$Distribution_Default_Timeout, $Distribution_Default_Remote_Sudoers, $User_Name);
-
-	# / Adding to sudoers distribution database with defaults
 
 	# Audit Log
 	if ($Expires_Date_Add eq '0000-00-00') {
@@ -284,6 +281,7 @@ sub add_record {
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
+	my $DB_Management = DB_Management();
 	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
@@ -294,9 +292,7 @@ sub add_record {
 		?, ?, ?, ?
 	)");
 	
-	$Audit_Log_Submission->execute("Records", "Add", "$User_Name added $Record_Source_Add ($IP_Add), set it $Active_Add and to $Expires_Date_Add. The system assigned it Record ID $Record_Insert_ID.", $User_Name);
-	$Audit_Log_Submission->execute("Distribution", "Add", "$User_Name added $Record_Source_Add ($IP_Add) [Record ID $Record_Insert_ID] to the sudoers distribution system and assigned it default parameters.", $User_Name);
-
+	$Audit_Log_Submission->execute("Records", "Add", "$User_Name added $Record_Type_Add record for $Record_Source_Add to $Record_Target_Add, set it $Active_Add and to $Expires_Date_Add. The system assigned it Record ID $Record_Insert_ID.", $User_Name);
 	# / Audit Log
 
 	return($Record_Insert_ID);
@@ -713,6 +709,16 @@ sub html_output {
 			$Expires_Epoch = str2time("$Expires_Clean"."T23:59:59");
 		}
 
+		if ($Zone == 0) {
+			$Zone = 'Internal';
+		}
+		elsif ($Zone == 1) {
+			$Zone = 'External';
+		}
+		elsif ($Zone == 2) {
+			$Zone = 'Both';
+		}
+
 		$Table->addRow(
 			"$DBID",
 			"$Source",
@@ -729,6 +735,18 @@ sub html_output {
 			"<a href='/DNS/zone-records.cgi?Delete_Record=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Record ID $DBID_Clean\" ></a>"
 		);
 
+		if ($Zone eq 'Internal') {
+			$Table->setCellClass ($Record_Row_Count, 7, 'tbrowgreen');
+		}
+		elsif ($Zone eq 'External') {
+			$Table->setCellClass ($Record_Row_Count, 7, 'tbroworange');
+		}
+		elsif ($Zone eq 'Both') {
+			$Table->setCellClass ($Record_Row_Count, 7, 'tbrowpurple');
+		}
+		else {
+			$Table->setCellClass ($Record_Row_Count, 7, 'tbrowerror');
+		}
 
 		if ($Active eq 'Yes') {
 			$Table->setCellClass ($Record_Row_Count, 9, 'tbrowgreen');
@@ -746,9 +764,12 @@ sub html_output {
 	$Table->setColWidth(1, '1px');
 	$Table->setColWidth(3, '1px');
 	$Table->setColWidth(4, '1px');
-	$Table->setColWidth(5, '1px');
+	$Table->setColWidth(5, '70px');
+	$Table->setColWidth(7, '60px');
 	$Table->setColWidth(8, '60px');
 	$Table->setColWidth(9, '1px');
+	$Table->setColWidth(10, '110px');
+	$Table->setColWidth(11, '110px');
 	$Table->setColWidth(12, '1px');
 	$Table->setColWidth(13, '1px');
 
@@ -821,14 +842,14 @@ print <<ENDHTML;
 						<select name='Edit_Record' style="width: 150px">
 ENDHTML
 
-						my $Record_List_Query = $DB_DNS->prepare("SELECT `id`, `source`
+						my $Record_List_Query = $DB_DNS->prepare("SELECT `id`, `source`, `type`, `target`
 						FROM `zone_records`
 						ORDER BY `source` ASC");
 						$Record_List_Query->execute( );
 						
-						while ( (my $ID, my $Record_Source) = my @Record_List_Query = $Record_List_Query->fetchrow_array() )
+						while ( my ($ID, $Record_Source, $Record_Type, $Record_Target) = my @Record_List_Query = $Record_List_Query->fetchrow_array() )
 						{
-							print "<option value='$ID'>$Record_Source</option>";
+							print "<option value='$ID'>$Record_Source ($Record_Type) $Record_Target</option>";
 						}
 
 print <<ENDHTML;

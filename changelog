@@ -1,3 +1,6 @@
+2.0.0   - DSMS repurposed as The Anchor. Now includes IP allocation, DNS management, reverse proxy management, 
+          sudoers management, Icinga management and LDAP/Active Directory integration.
+----------------
 1.10.0  - Added feedback system for hosts writing their own sudoers files (Last Successful Deployment).
         - Banners are now suppressed during distribution to make stdout clearer.
 ----------------

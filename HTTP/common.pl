@@ -52,6 +52,15 @@ sub Footer {
 	
 } # sub Footer
 
+sub DNS_Server {
+
+	# By setting a DNS server here, it will override the operating system's DNS server when doing lookups
+	
+	my $DNS_Server = '192.168.16.10';
+	return $DNS_Server;
+
+} # sub DNS_Server
+
 sub LDAP_Login {
 
 	# These are the connection paremeters for LDAP / Active Directory. If you disable this, the system will use internal authentication.
@@ -506,7 +515,7 @@ sub Version {
 
 	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
 
-	my $Version = '1.0.0';
+	my $Version = '2.0.0';
 	return $Version;
 
 } # sub Version

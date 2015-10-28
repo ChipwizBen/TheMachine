@@ -465,11 +465,17 @@ sub html_output {
 		my $Last_Modified = $Select_Hosts[3];
 		my $Modified_By = $Select_Hosts[4];
 
-		my $Select_Type = $DB_IP_Allocation->prepare("SELECT `id`, `name`
-			FROM `host_type`
-			WHERE `id` LIKE ?");
-		$Select_Type->execute($Host_Type);
-		my $Type = $Select_Type->fetchrow_array();
+		my $Type;
+		if ($Host_Type != 0) {
+			my $Select_Type = $DB_IP_Allocation->prepare("SELECT `name`
+				FROM `host_type`
+				WHERE `id` LIKE ?");
+			$Select_Type->execute($Host_Type);
+			$Type = $Select_Type->fetchrow_array();
+		}
+		else {
+			$Type = 'Undefined';
+		}
 
 		my $Select_Block_Links = $DB_IP_Allocation->prepare("SELECT `ip`
 			FROM `lnk_hosts_to_ipv4_allocations`
@@ -516,7 +522,10 @@ sub html_output {
 			"<a href='/IP/hosts.cgi?Delete_Host=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Host ID $DBID_Clean\" ></a>"
 		);
 
+		if ($Type eq 'Undefined') {$Table->setCellClass ($Host_Row_Count, 3, 'tbroworange');}
+
 	}
+
 
 	$Table->setColWidth(1, '1px');
 	$Table->setColWidth(5, '110px');
@@ -528,8 +537,6 @@ sub html_output {
 	for (5..8) {
 		$Table->setColAlign($_, 'center');
 	}
-
-
 
 print <<ENDHTML;
 <table style="width:100%; border: solid 2px; border-color:#293E77; background-color:#808080;">

@@ -4,7 +4,6 @@ use strict;
 
 use Net::Ping::External qw(ping);
 use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_IN_A_OVERLAP $IP_IDENTICAL);
-use POSIX qw(strftime);
 use HTML::Table;
 
 my $Common_Config;
@@ -351,7 +350,7 @@ my $Allocated_Block = new Net::IP::XS ($Final_Allocated_IP) || die (Net::IP::XS:
 	my $Block_Type=$Allocated_Block->iptype();
 	my $Short_Format=$Allocated_Block->short();
 	my $Block_Addresses=$Allocated_Block->size();
-		my $Usable_Addresses=$Block_Addresses-3; # Excludes gateway
+		my $Usable_Addresses=$Block_Addresses-2;
 			if ($Usable_Addresses < 1) {$Usable_Addresses = 'N/A'}
 	my $Decimal_Subnet=$Allocated_Block->mask();
 	my $Range_Min=$Allocated_Block->ip();
@@ -957,7 +956,7 @@ my $Block_Query = new Net::IP::XS ($Block) || die (Net::IP::XS::Error);
 	my $Block_Type=$Block_Query->iptype();
 	my $Short_Format=$Block_Query->short();
 	my $Block_Addresses=$Block_Query->size();
-		my $Usable_Addresses=$Block_Addresses-3; # Excludes gateway
+		my $Usable_Addresses=$Block_Addresses-2;
 			if ($Usable_Addresses < 1) {$Usable_Addresses = 'N/A'}
 	my $Decimal_Subnet=$Block_Query->mask();
 	my $Range_Min=$Block_Query->ip();
@@ -988,7 +987,7 @@ print <<ENDHTML;
 <body>
 
 <div id="small-popup-box">
-<a href="ipv4-blocks.cgi">
+<a href="ipv4-allocations.cgi">
 <div id="blockclosebutton"> 
 </div>
 </a>

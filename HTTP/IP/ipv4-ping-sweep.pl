@@ -3,6 +3,7 @@
 use strict;
 use Net::IP;
 use Net::Ping::External qw(ping);
+use Parallel::ForkManager;
 
 my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
@@ -10,9 +11,11 @@ require $Common_Config;
 
 my $DB_IP_Allocation = DB_IP_Allocation();
 my $DNS_Server = DNS_Server();
+my $Fork_Count = 256;
 
 my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block`
-FROM `ipv4_blocks`");
+FROM `ipv4_blocks`
+ORDER BY `ip_block_name`");
 
 $IPv4_Block_Query->execute();
 
@@ -30,17 +33,28 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 	print "\n----------\n";
 	print "Checking $Block_Name ($Block_IP). RMin: $Range_Min RMax: $Range_Max\n\n";
 
+	my @IPs_To_Ping;
 	do {
 		my $IP_To_Ping = $IP_Ping_Sweep->ip();
+		push @IPs_To_Ping, $IP_To_Ping;
+	} while (++$IP_Ping_Sweep);
+
+	my $Ping_Fork = new Parallel::ForkManager($Fork_Count);
+
+	foreach my $IP_To_Ping (@IPs_To_Ping) {
+
+		my $PID = $Ping_Fork->start and next;
+
 		my $Ping_Result = ping(
 			host => $IP_To_Ping,
 			timeout => 2
 		);
 
-		print "Checking $IP_To_Ping...\r";
+		#print "Checking $IP_To_Ping...\r";
 
 		if (($Ping_Result) && ($IP_To_Ping ne $Range_Min) && ($IP_To_Ping ne $Range_Max)) {
-			print "Got a response from $IP_To_Ping... ";
+			print "Got a response from $IP_To_Ping...\n";
+			$DB_IP_Allocation = DB_IP_Allocation();
 			my $DB_Check = $DB_IP_Allocation->prepare("SELECT `id`
 				FROM `ipv4_allocations`
 				WHERE `ip_block` = ?");
@@ -56,41 +70,70 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 				VALUES (
 					?, ?
 				)");
-			
+
 				$Block_Insert->execute("$IP_To_Ping/32", "System");
-			
+
 				my $Block_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
 
 				my $Host_Name_Resolution = `nslookup $IP_To_Ping $DNS_Server \| grep -v nameserver \| cut -f 2 \| grep name \| cut -f 2 -d '=' \| sed 's/ //' \| sed 's/\.\$//'`;
+					$Host_Name_Resolution =~ s/\n//;
+					$Host_Name_Resolution =~ s/\r//;
 
-				if ($Host_Name_Resolution ) {
-					my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `hosts` (
-						`hostname`,
-						`modified_by`
-					)
-					VALUES (
-						?, ?
-					)");
-				
-					$Host_Insert->execute($Host_Name_Resolution, "System");
-				
-					my $Host_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
-	
-					my $Host_Link_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
-						`host`,
-						`ip`
-					)
-					VALUES (
-						?, ?
-					)");
+				my $Host_Rows;
+				if ($Host_Name_Resolution) {
+
+					my $Host_Exists_Check = $DB_IP_Allocation->prepare("SELECT `id`
+						FROM `hosts`
+						WHERE `hostname` = ?");
+					$Host_Exists_Check->execute($Host_Name_Resolution);
+					$Host_Rows = $Host_Exists_Check->rows();
+
+					if ($Host_Rows > 0)	{
+
+						my $Host_ID = $Host_Exists_Check->fetchrow_array();
+						my $Host_Link_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
+							`host`,
+							`ip`
+						)
+						VALUES (
+							?, ?
+						)");
+						
+						$Host_Link_Insert->execute($Host_ID, $Block_Insert_ID);
+		
+						print "Adding $Host_Name_Resolution ($IP_To_Ping), BID: $Block_Insert_ID HID: $Host_ID\n";
+
+					}
+					else {
+
+						my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `hosts` (
+							`hostname`,
+							`modified_by`
+						)
+						VALUES (
+							?, ?
+						)");
 					
-					$Host_Link_Insert->execute($Host_Insert_ID, $Block_Insert_ID);
-	
-					print "Adding $Host_Name_Resolution ($IP_To_Ping), BID: $Block_Insert_ID HID: $Host_Insert_ID\n";
+						$Host_Insert->execute($Host_Name_Resolution, "System");
+					
+						my $Host_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
+		
+						my $Host_Link_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
+							`host`,
+							`ip`
+						)
+						VALUES (
+							?, ?
+						)");
+						
+						$Host_Link_Insert->execute($Host_Insert_ID, $Block_Insert_ID);
+		
+						print "Adding $Host_Name_Resolution ($IP_To_Ping), BID: $Block_Insert_ID HID: $Host_Insert_ID\n";
 
+					}
 				}
 				else {
-					print "Count not resolve $IP_To_Ping to a hostname.\n";
+					print "Could not resolve $IP_To_Ping to a hostname.\n";
 				}
 
 				# Audit Log
@@ -110,8 +153,14 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 				The system assigned it Block ID $Block_Insert_ID.", 'System');
 
 				if ($Host_Name_Resolution ne undef) {
-					$Audit_Log_Submission->execute("Hosts", "Add", "$Host_Name_Resolution was added and attached to 
-					$IP_To_Ping/32.", 'System');
+					if ($Host_Rows > 0)	{
+						$Audit_Log_Submission->execute("IP", "Modify", "$IP_To_Ping/32 has been attached to 
+						$Host_Name_Resolution.", 'System');
+					}
+					else {
+						$Audit_Log_Submission->execute("Hosts", "Add", "$Host_Name_Resolution was added and attached to 
+						$IP_To_Ping/32.", 'System');
+					}
 				}
 
 
@@ -122,5 +171,7 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 				print "Nope, already got $IP_To_Ping.\n";
 			}
 		}
-	} while (++$IP_Ping_Sweep);
+    	$Ping_Fork->finish; # Terminates the child process
+	}
+	$Ping_Fork->wait_all_children;
 }

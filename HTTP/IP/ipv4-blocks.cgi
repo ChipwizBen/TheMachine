@@ -138,7 +138,7 @@ my $Order_By = $CGI->param("Order_By");
 		$Order_By_Percent_Used = 'Used-ASC';
 	}
 	elsif ($Order_By eq 'Used-ASC') {
-		$Order_By_SQL = "`percent_used` ASC";
+		$Order_By_SQL = "`percent_used` + 0 ASC";
 		$Block_Name_Arrow = $Disabled_Up_Arrow;
 		$Block_IP_Arrow = $Disabled_Up_Arrow;
 		$Block_Used_Arrow = $Enabled_Up_Arrow;
@@ -147,7 +147,7 @@ my $Order_By = $CGI->param("Order_By");
 		$Order_By_Percent_Used = 'Used-DESC';
 	}
 	elsif ($Order_By eq 'Used-DESC') {
-		$Order_By_SQL = "`percent_used` DESC";
+		$Order_By_SQL = "`percent_used` + 0 DESC";
 		$Block_Name_Arrow = $Disabled_Up_Arrow;
 		$Block_IP_Arrow = $Disabled_Up_Arrow;
 		$Block_Used_Arrow = $Enabled_Down_Arrow;
@@ -729,7 +729,7 @@ my $Block_Query = new Net::IP::XS ($Block) || die (Net::IP::XS::Error);
 	my $Block_Type=$Block_Query->iptype();
 	my $Short_Format=$Block_Query->short();
 	my $Block_Addresses=$Block_Query->size();
-		my $Usable_Addresses=$Block_Addresses-3; # Excludes gateway
+		my $Usable_Addresses=$Block_Addresses-2;
 			if ($Usable_Addresses < 1) {$Usable_Addresses = 'N/A'}
 	my $Decimal_Subnet=$Block_Query->mask();
 	my $Range_Min=$Block_Query->ip();
