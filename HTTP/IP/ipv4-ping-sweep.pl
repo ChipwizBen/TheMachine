@@ -65,19 +65,20 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 
 				my $Block_Insert = $DB_IP_Allocation->prepare("INSERT INTO `ipv4_allocations` (
 					`ip_block`,
+					`parent_block`,
 					`modified_by`
 				)
 				VALUES (
-					?, ?
+					?, ?, ?
 				)");
 
-				$Block_Insert->execute("$IP_To_Ping/32", "System");
+				$Block_Insert->execute("$IP_To_Ping/32", $Block_IP, "System");
 
 				my $Block_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
 
 				my $Host_Name_Resolution = `nslookup $IP_To_Ping $DNS_Server \| grep -v nameserver \| cut -f 2 \| grep name \| cut -f 2 -d '=' \| sed 's/ //' \| sed 's/\.\$//'`;
-					$Host_Name_Resolution =~ s/\n//;
-					$Host_Name_Resolution =~ s/\r//;
+					$Host_Name_Resolution =~ s/\n.*//;
+					$Host_Name_Resolution =~ s/\r.*//;
 
 				my $Host_Rows;
 				if ($Host_Name_Resolution) {
@@ -171,7 +172,7 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 				print "Nope, already got $IP_To_Ping.\n";
 			}
 		}
-    	$Ping_Fork->finish; # Terminates the child process
+    	$Ping_Fork->finish;
 	}
 	$Ping_Fork->wait_all_children;
 }

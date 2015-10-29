@@ -16,7 +16,7 @@ sub Maintenance_Mode {
 		exit(0);
 	}
 
-}
+} # sub Maintenance_Mode
 
 sub System_Name {
 
@@ -152,10 +152,28 @@ sub Sudoers_Storage {
 
 	# This is the directory where replaced sudoers files are stored. You do not need a trailing slash.
 
-	my $Sudoers_Storage = '/var/www/html/sudoers-storage';
+	my $Sudoers_Storage = '/var/www/html/Storage/Sudoers';
 	return $Sudoers_Storage;
 
 } # sub Sudoers_Storage
+
+sub DNS_Location {
+
+	# This is not necessarily the location of the BIND config files. This is the path that the system writes the temporary DNS files to.
+
+	my $DNS_Location = '/tmp';
+	return $DNS_Location;
+
+} # sub DNS_Location
+
+sub DNS_Storage {
+
+	# This is the directory where replaced DNS files are stored. You do not need a trailing slash.
+
+	my $DNS_Storage = '/var/www/html/Storage/DNS';
+	return $DNS_Storage;
+
+} # sub DNS_Storage
 
 sub DB_Management {
 

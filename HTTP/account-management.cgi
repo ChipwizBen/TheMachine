@@ -19,7 +19,7 @@ my $Email_Add = $CGI->param("Email_Add");
 my $Admin_Add = $CGI->param("Admin_Add");
 my $IP_Admin_Add = $CGI->param("IP_Admin_Add");
 my $Icinga_Admin_Add = $CGI->param("Icinga_Admin_Add");
-my $BIND_Admin_Add = $CGI->param("BIND_Admin_Add");
+my $DNS_Admin_Add = $CGI->param("DNS_Admin_Add");
 my $Approver_Add = $CGI->param("Approver_Add");
 my $Requires_Approval_Add = $CGI->param("Requires_Approval_Add");
 my $Lockout_Add = $CGI->param("Lockout_Add");
@@ -33,7 +33,7 @@ my $Email_Edit = $CGI->param("Email_Edit");
 my $Admin_Edit = $CGI->param("Admin_Edit");
 my $IP_Admin_Edit = $CGI->param("IP_Admin_Edit");
 my $Icinga_Admin_Edit = $CGI->param("Icinga_Admin_Edit");
-my $BIND_Admin_Edit = $CGI->param("BIND_Admin_Edit");
+my $DNS_Admin_Edit = $CGI->param("DNS_Admin_Edit");
 my $Approver_Edit = $CGI->param("Approver_Edit");
 my $Requires_Approval_Edit = $CGI->param("Requires_Approval_Edit");
 my $Lockout_Edit = $CGI->param("Lockout_Edit");
@@ -164,10 +164,10 @@ print <<ENDHTML;
 		<td></td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Can modify BIND:</td>
-		<td style="text-align: right;"><input type="radio" name="BIND_Admin_Add" value="1"></td>
+		<td style="text-align: right;">Can modify DNS:</td>
+		<td style="text-align: right;"><input type="radio" name="DNS_Admin_Add" value="1"></td>
 		<td>Yes</td>
-		<td style="text-align: right;"><input type="radio" name="BIND_Admin_Add" value="0" checked></td>
+		<td style="text-align: right;"><input type="radio" name="DNS_Admin_Add" value="0" checked></td>
 		<td>No</td>
 		<td></td>
 		<td></td>
@@ -337,7 +337,7 @@ sub add_user {
 		`admin`,
 		`ip_admin`,
 		`icinga_admin`,
-		`bind_admin`,
+		`dns_admin`,
 		`approver`,
 		`requires_approval`,
 		`lockout`,
@@ -362,7 +362,7 @@ sub add_user {
 
 	$User_Insert->execute(
 		$User_Name_Add, $Password_Add, $Salt, $Email_Add, 
-		$Admin_Add, $IP_Admin_Add, $Icinga_Admin_Add, $BIND_Admin_Add,
+		$Admin_Add, $IP_Admin_Add, $Icinga_Admin_Add, $DNS_Admin_Add,
 		$Approver_Add, $Requires_Approval_Add, $Lockout_Add, 
 		$User_Name);
 
@@ -379,7 +379,7 @@ sub add_user {
 
 	if ($IP_Admin_Add == 1) {$IP_Admin_Add = 'can allocate IP addresses'} else {$IP_Admin_Add = 'cannot allocate IP addresses'}
 	if ($Icinga_Admin_Add == 1) {$Icinga_Admin_Add = 'can edit Icinga'} else {$Icinga_Admin_Add = 'cannot edit Icinga'}
-	if ($BIND_Admin_Add == 1) {$BIND_Admin_Add = 'can edit BIND'} else {$BIND_Admin_Add = 'cannot edit BIND'}
+	if ($DNS_Admin_Add == 1) {$DNS_Admin_Add = 'can edit DNS'} else {$DNS_Admin_Add = 'cannot edit DNS'}
 
 	if ($Approver_Add == 1) {$Approver_Add = "$User_Name_Add can Approve the Rules created by others"} else {$Approver_Add = "$User_Name_Add can not Approve the Rules created by others"}
 	if ($Requires_Approval_Add == 1) {$Requires_Approval_Add = "$User_Name_Add"."'s "."Rules require approval"} else {$Requires_Approval_Add = "$User_Name_Add"."'s "."Rules do not require approval"}
@@ -398,14 +398,14 @@ sub add_user {
 	)");
 
 	$Audit_Log_Submission->execute("Account Management", "Add",
-		"$User_Name added a new system account as Account ID $Account_Insert_ID: $User_Name_Add ($Email_Add). $User_Name_Add $Admin_Add, $Approver_Add, $Requires_Approval_Add and $Lockout_Add. $User_Name_Add $IP_Admin_Add, $Icinga_Admin_Add, and $BIND_Admin_Add.", $User_Name);
+		"$User_Name added a new system account as Account ID $Account_Insert_ID: $User_Name_Add ($Email_Add). $User_Name_Add $Admin_Add, $Approver_Add, $Requires_Approval_Add and $Lockout_Add. $User_Name_Add $IP_Admin_Add, $Icinga_Admin_Add, and $DNS_Admin_Add.", $User_Name);
 	#/ Audit Log
 
 } # sub add_user
 
 sub html_edit_user {
 
-	my $Select_User = $DB_Management->prepare("SELECT `username`, `admin`, `ip_admin`, `icinga_admin`, `bind_admin`, `approver`, `requires_approval`, `lockout`, `last_modified`, `modified_by`, `email`
+	my $Select_User = $DB_Management->prepare("SELECT `username`, `admin`, `ip_admin`, `icinga_admin`, `dns_admin`, `approver`, `requires_approval`, `lockout`, `last_modified`, `modified_by`, `email`
 	FROM `credentials`
 	WHERE `id` = ?");
 	$Select_User->execute($Edit_User);
@@ -417,7 +417,7 @@ sub html_edit_user {
 		my $Admin_Extract = $DB_User[1];
 		my $IP_Admin_Extract = $DB_User[2];
 		my $Icinga_Admin_Extract = $DB_User[3];
-		my $BIND_Admin_Extract = $DB_User[4];
+		my $DNS_Admin_Extract = $DB_User[4];
 		my $Approver_Extract = $DB_User[5];
 		my $Requires_Approval_Extract = $DB_User[6];
 		my $Lockout_Extract = $DB_User[7];
@@ -541,14 +541,14 @@ ENDHTML
 print <<ENDHTML;
 	</tr>
 	<tr>
-		<td style="text-align: right;">Can modify BIND:</td>
+		<td style="text-align: right;">Can modify DNS:</td>
 ENDHTML
 
-if ($BIND_Admin_Extract == 1) {
+if ($DNS_Admin_Extract == 1) {
 print <<ENDHTML;
-		<td style="text-align: right;"><input type="radio" name="BIND_Admin_Edit" value="1" checked></td>
+		<td style="text-align: right;"><input type="radio" name="DNS_Admin_Edit" value="1" checked></td>
 		<td>Yes</td>
-		<td style="text-align: right;"><input type="radio" name="BIND_Admin_Edit" value="0"></td>
+		<td style="text-align: right;"><input type="radio" name="DNS_Admin_Edit" value="0"></td>
 		<td>No</td>
 		<td></td>
 		<td></td>
@@ -556,9 +556,9 @@ ENDHTML
 }
 else {
 print <<ENDHTML;
-		<td style="text-align: right;"><input type="radio" name="BIND_Admin_Edit" value="1"></td>
+		<td style="text-align: right;"><input type="radio" name="DNS_Admin_Edit" value="1"></td>
 		<td>Yes</td>
-		<td style="text-align: right;"><input type="radio" name="BIND_Admin_Edit" value="0" checked></td>
+		<td style="text-align: right;"><input type="radio" name="DNS_Admin_Edit" value="0" checked></td>
 		<td>No</td>
 		<td></td>
 		<td></td>
@@ -745,7 +745,7 @@ sub edit_user {
 		$Session->param('User_Admin', $Admin_Edit);
 		$Session->param('User_IP_Admin', $IP_Admin_Edit);
 		$Session->param('User_Icinga_Admin', $Icinga_Admin_Edit);
-		$Session->param('User_BIND_Admin', $BIND_Admin_Edit);
+		$Session->param('User_DNS_Admin', $DNS_Admin_Edit);
 		$Session->param('User_Email', $Email_Edit);
 		$Session->param('User_Approver', $Approver_Edit);
 		$Session->param('User_Requires_Approval', $Requires_Approval_Edit);
@@ -804,7 +804,7 @@ sub edit_user {
 			`admin` = ?,
 			`ip_admin` = ?,
 			`icinga_admin` = ?,
-			`bind_admin` = ?,
+			`dns_admin` = ?,
 			`approver` = ?,
 			`requires_approval` = ?,
 			`lockout` = ?,
@@ -813,7 +813,7 @@ sub edit_user {
 			WHERE `id` = ?");
 
 		$Update_Credentials->execute($User_Name_Edit, $Password_Edit, $Salt, $Email_Edit, $Admin_Edit,
-			$IP_Admin_Edit, $Icinga_Admin_Edit, $BIND_Admin_Edit, $Approver_Edit, $Requires_Approval_Edit, 
+			$IP_Admin_Edit, $Icinga_Admin_Edit, $DNS_Admin_Edit, $Approver_Edit, $Requires_Approval_Edit, 
 			$Lockout_Edit, $User_Name, $Edit_User_Post);
 
 		# Audit Log
@@ -829,7 +829,7 @@ sub edit_user {
 
 		if ($IP_Admin_Edit == 1) {$IP_Admin_Edit = 'can allocate IP addresses'} else {$IP_Admin_Edit = 'cannot allocate IP addresses'}
 		if ($Icinga_Admin_Edit == 1) {$Icinga_Admin_Edit = 'can edit Icinga'} else {$Icinga_Admin_Edit = 'cannot edit Icinga'}
-		if ($BIND_Admin_Edit == 1) {$BIND_Admin_Edit = 'can edit BIND'} else {$BIND_Admin_Edit = 'cannot edit BIND'}
+		if ($DNS_Admin_Edit == 1) {$DNS_Admin_Edit = 'can edit DNS'} else {$DNS_Admin_Edit = 'cannot edit DNS'}
 
 		if ($Approver_Edit == 1) {$Approver_Edit = "$User_Name_Edit can Approve the Rules created by others"} else {$Approver_Edit = "$User_Name_Edit can not Approve the Rules created by others"}
 		if ($Requires_Approval_Edit == 1) {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules require approval"} else {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules do not require approval"}
@@ -846,7 +846,7 @@ sub edit_user {
 		)");
 
 		$Audit_Log_Submission->execute("Account Management", "Modify",
-			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, and $BIND_Admin_Edit. $User_Name also changed $User_Name_Edit"."'s "."password.", $User_Name);
+			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, and $DNS_Admin_Edit. $User_Name also changed $User_Name_Edit"."'s "."password.", $User_Name);
 		#/ Audit Log
 
 	}
@@ -858,7 +858,7 @@ sub edit_user {
 			`admin` = ?,
 			`ip_admin` = ?,
 			`icinga_admin` = ?,
-			`bind_admin` = ?,
+			`dns_admin` = ?,
 			`approver` = ?,
 			`requires_approval` = ?,
 			`lockout` = ?,
@@ -867,7 +867,7 @@ sub edit_user {
 			WHERE `id` = ?");
 
 		$Update_Credentials->execute($User_Name_Edit, $Email_Edit, $Admin_Edit, 
-			$IP_Admin_Edit, $Icinga_Admin_Edit, $BIND_Admin_Edit, $Approver_Edit, $Requires_Approval_Edit, 
+			$IP_Admin_Edit, $Icinga_Admin_Edit, $DNS_Admin_Edit, $Approver_Edit, $Requires_Approval_Edit, 
 			$Lockout_Edit, $User_Name, $Edit_User_Post);
 
 		# Audit Log
@@ -883,7 +883,7 @@ sub edit_user {
 
 		if ($IP_Admin_Edit == 1) {$IP_Admin_Edit = 'can allocate IP addresses'} else {$IP_Admin_Edit = 'cannot allocate IP addresses'}
 		if ($Icinga_Admin_Edit == 1) {$Icinga_Admin_Edit = 'can edit Icinga'} else {$Icinga_Admin_Edit = 'cannot edit Icinga'}
-		if ($BIND_Admin_Edit == 1) {$BIND_Admin_Edit = 'can edit BIND'} else {$BIND_Admin_Edit = 'cannot edit BIND'}
+		if ($DNS_Admin_Edit == 1) {$DNS_Admin_Edit = 'can edit DNS'} else {$DNS_Admin_Edit = 'cannot edit DNS'}
 
 		if ($Approver_Edit == 1) {$Approver_Edit = "$User_Name_Edit can Approve the Rules created by others"} else {$Approver_Edit = "$User_Name_Edit can not Approve the Rules created by others"}
 		if ($Requires_Approval_Edit == 1) {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules require approval"} else {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules do not require approval"}
@@ -900,7 +900,7 @@ sub edit_user {
 		)");
 
 		$Audit_Log_Submission->execute("Account Management", "Modify",
-			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, and $BIND_Admin_Edit. $User_Name_Edit"."'s "."password was not changed.", $User_Name);
+			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, and $DNS_Admin_Edit. $User_Name_Edit"."'s "."password was not changed.", $User_Name);
 		#/ Audit Log
 
 	}
@@ -1045,10 +1045,10 @@ my $Table = new HTML::Table(
 	-padding=>1 );
 
 
-$Table->addRow ( "User Name", "Email Address", "Last Login", "Last Active", "System Admin", "IP Admin", "Icinga Admin", "BIND Admin", "Approver", "Requires Approval", "Lockout", "Last Modified", "Modified By", "Edit", "Delete" );
+$Table->addRow ( "User Name", "Email Address", "Last Login", "Last Active", "System Admin", "IP Admin", "Icinga Admin", "DNS Admin", "Approver", "Requires Approval", "Lockout", "Last Modified", "Modified By", "Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
 
-my $Select_Users = $DB_Management->prepare("SELECT `id`, `username`, `email`, `last_login`, `last_active`,  `admin`, `ip_admin`, `icinga_admin`, `bind_admin`, `approver`, `requires_approval`, `lockout`, `last_modified`, `modified_by`
+my $Select_Users = $DB_Management->prepare("SELECT `id`, `username`, `email`, `last_login`, `last_active`,  `admin`, `ip_admin`, `icinga_admin`, `dns_admin`, `approver`, `requires_approval`, `lockout`, `last_modified`, `modified_by`
 FROM `credentials`
 ORDER BY `last_active` DESC
 LIMIT 0 , $Rows_Returned");
@@ -1069,7 +1069,7 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 	my $Admin_Extract = $DB_User[5];
 	my $IP_Admin_Extract = $DB_User[6];
 	my $Icinga_Admin_Extract = $DB_User[7];
-	my $BIND_Admin_Extract = $DB_User[8];
+	my $DNS_Admin_Extract = $DB_User[8];
 	my $Approver_Extract = $DB_User[9];
 	my $Requires_Approval_Extract = $DB_User[10];
 	my $Lockout_Extract = $DB_User[11];
@@ -1089,7 +1089,7 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 
 	if ($IP_Admin_Extract == 1) {$IP_Admin_Extract = "Yes";} else {$IP_Admin_Extract = "No";}
 	if ($Icinga_Admin_Extract == 1) {$Icinga_Admin_Extract = "Yes";} else {$Icinga_Admin_Extract = "No";}
-	if ($BIND_Admin_Extract == 1) {$BIND_Admin_Extract = "Yes";} else {$BIND_Admin_Extract = "No";}
+	if ($DNS_Admin_Extract == 1) {$DNS_Admin_Extract = "Yes";} else {$DNS_Admin_Extract = "No";}
 	if ($Approver_Extract == 1) {$Approver_Extract = "Yes";} else {$Approver_Extract = "No";}
 	if ($Requires_Approval_Extract == 1) {$Requires_Approval_Extract = "Yes";} else {$Requires_Approval_Extract = "No";}
 	if ($Lockout_Extract == 1) {$Lockout_Extract = "Yes";} else {$Lockout_Extract = "No";}
@@ -1104,7 +1104,7 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 		$Admin_Extract,
 		$IP_Admin_Extract,
 		$Icinga_Admin_Extract,
-		$BIND_Admin_Extract,
+		$DNS_Admin_Extract,
 		$Approver_Extract,
 		$Requires_Approval_Extract,
 		$Lockout_Extract,
@@ -1123,7 +1123,7 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 
 	if ($IP_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 6, 'tbroworange');}
 	if ($Icinga_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 7, 'tbroworange');}
-	if ($BIND_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 8, 'tbroworange');}
+	if ($DNS_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 8, 'tbroworange');}
 
 	if ($Approver_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 9, 'tbrowpurple');}
 

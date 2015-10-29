@@ -407,6 +407,11 @@ sub delete_host {
 	
 	$Delete_Host->execute($Delete_Host_Confirm);
 
+	my $Delete_Associations = $DB_IP_Allocation->prepare("DELETE from `lnk_hosts_to_ipv4_allocations`
+		WHERE `host` = ?");
+	
+	$Delete_Associations->execute($Delete_Host_Confirm);
+
 } # sub delete_host
 
 sub html_output {

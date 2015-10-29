@@ -32,7 +32,7 @@ my $Sudoers_Location = Sudoers_Location();
 		else {
 			$DB_Management->do("UPDATE `lock` SET
 				`sudoers-distribution` = '1',
-				`last-distribution-started` = NOW()");
+				`last-sudoers-distribution-started` = NOW()");
 		}
 
 my $Select_Hosts = $DB_Sudoers->prepare("SELECT `id`, `hostname`, `ip`
@@ -170,6 +170,6 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 
 $DB_Management->do("UPDATE `lock` SET 
 		`sudoers-distribution` = '0',
-		`last-distribution-finished` = NOW()");
+		`last-sudoers-distribution-finished` = NOW()");
 
 1;

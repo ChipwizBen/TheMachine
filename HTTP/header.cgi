@@ -152,7 +152,6 @@ print <<ENDHTML;
 			</li>
 			<li><a href="/#"><span>&nbsp; DNS</span></a>
 				<ul>
-					<li><a href="/DNS/zones.cgi">Zones</a></li>
 					<li><a href="/DNS/zone-records.cgi">Zone Records</a></li>
 				</ul>
 			</li>

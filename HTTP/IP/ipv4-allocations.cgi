@@ -23,6 +23,7 @@ my $Manual_Override = $CGI->param("Manual_Override");
 my $Final_Allocation = $CGI->param("Final_Allocation");
 	my $Add_Host_Temp_New = $CGI->param("Add_Host_Temp_New");
 	my $Add_Host_Temp_Existing = $CGI->param("Add_Host_Temp_Existing");
+my $Final_Parent = $CGI->param("Final_Parent");
 my $Submit_Allocation = $CGI->param("Submit_Allocation");
 
 my $Final_Block_Manual = $CGI->param("Final_Block_Manual");
@@ -38,6 +39,7 @@ my $Delete_Block_Confirm = $CGI->param("Delete_Block_Confirm");
 my $Block_Delete = $CGI->param("Block_Delete");
 
 my $Query_Block = $CGI->param("Query_Block");
+my $Query_Parent = $CGI->param("Query_Parent");
 
 my $User_Name = $Session->param("User_Name");
 my $User_IP_Admin = $Session->param("User_IP_Admin");
@@ -105,11 +107,11 @@ if ($Reset eq '1') {
 	exit(0);
 }
 elsif ($Location_Input && !$Submit_Allocation) {
-	my ($IP_Block_Name, $Final_Allocated_IP) = &allocation;
+	my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = &allocation;
 	require $Header;
 	&html_output;
 	require $Footer;
-	&html_auto_block ($IP_Block_Name, $Final_Allocated_IP);
+	&html_auto_block ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP);
 }
 elsif ($Submit_Allocation) {
 	&add_block;
@@ -156,7 +158,7 @@ elsif ($Query_Block) {
 	require $Header;
 	&html_output;
 	require $Footer;
-	&html_query_block($Query_Block);
+	&html_query_block($Query_Block, $Query_Parent);
 }
 else {
 	if ($Manual_Override eq '1') {
@@ -183,6 +185,7 @@ sub allocation {
 	while ( my @DB_Output = $Discover_Allocatable_Blocks->fetchrow_array() ) {
 		my $IP_Block_Name = $DB_Output[0];
 		my $IP_Block = $DB_Output[1];
+			my $Parent_Block = $IP_Block;
 		my $IP_Block_Description = $DB_Output[2];
 		my $Range_For_Use = $DB_Output[3];
 		my $Range_For_Use_Subnet = $DB_Output[4];
@@ -192,7 +195,8 @@ sub allocation {
 		}
 
 		my $IP_Allocation_Limit_Collection = new Net::IP::XS ($IP_Block) or die(&allocation_error(Net::IP::XS::Error, $IP_Block));
-			my $IP_Block_Limit=$IP_Allocation_Limit_Collection->last_ip();
+			my $IP_Block_Network = $IP_Allocation_Limit_Collection->ip();
+			my $IP_Block_Limit = $IP_Allocation_Limit_Collection->last_ip();
 				my $IP_Allocation_Limit_Execution = new Net::IP::XS ($IP_Block_Limit) or die(&allocation_error(Net::IP::XS::Error, $IP_Block_Limit));
 					my $IP_Block_Limit_Integer = $IP_Allocation_Limit_Execution->intip();
 
@@ -219,7 +223,8 @@ sub allocation {
 					$IP_Block_For_Allocation = $IP_Block;
 				}
 
-				my $IP_Allocation = new Net::IP::XS ($IP_Block_For_Allocation) or die(&allocation_error(Net::IP::XS::Error, $IP_Block_For_Allocation));
+				my $IP_Allocation = new Net::IP::XS($IP_Block_For_Allocation) or die(&allocation_error(Net::IP::XS::Error, $IP_Block_For_Allocation));
+					my $Proposed_IP = $IP_Allocation->ip();
 				my $IP_Allocation_Check = new Net::IP::XS($Network_Block) or die(&allocation_error(Net::IP::XS::Error, $Network_Block));
 
 				my $Overlap_Check = $IP_Allocation->overlaps($IP_Allocation_Check);
@@ -230,6 +235,12 @@ sub allocation {
 					$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
 					print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
 					exit(0);
+				}
+				elsif ($Proposed_IP eq $IP_Block_Network || $Proposed_IP eq $IP_Block_Limit) {
+					$Counter = '0';
+					$Final_Block = '';
+					$IP_Block = &increase_octets($IP_Block);
+					goto LOOP;
 				}
 				elsif ( $Overlap_Check == $IP_IDENTICAL )
 				{
@@ -269,7 +280,7 @@ sub allocation {
 
 
 		my $Final_IP_Allocation = new Net::IP::XS ($Final_Block) or die(&allocation_error(Net::IP::XS::Error, $Final_Block));
-			my $IP_Block_Limit_Final=$Final_IP_Allocation->last_ip();
+			my $IP_Block_Limit_Final = $Final_IP_Allocation->last_ip();
 				my $IP_Allocation_Limit_Final = new Net::IP::XS ($IP_Block_Limit_Final) or die(&allocation_error(Net::IP::XS::Error, $IP_Block_Limit_Final));
 					my $IP_Block_Limit_Integer_Final = $IP_Allocation_Limit_Final->intip();
 
@@ -290,7 +301,7 @@ sub allocation {
 			$Block_Subnet = $Range_For_Use_Subnet;
 		}
 
-		my @Final_Allocation = ($IP_Block_Name, $Final_Block);
+		my @Final_Allocation = ($IP_Block_Name, $Parent_Block, $Final_Block);
 		return @Final_Allocation;
 		
 	}
@@ -341,7 +352,7 @@ my ($Allocation_Range_Error, $IP_Block) = @_;
 
 sub html_auto_block {
 
-my ($IP_Block_Name, $Final_Allocated_IP) = @_;
+my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = @_;
 
 my $Allocated_Block = new Net::IP::XS ($Final_Allocated_IP) || die (Net::IP::XS::Error);
 
@@ -376,6 +387,17 @@ my $Allocated_Block_End = new Net::IP::XS ($Usable_Range_End) || die (Net::IP::X
 		$Octet3=($Usable_Range_End/256)%256;
 		$Octet4=$Usable_Range_End%256;
 		$Usable_Range_End = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
+
+my $Usable_Range;
+if ($Usable_Addresses < 2) {
+	$Usable_Range = 'N/A';
+}
+else {
+	$Usable_Range = $Usable_Range_Begin.' to '.$Usable_Range_End;;
+}
+
+
+
 
 if ($Add_Host_Temp_New) {
 	if ($Add_Host_Temp_Existing !~ m/^$Add_Host_Temp_New,/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New$/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New,/g) {
@@ -418,8 +440,8 @@ print <<ENDHTML;
 
 <table align="center" style="font-size: 12px;">
 	<tr>
-		<td style="text-align: right;">Parent Block Name</td>
-		<td style="text-align: left; color: #00FF00;">$IP_Block_Name</td>
+		<td style="text-align: right;">Parent Block</td>
+		<td style="text-align: left; color: #00FF00;">$IP_Block_Name ($Parent_Block)</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Allocated Block</td>
@@ -459,7 +481,7 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">Usable Range</td>
-		<td style="text-align: left; color: #00FF00;">$Usable_Range_Begin to $Usable_Range_End</td>
+		<td style="text-align: left; color: #00FF00;">$Usable_Range</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Reverse</td>
@@ -542,6 +564,7 @@ print <<ENDHTML;
 <form action='ipv4-allocations.cgi' method='post'>
 	<input type='hidden' name='Add_Host_Temp_Existing' value='$Add_Host_Temp_Existing'>
 	<input type='hidden' name='Final_Allocation' value='$Final_Allocated_IP'>
+	<input type='hidden' name='Final_Parent' value='$Parent_Block'>
 	<input type='submit' name='Submit_Allocation' value='Allocate Block'>
 </form>
 
@@ -573,13 +596,14 @@ sub add_block {
 
 	my $Block_Insert = $DB_IP_Allocation->prepare("INSERT INTO `ipv4_allocations` (
 		`ip_block`,
+		`parent_block`,
 		`modified_by`
 	)
 	VALUES (
-		?, ?
+		?, ?, ?
 	)");
 
-	$Block_Insert->execute($Final_Allocation, $User_Name);
+	$Block_Insert->execute($Final_Allocation, $Final_Parent, $User_Name);
 
 	my $Block_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
 
@@ -624,13 +648,13 @@ sub add_block {
 
 sub html_edit_block {
 
-	my $Block_Query = $DB_IP_Allocation->prepare("SELECT `ip_block`
+	my $Block_Query = $DB_IP_Allocation->prepare("SELECT `ip_block`, `parent_block`
 	FROM `ipv4_allocations`
 	WHERE `id` LIKE ?");
 
 	$Block_Query->execute($Edit_Block);
 	
-	my $Block_Extract = $Block_Query->fetchrow_array();
+	my ($Block_Extract, $Block_Parent_Extract) = $Block_Query->fetchrow_array();
 
 	my $Associated_Host_Links = $DB_IP_Allocation->prepare("SELECT `host`
 	FROM `lnk_hosts_to_ipv4_allocations`
@@ -722,6 +746,10 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">Block:</td>
 		<td style="text-align: left; color: #00FF00;">$Block_Extract</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Parent:</td>
+		<td style="text-align: left; color: #00FF00;">$Block_Parent_Extract</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Existing Associated Hosts:</td>
@@ -846,7 +874,7 @@ sub edit_block {
 } # sub edit_block
 
 sub html_delete_block {
-	my $Select_Block = $DB_IP_Allocation->prepare("SELECT `ip_block`
+	my $Select_Block = $DB_IP_Allocation->prepare("SELECT `ip_block`, `parent_block`
 	FROM `ipv4_allocations`
 	WHERE `id` = ?");
 
@@ -856,6 +884,7 @@ sub html_delete_block {
 	{
 	
 		my $Block_Extract = $DB_Block[0];
+		my $Block_Parent_Extract = $DB_Block[1];
 
 		my $Select_Block_Links = $DB_IP_Allocation->prepare("SELECT `host`
 			FROM `lnk_hosts_to_ipv4_allocations`
@@ -889,10 +918,15 @@ print <<ENDHTML;
 
 <form action='/IP/ipv4-allocations.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this allocation?</p>
+<p>The parent block and hosts associated with this block will not be deleted.</p>
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Block:</td>
 		<td style="text-align: left; color: #00FF00;">$Block_Extract</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Parent:</td>
+		<td style="text-align: left; color: #00FF00;">$Block_Parent_Extract</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Associated Hosts:</td>
@@ -943,15 +977,36 @@ sub delete_block {
 	
 	$Delete_Block->execute($Delete_Block_Confirm);
 
+	my $Delete_Associations = $DB_IP_Allocation->prepare("DELETE from `lnk_hosts_to_ipv4_allocations`
+		WHERE `ip` = ?");
+	
+	$Delete_Associations->execute($Delete_Block_Confirm);
+
 } # sub delete_block
 
 sub html_query_block {
 
-my ($Block) = @_;
+my ($Block, $Parent) = @_;
 
-my $Block_Query = new Net::IP::XS ($Block) || die (Net::IP::XS::Error);
+my ($Block_Prefix, $Block_CIDR)=Net::IP::XS::ip_splitprefix($Block);
 
-	my ($Block_Prefix,$CIDR)=Net::IP::XS::ip_splitprefix($Block);
+my $Parent_Prefix;
+my $Parent_CIDR;
+if ($Parent) {
+	($Parent_Prefix, $Parent_CIDR)=Net::IP::XS::ip_splitprefix($Parent);
+}
+
+my $CIDR;
+if ($Block_CIDR == 32 && $Parent) {$CIDR = $Parent_CIDR} else {$CIDR = $Block_CIDR}
+
+
+# Have to use Network::IPv4Addr to determine the network, as Net::IP is too strict to take arbitrary IP values
+use Network::IPv4Addr;
+my ($Network_Block, $Network_Block_Mask) = Network::IPv4Addr::ipv4_network( $Block_Prefix, $CIDR);
+
+
+my $Block_Query = new Net::IP::XS ($Network_Block.'/'.$Network_Block_Mask) || die (Net::IP::XS::Error);
+
 	my $Block_Version=$Block_Query->version();
 	my $Block_Type=$Block_Query->iptype();
 	my $Short_Format=$Block_Query->short();
@@ -992,13 +1047,15 @@ print <<ENDHTML;
 </div>
 </a>
 <h3>Block Query</h3>
+ENDHTML
 
-<p>The gateway address is already discounted from Usable Addresses.</p>
+if ($Block_CIDR == 32) {print "<p>This is a /32 block, so its block values are calculated from its parent.</p>";}
 
+print <<ENDHTML;
 <table align="center" style="font-size: 12px;">
 	<tr>
 		<td style="text-align: right;">Queried Block</td>
-		<td style="text-align: left; color: #00FF00;">$Block</td>
+		<td style="text-align: left; color: #00FF00;">$Block_Prefix/$CIDR</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Block Version</td>
@@ -1075,19 +1132,22 @@ my $Select_Block_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `ipv4_allo
 	$Select_Block_Count->execute( );
 	my $Total_Rows = $Select_Block_Count->rows();
 
-my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block`, `last_modified`, `modified_by`
+my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block`, `parent_block`, `last_modified`, `modified_by`
 	FROM `ipv4_allocations`
 		WHERE `id` LIKE ?
 		OR `ip_block` LIKE ?
+		OR `parent_block` LIKE ?
 	ORDER BY
 		$Order_By_SQL
 	LIMIT 0 , $Rows_Returned");
 
-$Select_Blocks->execute("%$Filter%", "%$Filter%");
+$Select_Blocks->execute("%$Filter%", "%$Filter%", "%$Filter%");
 
 my $Rows = $Select_Blocks->rows();
 
-$Table->addRow( "ID", "Block<a href='/IP/ipv4-allocations.cgi?Order_By=$Order_By_Block&Filter=$Filter'>$Block_IP_Arrow</a>", "Associated Hosts", "Floating", "Last Modified", "Modified By", "Edit", "Delete" );
+$Table->addRow( "ID", 
+"IP/Block<a href='/IP/ipv4-allocations.cgi?Order_By=$Order_By_Block&Filter=$Filter'>$Block_IP_Arrow</a>", 
+"Associated Hosts", "Parent Block", "Floating", "Last Modified", "Modified By", "Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
 
 my $Row_Count = 1;
@@ -1101,9 +1161,13 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 		$ID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 	my $Block = $Select_Blocks[1];
 		my $Block_Extract = $Block;
+		$Block =~ s/\/32//;
 		$Block =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-	my $Last_Modified = $Select_Blocks[2];
-	my $Modified_By = $Select_Blocks[3];
+	my $Parent_Block = $Select_Blocks[2];
+		my $Parent_Block_Extract = $Parent_Block;
+		$Parent_Block =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+	my $Last_Modified = $Select_Blocks[3];
+	my $Modified_By = $Select_Blocks[4];
 
 	my $Select_Host_Links = $DB_IP_Allocation->prepare("SELECT `host`
 		FROM `lnk_hosts_to_ipv4_allocations`
@@ -1130,27 +1194,30 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 	if ($Floating > 1) {$Floating = 'Yes'} else {$Floating = 'No'}
 	$Hosts =~ s/,&nbsp;$//;
 	$Table->addRow( $ID, 
-	"<a href='/IP/ipv4-allocations.cgi?Query_Block=$Block_Extract'>$Block</a>",
-	$Hosts, $Floating, $Last_Modified, $Modified_By,
+	"<a href='/IP/ipv4-allocations.cgi?Query_Block=$Block_Extract&Query_Parent=$Parent_Block_Extract'>$Block</a>",
+	$Hosts,
+	"<a href='/IP/ipv4-blocks.cgi?Filter=$Parent_Block_Extract'>$Parent_Block</a>", 
+	$Floating, $Last_Modified, $Modified_By,
 	"<a href='/IP/ipv4-allocations.cgi?Edit_Block=$ID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
 	"<a href='/IP/ipv4-allocations.cgi?Delete=$ID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>"
 	);
 
 	if ($Floating eq 'Yes') {
-		$Table->setCellClass ($Row_Count, 4, 'tbroworange');
+		$Table->setCellClass ($Row_Count, 5, 'tbroworange');
 	} else {
-		$Table->setCellClass ($Row_Count, 4, 'tbrowgreen');
+		$Table->setCellClass ($Row_Count, 5, 'tbrowgreen');
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(4, '1px');
-	$Table->setColWidth(5, '110px');
+	$Table->setColWidth(5, '1px');
 	$Table->setColWidth(6, '110px');
-	$Table->setColWidth(7, '1px');
+	$Table->setColWidth(7, '110px');
 	$Table->setColWidth(8, '1px');
+	$Table->setColWidth(9, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (4..8) {
+	$Table->setColAlign(2, 'center');
+	for (4..9) {
 		$Table->setColAlign($_, 'center');
 	}
 

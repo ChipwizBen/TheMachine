@@ -36,7 +36,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 		else {
 			$DB_Management->do("UPDATE `lock` SET
 				`sudoers-build` = '1',
-				`last-build-started` = NOW()");
+				`last-sudoers-build-started` = NOW()");
 		}
 
 # / Safety check for other running build processes
@@ -55,7 +55,7 @@ my $Date = strftime "%Y-%m-%d", localtime;
 	if ($Rows > 0) {
 		$DB_Management->do("UPDATE `lock` SET 
 		`sudoers-build` = '3',
-		`last-build-finished` = NOW()");
+		`last-sudoers-build-finished` = NOW()");
 		print "You have Rules pending approval. Please either approve or delete unapproved Rules before continuing. Exiting...\n";
 		exit(1);
 	}
@@ -75,7 +75,7 @@ if ($Sudoers_Check =~ m/$Sudoers_Location:\sparsed\sOK/) {
 	$Sudoers_Check = "Sudoers check passed!\n";
 	$DB_Management->do("UPDATE `lock` SET 
 	`sudoers-build` = '0',
-	`last-build-finished` = NOW()");
+	`last-sudoers-build-finished` = NOW()");
 	&record_audit('PASSED');
 	print $Sudoers_Check;
 	exit(0);
@@ -84,7 +84,7 @@ else {
 	$Sudoers_Check = "Sudoers check failed, no changes made. Latest working sudoers file restored.\n";
 	$DB_Management->do("UPDATE `lock` SET 
 	`sudoers-build` = '2',
-	`last-build-finished` = NOW()");
+	`last-sudoers-build-finished` = NOW()");
 	&record_audit('FAILED');
 	print $Sudoers_Check;
 	exit(1);
