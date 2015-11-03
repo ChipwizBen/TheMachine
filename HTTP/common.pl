@@ -157,14 +157,120 @@ sub Sudoers_Storage {
 
 } # sub Sudoers_Storage
 
-sub DNS_Location {
+sub DNS_Zone_Master_File {
 
-	# This is not necessarily the location of the BIND config files. This is the path that the system writes the temporary DNS files to.
+	# This is the zone master file use for defining zones.
 
-	my $DNS_Location = '/tmp';
-	return $DNS_Location;
+	my $DNS_Zone_Master_File = '/etc/bind/named.conf.local';
+	return $DNS_Zone_Master_File;
 
-} # sub DNS_Location
+} # sub DNS_Zone_Master_File
+
+sub DNS_Internal_Location {
+
+	# This is the path that the system writes the temporary Internal DNS files to, before it is picked up by cron.
+	# If this server is the master DNS server, this path could be the path to the DNS config.
+
+	my $DNS_Internal_Location = '/etc/bind/master';
+	return $DNS_Internal_Location;
+
+} # sub DNS_Internal_Location
+
+sub DNS_External_Location {
+
+	# This is the path that the system writes the temporary External DNS files to, before it is picked up by cron.
+	# If this server is the master DNS server, this path could be the path to the DNS config. 
+
+	my $DNS_External_Location = '/etc/bind/master';
+	return $DNS_External_Location;
+
+} # sub DNS_External_Location
+
+sub DNS_Internal_SOA {
+
+	# This is the SOA data that's written at the top of the Internal DNS file. 
+	# It's recommended to keep the serial as is. Do not remove the <DOMAIN> tag.
+
+	my $Email = 'postmaster@nwk1.com';
+	my $TTL = '86400';			# 1 day
+	my $Serial = `date +%s`; 	# Epoch
+		$Serial =~ s/\n//;
+	my $Refresh = '10800'; 		# 3 hours
+	my $Retry = '3600'; 		# 1 hour
+	my $Expire = '2419200'; 	# 4 weeks
+	my $Minimum = '86400'; 		# 1 day
+	my $NS1 = 'ns1.nwk1.com';
+	my $NS2 = 'ns2.nwk1.com';
+	my $NS3 = 'ns3.nwk1.com';
+
+	# Do not edit anything below this line #
+
+	my ($N1, $N2, $N3);
+	if ($NS1) {$N1 = "@	IN	NS	$NS1."}
+	if ($NS2) {$N2 = "@	IN	NS	$NS2."}
+	if ($NS3) {$N3 = "@	IN	NS	$NS3."}
+
+	my $DNS_Internal_SOA = <<SOA;
+\$TTL $TTL
+@	IN	SOA	$NS1.	$Email. (
+			$Serial
+			$Refresh
+			$Retry
+			$Expire
+			$Minimum
+		)
+$N1
+$N2
+$N3
+
+SOA
+
+	return $DNS_Internal_SOA;
+
+} # sub DNS_Internal_SOA
+
+sub DNS_External_SOA {
+
+	# This is the SOA data that's written at the top of the External DNS file.
+	# It's recommended to keep the serial as is. Do not remove the <DOMAIN> tag.
+
+	my $Email = 'postmaster@nwk1.com';
+	my $TTL = '86400';			# 1 day
+	my $Serial = `date +%s`; 	# Epoch
+		$Serial =~ s/\n//;
+	my $Refresh = '10800'; 		# 3 hours
+	my $Retry = '3600'; 		# 1 hour
+	my $Expire = '2419200'; 	# 4 weeks
+	my $Minimum = '86400'; 		# 1 day
+	my $NS1 = 'ns1.nwk1.com';
+	my $NS2 = 'ns2.nwk1.com';
+	my $NS3 = 'ns3.nwk1.com';
+	
+	# Do not edit anything below this line #
+
+	my ($N1, $N2, $N3);
+	if ($NS1) {$N1 = "@	IN	NS	$NS1."}
+	if ($NS2) {$N2 = "@	IN	NS	$NS2."}
+	if ($NS3) {$N3 = "@	IN	NS	$NS3."}
+
+	my $DNS_External_SOA = <<SOA;
+\$TTL $TTL
+@	IN	SOA	$NS1.	$Email. (
+			$Serial
+			$Refresh
+			$Retry
+			$Expire
+			$Minimum
+		)
+$N1
+$N2
+$N3
+
+SOA
+
+	return $DNS_External_SOA;
+
+} # sub DNS_External_SOA
 
 sub DNS_Storage {
 

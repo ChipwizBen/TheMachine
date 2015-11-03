@@ -6,7 +6,8 @@ use POSIX qw(strftime);
 require '../common.pl';
 my $DB_Management = DB_Management();
 my $DB_DNS = DB_DNS();
-my $DNS_Location = DNS_Location();
+my $DNS_Internal_Location = DNS_Internal_Location();
+my $DNS_External_Location = DNS_External_Location();
 my $DNS_Storage = DNS_Storage();
 my $System_Name = System_Name();
 my $Version = Version();
@@ -40,34 +41,13 @@ my $Date = strftime "%Y-%m-%d", localtime;
 
 # / Safety check for other running build processes
 
-# Safety check for unapproved Rules
-
-	my $Select_Rules = $DB_DNS->prepare("SELECT `id`
-		FROM `rules`
-		WHERE `active` = '1'
-		AND `approved` = '0'"
-	);
-
-	$Select_Rules->execute();
-	my $Rows = $Select_Rules->rows();
-
-	if ($Rows > 0) {
-		$DB_Management->do("UPDATE `lock` SET 
-		`dns-build` = '3',
-		`last-dns-build-finished` = NOW()");
-		print "You have Rules pending approval. Please either approve or delete unapproved Rules before continuing. Exiting...\n";
-		exit(1);
-	}
-
-# / Safety check for unapproved Rules
-
 &write_internal;
 &write_external;
 
 
-my $DNS_Check = ` -c -f $DNS_Location`;
+my $DNS_Check = ` -c -f $DNS_Internal_Location`;
 
-if ($DNS_Check =~ m/$DNS_Location:\sparsed\sOK/) {
+if ($DNS_Check =~ m/$DNS_Internal_Location:\sparsed\sOK/) {
 	$DNS_Check = "DNS check passed!\n";
 	$DB_Management->do("UPDATE `lock` SET 
 	`dns-build` = '0',
@@ -88,40 +68,157 @@ else {
 
 sub write_internal {
 
-	open( FILE, ">$DNS_Location" ) or die "Can't open $DNS_Location";
+	my $DNS_Internal_SOA = DNS_Internal_SOA();
+	my $DNS_Zone_Master_File = DNS_Zone_Master_File();
 
-	print FILE "#########################################################################\n";
-	print FILE "## $System_Name\n";
-	print FILE "## Version: $Version\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
-	print FILE "## Please do not edit by hand\n";
-	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
-	print FILE "## View the changelog or README files for more information.\n";
-	print FILE "#########################################################################\n";
-	print FILE "\n\n";
+	open( Zone_Master, ">$DNS_Zone_Master_File" ) or die "Can't open $DNS_Zone_Master_File";
+		print Zone_Master "/////////////////////////////////////////////////////////////////////////\n";
+		print Zone_Master "// $System_Name\n";
+		print Zone_Master "// Version: $Version\n";
+		print Zone_Master "// AUTO GENERATED SCRIPT\n";
+		print Zone_Master "// Please do not edit by hand\n";
+		print Zone_Master "// This file is part of a wider system and is automatically overwritten often\n";
+		print Zone_Master "// View the changelog or README files for more information.\n";
+		print Zone_Master "/////////////////////////////////////////////////////////////////////////\n";
 
+	my $Domain_Query = $DB_DNS->prepare("SELECT `id`, `domain`
+	FROM `domains`");
+	$Domain_Query->execute( );
 
-	print FILE "### Environmental Defaults Section Begins ###\n\n";
+	while ( (my $Domain_ID, my $Domain)  = $Domain_Query->fetchrow_array() )
+	{
 
-	open( ENVIRONMENTALS, "environmental-defaults" ) or die "Can't open environmental-defaults file.";
+		# Write domain to zone master
+		print Zone_Master <<EOF;
+        zone "$Domain" {
+                type master;
+                notify yes;
+                file "$DNS_Internal_Location/$Domain-int";
+        };
 
-	LINE: foreach my $Line (<ENVIRONMENTALS>) {
+EOF
+		
 
-		if ($Line =~ /^###/) {next LINE};
-		print FILE "$Line";
+		my $Domain_SOA = $DNS_Internal_SOA;
+			$Domain_SOA =~ s/\<DOMAIN\>/$Domain/g;
+	
+		open( Domain_Config, ">$DNS_Internal_Location/$Domain-int" ) or die "Can't open $DNS_Internal_Location/$Domain-int";
+	
+		print Domain_Config ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n";
+		print Domain_Config ";; $System_Name\n";
+		print Domain_Config ";; Version: $Version\n";
+		print Domain_Config ";; AUTO GENERATED SCRIPT\n";
+		print Domain_Config ";; Please do not edit by hand\n";
+		print Domain_Config ";; This file is part of a wider system and is automatically overwritten often\n";
+		print Domain_Config ";; View the changelog or README files for more information.\n";
+		print Domain_Config ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n";
+		print Domain_Config "\n\n";
 
+		print Domain_Config ";;; This file is for $Domain internal records ;;;\n\n";
+		print Domain_Config "$Domain_SOA\n";
+
+		my $Record_Query = $DB_DNS->prepare("SELECT `id`, `source`, `time_to_live`, `type`, `options`, `target`, `last_modified`, `modified_by`
+		FROM `zone_records`
+		WHERE `domain` = ?
+		AND `active` = '1'
+		AND (`expires` >= '$Date'
+			OR `expires` = '0000-00-00')
+		AND (`zone` = '0'
+			OR `zone` = '2')
+		ORDER BY `target` ASC");
+		$Record_Query->execute($Domain_ID);
+
+		while ( my ($Record_ID, $Source, $TTL, $Type, $Options, $Target, $Last_Modified, $Modified_By) = $Record_Query->fetchrow_array() )
+		{
+			
+			if ($TTL <= 0) {$TTL = '86400'}
+			print Domain_Config "$Source	$TTL	IN	$Type	$Options	$Target		; Record ID: $Record_ID. Last modified $Last_Modified by $Modified_By.\n"
+		
+		}
 	}
 
-	print FILE "\n### Environmental Defaults Section Ends ###\n";
+	print Domain_Config "\n";
+	close Domain_Config;
 
-	close ENVIRONMENTALS;
-
-	print FILE "\n";
-	close FILE;
+	close Zone_Master;
 
 } # sub write_internal
 
 sub write_external {
+
+	my $DNS_External_SOA = DNS_External_SOA();
+	my $DNS_Zone_Master_File = DNS_Zone_Master_File();
+
+	open( Zone_Master, ">$DNS_Zone_Master_File" ) or die "Can't open $DNS_Zone_Master_File";
+		print Zone_Master "/////////////////////////////////////////////////////////////////////////\n";
+		print Zone_Master "// $System_Name\n";
+		print Zone_Master "// Version: $Version\n";
+		print Zone_Master "// AUTO GENERATED SCRIPT\n";
+		print Zone_Master "// Please do not edit by hand\n";
+		print Zone_Master "// This file is part of a wider system and is automatically overwritten often\n";
+		print Zone_Master "// View the changelog or README files for more information.\n";
+		print Zone_Master "/////////////////////////////////////////////////////////////////////////\n";
+
+	my $Domain_Query = $DB_DNS->prepare("SELECT `id`, `domain`
+	FROM `domains`");
+	$Domain_Query->execute( );
+
+	while ( (my $Domain_ID, my $Domain)  = $Domain_Query->fetchrow_array() )
+	{
+
+		# Write domain to zone master
+		print Zone_Master <<EOF;
+        zone "$Domain" {
+                type master;
+                notify yes;
+                file "$DNS_External_Location/$Domain-int";
+        };
+
+EOF
+		
+
+		my $Domain_SOA = $DNS_External_SOA;
+			$Domain_SOA =~ s/\<DOMAIN\>/$Domain/g;
+	
+		open( Domain_Config, ">$DNS_External_Location/$Domain-ext" ) or die "Can't open $DNS_External_Location/$Domain-ext";
+	
+		print Domain_Config ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n";
+		print Domain_Config ";; $System_Name\n";
+		print Domain_Config ";; Version: $Version\n";
+		print Domain_Config ";; AUTO GENERATED SCRIPT\n";
+		print Domain_Config ";; Please do not edit by hand\n";
+		print Domain_Config ";; This file is part of a wider system and is automatically overwritten often\n";
+		print Domain_Config ";; View the changelog or README files for more information.\n";
+		print Domain_Config ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n";
+		print Domain_Config "\n\n";
+
+		print Domain_Config ";;; This file is for $Domain external records ;;;\n\n";
+		print Domain_Config "$Domain_SOA\n";
+
+		my $Record_Query = $DB_DNS->prepare("SELECT `id`, `source`, `time_to_live`, `type`, `options`, `target`, `last_modified`, `modified_by`
+		FROM `zone_records`
+		WHERE `domain` = ?
+		AND `active` = '1'
+		AND (`expires` >= '$Date'
+			OR `expires` = '0000-00-00')
+		AND (`zone` = '1'
+			OR `zone` = '2')
+		ORDER BY `target` ASC");
+		$Record_Query->execute($Domain_ID);
+
+		while ( my ($Record_ID, $Source, $TTL, $Type, $Options, $Target, $Last_Modified, $Modified_By) = $Record_Query->fetchrow_array() )
+		{
+			
+			if ($TTL <= 0) {$TTL = '86400'}
+			print Domain_Config "$Source	$TTL	IN	$Type	$Options	$Target		; Record ID: $Record_ID. Last modified $Last_Modified by $Modified_By.\n"
+		
+		}
+	}
+
+	print Domain_Config "\n";
+	close Domain_Config;
+
+	close Zone_Master;
 	
 } # sub write_external
 
@@ -139,18 +236,18 @@ sub record_audit {
 		?, ?, ?, ?
 	)");
 
-	my $MD5_New_Checksum = `$md5sum $DNS_Location | $cut -d ' ' -f 1`;
+	my $MD5_New_Checksum = `$md5sum $DNS_Internal_Location | $cut -d ' ' -f 1`;
 		$MD5_New_Checksum =~ s/\s//g;
 	my $MD5_Existing_DNS = `$md5sum $DNS_Storage/sudoers_$MD5_New_Checksum | $cut -d ' ' -f 1`;
 		$MD5_Existing_DNS =~ s/\s//g;
 
 	if ($Result eq 'PASSED' && $MD5_New_Checksum ne $MD5_Existing_DNS) {
-		my $New_DNS_Location = "$DNS_Storage/sudoers_$MD5_New_Checksum";
-		`$cp -dp $DNS_Location $New_DNS_Location`; # Backing up sudoers
-		chown $Owner, $Group, $New_DNS_Location;
-		chmod 0640, $New_DNS_Location;
+		my $New_DNS_Internal_Location = "$DNS_Storage/sudoers_$MD5_New_Checksum";
+		`$cp -dp $DNS_Internal_Location $New_DNS_Internal_Location`; # Backing up sudoers
+		chown $Owner, $Group, $New_DNS_Internal_Location;
+		chmod 0640, $New_DNS_Internal_Location;
 		$MD5_New_Checksum = "MD5: " . $MD5_New_Checksum;
-		$Audit_Log_Submission->execute("DNS", "Deployment Succeeded", "Configuration changes were detected and a new sudoers file was built, passed visudo validation, and MD5 checksums as follows: $MD5_New_Checksum. A copy of this sudoers has been stored at '$New_DNS_Location' for future reference.", 'System');
+		$Audit_Log_Submission->execute("DNS", "Deployment Succeeded", "Configuration changes were detected and a new sudoers file was built, passed visudo validation, and MD5 checksums as follows: $MD5_New_Checksum. A copy of this sudoers has been stored at '$New_DNS_Internal_Location' for future reference.", 'System');
 	}
 	elsif ($Result eq 'FAILED') {
 		my $Latest_Good_DNS = `$ls -t $DNS_Storage | $grep 'sudoers_' | $head -1`;
@@ -160,13 +257,13 @@ sub record_audit {
 		my $Check_For_Existing_Bad_DNS = `$ls -t $DNS_Storage/broken_$MD5_New_Checksum`;
 		if (!$Check_For_Existing_Bad_DNS) {
 			$Audit_Log_Submission->execute("DNS", "Deployment Failed", "Configuration changes were detected and a new sudoers file was built, but failed visudo validation. Deployment aborted, latest valid sudoers (MD5: $Latest_Good_DNS_MD5) has been restored. The broken sudoers file has been stored at $DNS_Storage/broken_$MD5_New_Checksum for manual inspection - please report this error to your manager.", 'System');
-			`$cp -dp $DNS_Location $DNS_Storage/broken_$MD5_New_Checksum`; # Backing up broken sudoers
+			`$cp -dp $DNS_Internal_Location $DNS_Storage/broken_$MD5_New_Checksum`; # Backing up broken sudoers
 			chown $Owner, $Group, "$DNS_Storage/broken_$MD5_New_Checksum";
 			chmod 0640, "$DNS_Storage/broken_$MD5_New_Checksum";
 		}
-		`$cp -dp $DNS_Storage/$Latest_Good_DNS $DNS_Location`; # Restoring latest working sudoers
-		chown $Owner, $Group, $DNS_Location;
-		chmod 0640, $DNS_Location;
+		`$cp -dp $DNS_Storage/$Latest_Good_DNS $DNS_Internal_Location`; # Restoring latest working sudoers
+		chown $Owner, $Group, $DNS_Internal_Location;
+		chmod 0640, $DNS_Internal_Location;
 	}
 	else {
 		print "New sudoers matches old sudoers. Not replacing.\n";

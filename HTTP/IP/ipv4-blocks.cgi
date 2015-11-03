@@ -481,29 +481,29 @@ print <<ENDHTML;
 			<select name='Block_CIDR_Edit'>
 ENDHTML
 
-if ($Block_CIDR eq '/30') {print "<option style='background-color: #00FF00;' value='/30' selected>/30</option>";} else {print "<option value='/30'>/30</option>";}
-if ($Block_CIDR eq '/29') {print "<option style='background-color: #00FF00;' value='/29' selected>/29</option>";} else {print "<option value='/29'>/29</option>";}
-if ($Block_CIDR eq '/28') {print "<option style='background-color: #00FF00;' value='/28' selected>/28</option>";} else {print "<option value='/28'>/28</option>";}
-if ($Block_CIDR eq '/27') {print "<option style='background-color: #00FF00;' value='/27' selected>/27</option>";} else {print "<option value='/27'>/27</option>";}
-if ($Block_CIDR eq '/26') {print "<option style='background-color: #00FF00;' value='/26' selected>/26</option>";} else {print "<option value='/26'>/26</option>";}
-if ($Block_CIDR eq '/25') {print "<option style='background-color: #00FF00;' value='/25' selected>/25</option>";} else {print "<option value='/25'>/25</option>";}
-if ($Block_CIDR eq '/24') {print "<option style='background-color: #00FF00;' value='/24' selected>/24</option>";} else {print "<option value='/24'>/24</option>";}
-if ($Block_CIDR eq '/23') {print "<option style='background-color: #00FF00;' value='/23' selected>/23</option>";} else {print "<option value='/23'>/23</option>";}
-if ($Block_CIDR eq '/22') {print "<option style='background-color: #00FF00;' value='/22' selected>/22</option>";} else {print "<option value='/22'>/22</option>";}
-if ($Block_CIDR eq '/21') {print "<option style='background-color: #00FF00;' value='/21' selected>/21</option>";} else {print "<option value='/21'>/21</option>";}
-if ($Block_CIDR eq '/20') {print "<option style='background-color: #00FF00;' value='/20' selected>/20</option>";} else {print "<option value='/20'>/20</option>";}
-if ($Block_CIDR eq '/19') {print "<option style='background-color: #00FF00;' value='/19' selected>/19</option>";} else {print "<option value='/19'>/19</option>";}
-if ($Block_CIDR eq '/18') {print "<option style='background-color: #00FF00;' value='/18' selected>/18</option>";} else {print "<option value='/18'>/18</option>";}
-if ($Block_CIDR eq '/17') {print "<option style='background-color: #00FF00;' value='/17' selected>/17</option>";} else {print "<option value='/17'>/17</option>";}
-if ($Block_CIDR eq '/16') {print "<option style='background-color: #00FF00;' value='/16' selected>/16</option>";} else {print "<option value='/16'>/16</option>";}
-if ($Block_CIDR eq '/15') {print "<option style='background-color: #00FF00;' value='/15' selected>/15</option>";} else {print "<option value='/15'>/15</option>";}
-if ($Block_CIDR eq '/14') {print "<option style='background-color: #00FF00;' value='/14' selected>/14</option>";} else {print "<option value='/14'>/14</option>";}
-if ($Block_CIDR eq '/13') {print "<option style='background-color: #00FF00;' value='/13' selected>/13</option>";} else {print "<option value='/13'>/13</option>";}
-if ($Block_CIDR eq '/12') {print "<option style='background-color: #00FF00;' value='/12' selected>/12</option>";} else {print "<option value='/12'>/12</option>";}
-if ($Block_CIDR eq '/11') {print "<option style='background-color: #00FF00;' value='/11' selected>/11</option>";} else {print "<option value='/11'>/11</option>";}
-if ($Block_CIDR eq '/10') {print "<option style='background-color: #00FF00;' value='/10' selected>/10</option>";} else {print "<option value='/10'>/10</option>";}
-if ($Block_CIDR eq '/9') {print "<option style='background-color: #00FF00;' value='/9' selected>/9</option>";} else {print "<option value='/9'>/9</option>";}
-if ($Block_CIDR eq '/8') {print "<option style='background-color: #00FF00;' value='/8' selected>/8</option>";} else {print "<option value='/8'>/8</option>";}
+if ($Block_CIDR eq '/30') {print "<option style='background-color: #009400;' value='/30' selected>/30</option>";} else {print "<option value='/30'>/30</option>";}
+if ($Block_CIDR eq '/29') {print "<option style='background-color: #009400;' value='/29' selected>/29</option>";} else {print "<option value='/29'>/29</option>";}
+if ($Block_CIDR eq '/28') {print "<option style='background-color: #009400;' value='/28' selected>/28</option>";} else {print "<option value='/28'>/28</option>";}
+if ($Block_CIDR eq '/27') {print "<option style='background-color: #009400;' value='/27' selected>/27</option>";} else {print "<option value='/27'>/27</option>";}
+if ($Block_CIDR eq '/26') {print "<option style='background-color: #009400;' value='/26' selected>/26</option>";} else {print "<option value='/26'>/26</option>";}
+if ($Block_CIDR eq '/25') {print "<option style='background-color: #009400;' value='/25' selected>/25</option>";} else {print "<option value='/25'>/25</option>";}
+if ($Block_CIDR eq '/24') {print "<option style='background-color: #009400;' value='/24' selected>/24</option>";} else {print "<option value='/24'>/24</option>";}
+if ($Block_CIDR eq '/23') {print "<option style='background-color: #009400;' value='/23' selected>/23</option>";} else {print "<option value='/23'>/23</option>";}
+if ($Block_CIDR eq '/22') {print "<option style='background-color: #009400;' value='/22' selected>/22</option>";} else {print "<option value='/22'>/22</option>";}
+if ($Block_CIDR eq '/21') {print "<option style='background-color: #009400;' value='/21' selected>/21</option>";} else {print "<option value='/21'>/21</option>";}
+if ($Block_CIDR eq '/20') {print "<option style='background-color: #009400;' value='/20' selected>/20</option>";} else {print "<option value='/20'>/20</option>";}
+if ($Block_CIDR eq '/19') {print "<option style='background-color: #009400;' value='/19' selected>/19</option>";} else {print "<option value='/19'>/19</option>";}
+if ($Block_CIDR eq '/18') {print "<option style='background-color: #009400;' value='/18' selected>/18</option>";} else {print "<option value='/18'>/18</option>";}
+if ($Block_CIDR eq '/17') {print "<option style='background-color: #009400;' value='/17' selected>/17</option>";} else {print "<option value='/17'>/17</option>";}
+if ($Block_CIDR eq '/16') {print "<option style='background-color: #009400;' value='/16' selected>/16</option>";} else {print "<option value='/16'>/16</option>";}
+if ($Block_CIDR eq '/15') {print "<option style='background-color: #009400;' value='/15' selected>/15</option>";} else {print "<option value='/15'>/15</option>";}
+if ($Block_CIDR eq '/14') {print "<option style='background-color: #009400;' value='/14' selected>/14</option>";} else {print "<option value='/14'>/14</option>";}
+if ($Block_CIDR eq '/13') {print "<option style='background-color: #009400;' value='/13' selected>/13</option>";} else {print "<option value='/13'>/13</option>";}
+if ($Block_CIDR eq '/12') {print "<option style='background-color: #009400;' value='/12' selected>/12</option>";} else {print "<option value='/12'>/12</option>";}
+if ($Block_CIDR eq '/11') {print "<option style='background-color: #009400;' value='/11' selected>/11</option>";} else {print "<option value='/11'>/11</option>";}
+if ($Block_CIDR eq '/10') {print "<option style='background-color: #009400;' value='/10' selected>/10</option>";} else {print "<option value='/10'>/10</option>";}
+if ($Block_CIDR eq '/9') {print "<option style='background-color: #009400;' value='/9' selected>/9</option>";} else {print "<option value='/9'>/9</option>";}
+if ($Block_CIDR eq '/8') {print "<option style='background-color: #009400;' value='/8' selected>/8</option>";} else {print "<option value='/8'>/8</option>";}
 
 print <<ENDHTML
 			</select>

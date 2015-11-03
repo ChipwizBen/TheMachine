@@ -17,8 +17,11 @@ my ($CGI, $Session, $Cookie) = CGI();
 my $Add_Record = $CGI->param("Add_Record");
 	my $Record_Source_Add = $CGI->param("Record_Source_Add");
 		$Record_Source_Add =~ s/\s//g;
+	my $Record_Domain_Add = $CGI->param("Record_Domain_Add");
+	$Record_Domain_Add =~ s/\s//g;
 	my $Record_TTL_Add = $CGI->param("Record_TTL_Add");
 		$Record_TTL_Add =~ s/\s//g;
+		if ($Record_TTL_Add <= 0) {$Record_TTL_Add = '86400'}
 	my $Record_Type_Add = $CGI->param("Record_Type_Add");
 		my $Record_Option_MX_Add = $CGI->param("Record_Option_MX_Add");
 		my $Record_Option_SRV_Add = $CGI->param("Record_Option_SRV_Add");
@@ -36,6 +39,8 @@ my $Edit_Record = $CGI->param("Edit_Record");
 my $Edit_Record_Post = $CGI->param("Edit_Record_Post");
 	my $Record_Source_Edit = $CGI->param("Record_Source_Edit");
 		$Record_Source_Edit =~ s/\s//g;
+	my $Record_Domain_Edit = $CGI->param("Record_Domain_Edit");
+	$Record_Domain_Edit =~ s/\s//g;
 	my $Record_TTL_Edit = $CGI->param("Record_TTL_Edit");
 		$Record_TTL_Edit =~ s/\s//g;
 	my $Record_Type_Edit = $CGI->param("Record_Type_Edit");
@@ -167,6 +172,27 @@ function Record_Options(value) {
 		<td colspan="2"><input type='text' name='Record_Source_Add' style="width:100%" maxlength='128' placeholder="Source" required autofocus></td>
 	</tr>
 	<tr>
+		<td style="text-align: right;">Domain:</td>
+		<td colspan="2">
+			<select name='Record_Domain_Add' style="width: 100%">
+ENDHTML
+
+	my $Domain_Query = $DB_DNS->prepare("SELECT `id`, `domain`
+	FROM `domains`
+	ORDER BY `domain` ASC");
+	$Domain_Query->execute( );
+
+	while ( (my $ID, my $Domain)  = $Domain_Query->fetchrow_array() )
+	{
+		print "<option value='$ID'>$Domain</option>";
+	}
+
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Time to Live:</td>
 		<td colspan="2"><input type='text' name='Record_TTL_Add' style="width:100%" maxlength='6' placeholder="86400"></td>
 	</tr>
@@ -252,6 +278,7 @@ sub add_record {
 
 	my $Record_Insert = $DB_DNS->prepare("INSERT INTO `zone_records` (
 		`source`,
+		`domain`,
 		`time_to_live`,
 		`type`,
 		`options`,
@@ -262,11 +289,11 @@ sub add_record {
 		`modified_by`
 	)
 	VALUES (
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?
 	)");
 
-	$Record_Insert->execute($Record_Source_Add, $Record_TTL_Add, $Record_Type_Add, $Record_Options_Add, 
+	$Record_Insert->execute($Record_Source_Add, $Record_Domain_Add, $Record_TTL_Add, $Record_Type_Add, $Record_Options_Add, 
 	$Record_Target_Add, $Record_Zone_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
 	my $Record_Insert_ID = $DB_DNS->{mysql_insertid};
@@ -301,7 +328,7 @@ sub add_record {
 
 sub html_edit_record {
 
-	my $Select_Record = $DB_DNS->prepare("SELECT `source`, `time_to_live`, `type`, `options`, `target`, `zone`,	`expires`, `active`
+	my $Select_Record = $DB_DNS->prepare("SELECT `source`, `domain`, `time_to_live`, `type`, `options`, `target`, `zone`,	`expires`, `active`
 	FROM `zone_records`
 	WHERE `id` = ?");
 	$Select_Record->execute($Edit_Record);
@@ -310,13 +337,14 @@ sub html_edit_record {
 	{
 
 		my $Source_Extract = $DB_Record[0];
-		my $Time_To_Live_Extract = $DB_Record[1];
-		my $Type_Extract = $DB_Record[2];
-		my $Options_Extract = $DB_Record[3];
-		my $Target_Extract = $DB_Record[4];
-		my $Zone_Extract = $DB_Record[5];
-		my $Expires_Extract = $DB_Record[6];
-		my $Active_Extract = $DB_Record[7];
+		my $Domain_Extract = $DB_Record[1];
+		my $Time_To_Live_Extract = $DB_Record[2];
+		my $Type_Extract = $DB_Record[3];
+		my $Options_Extract = $DB_Record[4];
+		my $Target_Extract = $DB_Record[5];
+		my $Zone_Extract = $DB_Record[6];
+		my $Expires_Extract = $DB_Record[7];
+		my $Active_Extract = $DB_Record[8];
 
 		my $Expires_Checked;
 		my $Expires_Disabled;
@@ -377,6 +405,32 @@ function Record_Options(value) {
 		<td colspan="2"><input type='text' name='Record_Source_Edit' value='$Source_Extract' style="width:100%" maxlength='128' placeholder="$Source_Extract" required autofocus></td>
 	</tr>
 	<tr>
+		<td style="text-align: right;">Domain:</td>
+		<td colspan="2">
+			<select name='Record_Domain_Edit' style="width: 100%">
+ENDHTML
+
+	my $Domain_Query = $DB_DNS->prepare("SELECT `id`, `domain`
+	FROM `domains`
+	ORDER BY `domain` ASC");
+	$Domain_Query->execute( );
+
+	while ( (my $ID, my $Domain)  = $Domain_Query->fetchrow_array() )
+	{
+		if ($Domain_Extract eq $ID) {
+			print "<option style='background-color: #009400;' value='$ID' selected>$Domain</option>";
+		}
+		else {
+			print "<option value='$ID'>$Domain</option>";
+		}
+	}
+
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Time to Live:</td>
 		<td colspan="2"><input type='text' name='Record_TTL_Edit' value='$Time_To_Live_Extract' style="width:100%" maxlength='6' placeholder="$Time_To_Live_Extract"></td>
 	</tr>
@@ -386,14 +440,14 @@ function Record_Options(value) {
 			<select name='Record_Type_Edit' onchange="Record_Options(this.value);">
 ENDHTML
 
-if ($Type_Extract eq 'A') {print "<option style='color: #00FF00;' value='A' selected>A</option>"} else {print "<option value='A'>A</option>"}
-if ($Type_Extract eq 'AAAA') {print "<option style='color: #00FF00;' value='AAAA' selected>AAAA</option>"} else {print "<option value='AAAA'>AAAA</option>"}
-if ($Type_Extract eq 'CNAME') {print "<option style='color: #00FF00;' value='CNAME' selected>CNAME</option>"} else {print "<option value='CNAME'>CNAME</option>"}
-if ($Type_Extract eq 'MX') {print "<option style='color: #00FF00;' value='MX' selected>MX</option>"} else {print "<option value='MX'>MX</option>"}
-if ($Type_Extract eq 'NS') {print "<option style='color: #00FF00;' value='NS' selected>NS</option>"} else {print "<option value='NS'>NS</option>"}
-if ($Type_Extract eq 'PTR') {print "<option style='color: #00FF00;' value='PTR' selected>PTR</option>"} else {print "<option value='PTR'>PTR</option>"}
-if ($Type_Extract eq 'SRV') {print "<option style='color: #00FF00;' value='SRV' selected>SRV</option>"} else {print "<option value='SRV'>SRV</option>"}
-if ($Type_Extract eq 'TXT') {print "<option style='color: #00FF00;' value='TXT' selected>TXT</option>"} else {print "<option value='TXT'>TXT</option>"}
+if ($Type_Extract eq 'A') {print "<option style='background-color: #009400;' value='A' selected>A</option>"} else {print "<option value='A'>A</option>"}
+if ($Type_Extract eq 'AAAA') {print "<option style='background-color: #009400;' value='AAAA' selected>AAAA</option>"} else {print "<option value='AAAA'>AAAA</option>"}
+if ($Type_Extract eq 'CNAME') {print "<option style='background-color: #009400;' value='CNAME' selected>CNAME</option>"} else {print "<option value='CNAME'>CNAME</option>"}
+if ($Type_Extract eq 'MX') {print "<option style='background-color: #009400;' value='MX' selected>MX</option>"} else {print "<option value='MX'>MX</option>"}
+if ($Type_Extract eq 'NS') {print "<option style='background-color: #009400;' value='NS' selected>NS</option>"} else {print "<option value='NS'>NS</option>"}
+if ($Type_Extract eq 'PTR') {print "<option style='background-color: #009400;' value='PTR' selected>PTR</option>"} else {print "<option value='PTR'>PTR</option>"}
+if ($Type_Extract eq 'SRV') {print "<option style='background-color: #009400;' value='SRV' selected>SRV</option>"} else {print "<option value='SRV'>SRV</option>"}
+if ($Type_Extract eq 'TXT') {print "<option style='background-color: #009400;' value='TXT' selected>TXT</option>"} else {print "<option value='TXT'>TXT</option>"}
 
 print <<ENDHTML;
 			</select>
@@ -436,9 +490,9 @@ print <<ENDHTML;
 		<td colspan="2" style="text-align: left;">
 			<select name='Record_Zone_Edit'>
 ENDHTML
-if ($Zone_Extract == 0) {print "<option style='color: #00FF00;' value='0' selected>Internal</option>"} else {print "<option value='0'>Internal</option>"}
-if ($Zone_Extract == 1) {print "<option style='color: #00FF00;' value='1' selected>External</option>"} else {print "<option value='1'>External</option>"}
-if ($Zone_Extract == 2) {print "<option style='color: #00FF00;' value='2' selected>Both</option>"} else {print "<option value='2'>Both</option>"}
+if ($Zone_Extract == 0) {print "<option style='background-color: #009400;' value='0' selected>Internal</option>"} else {print "<option value='0'>Internal</option>"}
+if ($Zone_Extract == 1) {print "<option style='background-color: #009400;' value='1' selected>External</option>"} else {print "<option value='1'>External</option>"}
+if ($Zone_Extract == 2) {print "<option style='background-color: #009400;' value='2' selected>Both</option>"} else {print "<option value='2'>Both</option>"}
 print <<ENDHTML;
 			</select>
 		</td>
@@ -502,6 +556,7 @@ sub edit_record {
 
 	my $Update_Record = $DB_DNS->prepare("UPDATE `zone_records` SET
 		`source` = ?,
+		`domain` = ?,
 		`time_to_live` = ?,
 		`type` = ?,
 		`options` = ?,
@@ -512,7 +567,7 @@ sub edit_record {
 		`modified_by` = ?
 		WHERE `id` = ?");
 		
-	$Update_Record->execute($Record_Source_Edit, $Record_TTL_Edit, $Record_Type_Edit, $Record_Options_Edit, 
+	$Update_Record->execute($Record_Source_Edit, $Record_Domain_Edit, $Record_TTL_Edit, $Record_Type_Edit, $Record_Options_Edit, 
 	$Record_Target_Edit, $Record_Zone_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_Record_Post);
 
 	# Audit Log
@@ -643,7 +698,7 @@ sub delete_record {
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>13,
+		-cols=>14,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -660,7 +715,7 @@ sub html_output {
 		my $Total_Rows = $Select_Record_Count->rows();
 
 
-	my $Select_Records = $DB_DNS->prepare("SELECT `id`, `source`, `time_to_live`, `type`, `options`, 
+	my $Select_Records = $DB_DNS->prepare("SELECT `id`, `source`, `domain`, `time_to_live`, `type`, `options`, 
 	`target`, `zone`, `expires`, `active`, `last_modified`, `modified_by`
 		FROM `zone_records`
 			WHERE `id` LIKE ?
@@ -677,7 +732,7 @@ sub html_output {
 
 	my $Rows = $Select_Records->rows();
 
-	$Table->addRow( "ID", "Source", "TTL", "Type", "Options", "Target", "Zone", "Expires", "Active", "Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->addRow( "ID", "Source", "Domain", "TTL", "Type", "Options", "Target", "Zone", "Expires", "Active", "Last Modified", "Modified By", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Record_Row_Count=1;
@@ -693,21 +748,30 @@ sub html_output {
 		my $Source = $Select_Records[1];
 			my $Source_Clean = $Source;
 			$Source =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $TTL = $Select_Records[2];
+		my $Domain = $Select_Records[2];
+		my $TTL = $Select_Records[3];
 			$TTL =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Type = $Select_Records[3];
+		my $Type = $Select_Records[4];
 			$Type =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Options = $Select_Records[4];
-		my $Target = $Select_Records[5];
+		my $Options = $Select_Records[5];
+		my $Target = $Select_Records[6];
 			$Target =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Zone = $Select_Records[6];
-		my $Expires = $Select_Records[7];
+		my $Zone = $Select_Records[7];
+		my $Expires = $Select_Records[8];
 			my $Expires_Clean = $Expires;
 			$Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = $Select_Records[8];
+		my $Active = $Select_Records[9];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = $Select_Records[9];
-		my $Modified_By = $Select_Records[10];
+		my $Last_Modified = $Select_Records[10];
+		my $Modified_By = $Select_Records[11];
+
+		my $Resolve_Domain = $DB_DNS->prepare("SELECT `domain`
+			FROM `domains`
+			WHERE `id` LIKE ?"
+		);
+
+		$Resolve_Domain->execute($Domain);
+		$Domain = $Resolve_Domain->fetchrow_array();
 
 		my $Expires_Epoch;
 		my $Today_Epoch = time;
@@ -731,6 +795,7 @@ sub html_output {
 		$Table->addRow(
 			"$DBID",
 			"$Source",
+			"$Domain",
 			"$TTL",
 			"$Type",
 			"$Options",
@@ -745,48 +810,48 @@ sub html_output {
 		);
 
 		if ($Zone eq 'Internal') {
-			$Table->setCellClass ($Record_Row_Count, 7, 'tbrowgreen');
+			$Table->setCellClass ($Record_Row_Count, 8, 'tbrowgreen');
 		}
 		elsif ($Zone eq 'External') {
-			$Table->setCellClass ($Record_Row_Count, 7, 'tbroworange');
+			$Table->setCellClass ($Record_Row_Count, 8, 'tbroworange');
 		}
 		elsif ($Zone eq 'Both') {
-			$Table->setCellClass ($Record_Row_Count, 7, 'tbrowpurple');
+			$Table->setCellClass ($Record_Row_Count, 8, 'tbrowpurple');
 		}
 		else {
-			$Table->setCellClass ($Record_Row_Count, 7, 'tbrowerror');
+			$Table->setCellClass ($Record_Row_Count, 8, 'tbrowerror');
 		}
 
 		if ($Active eq 'Yes') {
-			$Table->setCellClass ($Record_Row_Count, 9, 'tbrowgreen');
+			$Table->setCellClass ($Record_Row_Count, 10, 'tbrowgreen');
 		}
 		else {
-			$Table->setCellClass ($Record_Row_Count, 9, 'tbrowerror');
+			$Table->setCellClass ($Record_Row_Count, 10, 'tbrowerror');
 		}
 
 		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Table->setCellClass ($Record_Row_Count, 8, 'tbrowdisabled');
+			$Table->setCellClass ($Record_Row_Count, 9, 'tbrowdisabled');
 		}
 
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(3, '1px');
 	$Table->setColWidth(4, '1px');
-	$Table->setColWidth(5, '70px');
-	$Table->setColWidth(7, '60px');
+	$Table->setColWidth(5, '1px');
+	$Table->setColWidth(6, '70px');
 	$Table->setColWidth(8, '60px');
-	$Table->setColWidth(9, '1px');
-	$Table->setColWidth(10, '110px');
+	$Table->setColWidth(9, '60px');
+	$Table->setColWidth(10, '1px');
 	$Table->setColWidth(11, '110px');
-	$Table->setColWidth(12, '1px');
+	$Table->setColWidth(12, '110px');
 	$Table->setColWidth(13, '1px');
+	$Table->setColWidth(14, '1px');
 
 	$Table->setColAlign(1, 'center');
-	$Table->setColAlign(3, 'center');
 	$Table->setColAlign(4, 'center');
 	$Table->setColAlign(5, 'center');
-	for (7..13) {
+	$Table->setColAlign(6, 'center');
+	for (8..14) {
 		$Table->setColAlign($_, 'center');
 	}
 

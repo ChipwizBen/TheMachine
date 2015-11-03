@@ -491,7 +491,7 @@ ENDHTML
 									my $DB_Host_Command_Name = $DB_Host_Command_Conversion[1];
 
 									if ($DB_Host_Command_ID == $Host_Notification_Command_ID) {
-										print "<option style='background-color: #00FF00;' value='$DB_Host_Command_ID' selected>$DB_Host_Command_Name</option>";
+										print "<option style='background-color: #009400;' value='$DB_Host_Command_ID' selected>$DB_Host_Command_Name</option>";
 									}
 									else {
 										print "<option value='$DB_Host_Command_ID'>$DB_Host_Command_Name</option>";
@@ -531,7 +531,7 @@ ENDHTML
 									my $DB_Service_Command_Name = $DB_Service_Command_Conversion[1];
 
 									if ($DB_Service_Command_ID == $Service_Notification_Command_ID) {
-										print "<option style='background-color: #00FF00;' value='$DB_Service_Command_ID' selected>$DB_Service_Command_Name</option>";
+										print "<option style='background-color: #009400;' value='$DB_Service_Command_ID' selected>$DB_Service_Command_Name</option>";
 									}
 									else {
 										print "<option value='$DB_Service_Command_ID'>$DB_Service_Command_Name</option>";
@@ -561,7 +561,7 @@ ENDHTML
 								my $Alias_Extract = $DB_Host_Notification_Period[2];
 
 								if ($ID_Extract == $Host_Notification_Period_Extract) {
-									print "<option style='background-color: #00FF00;' value='$ID_Extract' selected>$Name_Extract ($Alias_Extract)</option>";
+									print "<option style='background-color: #009400;' value='$ID_Extract' selected>$Name_Extract ($Alias_Extract)</option>";
 								}
 								else {
 									print "<option value='$ID_Extract'>$Name_Extract ($Alias_Extract)</option>";
@@ -591,7 +591,7 @@ ENDHTML
 								my $Alias_Extract = $DB_Service_Notification_Period[2];
 
 								if ($ID_Extract == $Service_Notification_Period_Extract) {
-									print "<option style='background-color: #00FF00;' value='$ID_Extract' selected>$Name_Extract ($Alias_Extract)</option>";
+									print "<option style='background-color: #009400;' value='$ID_Extract' selected>$Name_Extract ($Alias_Extract)</option>";
 								}
 								else {
 									print "<option value='$ID_Extract'>$Name_Extract ($Alias_Extract)</option>";
