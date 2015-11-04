@@ -37,11 +37,9 @@ if ($Search eq '') {
 }
 
 if ($Search) {
-	
 	require $Header;
 	&html_output;
 	require $Referer;
-
 }
 
 sub html_output {
@@ -49,7 +47,7 @@ sub html_output {
 	my $Counter = 0;
 
 	my $Table = new HTML::Table(
-		-cols=>4,
+		-cols=>6,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -60,7 +58,7 @@ sub html_output {
 		-padding=>1
 	);
 
-	$Table->addRow( "#", "Category", "Name", "Status", "View" );
+	$Table->addRow( "#", "System", "Category", "Name", "Status", "View" );
 	$Table->setRowClass (1, 'tbrow1');
 
 print <<ENDHTML;
@@ -106,10 +104,11 @@ while ( my @Search = $Search_Host_Groups->fetchrow_array() ) {
 
 	$Table->addRow(
 	"$Counter",
+	"DSMS",
 	"Host Group",
 	"$Name",
 	"$Active$Expires",
-	"<a href='sudoers-host-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -147,10 +146,11 @@ while ( my @Search = $Search_User_Groups->fetchrow_array() ) {
 
 	$Table->addRow(
 	"$Counter",
+	"DSMS",
 	"User Group",
 	"$Name",
 	"$Active$Expires",
-	"<a href='sudoers-user-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -186,10 +186,11 @@ while ( my @Search = $Search_Command_Groups->fetchrow_array() ) {
 
 	$Table->addRow(
 	"$Counter",
+	"DSMS",
 	"Command Group",
 	"$Name",
 	"$Active$Expires",
-	"<a href='sudoers-command-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-command-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -228,10 +229,11 @@ while ( my @Search = $Search_Hosts->fetchrow_array() ) {
 
 	$Table->addRow(
 	"$Counter",
+	"DSMS",
 	"Host",
 	"$Name ($IP)",
 	"$Active$Expires",
-	"<a href='sudoers-hosts.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -267,10 +269,11 @@ while ( my @Search = $Search_Users->fetchrow_array() ) {
 
 	$Table->addRow(
 	"$Counter",
+	"DSMS",
 	"User",
 	"$Name",
 	"$Active$Expires",
-	"<a href='sudoers-users.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-users.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -309,10 +312,11 @@ while ( my @Search = $Search_Commands->fetchrow_array() ) {
 
 	$Table->addRow(
 	"$Counter",
+	"DSMS",
 	"Command",
 	"$Name ($Command)",
 	"$Active$Expires",
-	"<a href='sudoers-commands.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-commands.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -349,10 +353,11 @@ while ( my @Search = $Search_Rules->fetchrow_array() ) {
 
 	$Table->addRow(
 	"$Counter",
+	"DSMS",
 	"Rule",
 	"$Name",
 	"$Active$Expires<br/>$Approved",
-	"<a href='sudoers-rules.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 

@@ -119,9 +119,9 @@ print <<ENDHTML;
 			<select name='Host_Type_Add' style="width: 300px">
 ENDHTML
 
-	my $Host_Type_Query = $DB_IP_Allocation->prepare("SELECT `id`, `name`
-	FROM `host_type`
-	ORDER BY `name` ASC");
+	my $Host_Type_Query = $DB_IP_Allocation->prepare("SELECT `id`, `type`
+	FROM `host_types`
+	ORDER BY `type` ASC");
 	$Host_Type_Query->execute( );
 
 	while ( (my $ID, my $Type) = my @Type_Query = $Host_Type_Query->fetchrow_array() )
@@ -252,9 +252,9 @@ ENDHTML
 
 
 
-	my $Host_Type_Query = $DB_IP_Allocation->prepare("SELECT `id`, `name`
-	FROM `host_type`
-	ORDER BY `name` ASC");
+	my $Host_Type_Query = $DB_IP_Allocation->prepare("SELECT `id`, `type`
+	FROM `host_types`
+	ORDER BY `type` ASC");
 	$Host_Type_Query->execute( );
 
 	while ( (my $ID, my $Type) = my @Type_Query = $Host_Type_Query->fetchrow_array() )
@@ -472,8 +472,8 @@ sub html_output {
 
 		my $Type;
 		if ($Host_Type != 0) {
-			my $Select_Type = $DB_IP_Allocation->prepare("SELECT `name`
-				FROM `host_type`
+			my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+				FROM `host_types`
 				WHERE `id` LIKE ?");
 			$Select_Type->execute($Host_Type);
 			$Type = $Select_Type->fetchrow_array();

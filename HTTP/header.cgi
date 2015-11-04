@@ -126,6 +126,7 @@ print <<ENDHTML;
 			</li>
 			<li><a href="/#"><span>&nbsp; IP</span></a>
 				<ul>
+					<li><a href="/IP/host-types.cgi">Host Types</a></li>
 					<li><a href="/IP/hosts.cgi">Hosts</a></li>
 					<li><a href="/IP/ipv4-blocks.cgi">IPv4 Blocks</a></li>
 					<li><a href="/IP/ipv4-allocations.cgi">IPv4 Allocations</a></li>
@@ -152,6 +153,7 @@ print <<ENDHTML;
 			</li>
 			<li><a href="/#"><span>&nbsp; DNS</span></a>
 				<ul>
+					<li><a href="/DNS/domains.cgi">Domains</a></li>
 					<li><a href="/DNS/zone-records.cgi">Zone Records</a></li>
 				</ul>
 			</li>

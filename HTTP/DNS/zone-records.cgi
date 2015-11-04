@@ -58,10 +58,9 @@ my $Edit_Record_Post = $CGI->param("Edit_Record_Post");
 
 my $Delete_Record = $CGI->param("Delete_Record");
 my $Delete_Record_Confirm = $CGI->param("Delete_Record_Confirm");
-my $Record_Source_Delete = $CGI->param("Record_Name_Delete");
+my $Record_Name_Delete = $CGI->param("Record_Name_Delete");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -109,7 +108,7 @@ elsif ($Delete_Record) {
 }
 elsif ($Delete_Record_Confirm) {
 	&delete_record;
-	my $Message_Green="$Record_Source_Delete record deleted successfully";
+	my $Message_Green="$Record_Name_Delete record deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	print "Location: /DNS/zone-records.cgi\n\n";
 	exit(0);
