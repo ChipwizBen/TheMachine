@@ -182,6 +182,7 @@ if (!$User_Name) {
 if ($User_IP_Admin != 1) {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /index.cgi\n\n";
 	exit(0);
 }
@@ -196,6 +197,7 @@ elsif ($Block_Network_Add) {
 	my $Block_ID = &add_block;
 	my $Message_Green="$Block_Name_Add ($Block_Network_Add$Block_CIDR_Add) added successfully as ID $Block_ID";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/ipv4-blocks.cgi\n\n";
 	exit(0);
 }
@@ -209,6 +211,7 @@ elsif ($Block_Edit && $Block_Network_Edit) {
 	&edit_block;
 	my $Message_Green="$Block_Name_Edit ($Block_Network_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/ipv4-blocks.cgi\n\n";
 	exit(0);
 }
@@ -222,6 +225,7 @@ elsif ($Delete_Block_Confirm) {
 	&delete_block;
 	my $Message_Green="$Block_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/ipv4-blocks.cgi\n\n";
 	exit(0);
 }
@@ -370,6 +374,7 @@ sub add_block {
 		}
 		my $Message_Red="Host Name: $Existing_Block_Name already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /IP/ipv4-blocks.cgi\n\n";
 		exit(0);
 	}
@@ -594,6 +599,7 @@ sub edit_block {
 		}
 		my $Message_Red="Block Name: $Existing_Block_Name already exists as ID: $Existing_ID, Block: $Existing_Block_IP";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /IP/ipv4-blocks.cgi\n\n";
 		exit(0);
 	}

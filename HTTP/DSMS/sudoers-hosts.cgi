@@ -88,6 +88,7 @@ elsif ($Host_Name_Add && $IP_Add) {
 	my $Host_ID = &add_host;
 	my $Message_Green="$Host_Name_Add ($IP_Add) added successfully as ID $Host_ID";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
@@ -101,6 +102,7 @@ elsif ($Edit_Host_Post) {
 	&edit_host;
 	my $Message_Green="$Host_Name_Edit ($IP_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
@@ -114,6 +116,7 @@ elsif ($Delete_Host_Confirm) {
 	&delete_host;
 	my $Message_Green="$Host_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 	exit(0);
 }
@@ -248,7 +251,8 @@ sub add_host {
 			$Existing_IP = $Select_Host_Names[1];
 		}
 		my $Message_Red="Host Name: $Host_Name_Add already exists as ID: $Existing_ID, IP: $Existing_IP";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 		exit(0);
 	}
@@ -271,7 +275,8 @@ sub add_host {
 				$Existing_Host_Name = $Select_IPs[1];
 			}
 			my $Message_Red="IP: $IP_Add already exists as ID: $Existing_ID, Host_Name: $Existing_Host_Name";
-			$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
 			print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 			exit(0);
 		}
@@ -510,7 +515,8 @@ sub edit_host {
 			$Existing_IP = $Select_Host_Names[1];
 		}
 		my $Message_Red="Host Name: $Host_Name_Edit already exists as ID: $Existing_ID, IP: $Existing_IP";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 		exit(0);
 	}
@@ -534,7 +540,8 @@ sub edit_host {
 				$Existing_Host_Name = $Select_IPs[1];
 			}
 			my $Message_Red="IP: $IP_Edit already exists as ID: $Existing_ID, Host_Name: $Existing_Host_Name";
-			$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
 			print "Location: /DSMS/sudoers-hosts.cgi\n\n";
 			exit(0);
 		}

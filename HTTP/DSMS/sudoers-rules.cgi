@@ -123,6 +123,7 @@ elsif ($Add_Rule_Final) {
 	my $Rule_ID = &add_rule;
 	my $Message_Green="$Rule_Name_Add added successfully as ID $Rule_ID";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
@@ -136,6 +137,7 @@ elsif ($Edit_Rule_Final) {
 	&edit_rule;
 	my $Message_Green="$Rule_Name_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
@@ -149,6 +151,7 @@ elsif ($Delete_Rule_Confirm) {
 	&delete_rule;
 	my $Message_Green="$Rule_Name_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
@@ -162,6 +165,7 @@ elsif ($Approve_Rule_ID && $User_Approver) {
 	&approve_rule;
 	my $Message_Green="$Approve_Rule_Name rule approved successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-rules.cgi\n\n";
 	exit(0);
 }
@@ -895,7 +899,8 @@ sub add_rule {
 			$Existing_ID = $Select_Rule_Names[0];
 		}
 		my $Message_Red="Rule_Name: $Rule_Name_Add already exists as ID: $Existing_ID";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 	}
@@ -2296,7 +2301,8 @@ sub edit_rule {
 			$Existing_ID = $Select_Rule_Names[0];
 		}
 		my $Message_Red="Rule Name: $Rule_Name_Edit already exists as ID: $Existing_ID";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 	}
@@ -2819,7 +2825,8 @@ if ($Delete_Host_Group_ID) {
 			# / Audit Log
 	
 			my $Message_Green="Host Group $Name [Host Group ID $Delete_Host_Group_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
-			$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+			$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 			print "Location: /DSMS/sudoers-rules.cgi\n\n";
 			exit(0);
 		}
@@ -2845,7 +2852,8 @@ if ($Delete_Host_Group_ID) {
 		# / Audit Log
 
 		my $Message_Green="ALL Hosts and Host Groups removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
-		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 	}
@@ -2886,7 +2894,8 @@ if ($Delete_Host_ID) {
 			$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed Host $Name [Host ID $Delete_Host_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 			# / Audit Log
 			my $Message_Green="Host $Name [Host ID $Delete_Host_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
-			$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+			$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 			print "Location: /DSMS/sudoers-rules.cgi\n\n";
 			exit(0);
 		}
@@ -2912,7 +2921,8 @@ if ($Delete_Host_ID) {
 		# / Audit Log
 
 		my $Message_Green="ALL Hosts and Host Groups removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
-		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 	}
@@ -2952,7 +2962,8 @@ if ($Delete_User_Group_ID) {
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed User Group $Name [User Group ID $Delete_User_Group_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 
 		my $Message_Green="User Group $Name [User Group ID $Delete_User_Group_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
-		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 
@@ -2994,7 +3005,8 @@ if ($Delete_User_ID) {
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed User $Name [User ID $Delete_User_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 
 		my $Message_Green="User $Name [User ID $Delete_User_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
-		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 
@@ -3036,7 +3048,8 @@ if ($Delete_Command_Group_ID) {
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed Command Group $Name [Command Group ID $Delete_Command_Group_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 
 		my $Message_Green="Command Group $Name [Command Group ID $Delete_Command_Group_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
-		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 
@@ -3078,7 +3091,8 @@ if ($Delete_Command_ID) {
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed Command $Name [Command ID $Delete_Command_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 
 		my $Message_Green="Command $Name [Command ID $Delete_Command_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
-		$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-rules.cgi\n\n";
 		exit(0);
 
@@ -3133,6 +3147,7 @@ sub approve_rule {
 		else {
 			my $Message_Red="Nice try, but you cannot approve your own rules.";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /DSMS/sudoers-rules.cgi\n\n";
 			exit(0);
 		}

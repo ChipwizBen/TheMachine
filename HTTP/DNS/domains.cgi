@@ -52,6 +52,7 @@ elsif ($Domain_Add) {
 	my $Domain_ID = &add_domain;
 	my $Message_Green="$Domain_Add added successfully as ID $Domain_ID";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DNS/domains.cgi\n\n";
 	exit(0);
 }
@@ -65,6 +66,7 @@ elsif ($Edit_Domain_Post) {
 	&edit_domain;
 	my $Message_Green="$Domain_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DNS/domains.cgi\n\n";
 	exit(0);
 }
@@ -78,6 +80,7 @@ elsif ($Delete_Domain_Confirm) {
 	&delete_domain;
 	my $Message_Green="$Domain_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DNS/domains.cgi\n\n";
 	exit(0);
 }

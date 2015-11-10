@@ -78,7 +78,8 @@ if (!$Username) {
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /index.cgi\n\n";
 	exit(0);
 }
@@ -93,10 +94,12 @@ elsif ($Contact_Add && $Alias_Add) {
 	if ($Active_Add) {
 		my $Message_Green="$Contact_Add ($Alias_Add) added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Contact_Add ($Alias_Add) added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
+	$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-contacts.cgi\n\n";
@@ -110,7 +113,8 @@ elsif ($Edit_Contact) {
 elsif ($Contact_Edit_Post) {
 	&edit_contact;
 	my $Message_Green="$Contact_Edit ($Alias_Edit) edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-contacts.cgi\n\n";
 	exit(0);
 }
@@ -122,7 +126,8 @@ elsif ($Delete_Contact) {
 elsif ($Contact_Delete_Post) {
 	&delete_contact;
 	my $Message_Green="$Contact_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-contacts.cgi\n\n";
 	exit(0);
 }
@@ -340,6 +345,7 @@ sub add_contact {
 
 			my $Message_Red="$Contact_Add already exists (ID: $ID_Extract, Alias: $Alias_Extract), new contact refused";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /Icinga/icinga-contacts.cgi\n\n";
 			exit(0);
 
@@ -769,6 +775,7 @@ sub edit_contact {
 
 			my $Message_Red="$Contact_Edit already exists (ID: $ID_Extract, Alias: $Alias_Extract), edited contact refused";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /Icinga/icinga-contacts.cgi\n\n";
 			exit(0);
 

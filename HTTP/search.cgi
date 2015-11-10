@@ -32,6 +32,7 @@ if (($Referer eq '') || ($Referer eq 'search.cgi')) {
 if ($Search eq '') {
 	my $Message_Red="You did not provide a search input";
 	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: $Referer\n\n";
 	exit(0);
 }

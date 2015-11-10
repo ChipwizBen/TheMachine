@@ -16,9 +16,10 @@ my $Recovery_Email_Address = Recovery_Email_Address();
 
 my $Referer = $Session->param("Referer");
 
-if ( $ENV{HTTP_REFERER} !~ m/.login./ ) {
+if ( $ENV{HTTP_REFERER} !~ m/.login./ && $ENV{HTTP_REFERER} !~ m/.search./ ) {
 	$Referer = $ENV{HTTP_REFERER};
 	$Session->param('Referer', $Referer);
+	$Session->flush();
 }
 
 my $User_Name_Form = $CGI->param("Username_Form");
@@ -46,6 +47,7 @@ sub ldap_login {
 			my $LDAP_Email = $LDAP_Details[2];
 
 		$Session->param('User_Name', $LDAP_User_Name);
+	$Session->flush();
 
 		my $Details_Update = $DB_Management->prepare("INSERT INTO `credentials` (
 			`username`,
@@ -94,6 +96,7 @@ sub ldap_login {
 			$Session->param('User_DNS_Admin', $DB_DNS_Admin);
 			$Session->param('User_Approver', $DB_Approver);
 			$Session->param('User_Requires_Approval', $DB_Requires_Approval);
+			$Session->flush();
 	    }
 	    if ($Referer ne '' && $Referer !~ /logout/) {
 			print "Location: $Referer\n\n";
@@ -176,6 +179,7 @@ sub login_user {
 			$Session->param('User_DNS_Admin', $DB_DNS_Admin);
 			$Session->param('User_Approver', $DB_Approver);
 			$Session->param('User_Requires_Approval', $DB_Requires_Approval);
+			$Session->flush();
 
 			my $Login_User = $DB_Management->prepare("UPDATE `credentials`
 			SET `lockout_counter` = '0',

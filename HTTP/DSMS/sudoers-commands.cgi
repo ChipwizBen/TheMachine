@@ -80,11 +80,13 @@ elsif ($Command_Alias_Add && $Command_Add) {
 	if ($Command_Add !~ m/^\//) {
 		my $Message_Red="Your command did not contact a full path. Command not added.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	}
 	else {
 		my $Command_ID = &add_command;
 		my $Message_Green="$Command_Alias_Add ($Command_Add) added successfully as ID $Command_ID";
 		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	}
 	print "Location: /DSMS/sudoers-commands.cgi\n\n";
 	exit(0);
@@ -99,11 +101,13 @@ elsif ($Edit_Command_Post) {
 	if ($Command_Edit !~ m/^\//) {
 		my $Message_Red="Your command did not contact a full path. Command not edited.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	}
 	else {
 		&edit_command;
 		my $Message_Green="$Command_Alias_Edit ($Command_Edit) edited successfully";
 		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	}
 	print "Location: /DSMS/sudoers-commands.cgi\n\n";
 	exit(0);
@@ -117,7 +121,8 @@ elsif ($Delete_Command) {
 elsif ($Delete_Command_Confirm) {
 	&delete_command;
 	my $Message_Green="$Command_Alias_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-commands.cgi\n\n";
 	exit(0);
 }
@@ -237,7 +242,8 @@ sub add_command {
 			$Existing_Command = $Select_Command_Alias[1];
 		}
 		my $Message_Red="Command Alias: $Command_Alias_Add already exists as ID: $Existing_ID, Command: $Existing_Command";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-commands.cgi\n\n";
 		exit(0);
 	}
@@ -259,7 +265,8 @@ sub add_command {
 			$Existing_Command_Aliases = $Select_Commands[1];
 		}
 		my $Message_Red="Command: $Command_Add already exists as ID: $Existing_ID, Command Alias: $Existing_Command_Aliases";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-commands.cgi\n\n";
 		exit(0);
 	}
@@ -451,7 +458,8 @@ sub edit_command {
 			$Existing_Command = $Select_Command_Aliass[1];
 		}
 		my $Message_Red="Command Alias: $Command_Alias_Edit already exists as ID: $Existing_ID, Command: $Existing_Command";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-commands.cgi\n\n";
 		exit(0);
 	}
@@ -474,7 +482,8 @@ sub edit_command {
 			$Existing_Command_Alias = $Select_Commands[1];
 		}
 		my $Message_Red="Command: '$Command_Edit' already exists as ID: $Existing_ID, Command_Alias: $Existing_Command_Alias";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-commands.cgi\n\n";
 		exit(0);
 	}

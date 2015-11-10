@@ -10,7 +10,7 @@ require $Common_Config;
 my $Header = Header();
 my ($CGI, $Session, $Cookie) = CGI();
 
-my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
+my $User_Name = $Session->param("User_Name");  
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";

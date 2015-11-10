@@ -102,9 +102,12 @@ sub unlock_check {
 				$Reset_Account->execute($Password, $Salt, $User_Name, $DBID);
 
 				$Session->param('User_Name', $User_Name);
+	$Session->flush();
 				$Session->param('User_Admin', $User_Admin);
+	$Session->flush();
 				my $Message_Green = "Your account has been unlocked and your password has been changed";
 				$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 				print "Location: /index.cgi\n\n";
 				exit(0);
 			}

@@ -10,5 +10,6 @@ my ($CGI, $Session, $Cookie) = CGI();
 
 my $Message_Red = "Ain't nobody got taam fo' dat.";
 $Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 print "Location: /index.cgi\n\n";
 exit(0);

@@ -82,7 +82,8 @@ if ($Add_Group && !$Add_Group_Final) {
 elsif ($Add_Group_Final) {
 	my ($Group_ID, $User_Count) = &add_group;
 	my $Message_Green="$Group_Name_Add added successfully as ID $Group_ID with $User_Count attached users";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
@@ -95,7 +96,8 @@ elsif ($Edit_Group && !$Edit_Group_Final) {
 elsif ($Edit_Group_Final) {
 	my ($User_Count) = &edit_group;
 	my $Message_Green="$Group_Name_Edit edited successfully with $User_Count newly attached users";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
@@ -108,14 +110,16 @@ elsif ($Delete_Group) {
 elsif ($Delete_Group_Confirm) {
 	&delete_group;
 	my $Message_Green="$Group_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_User_ID && $Delete_User_From_Group_ID) {
 	&delete_user;
 	my $Message_Green="$Delete_User_Name removed from $Delete_User_From_Group_Name successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 	exit(0);
 }
@@ -373,7 +377,8 @@ sub add_group {
 			$Existing_ID = $Select_Group_Names[0];
 		}
 		my $Message_Red="Group Name: $Group_Name_Add already exists as ID: $Existing_ID";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 		exit(0);
 	}
@@ -857,7 +862,8 @@ sub edit_group {
 			$Existing_ID = $Select_Group_Names[0];
 		}
 		my $Message_Red="Group Name: $Group_Name_Edit already exists as ID: $Existing_ID";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-user-groups.cgi\n\n";
 		exit(0);
 	}

@@ -48,7 +48,8 @@ if (!$User_Name) {
 
 if ($User_Admin != 1 && $User_Admin != 2) {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /index.cgi\n\n";
 	exit(0);
 }
@@ -62,7 +63,8 @@ if ($Rows_Returned eq '') {
 if ($Edit_Host_Parameters) {
 	if ($User_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to edit that.';
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /distribution-status.cgi\n\n";
 		exit(0);
 	}
@@ -74,13 +76,15 @@ if ($Edit_Host_Parameters) {
 elsif ($Edit_Host_Parameters_Post) {
 	if ($User_Admin != 1) {
 		my $Message_Red = 'Nice try.';
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /distribution-status.cgi\n\n";
 		exit(0);
 	}
 	&edit_host_parameters;
 	my $Message_Green="$Host_Name_Edit ($IP_Edit) distribution parameters edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /distribution-status.cgi\n\n";
 	exit(0);
 }

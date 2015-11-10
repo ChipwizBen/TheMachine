@@ -73,7 +73,8 @@ if ($Add_User) {
 elsif ($User_Name_Add) {
 	my $User_ID = &add_user;
 	my $Message_Green="$User_Name_Add added successfully as ID $User_ID";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-users.cgi\n\n";
 	exit(0);
 }
@@ -86,7 +87,8 @@ elsif ($Edit_User) {
 elsif ($Edit_User_Post) {
 	&edit_user;
 	my $Message_Green="$User_Name_Edit edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-users.cgi\n\n";
 	exit(0);
 }
@@ -99,7 +101,8 @@ elsif ($Delete_User) {
 elsif ($Delete_User_Confirm) {
 	&delete_user;
 	my $Message_Green="$User_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DSMS/sudoers-users.cgi\n\n";
 	exit(0);
 }
@@ -210,7 +213,8 @@ sub add_user {
 			$Existing_ID = $Select_User_Names[0];
 		}
 		my $Message_Red="User_Name: $User_Name_Add already exists as ID: $Existing_ID";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-users.cgi\n\n";
 		exit(0);
 	}
@@ -391,7 +395,8 @@ sub edit_user {
 			$Existing_ID = $Select_User_Names[0];
 		}
 		my $Message_Red="User_Name: $User_Name_Edit already exists as ID: $Existing_ID";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /DSMS/sudoers-users.cgi\n\n";
 		exit(0);
 	}

@@ -60,10 +60,12 @@ elsif ($Time_Add && $Alias_Add) {
 	if ($Active_Add) {
 		my $Message_Green="$Time_Add ($Alias_Add) added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Time_Add ($Alias_Add) added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
+	$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-time-periods.cgi\n\n";
@@ -77,7 +79,8 @@ elsif ($Edit_Time) {
 elsif ($Time_Edit_Post) {
 	&edit_time_period;
 	my $Message_Green="$Time_Edit ($Alias_Edit) edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 	exit(0);
 }
@@ -89,7 +92,8 @@ elsif ($Delete_Time) {
 elsif ($Time_Delete_Post) {
 	&delete_time_period;
 	my $Message_Green="$Time_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 	exit(0);
 }
@@ -191,6 +195,7 @@ sub add_time_period {
 
 			my $Message_Red="$Time_Add already exists (ID: $ID_Extract, Alias: $Alias_Extract), time period not added";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 			exit(0);
 
@@ -344,6 +349,7 @@ sub edit_time_period {
 
 			my $Message_Red="$Time_Edit already exists - Conflicting Time ID (This entry): $Time_Edit_Post, Existing Time ID: $ID_Extract, Existing Time Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /Icinga/icinga-time-periods.cgi\n\n";
 			exit(0);
 

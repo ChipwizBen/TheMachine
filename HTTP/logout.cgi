@@ -9,5 +9,6 @@ my ($CGI, $Session, $Cookie) = CGI();
 print $CGI->redirect("/login.cgi");
 
 $Session->delete();
+$Session->flush();
 
 exit(0);

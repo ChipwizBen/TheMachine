@@ -10,7 +10,7 @@ my ($CGI, $Session, $Cookie) = CGI();
 my $Message_Red;
 my $Message_Green;
 
-my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
+my $User_Name = $Session->param("User_Name");  
 
 if ($User_Name eq '') {
 	print "Location: /logout.cgi\n\n";
@@ -37,6 +37,7 @@ sub change_password {
 		my $Message_Red="Password does not meet minimum length requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /password-change.cgi\n\n";
 		exit(0);
 	}
@@ -44,6 +45,7 @@ sub change_password {
 		my $Message_Red="Password does not meet the minimum upper case character requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /password-change.cgi\n\n";
 		exit(0);
 	}
@@ -51,6 +53,7 @@ sub change_password {
 		my $Message_Red="Password does not meet the minimum lower case character requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /password-change.cgi\n\n";
 		exit(0);
 	}
@@ -58,6 +61,7 @@ sub change_password {
 		my $Message_Red="Password does not meet minimum digit requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /password-change.cgi\n\n";
 		exit(0);
 	}
@@ -65,6 +69,7 @@ sub change_password {
 		my $Message_Red="Password does not meet minimum special character requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /password-change.cgi\n\n";
 		exit(0);
 	}

@@ -85,7 +85,8 @@ if (!$User_Name) {
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /index.cgi\n\n";
 	exit(0);
 }
@@ -100,10 +101,12 @@ elsif ($Host_Name_Add && $Address_Add) {
 	if ($Active_Add) {
 		my $Message_Green="$Host_Name_Add ($Address_Add) added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Host_Name_Add ($Address_Add) added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
+	$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-hosts.cgi\n\n";
@@ -117,7 +120,8 @@ elsif ($Edit_Host) {
 elsif ($Host_Edit_Post) {
 	&edit_host;
 	my $Message_Green="$Host_Edit ($Alias_Edit) edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-hosts.cgi\n\n";
 	exit(0);
 }
@@ -130,7 +134,8 @@ elsif ($Delete_Host) {
 elsif ($Host_Delete_Post) {
 	&delete_host;
 	my $Message_Green="$Host_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-hosts.cgi\n\n";
 	exit(0);
 }
@@ -148,6 +153,7 @@ elsif ($Host_Note_Update && $Host_Note_Update_ID) {
 	&update_notes;
 	my $Message_Green="Notes updated successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-hosts.cgi\n\n";
 	exit(0);
 }
@@ -543,6 +549,7 @@ sub add_host {
 	if ($Rows > 0) {
 		my $Message_Red="Host name $Host_Name_Add already exists. Host not added.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /Icinga/icinga-hosts.cgi\n\n";
 		exit(0);
 	}
@@ -739,6 +746,7 @@ sub edit_host {
 
 			my $Message_Red="$Host_Edit already exists - Conflicting Host ID (This entry): $Host_Edit_Post, Existing Host ID: $ID_Extract, Existing Host Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /Icinga/icinga-hosts.cgi\n\n";
 			exit(0);
 

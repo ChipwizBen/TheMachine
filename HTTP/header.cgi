@@ -29,6 +29,7 @@ my $Message_Red = $Session->param("Message_Red");
 
 &access_post;
 &html_header;
+&reset_signals;
 
 sub access_post {
 
@@ -159,7 +160,8 @@ print <<ENDHTML;
 			</li>
 			<li><a href="/#"><span>&nbsp; Reverse Proxy</span></a>
 				<ul>
-					<li><a href="/#">Rev</a></li>
+					<li><a href="/ReverseProxy/reverse-proxy.cgi">Reverse Proxy</a></li>
+					<li><a href="/ReverseProxy/redirects.cgi">Redirects</a></li>
 				</ul>
 			</li>
 			<li><a href="/#"><span>&nbsp; DSMS</span></a>
@@ -198,6 +200,19 @@ print <<ENDHTML;
 
 ENDHTML
 
-} #sub html_header end
+} #sub html_header
+
+sub reset_signals {
+
+	my $Message_Green = undef;
+		$Session->param('Message_Green', $Message_Green);
+	my $Message_Orange = undef;
+		$Session->param('Message_Orange', $Message_Orange);
+	my $Message_Red = undef;
+		$Session->param('Message_Red', $Message_Red);
+	$Session->clear(["Message_Green", "Message_Orange", "Message_Red"]);
+	$Session->flush();
+
+} # sub reset_signals
 
 1;

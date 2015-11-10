@@ -50,6 +50,7 @@ elsif ($Host_Type_Add) {
 	my $Host_Type_ID = &add_host_type;
 	my $Message_Green="$Host_Type_Add added successfully as ID $Host_Type_ID";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/host-types.cgi\n\n";
 	exit(0);
 }
@@ -63,6 +64,7 @@ elsif ($Edit_Host_Type_Post) {
 	&edit_host_type;
 	my $Message_Green="$Host_Type_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/host-types.cgi\n\n";
 	exit(0);
 }
@@ -76,6 +78,7 @@ elsif ($Delete_Host_Type_Confirm) {
 	&delete_host_type;
 	my $Message_Green="$Host_Type_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/host-types.cgi\n\n";
 	exit(0);
 }

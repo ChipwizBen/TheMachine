@@ -47,7 +47,8 @@ if (!$User_Name) {
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /index.cgi\n\n";
 	exit(0);
 }
@@ -62,10 +63,12 @@ elsif ($Command_Add && $Command_Add) {
 	if ($Active_Add) {
 		my $Message_Green="$Command_Add ($Command_Add) added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Command_Add ($Command_Add) added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
+	$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-commands.cgi\n\n";
@@ -79,7 +82,8 @@ elsif ($Edit_Command) {
 elsif ($Command_Edit_Post) {
 	&edit_command;
 	my $Message_Green="$Command_Edit ($Command_Edit) edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-commands.cgi\n\n";
 	exit(0);
 }
@@ -91,7 +95,8 @@ elsif ($Delete_Command) {
 elsif ($Command_Delete_Post) {
 	&delete_command;
 	my $Message_Green="$Command_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-commands.cgi\n\n";
 	exit(0);
 }
@@ -172,6 +177,7 @@ sub add_command {
 
 			my $Message_Red="$Command_Add already exists (ID: $ID_Extract, Command: $Command_Extract)";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /Icinga/icinga-commands.cgi\n\n";
 			exit(0);
 
@@ -289,6 +295,7 @@ sub edit_command {
 
 			my $Message_Red="$Command_Edit already exists - Conflicting Command ID (This entry): $Command_Edit_Post, Existing Command ID: $ID_Extract, Existing Command Command: $Command_Extract";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /Icinga/icinga-commands.cgi\n\n";
 			exit(0);
 

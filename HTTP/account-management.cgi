@@ -42,8 +42,8 @@ my $Delete_User = $CGI->param("Delete_User");
 my $Delete_User_Confirm = $CGI->param("Delete_User_Confirm");
 my $User_Name_Delete = $CGI->param("User_Name_Delete");
 
-my $User_Name = $Session->param("User_Name"); #Accessing User_Name session var
-my $User_Admin = $Session->param("User_Admin"); #Accessing User_Admin session var
+my $User_Name = $Session->param("User_Name");  
+my $User_Admin = $Session->param("User_Admin");  
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
 	if ($Rows_Returned eq '') {
@@ -57,7 +57,8 @@ if (!$User_Name) {
 
 if ($User_Admin != 1) {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /index.cgi\n\n";
 	exit(0);
 }
@@ -71,7 +72,8 @@ if ($Add_User) {
 elsif ($User_Name_Add && $Password_Add && $Email_Add) {
 	&add_user;
 	my $Message_Green="$User_Name_Add ($Email_Add) added successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /account-management.cgi\n\n";
 	exit(0);
 }
@@ -84,7 +86,8 @@ elsif ($Edit_User) {
 elsif ($Edit_User_Post) {
 	&edit_user;
 	my $Message_Green="$User_Name_Edit ($Email_Edit) edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /account-management.cgi\n\n";
 	exit(0);
 }
@@ -97,7 +100,8 @@ elsif ($Delete_User) {
 elsif ($Delete_User_Confirm) {
 	&delete_user;
 	my $Message_Green="$User_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /account-management.cgi\n\n";
 	exit(0);
 }
@@ -235,7 +239,8 @@ sub add_user {
 	### Reserved User Name Check ###
 	if ($User_Name_Add eq 'System' || $User_Name_Add eq 'system') {
 		my $Message_Red="User Name '$User_Name_Add' is reserved for system use. Please use a different name.";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -257,7 +262,8 @@ sub add_user {
 			$Existing_Email = $Select_User_Names[1];
 		}
 		my $Message_Red="User Name $User_Name_Add already exists as ID $Existing_ID, with email address $Existing_Email";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -280,6 +286,7 @@ sub add_user {
 		}
 		my $Message_Red="User Email $Email_Add already exists as ID $Existing_ID, User Name: $Existing_User";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -291,6 +298,7 @@ sub add_user {
 		my $Message_Red="Password does not meet minimum length requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -298,6 +306,7 @@ sub add_user {
 		my $Message_Red="Password does not meet the minimum upper case character requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -305,6 +314,7 @@ sub add_user {
 		my $Message_Red="Password does not meet the minimum lower case character requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -312,6 +322,7 @@ sub add_user {
 		my $Message_Red="Password does not meet minimum digit requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -319,6 +330,7 @@ sub add_user {
 		my $Message_Red="Password does not meet minimum special character requirements. 
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -689,7 +701,8 @@ sub edit_user {
 	### Reserved User Name Check ###
 	if ($User_Name_Edit eq 'System' || $User_Name_Add eq 'system') {
 		my $Message_Red="User Name '$User_Name_Edit' is reserved for system use. Please use a different name.";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -712,7 +725,8 @@ sub edit_user {
 			$Existing_Email = $Select_User_Names[1];
 		}
 		my $Message_Red="User Name $User_Name_Edit already exists as ID $Existing_ID, with email address $Existing_Email";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -735,7 +749,8 @@ sub edit_user {
 			$Existing_User = $Select_User_Names[1];
 		}
 		my $Message_Red="User Email $Email_Edit already exists as ID $Existing_ID, User Name: $Existing_User";
-		$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /account-management.cgi\n\n";
 		exit(0);
 	}
@@ -749,6 +764,7 @@ sub edit_user {
 		$Session->param('User_Email', $Email_Edit);
 		$Session->param('User_Approver', $Approver_Edit);
 		$Session->param('User_Requires_Approval', $Requires_Approval_Edit);
+	$Session->flush();
 	}
 
 	if ($Password_Edit) {
@@ -759,6 +775,7 @@ sub edit_user {
 			my $Message_Red="Password does not meet minimum length requirements. 
 			Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
 			print "Location: /account-management.cgi\n\n";
 			exit(0);
 		}
@@ -766,6 +783,7 @@ sub edit_user {
 			my $Message_Red="Password does not meet the minimum upper case character requirements. 
 			Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
 			print "Location: /account-management.cgi\n\n";
 			exit(0);
 		}
@@ -773,6 +791,7 @@ sub edit_user {
 			my $Message_Red="Password does not meet the minimum lower case character requirements. 
 			Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
 			print "Location: /account-management.cgi\n\n";
 			exit(0);
 		}
@@ -780,6 +799,7 @@ sub edit_user {
 			my $Message_Red="Password does not meet minimum digit requirements. 
 			Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
 			print "Location: /account-management.cgi\n\n";
 			exit(0);
 		}
@@ -787,6 +807,7 @@ sub edit_user {
 			my $Message_Red="Password does not meet minimum special character requirements. 
 			Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
 			print "Location: /account-management.cgi\n\n";
 			exit(0);
 		}

@@ -82,7 +82,8 @@ if (!$Username) {
 
 if ($User_Admin ne '1') {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /index.cgi\n\n";
 	exit(0);
 }
@@ -97,10 +98,12 @@ elsif ($Template_Name_Add) {
 	if ($Active_Add) {
 		my $Message_Green="$Template_Name_Add added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Template_Name_Add added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
+	$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-host-templates.cgi\n\n";
@@ -114,7 +117,8 @@ elsif ($Edit_Host_Template) {
 elsif ($Host_Edit_Post) {
 	&edit_host_template;
 	my $Message_Green="$Host_Edit ($Alias_Edit) edited successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-host-templates.cgi\n\n";
 	exit(0);
 }
@@ -126,7 +130,8 @@ elsif ($Delete_Host_Template) {
 elsif ($Template_Delete_Post) {
 	&delete_host_template;
 	my $Message_Green="$Template_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green); #Posting Message_Green session var
+	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-host-templates.cgi\n\n";
 	exit(0);
 }
@@ -144,6 +149,7 @@ elsif ($Template_Note_Update && $Template_Note_Update_ID) {
 	&update_notes;
 	my $Message_Green="Notes updated successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /Icinga/icinga-host-templates.cgi\n\n";
 	exit(0);
 }
@@ -533,6 +539,7 @@ sub add_host_template {
 	if ($Rows ne 0) {
 		my $Message_Red="Template name $Template_Name_Add already exists. Template not added.";
 		$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 		print "Location: /Icinga/icinga-host-templates.cgi\n\n";
 		exit(0);
 	}
@@ -729,6 +736,7 @@ sub edit_host_template {
 
 			my $Message_Red="$Host_Edit already exists - Conflicting Host ID (This entry): $Host_Edit_Post, Existing Host ID: $ID_Extract, Existing Host Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 			print "Location: /Icinga/icinga-host-templates.cgi\n\n";
 			exit(0);
 

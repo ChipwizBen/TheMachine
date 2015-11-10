@@ -84,6 +84,7 @@ elsif ($Record_Source_Add && $Record_Target_Add) {
 	my $Record_ID = &add_record;
 	my $Message_Green="$Record_Type_Add record $Record_Source_Add to $Record_Target_Add added successfully as ID $Record_ID";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DNS/zone-records.cgi\n\n";
 	exit(0);
 }
@@ -97,6 +98,7 @@ elsif ($Edit_Record_Post) {
 	&edit_record;
 	my $Message_Green="$Record_Type_Add record $Record_Source_Edit to $Record_Target_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DNS/zone-records.cgi\n\n";
 	exit(0);
 }
@@ -110,6 +112,7 @@ elsif ($Delete_Record_Confirm) {
 	&delete_record;
 	my $Message_Green="$Record_Name_Delete record deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /DNS/zone-records.cgi\n\n";
 	exit(0);
 }

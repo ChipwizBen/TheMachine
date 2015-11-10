@@ -59,6 +59,7 @@ if ($Rows_Returned eq '') {
 if ($User_IP_Admin != 1) {
 	my $Message_Red = 'You do not have sufficient privileges to access that page.';
 	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /index.cgi\n\n";
 	exit(0);
 }
@@ -103,6 +104,7 @@ if ($Reset eq '1') {
 	$Session->param('Location_Input', $Location_Input);
 	$CIDR_Input='';
 	$Session->param('CIDR_Input', $CIDR_Input);
+	$Session->flush();
 	print "Location: /IP/ipv4-allocations.cgi\n\n";
 	exit(0);
 }
@@ -117,6 +119,7 @@ elsif ($Submit_Allocation) {
 	&add_block;
 	my $Message_Green="$Final_Allocation successfully allocated.";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/ipv4-allocations.cgi\n\n";
 	exit(0);
 }
@@ -125,6 +128,7 @@ elsif ($Final_Block_Manual) {
 	&add_block;
 	my $Message_Orange="$Final_Allocation successfully allocated manually. No sanity checks were done.";
 	$Session->param('Message_Orange', $Message_Orange);
+	$Session->flush();
 	print "Location: /IP/ipv4-allocations.cgi\n\n";
 	exit(0);
 }
@@ -138,6 +142,7 @@ elsif ($Block_Edit) {
 	my $Host_Counter = &edit_block;
 	my $Message_Green="$Host_Counter hosts added to Block $Block_Edit_Block (ID $Block_Edit).";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/ipv4-allocations.cgi\n\n";
 	exit(0);
 }
@@ -151,6 +156,7 @@ elsif ($Delete_Block_Confirm) {
 	&delete_block;
 	my $Message_Green="$Block_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
+	$Session->flush();
 	print "Location: /IP/ipv4-allocations.cgi\n\n";
 	exit(0);
 }
@@ -232,7 +238,8 @@ sub allocation {
 				if (not defined($Overlap_Check))
 				{
 					my $Message_Red="Problem with IP range $Overlap_Check, it is not properly defined.";
-					$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+					$Session->param('Message_Red', $Message_Red);
+					$Session->flush();
 					print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
 					exit(0);
 				}
@@ -286,7 +293,8 @@ sub allocation {
 
 		if ($IP_Block_Limit_Integer < $IP_Block_Limit_Integer_Final) {
 			my $Message_Red="There are no more available blocks in $IP_Block for a $CIDR_Input notation. Either reduce the block size or use a different block";
-			$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
 			print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
 			exit(0);
 		}
@@ -345,7 +353,8 @@ my ($Allocation_Range_Error, $IP_Block) = @_;
 	my $Message_Red="CRITICAL ERROR: You specified a CIDR that spills over the edge of the boundary<br/>
 	Error Details: $Allocation_Range_Error<br/>
 	--------------- You must select a CIDR that fits within the boundaries of $IP_Block ---------------";
-	$Session->param('Message_Red', $Message_Red); #Posting Message_Red session var
+	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
 	print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
 	exit(0);
 } # sub allocation_error
@@ -589,6 +598,7 @@ sub add_block {
 		}
 		my $Message_Red="Block: $Final_Allocation already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
 		print "Location: /IP/ipv4_allocations.cgi\n\n";
 		exit(0);
 	}

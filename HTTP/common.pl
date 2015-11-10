@@ -381,6 +381,30 @@ sub DB_DNS {
 
 } # sub DB_DNS
 
+sub DB_Reverse_Proxy {
+
+	#  This is your Reverse Proxy database's connection information. This is where your sudoers data is stored.
+
+	use DBI;
+
+	my $Host = 'localhost';
+	my $Port = '3306';
+	my $DB = 'Reverse_Proxy';
+	my $User = 'Sudoers';
+	my $Password = '<Password>';
+
+	my $DB_Reverse_Proxy = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
+		$User,
+		$Password)
+		or die "Can't connect to database: $DBI::errstr\n";
+	return $DB_Reverse_Proxy;
+
+} # sub DB_Reverse_Proxy
+
+sub Reverse_Proxy_SSL_Defaults {
+	
+}
+
 sub Distribution_Defaults {
 
 	# These are the default sudoers distribution settings for new hosts. Keep in mind that any active host is automatically tried for sudoers pushes with their distribution settings. Unless you are confident that all new hosts will have the same settings, you might want to set fail-safe defaults here and manually override each host individually on the Distribution Status page.
@@ -490,16 +514,34 @@ sub CGI {
     # '+30s'; # Set to +30s to expire after 30 seconds
 	# '+5s';  # Set to +5s if you're Chuck Norris
 
-	my $Session_Directory = '/tmp/CGI-Sessions';
+	my $Session_In_Database = 'Yes'; # Set this to 'Yes' to store cookies in the DB, otherwise they are stored on disk defined in $Session_Directory
 	my $Session_Expiry = '+1w';
+	my $Session_Directory = '/tmp/CGI-Sessions'; # Set this if you do not intend on using the DB to store session cookies
+
+
+	# Do not change values below this point
 
 	use CGI;
 	use CGI::Carp qw(fatalsToBrowser);
 	use CGI::Session qw(-ip-match);
 
 	my $CGI = new CGI;
-		my $Session = new CGI::Session(undef, $CGI, {Directory=>"$Session_Directory"}); # Sets session directory.
-		$Session->expire("$Session_Expiry"); # Sets expiry.
+		my $Session;
+		if ($Session_In_Database =~ /Yes/) {
+			my $DB_Management = DB_Management();
+			$Session = new CGI::Session('driver:MySQL', $CGI, {
+				TableName=>'cgi_sessions',
+				IdColName=>'id',
+				DataColName=>'session_data',
+				Handle=>$DB_Management
+			});
+			$Session->flush();
+		}
+		else {
+			$Session = new CGI::Session(undef, $CGI, {Directory=>$Session_Directory});
+		}
+		
+		$Session->expire($Session_Expiry); # Sets expiry.
 		my $Cookie = $CGI->cookie(CGISESSID => $Session->id ); # Sets cookie. Nom nom nom.
 
 	my @CGI_Session = ($CGI, $Session, $Cookie);
