@@ -363,7 +363,7 @@ sub add_group {
 		}
 		my $Message_Red="Group Name: $Group_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
 		exit(0);
 	}
@@ -826,7 +826,7 @@ sub edit_group {
 		}
 		my $Message_Red="Group Name: $Group_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
 		exit(0);
 	}

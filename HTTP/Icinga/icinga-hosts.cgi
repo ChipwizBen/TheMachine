@@ -101,12 +101,12 @@ elsif ($Host_Name_Add && $Address_Add) {
 	if ($Active_Add) {
 		my $Message_Green="$Host_Name_Add ($Address_Add) added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
+		$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Host_Name_Add ($Address_Add) added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
-	$Session->flush();
+		$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-hosts.cgi\n\n";
@@ -549,7 +549,7 @@ sub add_host {
 	if ($Rows > 0) {
 		my $Message_Red="Host name $Host_Name_Add already exists. Host not added.";
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /Icinga/icinga-hosts.cgi\n\n";
 		exit(0);
 	}
@@ -746,7 +746,7 @@ sub edit_host {
 
 			my $Message_Red="$Host_Edit already exists - Conflicting Host ID (This entry): $Host_Edit_Post, Existing Host ID: $ID_Extract, Existing Host Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+			$Session->flush();
 			print "Location: /Icinga/icinga-hosts.cgi\n\n";
 			exit(0);
 

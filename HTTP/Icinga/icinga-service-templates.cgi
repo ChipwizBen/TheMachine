@@ -92,12 +92,12 @@ elsif ($Name_Template_Add) {
 	if ($Active_Template_Add) {
 		my $Message_Green="$Name_Template_Add added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
+		$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Name_Template_Add added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
-	$Session->flush();
+		$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-service-templates.cgi\n\n";
@@ -655,7 +655,7 @@ sub edit_service_template {
 
 			my $Message_Red="$Service_Template_Edit already exists - Conflicting Service ID (This entry): $Service_Template_Edit_Post, Existing Service ID: $ID_Extract, Existing Service Description: $Service_Template_Description_Extract";
 			$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+			$Session->flush();
 			print "Location: /Icinga/icinga-service-templates.cgi\n\n";
 			exit(0);
 

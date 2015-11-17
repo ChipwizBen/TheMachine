@@ -764,7 +764,7 @@ sub edit_user {
 		$Session->param('User_Email', $Email_Edit);
 		$Session->param('User_Approver', $Approver_Edit);
 		$Session->param('User_Requires_Approval', $Requires_Approval_Edit);
-	$Session->flush();
+		$Session->flush();
 	}
 
 	if ($Password_Edit) {

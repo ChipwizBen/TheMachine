@@ -53,7 +53,7 @@ elsif ($Reverse_Proxy_Add) {
 	my $Message_Green="$Reverse_Proxy_Add added successfully as ID $Reverse_Proxy_ID";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /DNS/reverse-proxy.cgi\n\n";
+	print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Reverse_Proxy) {
@@ -67,7 +67,7 @@ elsif ($Edit_Reverse_Proxy_Post) {
 	my $Message_Green="$Reverse_Proxy_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /DNS/reverse-proxy.cgi\n\n";
+	print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Reverse_Proxy) {
@@ -81,7 +81,7 @@ elsif ($Delete_Reverse_Proxy_Confirm) {
 	my $Message_Green="$Reverse_Proxy_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /DNS/reverse-proxy.cgi\n\n";
+	print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
 	exit(0);
 }
 else {
@@ -99,14 +99,14 @@ my $Date = strftime "%Y-%m-%d", localtime;
 print <<ENDHTML;
 
 <div id="small-popup-box">
-<a href="/DNS/reverse-proxy.cgi">
+<a href="/ReverseProxy/reverse-proxy.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Reverse Proxy</h3>
 
-<form action='/DNS/reverse-proxy.cgi' name='Add_Reverse_Proxy' method='post' >
+<form action='/ReverseProxy/reverse-proxy.cgi' name='Add_Reverse_Proxy' method='post' >
 
 <table align = "center">
 	<tr>
@@ -175,14 +175,14 @@ sub html_edit_reverse_proxy {
 print <<ENDHTML;
 
 <div id="small-popup-box">
-<a href="/DNS/reverse-proxy.cgi">
+<a href="/ReverseProxy/reverse-proxy.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Edit Reverse Proxy</h3>
 
-<form action='/DNS/reverse-proxy.cgi' name='Edit_Reverse_Proxies' method='post' >
+<form action='/ReverseProxy/reverse-proxy.cgi' name='Edit_Reverse_Proxies' method='post' >
 
 <table align = "center">
 	<tr>
@@ -247,14 +247,14 @@ sub html_delete_reverse_proxy {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/DNS/reverse-proxy.cgi">
+<a href="/ReverseProxy/reverse-proxy.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Reverse Proxy</h3>
 
-<form action='/DNS/reverse-proxy.cgi' method='post' >
+<form action='/ReverseProxy/reverse-proxy.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this domain?</p>
 <table align = "center">
 	<tr>
@@ -315,7 +315,7 @@ sub delete_reverse_proxy {
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>6,
+		-cols=>12,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -332,55 +332,145 @@ sub html_output {
 		my $Total_Rows = $Select_Reverse_Proxy_Count->rows();
 
 
-	my $Select_Reverse_Proxies = $DB_Reverse_Proxy->prepare("SELECT `id`, `domain`, `last_modified`, `modified_by`
+	my $Select_Reverse_Proxies = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `proxy_pass_source`,
+		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
+		`ssl_ca_certificate_file`, `last_modified`, `modified_by`
 		FROM `reverse_proxy`
 		WHERE `id` LIKE ?
-		OR `domain` LIKE ?
-		ORDER BY `domain` ASC
+		OR `server_name` LIKE ?
+		OR `proxy_pass_source` LIKE ?
+		OR `proxy_pass_destination` LIKE ?
+		OR `transfer_log` LIKE ?
+		OR `error_log` LIKE ?
+		OR `ssl_certificate_file` LIKE ?
+		OR `ssl_certificate_key_file` LIKE ?
+		OR `ssl_ca_certificate_file` LIKE ?
+		ORDER BY `server_name` ASC
 		LIMIT 0 , $Rows_Returned"
 	);
 
-	$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%");
+	$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
+		"%$Filter%", "%$Filter%", "%$Filter%");
 
 	my $Rows = $Select_Reverse_Proxies->rows();
 
-	$Table->addRow( "ID", "Reverse Proxy", "Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->addRow( "ID", "Server Name", "Source", "Destination", "Transfer Log", "Error Log", "SSL", "", 
+		"Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->setCellColSpan(1, 7, 2); # row_num, col_num, num_cells
 	$Table->setRowClass (1, 'tbrow1');
-
+	
 	my $Reverse_Proxy_Row_Count=1;
 
 	while ( my @Select_Reverse_Proxies = $Select_Reverse_Proxies->fetchrow_array() )
 	{
 
-		$Reverse_Proxy_Row_Count++;
+		$Reverse_Proxy_Row_Count+=3;
 
 		my $DBID = $Select_Reverse_Proxies[0];
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Reverse_Proxy = $Select_Reverse_Proxies[1];
-			$Reverse_Proxy =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Last_Modified = $Select_Reverse_Proxies[2];
-		my $Modified_By = $Select_Reverse_Proxies[3];
+		my $Server_Name = $Select_Reverse_Proxies[1];
+			$Server_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Source = $Select_Reverse_Proxies[2];
+			$Source =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Destination = $Select_Reverse_Proxies[3];
+			$Destination =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Transfer_Log = $Select_Reverse_Proxies[4];
+			$Transfer_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Error_Log = $Select_Reverse_Proxies[5];
+			$Error_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $SSL_Certificate_File = $Select_Reverse_Proxies[6];
+			my $SSL_Certificate_File_Clean = $SSL_Certificate_File;
+			$SSL_Certificate_File =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $SSL_Certificate_Key_File = $Select_Reverse_Proxies[7];
+			my $SSL_Certificate_Key_File_Clean = $SSL_Certificate_Key_File;
+			$SSL_Certificate_Key_File =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $SSL_CA_Certificate_File = $Select_Reverse_Proxies[8];
+			my $SSL_CA_Certificate_File_Clean = $SSL_CA_Certificate_File;
+			$SSL_CA_Certificate_File =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Last_Modified = $Select_Reverse_Proxies[9];
+		my $Modified_By = $Select_Reverse_Proxies[10];
 
 		$Table->addRow(
 			"$DBID",
-			"$Reverse_Proxy",
+			"$Server_Name",
+			"$Source",
+			"$Destination",
+			"$Transfer_Log",
+			"$Error_Log",
+			"No SSL",
+			"",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/DNS/reverse-proxy.cgi?Edit_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Reverse Proxy ID $DBID_Clean\" ></a>",
-			"<a href='/DNS/reverse-proxy.cgi?Delete_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Reverse Proxy ID $DBID_Clean\" ></a>"
+			"<a href='/ReverseProxy/reverse-proxy.cgi?Edit_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Reverse Proxy ID $DBID_Clean\" ></a>",
+			"<a href='/ReverseProxy/reverse-proxy.cgi?Delete_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Reverse Proxy ID $DBID_Clean\" ></a>"
 		);
+
+		if ($SSL_Certificate_File_Clean || $SSL_Certificate_Key_File_Clean || $SSL_CA_Certificate_File_Clean) {
+
+			if ($SSL_Certificate_File_Clean) {
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 7, "Cert."); # row_num, col_num, num_cells
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 8, "$SSL_Certificate_File"); # row_num, col_num, num_cells
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 7, 'tbrowgreen');
+			}
+			else {
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 7, "Cert."); # row_num, col_num, num_cells
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 7, 'tbrowerror');
+			}
+
+			if ($SSL_Certificate_Key_File_Clean) {
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 7, "Key"); # row_num, col_num, num_cells
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 8, "$SSL_Certificate_Key_File"); # row_num, col_num, num_cells
+				my $Row_Style = $Table->getCellStyle($Reverse_Proxy_Row_Count-2, 7);
+					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 7, $Row_Style);
+					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 8, $Row_Style);
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 7, 'tbrowgreen');
+				`echo "$Row_Style" >> /tmp/output`; 
+			}
+			else {
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 7, "Key"); # row_num, col_num, num_cells
+				my $Row_Style = $Table->getCellStyle($Reverse_Proxy_Row_Count-2, 7);
+					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 7, $Row_Style);
+					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 8, $Row_Style);
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 7, 'tbrowerror');
+				`echo "$Row_Style" >> /tmp/output`; 
+			}
+
+			if ($SSL_CA_Certificate_File_Clean) {
+				$Table->setCell($Reverse_Proxy_Row_Count, 7, "CA"); # row_num, col_num, num_cells
+				$Table->setCell($Reverse_Proxy_Row_Count, 8, "$SSL_CA_Certificate_File"); # row_num, col_num, num_cells
+				$Table->setCellClass ($Reverse_Proxy_Row_Count, 7, 'tbrowgreen');
+			}
+			else {
+				$Table->setCell($Reverse_Proxy_Row_Count, 7, "CA"); # row_num, col_num, num_cells
+				$Table->setCellClass ($Reverse_Proxy_Row_Count, 7, 'tbrowerror');
+			}
+
+		}
+		else {
+			$Table->setCellColSpan($Reverse_Proxy_Row_Count-2, 7, 2); # row_num, col_num, num_cells
+			for (7..8) {
+				$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
+			}
+		}
+
+		for (1..6) {
+			$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
+		}
+		for (9..12) {
+			$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
+		}
 
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(3, '110px');
-	$Table->setColWidth(4, '110px');
-	$Table->setColWidth(5, '1px');
-	$Table->setColWidth(6, '1px');
+	$Table->setColWidth(9, '110px');
+	$Table->setColWidth(10, '110px');
+	$Table->setColWidth(11, '1px');
+	$Table->setColWidth(12, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (3..6) {
+	for (7, 9..12) {
 		$Table->setColAlign($_, 'center');
 	}
 
@@ -391,7 +481,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/DNS/reverse-proxy.cgi' method='post' >
+			<form action='/ReverseProxy/reverse-proxy.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -422,7 +512,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/DNS/reverse-proxy.cgi' method='post' >
+			<form action='/ReverseProxy/reverse-proxy.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Reverse Proxy</span></td>
@@ -434,7 +524,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/DNS/reverse-proxy.cgi' method='post' >
+			<form action='/ReverseProxy/reverse-proxy.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Reverse Proxy</span></td>

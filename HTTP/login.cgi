@@ -47,7 +47,7 @@ sub ldap_login {
 			my $LDAP_Email = $LDAP_Details[2];
 
 		$Session->param('User_Name', $LDAP_User_Name);
-	$Session->flush();
+		$Session->flush();
 
 		my $Details_Update = $DB_Management->prepare("INSERT INTO `credentials` (
 			`username`,

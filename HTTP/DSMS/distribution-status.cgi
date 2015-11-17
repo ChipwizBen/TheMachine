@@ -64,7 +64,7 @@ if ($Edit_Host_Parameters) {
 	if ($User_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to edit that.';
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /distribution-status.cgi\n\n";
 		exit(0);
 	}
@@ -77,7 +77,7 @@ elsif ($Edit_Host_Parameters_Post) {
 	if ($User_Admin != 1) {
 		my $Message_Red = 'Nice try.';
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /distribution-status.cgi\n\n";
 		exit(0);
 	}

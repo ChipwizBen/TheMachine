@@ -62,12 +62,12 @@ elsif ($Group_Add && $Alias_Add) {
 	if ($Active_Add) {
 		my $Message_Green="$Group_Add ($Alias_Add) added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
+		$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Group_Add ($Alias_Add) added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
-	$Session->flush();
+		$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-host-groups.cgi\n\n";
@@ -169,7 +169,7 @@ sub add_group {
 
 			my $Message_Red="$Group_Add already exists (ID: $ID_Extract, Alias: $Alias_Extract)";
 			$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+			$Session->flush();
 			print "Location: /Icinga/icinga-host-groups.cgi\n\n";
 			exit(0);
 
@@ -285,7 +285,7 @@ sub edit_group {
 
 			my $Message_Red="$Group_Edit already exists - Conflicting Group ID (This entry): $Group_Edit_Post, Existing Group ID: $ID_Extract, Existing Group Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+			$Session->flush();
 			print "Location: /Icinga/icinga-host-groups.cgi\n\n";
 			exit(0);
 

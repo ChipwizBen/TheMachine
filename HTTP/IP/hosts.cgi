@@ -180,7 +180,7 @@ sub add_host {
 		}
 		my $Message_Red="Host Name: $Host_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /IP/hosts.cgi\n\n";
 		exit(0);
 	}
@@ -311,7 +311,7 @@ sub edit_host {
 		}
 		my $Message_Red="Host Name: $Host_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /IP/hosts.cgi\n\n";
 		exit(0);
 	}

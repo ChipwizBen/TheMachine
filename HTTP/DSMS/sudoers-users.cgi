@@ -214,7 +214,7 @@ sub add_user {
 		}
 		my $Message_Red="User_Name: $User_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /DSMS/sudoers-users.cgi\n\n";
 		exit(0);
 	}
@@ -396,7 +396,7 @@ sub edit_user {
 		}
 		my $Message_Red="User_Name: $User_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+		$Session->flush();
 		print "Location: /DSMS/sudoers-users.cgi\n\n";
 		exit(0);
 	}

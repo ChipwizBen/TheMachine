@@ -96,12 +96,12 @@ elsif ($Name_Add) {
 	if ($Active_Add) {
 		my $Message_Green="$Name_Add added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
+		$Session->flush();
 	}
 	else {
 		my $Message_Orange="$Name_Add added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
-	$Session->flush();
+		$Session->flush();
 	}
 	
 	print "Location: /Icinga/icinga-services.cgi\n\n";
@@ -685,7 +685,7 @@ sub edit_service {
 
 			my $Message_Red="$Service_Name_Edit already exists - Conflicting Service ID (This entry): $Service_Edit_Post, Existing Service ID: $ID_Extract, Existing Service Description: $Service_Name_Extract";
 			$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
+			$Session->flush();
 			print "Location: /Icinga/icinga-services.cgi\n\n";
 			exit(0);
 

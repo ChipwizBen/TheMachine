@@ -125,6 +125,7 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		$SFTP->put(
 			"$Sudoers_Location",
 			"$Remote_Sudoers",
+			best_effort => 1, # Not fatal if unable to set permissions and timestamp
 			copy_time => 1, # Timestamp remote sudoers
 			copy_perm => 0, # Do not copy permissions
 			atomic => 1) # Transfer to temp file first, then overwrite $Remote_Sudoers
