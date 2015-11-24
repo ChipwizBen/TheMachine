@@ -28,7 +28,7 @@ my $Delete_Domain_Confirm = $CGI->param("Delete_Domain_Confirm");
 my $Domain_Delete = $CGI->param("Domain_Delete");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
+my $User_DNS_Admin = $Session->param("User_DNS_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -43,49 +43,103 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Domain) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_add_domain;
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_add_domain;
+	}
 }
 elsif ($Domain_Add) {
-	my $Domain_ID = &add_domain;
-	my $Message_Green="$Domain_Add added successfully as ID $Domain_ID";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DNS/domains.cgi\n\n";
-	exit(0);
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my $Domain_ID = &add_domain;
+		my $Message_Green="$Domain_Add added successfully as ID $Domain_ID";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Edit_Domain) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_domain;
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_domain;
+	}
 }
 elsif ($Edit_Domain_Post) {
-	&edit_domain;
-	my $Message_Green="$Domain_Edit edited successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DNS/domains.cgi\n\n";
-	exit(0);
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&edit_domain;
+		my $Message_Green="$Domain_Edit edited successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Domain) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_domain;
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_domain;
+	}
 }
 elsif ($Delete_Domain_Confirm) {
-	&delete_domain;
-	my $Message_Green="$Domain_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DNS/domains.cgi\n\n";
-	exit(0);
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_domain;
+		my $Message_Green="$Domain_Delete deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DNS/domains.cgi\n\n";
+		exit(0);
+	}
 }
 else {
-	require $Header; ## no critic
+	require $Header;
 	&html_output;
 	require $Footer;
 }

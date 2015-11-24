@@ -77,7 +77,7 @@ sub add_host {
 		$Distribution_Default_User,
 		$Distribution_Default_Key_Path, 
 		$Distribution_Default_Timeout,
-		$Distribution_Default_Remote_Sudoers) = Distribution_Defaults();
+		$Distribution_Default_Remote_Sudoers) = DSMS_Distribution_Defaults();
 
 		my $Distribution_Insert = $DB_Management->prepare("INSERT INTO `distribution` (
 			`host_id`,

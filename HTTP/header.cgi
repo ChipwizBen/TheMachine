@@ -131,7 +131,7 @@ print <<ENDHTML;
 					<li><a href="/IP/hosts.cgi">Hosts</a></li>
 					<li><a href="/IP/ipv4-blocks.cgi">IPv4 Blocks</a></li>
 					<li><a href="/IP/ipv4-allocations.cgi">IPv4 Allocations</a></li>
-					<li><a href="/IP/ipv6-allocations.cgi">#IPv6 Allocations</a></li>
+					<li><a href="/IP/ipv6-allocations.cgi">#IPv6 Allocations (todo)</a></li>
 				</ul>
 			</li>
 			<li><a href="/#"><span>&nbsp; Icinga</span></a>

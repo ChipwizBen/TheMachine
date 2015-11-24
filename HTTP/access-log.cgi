@@ -35,7 +35,7 @@ if ($User_Name_Filter eq '' || $User_Name_Filter eq 'All') {
 }
 
 
-require "header.cgi"; ## no critic
+require "header.cgi";
 &html_output;
 require "footer.cgi";
 

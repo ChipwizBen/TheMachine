@@ -61,6 +61,7 @@ my $Delete_Record_Confirm = $CGI->param("Delete_Record_Confirm");
 my $Record_Name_Delete = $CGI->param("Record_Name_Delete");
 
 my $User_Name = $Session->param("User_Name");
+my $User_DNS_Admin = $Session->param("User_DNS_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -75,49 +76,103 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Record) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_add_record;
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_add_record;
+	}
 }
 elsif ($Record_Source_Add && $Record_Target_Add) {
-	my $Record_ID = &add_record;
-	my $Message_Green="$Record_Type_Add record $Record_Source_Add to $Record_Target_Add added successfully as ID $Record_ID";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DNS/zone-records.cgi\n\n";
-	exit(0);
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my $Record_ID = &add_record;
+		my $Message_Green="$Record_Type_Add record $Record_Source_Add to $Record_Target_Add added successfully as ID $Record_ID";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Edit_Record) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_record;
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_record;
+	}
 }
 elsif ($Edit_Record_Post) {
-	&edit_record;
-	my $Message_Green="$Record_Type_Add record $Record_Source_Edit to $Record_Target_Edit edited successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DNS/zone-records.cgi\n\n";
-	exit(0);
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&edit_record;
+		my $Message_Green="$Record_Type_Add record $Record_Source_Edit to $Record_Target_Edit edited successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Record) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_record;
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_record;
+	}
 }
 elsif ($Delete_Record_Confirm) {
-	&delete_record;
-	my $Message_Green="$Record_Name_Delete record deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DNS/zone-records.cgi\n\n";
-	exit(0);
+	if ($User_DNS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_record;
+		my $Message_Green="$Record_Name_Delete record deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DNS/zone-records.cgi\n\n";
+		exit(0);
+	}
 }
 else {
-	require $Header; ## no critic
+	require $Header;
 	&html_output;
 	require $Footer;
 }

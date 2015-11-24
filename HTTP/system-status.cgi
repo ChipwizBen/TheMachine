@@ -7,6 +7,8 @@ require 'common.pl';
 my $DB_Management = DB_Management();
 my $DB_Sudoers = DB_Sudoers();
 my ($CGI, $Session, $Cookie) = CGI();
+my $Header = Header();
+my $Footer = Footer();
 
 my $User_Name = $Session->param("User_Name");
 my $User_Admin = $Session->param("User_Admin");
@@ -24,12 +26,14 @@ if ($User_Admin != 1 && $User_Admin != 2) {
 	exit(0);
 }
 
-require "header.cgi";
+require $Header;
 &html_output;
-&html_configuration;
+&html_system_configuration;
+&html_dsms_configuration;
+&html_distribution_status;
 &html_status;
 &html_end;
-require "footer.cgi";
+require $Footer;
 
 sub html_output {
 
@@ -61,7 +65,7 @@ ENDHTML
 
 } #sub html_output
 
-sub html_status {
+sub html_distribution_status {
 
 print <<ENDHTML;
 		<td width='50%' valign='top' align='center'>
@@ -202,18 +206,11 @@ print <<ENDHTML;
 ENDHTML
 } # html_status
 
-sub html_configuration {
+sub html_system_configuration {
 
 my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my $Recovery_Email_Address = Recovery_Email_Address();
-my $Sudoers_Location = Sudoers_Location();
-my $Sudoers_Storage = Sudoers_Storage();
-my ($Distribution_SFTP_Port,
-	$Distribution_User,
-	$Key_Path,
-	$Timeout,
-	$Remote_Sudoers) = Distribution_Defaults();
 my ($Enforce_Complexity_Requirements,
 	$Minimum_Length,
 	$Minimum_Upper_Case_Characters,
@@ -228,10 +225,6 @@ my $cp = cp();
 my $ls = ls();
 my $sudo_grep = sudo_grep();
 my $head = head();
-my $Owner = Owner_ID('Full');
-my $Owner_ID = Owner_ID();
-my $Group = Group_ID('Full');
-my $Group_ID = Group_ID();
 my $Random_Alpha_Numeric_Password_8 = Random_Alpha_Numeric_Password(8);
 my $Random_Alpha_Numeric_Password_16 = Random_Alpha_Numeric_Password(16);
 my $Random_Alpha_Numeric_Password_32 = Random_Alpha_Numeric_Password(32);
@@ -252,38 +245,6 @@ print <<ENDHTML;
 				<tr>
 					<td style="text-align: right;">Recovery Email Address</td>
 					<td style='color: #00FF00;'>$Recovery_Email_Address</td>
-				</tr>
-				<tr>
-					<td style="text-align: right;">Sudoers Build File Location</td>
-					<td style='color: #00FF00;'>$Sudoers_Location</td>
-				</tr>
-				<tr>
-					<td style="text-align: right;">Legacy Sudoers Storage Directory Location</td>
-					<td style='color: #00FF00;'>$Sudoers_Storage/</td>
-				</tr>
-				<tr>
-					<td>&nbsp;</td>
-					<td>&nbsp;</td>
-				</tr>
-				<tr>
-					<td style="text-align: right;">Default SFTP Distribution Port</td>
-					<td style='color: #00FF00;'>$Distribution_SFTP_Port</td>
-				</tr>
-				<tr>
-					<td style="text-align: right;">Default SFTP Distribution User</td>
-					<td style='color: #00FF00;'>$Distribution_User</td>
-				</tr>
-				<tr>
-					<td style="text-align: right;">Default SFTP Distribution Key Path</td>
-					<td style='color: #00FF00;'>$Key_Path</td>
-				</tr>
-				<tr>
-					<td style="text-align: right;">Default SFTP Distribution Key Path</td>
-					<td style='color: #00FF00;'>$Timeout seconds</td>
-				</tr>
-				<tr>
-					<td style="text-align: right;">Default Remote Sudoers Drop Location</td>
-					<td style='color: #00FF00;'>$Remote_Sudoers</td>
 				</tr>
 				<tr>
 					<td>&nbsp;</td>
@@ -354,14 +315,6 @@ print <<ENDHTML;
 					<td>&nbsp;</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Sudoers Build File Ownership</td>
-					<td style='color: #00FF00;'>$Owner ($Owner_ID)</td>
-				</tr>
-				<tr>
-					<td style="text-align: right;">Sudoers Build File Group Ownership</td>
-					<td style='color: #00FF00;'>$Group ($Group_ID)</td>
-				</tr>
-				<tr>
 					<td>&nbsp;</td>
 					<td>&nbsp;</td>
 				</tr>
@@ -385,11 +338,63 @@ print <<ENDHTML;
 		</td>
 
 ENDHTML
-} # html_configuration
+} # html_system_configuration
 
-sub html_end {
+sub html_dsms_configuration {
+
+my $Sudoers_Owner = Sudoers_Owner_ID('Full');
+my $Sudoers_Owner_ID = Sudoers_Owner_ID();
+my $Sudoers_Group = Sudoers_Group_ID('Full');
+my $Sudoers_Group_ID = Sudoers_Group_ID();
+my $Sudoers_Location = Sudoers_Location();
+my $Sudoers_Storage = Sudoers_Storage();
+my ($Distribution_SFTP_Port,
+	$Distribution_User,
+	$Key_Path,
+	$Timeout,
+	$Remote_Sudoers) = DSMS_Distribution_Defaults();
+
 print <<ENDHTML;
-		</tr>
-	</table>
+				<tr>
+					<td style="text-align: right;">Sudoers Build File Ownership</td>
+					<td style='color: #00FF00;'>$Sudoers_Owner ($Sudoers_Owner_ID)</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Sudoers Build File Group Ownership</td>
+					<td style='color: #00FF00;'>$Sudoers_Group ($Sudoers_Group_ID)</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Sudoers Build File Location</td>
+					<td style='color: #00FF00;'>$Sudoers_Location</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Legacy Sudoers Storage Directory Location</td>
+					<td style='color: #00FF00;'>$Sudoers_Storage/</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Default SFTP Distribution Port</td>
+					<td style='color: #00FF00;'>$Distribution_SFTP_Port</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Default SFTP Distribution User</td>
+					<td style='color: #00FF00;'>$Distribution_User</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Default SFTP Distribution Key Path</td>
+					<td style='color: #00FF00;'>$Key_Path</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Default SFTP Distribution Key Path</td>
+					<td style='color: #00FF00;'>$Timeout seconds</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Default Remote Sudoers Drop Location</td>
+					<td style='color: #00FF00;'>$Remote_Sudoers</td>
+				</tr>
 ENDHTML
-} # html_end
+
+} # sub html_dsms_configuration

@@ -56,14 +56,6 @@ if ($Rows_Returned eq '') {
 	$Rows_Returned='100';
 }
 
-if ($User_IP_Admin != 1) {
-	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
-	print "Location: /index.cgi\n\n";
-	exit(0);
-}
-
 
 my $Enabled_Up_Arrow = '&#9650;';
 my $Disabled_Up_Arrow = '&#9651;';
@@ -109,56 +101,119 @@ if ($Reset eq '1') {
 	exit(0);
 }
 elsif ($Location_Input && !$Submit_Allocation) {
-	my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = &allocation;
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_auto_block ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP);
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = &allocation;
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_auto_block ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP);
+	}
 }
 elsif ($Submit_Allocation) {
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
+	else {
 	&add_block;
-	my $Message_Green="$Final_Allocation successfully allocated.";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /IP/ipv4-allocations.cgi\n\n";
-	exit(0);
+		my $Message_Green="$Final_Allocation successfully allocated.";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Final_Block_Manual) {
-	$Final_Allocation = $Final_Block_Manual;
-	&add_block;
-	my $Message_Orange="$Final_Allocation successfully allocated manually. No sanity checks were done.";
-	$Session->param('Message_Orange', $Message_Orange);
-	$Session->flush();
-	print "Location: /IP/ipv4-allocations.cgi\n\n";
-	exit(0);
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
+	else {
+		$Final_Allocation = $Final_Block_Manual;
+		&add_block;
+		my $Message_Orange="$Final_Allocation successfully allocated manually. No sanity checks were done.";
+		$Session->param('Message_Orange', $Message_Orange);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Edit_Block) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_block;
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_block;
+	}
 }
 elsif ($Block_Edit) {
-	my $Host_Counter = &edit_block;
-	my $Message_Green="$Host_Counter hosts added to Block $Block_Edit_Block (ID $Block_Edit).";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /IP/ipv4-allocations.cgi\n\n";
-	exit(0);
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my $Host_Counter = &edit_block;
+		my $Message_Green="$Host_Counter hosts added to Block $Block_Edit_Block (ID $Block_Edit).";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Block) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_block;
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_block;
+	}
 }
 elsif ($Delete_Block_Confirm) {
-	&delete_block;
-	my $Message_Green="$Block_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /IP/ipv4-allocations.cgi\n\n";
-	exit(0);
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_block;
+		my $Message_Green="$Block_Delete deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Query_Block) {
 	require $Header;

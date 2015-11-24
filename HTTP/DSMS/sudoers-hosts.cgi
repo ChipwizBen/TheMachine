@@ -62,7 +62,7 @@ my $New_Note = $CGI->param("New_Note");
 my $New_Note_ID = $CGI->param("New_Note_ID");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
+my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
 my $User_Approver = $Session->param("User_Approver");
 
 if (!$User_Name) {
@@ -79,46 +79,100 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Host) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_add_host;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_add_host;
+	}
 }
 elsif ($Host_Name_Add && $IP_Add) {
-	my $Host_ID = &add_host;
-	my $Message_Green="$Host_Name_Add ($IP_Add) added successfully as ID $Host_ID";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my $Host_ID = &add_host;
+		my $Message_Green="$Host_Name_Add ($IP_Add) added successfully as ID $Host_ID";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Edit_Host) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_host;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_host;
+	}
 }
 elsif ($Edit_Host_Post) {
-	&edit_host;
-	my $Message_Green="$Host_Name_Edit ($IP_Edit) edited successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&edit_host;
+		my $Message_Green="$Host_Name_Edit ($IP_Edit) edited successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Host) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_host;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_host;
+	}
 }
 elsif ($Delete_Host_Confirm) {
-	&delete_host;
-	my $Message_Green="$Host_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-hosts.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_host;
+		my $Message_Green="$Host_Name_Delete deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-hosts.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Show_Links) {
 	require $Header;
@@ -141,7 +195,7 @@ elsif ($New_Note && $New_Note_ID) {
 	&html_notes;
 }
 else {
-	require $Header; ## no critic
+	require $Header;
 	&html_output;
 	require $Footer;
 }
@@ -308,7 +362,7 @@ sub add_host {
 		$Distribution_Default_User,
 		$Distribution_Default_Key_Path, 
 		$Distribution_Default_Timeout,
-		$Distribution_Default_Remote_Sudoers) = Distribution_Defaults();
+		$Distribution_Default_Remote_Sudoers) = DSMS_Distribution_Defaults();
 
 		my $Distribution_Insert = $DB_Management->prepare("INSERT INTO `distribution` (
 			`host_id`,

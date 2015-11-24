@@ -54,7 +54,7 @@ my $New_Note = $CGI->param("New_Note");
 my $New_Note_ID = $CGI->param("New_Note_ID");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
+my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
 my $User_Approver = $Session->param("User_Approver");
 
 if (!$User_Name) {
@@ -71,60 +71,114 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Command) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_add_command;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_add_command;
+	}
 }
 elsif ($Command_Alias_Add && $Command_Add) {
-	if ($Command_Add !~ m/^\//) {
-		my $Message_Red="Your command did not contact a full path. Command not added.";
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
 	}
 	else {
-		my $Command_ID = &add_command;
-		my $Message_Green="$Command_Alias_Add ($Command_Add) added successfully as ID $Command_ID";
-		$Session->param('Message_Green', $Message_Green);
-		$Session->flush();
+		if ($Command_Add !~ m/^\//) {
+			my $Message_Red="Your command did not contain a full path. Command not added.";
+			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
+		}
+		else {
+			my $Command_ID = &add_command;
+			my $Message_Green="$Command_Alias_Add ($Command_Add) added successfully as ID $Command_ID";
+			$Session->param('Message_Green', $Message_Green);
+			$Session->flush();
+		}
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
 	}
-	print "Location: /DSMS/sudoers-commands.cgi\n\n";
-	exit(0);
 }
 elsif ($Edit_Command) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_command;
-}
-elsif ($Edit_Command_Post) {
-	if ($Command_Edit !~ m/^\//) {
-		my $Message_Red="Your command did not contact a full path. Command not edited.";
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
 	}
 	else {
-		&edit_command;
-		my $Message_Green="$Command_Alias_Edit ($Command_Edit) edited successfully";
-		$Session->param('Message_Green', $Message_Green);
-		$Session->flush();
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_command;
 	}
-	print "Location: /DSMS/sudoers-commands.cgi\n\n";
-	exit(0);
+}
+elsif ($Edit_Command_Post) {
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
+	}
+	else {
+		if ($Command_Edit !~ m/^\//) {
+			my $Message_Red="Your command did not contact a full path. Command not edited.";
+			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
+		}
+		else {
+			&edit_command;
+			my $Message_Green="$Command_Alias_Edit ($Command_Edit) edited successfully";
+			$Session->param('Message_Green', $Message_Green);
+			$Session->flush();
+		}
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Command) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_command;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_command;
+	}
 }
 elsif ($Delete_Command_Confirm) {
-	&delete_command;
-	my $Message_Green="$Command_Alias_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-commands.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_command;
+		my $Message_Green="$Command_Alias_Delete deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-commands.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Show_Links) {
 	require $Header;
@@ -147,7 +201,7 @@ elsif ($New_Note && $New_Note_ID) {
 	&html_notes;
 }
 else {
-	require $Header; ## no critic
+	require $Header;
 	&html_output;
 	require $Footer;
 }

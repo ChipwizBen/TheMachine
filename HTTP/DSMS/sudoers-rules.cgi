@@ -96,7 +96,7 @@ my $New_Note = $CGI->param("New_Note");
 my $New_Note_ID = $CGI->param("New_Note_ID");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
+my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
 my $User_Approver = $Session->param("User_Approver");
 my $User_Requires_Approval = $Session->param("User_Requires_Approval");
 
@@ -114,60 +114,132 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Rule && !$Add_Rule_Final) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_add_rule;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_add_rule;
+	}
 }
 elsif ($Add_Rule_Final) {
-	my $Rule_ID = &add_rule;
-	my $Message_Green="$Rule_Name_Add added successfully as ID $Rule_ID";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-rules.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my $Rule_ID = &add_rule;
+		my $Message_Green="$Rule_Name_Add added successfully as ID $Rule_ID";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Edit_Rule && !$Edit_Rule_Final) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_rule;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_rule;
+	}
 }
 elsif ($Edit_Rule_Final) {
-	&edit_rule;
-	my $Message_Green="$Rule_Name_Edit edited successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-rules.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&edit_rule;
+		my $Message_Green="$Rule_Name_Edit edited successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Rule) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_rule;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_rule;
+	}
 }
 elsif ($Delete_Rule_Confirm) {
-	&delete_rule;
-	my $Message_Green="$Rule_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-rules.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_rule;
+		my $Message_Green="$Rule_Name_Delete deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Rule_Item_ID) {
-	&delete_rule_item;
-	require $Header;
-	&html_output;
-	require $Footer;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_rule_item;
+		require $Header;
+		&html_output;
+		require $Footer;
+	}
 }
 elsif ($Approve_Rule_ID && $User_Approver) {
-	&approve_rule;
-	my $Message_Green="$Approve_Rule_Name rule approved successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-rules.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&approve_rule;
+		my $Message_Green="$Approve_Rule_Name rule approved successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-rules.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($View_Notes) {
 	require $Header;
@@ -184,7 +256,7 @@ elsif ($New_Note && $New_Note_ID) {
 	&html_notes;
 }
 else {
-	require $Header; ## no critic
+	require $Header;
 	&html_output;
 	require $Footer;
 }

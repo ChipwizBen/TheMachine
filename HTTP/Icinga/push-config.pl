@@ -26,7 +26,7 @@ my $Config_Path = '/etc/icinga2/conf.d'; # No trailing slash
 sub write_time_periods {
 
 	my $Icinga_Config_File = "$Config_Path/timeperiods.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Time = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`, `last_modified`, `modified_by`
 	FROM `nagios_timeperiod`
@@ -114,7 +114,7 @@ sub write_time_periods {
 sub write_host_groups {
 
 	my $Icinga_Config_File = "$Config_Path/hostgroups.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Group = $DB_Icinga->prepare("SELECT `id`, `hostgroup_name`, `alias`, `last_modified`, `modified_by`
 	FROM `nagios_hostgroup`
@@ -187,7 +187,7 @@ sub write_host_groups {
 sub write_service_groups {
 
 	my $Icinga_Config_File = "$Config_Path/servicegroups.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Group = $DB_Icinga->prepare("SELECT `id`, `servicegroup_name`, `alias`, `last_modified`, `modified_by`
 	FROM `nagios_servicegroup`
@@ -234,7 +234,7 @@ sub write_service_groups {
 sub write_contact_groups {
 
 	my $Icinga_Config_File = "$Config_Path/contactgroups.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Group = $DB_Icinga->prepare("SELECT `id`, `contactgroup_name`, `alias`, `last_modified`, `modified_by`
 	FROM `nagios_contactgroup`
@@ -306,7 +306,7 @@ sub write_contact_groups {
 sub write_host_templates {
 
 	my $Icinga_Config_File = "$Config_Path/hosttemplates.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Host_Template = $DB_Icinga->prepare("SELECT `id`, `template_name`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`,
@@ -697,7 +697,7 @@ sub write_host_templates {
 sub write_service_templates {
 
 	my $Icinga_Config_File = "$Config_Path/servicetemplates.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Service = $DB_Icinga->prepare("SELECT `id`, `template_name`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `is_volatile`, `max_check_attempts`,
@@ -1136,7 +1136,7 @@ sub write_service_templates {
 sub write_contacts {
 
 	my $Icinga_Config_File = "$Config_Path/contacts.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Contact = $DB_Icinga->prepare("SELECT `id`, `contact_name`, `alias`, `host_notification_period`,
 	`service_notification_period`, `host_notification_options`, `service_notification_options`, `email`,
@@ -1267,7 +1267,7 @@ sub write_contacts {
 sub write_hosts {
 
 	my $Icinga_Config_File = "$Config_Path/hosts.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Host = $DB_Icinga->prepare("SELECT `id`, `host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`,
@@ -1591,7 +1591,7 @@ sub write_hosts {
 sub write_services {
 
 	my $Icinga_Config_File = "$Config_Path/services.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Service = $DB_Icinga->prepare("SELECT `id`, `service_description`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `is_volatile`, `max_check_attempts`,
@@ -1945,7 +1945,7 @@ sub write_services {
 sub write_commands {
 
 	my $Icinga_Config_File = "$Config_Path/commands.conf";
-	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File"; ## no critic
+	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
 	my $Select_Command = $DB_Icinga->prepare("SELECT `id`, `command_name`, `command_line`, `last_modified`, `modified_by`
 	FROM `nagios_command`

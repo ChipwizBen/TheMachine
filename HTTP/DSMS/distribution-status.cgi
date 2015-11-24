@@ -16,7 +16,7 @@ my ($Distribution_Default_SFTP_Port,
 	$Distribution_Default_User,
 	$Distribution_Default_Key_Path, 
 	$Distribution_Default_Timeout,
-	$Distribution_Default_Remote_Sudoers) = Distribution_Defaults();
+	$Distribution_Default_Remote_Sudoers) = DSMS_Distribution_Defaults();
 my $Sudoers_Location = Sudoers_Location();
 my $md5sum = md5sum();
 my $cut = cut();
@@ -39,18 +39,10 @@ my $Edit_Host_Parameters_Post = $CGI->param("Edit_Host_Parameters_Post");
 	my $IP_Edit = $CGI->param("IP_Edit");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
+my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
-	exit(0);
-}
-
-if ($User_Admin != 1 && $User_Admin != 2) {
-	my $Message_Red = 'You do not have sufficient privileges to access that page.';
-	$Session->param('Message_Red', $Message_Red);
-	$Session->flush();
-	print "Location: /index.cgi\n\n";
 	exit(0);
 }
 
@@ -61,32 +53,36 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Edit_Host_Parameters) {
-	if ($User_Admin != 1) {
-		my $Message_Red = 'You do not have sufficient privileges to edit that.';
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /distribution-status.cgi\n\n";
+		print "Location: /DSMS/distribution-status.cgi\n\n";
 		exit(0);
 	}
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_host_parameters;
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_host_parameters;
+	}
 }
 elsif ($Edit_Host_Parameters_Post) {
-	if ($User_Admin != 1) {
-		my $Message_Red = 'Nice try.';
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /distribution-status.cgi\n\n";
+		print "Location: /DSMS/distribution-status.cgi\n\n";
 		exit(0);
 	}
-	&edit_host_parameters;
-	my $Message_Green="$Host_Name_Edit ($IP_Edit) distribution parameters edited successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /distribution-status.cgi\n\n";
-	exit(0);
+	else {
+		&edit_host_parameters;
+		my $Message_Green="$Host_Name_Edit ($IP_Edit) distribution parameters edited successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/distribution-status.cgi\n\n";
+		exit(0);
+	}
 }
 else {
 	require $Header;

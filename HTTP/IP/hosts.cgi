@@ -31,8 +31,7 @@ my $Delete_Host_Confirm = $CGI->param("Delete_Host_Confirm");
 my $Host_Name_Delete = $CGI->param("Host_Name_Delete");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
-my $User_Approver = $Session->param("User_Approver");
+my $User_IP_Admin = $Session->param("User_IP_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -48,46 +47,100 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Host) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_add_host;
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_add_host;
+	}
 }
 elsif ($Host_Name_Add && $Host_Type_Add) {
-	my $Host_ID = &add_host;
-	my $Message_Green="$Host_Name_Add added successfully as ID $Host_ID";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /IP/hosts.cgi\n\n";
-	exit(0);
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my $Host_ID = &add_host;
+		my $Message_Green="$Host_Name_Add added successfully as ID $Host_ID";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Edit_Host) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_host;
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_host;
+	}
 }
 elsif ($Host_Name_Edit && $Host_Type_Edit) {
-	&edit_host;
-	my $Message_Green="$Host_Name_Edit edited successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /IP/hosts.cgi\n\n";
-	exit(0);
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&edit_host;
+		my $Message_Green="$Host_Name_Edit edited successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Host) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_host;
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_host;
+	}
 }
 elsif ($Delete_Host_Confirm) {
-	&delete_host;
-	my $Message_Green="$Host_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /IP/hosts.cgi\n\n";
-	exit(0);
+	if ($User_IP_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_host;
+		my $Message_Green="$Host_Name_Delete deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /IP/hosts.cgi\n\n";
+		exit(0);
+	}
 }
 else {
 	require $Header;

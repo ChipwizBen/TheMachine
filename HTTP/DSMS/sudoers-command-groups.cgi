@@ -55,7 +55,7 @@ my $New_Note = $CGI->param("New_Note");
 my $New_Note_ID = $CGI->param("New_Note_ID");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
+my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
 my $User_Approver = $Session->param("User_Approver");
 
 if (!$User_Name) {
@@ -72,54 +72,117 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Group && !$Add_Group_Final) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_add_group;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_add_group;
+	}
 }
 elsif ($Add_Group_Final) {
-	my ($Group_ID, $Command_Alias_Count) = &add_group;
-	my $Message_Green="$Group_Name_Add added successfully as ID $Group_ID with $Command_Alias_Count attached commands";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my ($Group_ID, $Command_Alias_Count) = &add_group;
+		my $Message_Green="$Group_Name_Add added successfully as ID $Group_ID with $Command_Alias_Count attached commands";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Edit_Group && !$Edit_Group_Final) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_group;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_group;
+	}
 }
 elsif ($Edit_Group_Final) {
-	my ($Command_Alias_Count) = &edit_group;
-	my $Message_Green="$Group_Name_Edit edited successfully with $Command_Alias_Count newly attached commands";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my ($Command_Alias_Count) = &edit_group;
+		my $Message_Green="$Group_Name_Edit edited successfully with $Command_Alias_Count newly attached commands";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Group) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_group;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_group;
+	}
 }
 elsif ($Delete_Group_Confirm) {
-	&delete_group;
-	my $Message_Green="$Group_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_group;
+		my $Message_Green="$Group_Name_Delete deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_Command_ID && $Delete_Command_From_Group_ID) {
-	&delete_command;
-	my $Message_Green="$Delete_Command_Name removed from $Delete_Command_From_Group_Name successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_command;
+		my $Message_Green="$Delete_Command_Name removed from $Delete_Command_From_Group_Name successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-command-groups.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Show_Links) {
 	require $Header;
@@ -142,7 +205,7 @@ elsif ($New_Note && $New_Note_ID) {
 	&html_notes;
 }
 else {
-	require $Header; ## no critic
+	require $Header;
 	&html_output;
 	require $Footer;
 }

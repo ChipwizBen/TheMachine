@@ -48,7 +48,7 @@ my $New_Note = $CGI->param("New_Note");
 my $New_Note_ID = $CGI->param("New_Note_ID");
 
 my $User_Name = $Session->param("User_Name");
-my $User_Admin = $Session->param("User_Admin");
+my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
 my $User_Approver = $Session->param("User_Approver");
 
 if (!$User_Name) {
@@ -65,46 +65,100 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_User) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_add_user;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_add_user;
+	}
 }
 elsif ($User_Name_Add) {
-	my $User_ID = &add_user;
-	my $Message_Green="$User_Name_Add added successfully as ID $User_ID";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-users.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my $User_ID = &add_user;
+		my $Message_Green="$User_Name_Add added successfully as ID $User_ID";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Edit_User) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_edit_user;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_edit_user;
+	}
 }
 elsif ($Edit_User_Post) {
-	&edit_user;
-	my $Message_Green="$User_Name_Edit edited successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-users.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&edit_user;
+		my $Message_Green="$User_Name_Edit edited successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Delete_User) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_delete_user;
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
+	else {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_delete_user;
+	}
 }
 elsif ($Delete_User_Confirm) {
-	&delete_user;
-	my $Message_Green="$User_Name_Delete deleted successfully";
-	$Session->param('Message_Green', $Message_Green);
-	$Session->flush();
-	print "Location: /DSMS/sudoers-users.cgi\n\n";
-	exit(0);
+	if ($User_DSMS_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&delete_user;
+		my $Message_Green="$User_Name_Delete deleted successfully";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		print "Location: /DSMS/sudoers-users.cgi\n\n";
+		exit(0);
+	}
 }
 elsif ($Show_Links) {
 	require $Header;
@@ -127,7 +181,7 @@ elsif ($New_Note && $New_Note_ID) {
 	&html_notes;
 }
 else {
-	require $Header; ## no critic
+	require $Header;
 	&html_output;
 	require $Footer;
 }

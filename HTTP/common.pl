@@ -22,7 +22,7 @@ sub System_Name {
 
 	# This is the system's name, used for system identification during login, written to the sudoers file to identify which system owns the sudoers file, is used in password reset emails to identify the source, and other general uses.
 
-	my $System_Name = 'The Anchor';
+	my $System_Name = 'System Harmony and Integration Tool';
 	return $System_Name;
 
 } # sub System_Name
@@ -31,7 +31,7 @@ sub System_Short_Name {
 
 	# This is the system's shortened name, which is used in short descriptions. It can be the same as the full name in System_Name if you want, but it might get busy on some screens if your system name is long. It's encouraged to keep this short (less than 10 characters).
 
-	my $System_Short_Name = 'The Anchor';
+	my $System_Short_Name = 'S.H.I.T';
 	return $System_Short_Name;
 
 } # sub System_Short_Name
@@ -141,7 +141,7 @@ sub Recovery_Email_Address {
 
 sub Sudoers_Location {
 
-	# This is not necessarily the location of the /etc/sudoers file. This is the path that the system writes the temporary sudoers file to. It could be /etc/sudoers, but you ought to consider the rights that Apache will need to overwrite that file, and the implications of giving Apache those rights. If you want to automate it end to end, you should consider writing a temporary sudoers file, then using a separate root cron job to overwrite /etc/sudoers, which is the recommended procedure, instead of directly writing to it. Of course, if you do not intend on using the DSMS system to manage /etc/sudoers on the local machine, then this should NOT be /etc/sudoers. For sudoers locations on remote machines, see Distribution_Defaults, or set individual remote sudoers locations through the web panel.
+	# This is not necessarily the location of the /etc/sudoers file. This is the path that the system writes the temporary sudoers file to. It could be /etc/sudoers, but you ought to consider the rights that Apache will need to overwrite that file, and the implications of giving Apache those rights. If you want to automate it end to end, you should consider writing a temporary sudoers file, then using a separate root cron job to overwrite /etc/sudoers, which is the recommended procedure, instead of directly writing to it. Of course, if you do not intend on using the DSMS system to manage /etc/sudoers on the local machine, then this should NOT be /etc/sudoers. For sudoers locations on remote machines, see DSMS_Distribution_Defaults, or set individual remote sudoers locations through the web panel.
 
 	my $Sudoers_Location = '/var/www/html/sudoers';
 	return $Sudoers_Location;
@@ -401,11 +401,32 @@ sub DB_Reverse_Proxy {
 
 } # sub DB_Reverse_Proxy
 
-sub Reverse_Proxy_SSL_Defaults {
-	
-}
+sub Reverse_Proxy_Defaults {
 
-sub Distribution_Defaults {
+	# These are the default reverse proxy values for entires without custom parameters.
+
+	my $Transfer_Log = '/var/log/apache/access.log';
+	my $Error_Log = '/var/log/apache/error.log';
+	my $SSL_Certificate_File = '/etc/ssl/ssl-wildcard/wildcard.nwk1.com.crt';
+	my $SSL_Certificate_Key_File = '/etc/ssl/ssl-wildcard/wildcard.nwk1.com.key';
+	my $SSL_CA_Certificate_File = '/etc/ssl/ssl-wildcard/SSL_CA_Bundle.pem';
+
+	my @Reverse_Proxy_Defaults = ($Transfer_Log, $Error_Log, $SSL_Certificate_File, $SSL_Certificate_Key_File, $SSL_CA_Certificate_File);
+
+} # sub Reverse_Proxy_Defaults
+
+sub Redirect_Defaults {
+
+	# These are the default proxy redirect values for entires without custom parameters.
+
+	my $Transfer_Log = '/var/log/apache/access.log';
+	my $Error_Log = '/var/log/apache/error.log';
+
+	my @Redirect_Defaults = ($Transfer_Log, $Error_Log);
+
+} # sub Redirect_Defaults
+
+sub DSMS_Distribution_Defaults {
 
 	# These are the default sudoers distribution settings for new hosts. Keep in mind that any active host is automatically tried for sudoers pushes with their distribution settings. Unless you are confident that all new hosts will have the same settings, you might want to set fail-safe defaults here and manually override each host individually on the Distribution Status page.
 	# A good fail-safe strategy would be to set $Key_Path to be /dev/null so that login to the Remote Server becomes impossible. Alternatively, another good method would be to set $Remote_Sudoers to /sudoers/sudoers (which reflects the chroot recommendations), so that you could accurately test remote login, but not affect the existing sudoers file at /etc/sudoers. This is also dependent on your Cron Configuration on the Remote Server.
@@ -420,7 +441,7 @@ sub Distribution_Defaults {
 	my @Distribution_Defaults = ($Distribution_SFTP_Port, $Distribution_User, $Key_Path, $Timeout, $Remote_Sudoers);
 	return @Distribution_Defaults;
 
-} # sub Distribution_Defaults
+} # sub DSMS_Distribution_Defaults
 
 sub Password_Complexity_Check {
 
@@ -637,7 +658,7 @@ sub head {
 
 } # sub head
 
-sub Owner_ID {
+sub Sudoers_Owner_ID {
 
 	# For changing the ownership of the sudoers file after it's created, we need to specify an owner. It is recommended to keep this as the default, which is ‘root’.
 
@@ -652,9 +673,9 @@ sub Owner_ID {
 	my $Owner_ID = getpwnam $Owner;
 	return $Owner_ID;
 
-} # sub Owner_ID
+} # sub Sudoers_Owner_ID
 
-sub Group_ID {
+sub Sudoers_Group_ID {
 
 	# For chowning sudoers after it's created, perl's chown needs a group ID. I could've 
 	# hard-coded this to use apache, but sometimes Apache Server doesn't run under apache 
@@ -671,7 +692,7 @@ sub Group_ID {
 	my $Group_ID = getpwnam $Group;
 	return $Group_ID;
 
-} # sub Group_ID
+} # sub Sudoers_Group_ID
 
 ############################################################################################
 ########### The settings beyond this point are advanced, or shouldn't be changed ###########
