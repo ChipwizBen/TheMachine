@@ -184,8 +184,6 @@ print <<ENDHTML;
 	</div> <!-- buttons -->
 <br/>
 
-<div id="body">
-
 <div id ="tbmessagegreen">
 	$Message_Green
 </div> <!-- tbmessagegreen -->

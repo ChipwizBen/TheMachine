@@ -31,7 +31,7 @@ sub System_Short_Name {
 
 	# This is the system's shortened name, which is used in short descriptions. It can be the same as the full name in System_Name if you want, but it might get busy on some screens if your system name is long. It's encouraged to keep this short (less than 10 characters).
 
-	my $System_Short_Name = 'S.H.I.T';
+	my $System_Short_Name = 'SHIT';
 	return $System_Short_Name;
 
 } # sub System_Short_Name
@@ -79,6 +79,11 @@ sub LDAP_Login {
 	my $LDAP_Query = $_[0];
 	if ($LDAP_Query eq 'Status_Check') {
 		return $LDAP_Enabled;
+		exit(0);
+	}
+	elsif ($LDAP_Query eq 'Parameters') {
+		my @Parameters = ($LDAP_Server, $LDAP_Port, $Timeout, $LDAP_User_Name_Prefix, $LDAP_Filter, $LDAP_Search_Base);
+		return @Parameters;
 		exit(0);
 	}
 	elsif ($LDAP_Enabled =~ /on/i) {
@@ -205,12 +210,19 @@ sub DNS_Internal_SOA {
 
 	# Do not edit anything below this line #
 
-	my ($N1, $N2, $N3);
-	if ($NS1) {$N1 = "@	IN	NS	$NS1."}
-	if ($NS2) {$N2 = "@	IN	NS	$NS2."}
-	if ($NS3) {$N3 = "@	IN	NS	$NS3."}
+	my $SOA_Query = $_[0];
+	if ($SOA_Query eq 'Parameters') {
+		my @Parameters = ($Email, $TTL, $Serial, $Refresh, $Retry, $Expire, $Minimum, $NS1, $NS2, $NS3);
+		return @Parameters;
+		exit(0);
+	}
+	else {
+		my ($N1, $N2, $N3);
+		if ($NS1) {$N1 = "@	IN	NS	$NS1."}
+		if ($NS2) {$N2 = "@	IN	NS	$NS2."}
+		if ($NS3) {$N3 = "@	IN	NS	$NS3."}
 
-	my $DNS_Internal_SOA = <<SOA;
+		my $DNS_Internal_SOA = <<SOA;
 \$TTL $TTL
 @	IN	SOA	$NS1.	$Email. (
 			$Serial
@@ -224,8 +236,8 @@ $N2
 $N3
 
 SOA
-
-	return $DNS_Internal_SOA;
+		return $DNS_Internal_SOA;
+	}
 
 } # sub DNS_Internal_SOA
 
@@ -248,12 +260,20 @@ sub DNS_External_SOA {
 	
 	# Do not edit anything below this line #
 
-	my ($N1, $N2, $N3);
-	if ($NS1) {$N1 = "@	IN	NS	$NS1."}
-	if ($NS2) {$N2 = "@	IN	NS	$NS2."}
-	if ($NS3) {$N3 = "@	IN	NS	$NS3."}
+	my $SOA_Query = $_[0];
+	if ($SOA_Query eq 'Parameters') {
+		my @Parameters = ($Email, $TTL, $Serial, $Refresh, $Retry, $Expire, $Minimum, $NS1, $NS2, $NS3);
+		return @Parameters;
+		exit(0);
+	}
+	else {
 
-	my $DNS_External_SOA = <<SOA;
+		my ($N1, $N2, $N3);
+		if ($NS1) {$N1 = "@	IN	NS	$NS1."}
+		if ($NS2) {$N2 = "@	IN	NS	$NS2."}
+		if ($NS3) {$N3 = "@	IN	NS	$NS3."}
+	
+		my $DNS_External_SOA = <<SOA;
 \$TTL $TTL
 @	IN	SOA	$NS1.	$Email. (
 			$Serial
@@ -267,8 +287,8 @@ $N2
 $N3
 
 SOA
-
-	return $DNS_External_SOA;
+		return $DNS_External_SOA;
+	}
 
 } # sub DNS_External_SOA
 
@@ -280,6 +300,35 @@ sub DNS_Storage {
 	return $DNS_Storage;
 
 } # sub DNS_Storage
+
+sub Reverse_Proxy_Location {
+
+	# This is the path that the system writes the temporary reverse proxy files to, before it is picked up by cron.
+	# If this server is the master reverse proxy server, this path could be the path to the reverse proxy config.
+
+	my $Reverse_Proxy_Location = '/tmp/reverse-proxy';
+	return $Reverse_Proxy_Location;
+
+} # sub Reverse_Proxy_Location
+
+sub Proxy_Redirect_Location {
+
+	# This is the path that the system writes the temporary proxy redirect files to, before it is picked up by cron.
+	# If this server is the master reverse proxy server, this path could be the path to the proxy redirect config.
+
+	my $Proxy_Redirect_Location = '/tmp/proxy-redirect';
+	return $Proxy_Redirect_Location;
+
+} # sub Proxy_Redirect_Location
+
+sub Reverse_Proxy_Storage {
+
+	# This is the directory where replaced reverse proxy files are stored. You do not need a trailing slash.
+
+	my $Reverse_Proxy_Storage = '/var/www/html/Storage/ReverseProxy';
+	return $Reverse_Proxy_Storage;
+
+} # sub Reverse_Proxy_Storage
 
 sub DB_Management {
 

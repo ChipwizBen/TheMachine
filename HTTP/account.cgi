@@ -144,7 +144,7 @@ print <<ENDHTML;
 	$Message_Red
 </div> <!-- tbmessagered -->
 
-<div id="singlecenterblock">
+<div id="single-centre-block">
 <h3>Change Login Password</h3>
 
 <p>Note that this is your local password - if you authenticated using LDAP changing your password here will have no effect on your login.</p> 
@@ -176,7 +176,7 @@ print <<ENDHTML;
 <br />
 
 </form>
-</div> <!-- singlecenterblock -->
+</div> <!-- single-centre-block -->
 
 </div> <!-- body -->
 

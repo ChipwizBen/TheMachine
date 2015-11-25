@@ -16,38 +16,33 @@ print <<ENDHTML;
 
 	<!-- Link Footer & Name -->
 
-<br />
-<br />
+	<br />
+	<br />
 
-<hr id="footerhr"></hr>
+	<hr id="footerhr"></hr>
 
-	<div id="footer">
+		<div id="footer">
 
-	<div id="footerblocka1">
+		<div id="blocka1">
 ENDHTML
 #DSMS
 #	<ul>
 #		<li>/li>
 #	</ul>
 print <<ENDHTML;
-	</div> <!-- footerblocka1 -->
+		</div> <!-- blocka1 -->
 
-	<div id="footerblocka2">
-	</div> <!-- footerblocka2 -->
+		<div id="blocka2">
+		</div> <!-- blocka2 -->
 
-	<div id="footerblocka3">
-	</div> <!-- footerblocka3 -->
+		<div id="blocka3">
+		</div> <!-- blocka3 -->
 
-	<div id="footerblocka4">
-	</div> <!-- footerblocka4 -->
 
-	<div id="footerblocka5">
-	</div> <!-- footerblocka5 -->
+		</div> <!-- footer -->
 
-	</div> <!-- footer -->
-</div> <!-- body -->
-</div> <!-- strip -->
-</body>
+		</div> <!-- strip -->
+	</body>
 </html>
 ENDHTML
 
