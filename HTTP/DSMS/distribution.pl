@@ -17,6 +17,22 @@ my $MD5Sum = md5sum();
 my $Cut = cut();
 my $Sudoers_Location = Sudoers_Location();
 	my $MD5_Checksum = `$MD5Sum $Sudoers_Location | $Cut -d ' ' -f 1`;
+my $Green = "\e[0;32;40m";
+my $Red = "\e[0;31;40m";
+my $Clear = "\e[0m";
+
+$| = 1;
+my $Override;
+my $Verbose;
+
+foreach my $Parameter (@ARGV) {
+	if ($Parameter eq '--override') {$Override = 1}
+	if ($Parameter eq '--verbose') {$Verbose = 1}
+	if ($Parameter eq '-h' || $Parameter eq '--help') {
+		print "\nOptions are:\n\t--override\tOverrides any database lock\n\t--verbose\tTurns on verbose output\n\n";
+		exit(0);
+	}
+}
 
 # Safety check for other running distribution processes
 
@@ -26,8 +42,23 @@ my $Sudoers_Location = Sudoers_Location();
 	my ($Sudoers_Build_Lock, $Sudoers_Distribution_Lock) = $Select_Locks->fetchrow_array();
 
 		if ($Sudoers_Build_Lock == 1 || $Sudoers_Distribution_Lock == 1) {
-			print "Another build or distribution process is running. Exiting...\n";
-			exit(1);
+			if ($Override) {
+				print "Override detected. (CTRL + C to cancel)...\n\n";
+				print "Continuing in... 5\r";
+				sleep 1;
+				print "Continuing in... 4\r";
+				sleep 1;
+				print "Continuing in... 3\r";
+				sleep 1;
+				print "Continuing in... 2\r";
+				sleep 1;
+				print "Continuing in... 1\r";
+				sleep 1;	
+			}
+			else {
+				print "Another build or distribution process is running. Use --override to continue anyway. Exiting...\n";
+				exit(1);
+			}
 		}
 		else {
 			$DB_Management->do("UPDATE `lock` SET
@@ -75,7 +106,12 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 
 
 		### Connection
-		print "Attempting to connect to $Hostname with $User\@$Host_String:$SFTP_Port and key $Key_Path...\n";
+		if ($Verbose) {
+			print "Attempting to connect to $Hostname with $User\@$Host_String:$SFTP_Port and key $Key_Path...\n";
+		}
+		else {
+			print "$Hostname\t";
+		}
 
 		open my $DevNull, '>', '/dev/null' or die "unable to open /dev/null";
 
@@ -89,27 +125,45 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		$SFTP->error and $Error = "Connection Failed: " . $SFTP->error;
 
 		if ($SFTP->status == 0) {
-			print "Connected successfully to $Hostname ($IP) on port $SFTP_Port.\n";
+			if ($Verbose) {
+				print "Connected successfully to $Hostname ($IP) on port $SFTP_Port.\n";
+			}
+			else {
+				print "${Green}[Connected]${Clear}\t";
+			}
 		}
 		else {
 
-			if ($Error =~ /Connection to remote server stalled/) {$Error = $Error . " 
+			if ($Error =~ /Connection to remote server stalled/) {
+				if ($Verbose) {
+					$Error = $Error . " 
     Hints: 
     1) Check that the remote host's key fingerprint is stored in known_hosts
     2) Check for a route to the remote host
     3) Check that your $Timeout second Timeout value is high enough"
+				}
+				else {
+					print "${Red}[Connection Failed]${Clear}\n";
+				}
 			}
 
-			elsif ($Error =~ /Connection to remote server is broken/) {$Error = $Error ." 
+			elsif ($Error =~ /Connection to remote server is broken/) {
+				if ($Verbose) {
+					$Error = $Error ." 
     Hints: 
     1) Check that the remote host's key fingerprint is stored in known_hosts
     2) Check that the user name is correct
     3) Check that the IP address or port are correct
     4) Check that the key identity file exists
-    5) Check that there are sufficient permissions to read the key identity file"
+    5) Check that there are sufficient permissions to read the key identity file";
+
+					print "$Error\n\n";
+				}
+				else {
+					print "${Red}[Connection Failed]${Clear}\n";
+				}
 			}
 
-			print "$Error\n\n";
 			my $Update_Status = $DB_Management->prepare("UPDATE `distribution` SET
 				`status` = ?,
 				`last_updated` = NOW()
@@ -132,7 +186,12 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 			or $Error = "Push Failed: " . $SFTP->error;
 
 		if ($SFTP->status == 0) {
-			print "$Remote_Sudoers written successfully to $Hostname ($IP).\n\n";
+			if ($Verbose) {
+				print "$Remote_Sudoers written successfully to $Hostname ($IP).\n\n";
+			}
+			else {
+				print "${Green}[Transfer Completed]${Clear}\n";
+			}
 			my $Status="OK: $Remote_Sudoers written successfully to $Hostname ($IP). Sudoers MD5: $MD5_Checksum";
 			my $Update_Status = $DB_Management->prepare("UPDATE `distribution` SET
 				`status` = ?,
@@ -144,18 +203,30 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		}
 		else {
 
-			if ($Error =~ /Permission\sdenied/) {$Error = $Error . " 
+			if ($Error =~ /Permission\sdenied/) {
+				if ($Verbose) {
+					$Error = $Error . " 
     Hints: 
     1) Check that $User can write to $Remote_Sudoers"
+				}
+				else {
+					print "${Red}[Transfer Failed]${Clear}\n";
+				}
 			}
 
-			elsif ($Error =~ /Couldn't open remote file/) {$Error = $Error . " 
+			elsif ($Error =~ /Couldn't open remote file/) {
+				if ($Verbose) {
+					$Error = $Error . " 
     Hints: 
     1) Check that the remote path is correct
-    2) If the Remote Server uses chroot, try making the path relative (i.e. path/sudoers instead of /path/sudoers)"
+    2) If the Remote Server uses chroot, try making the path relative (i.e. path/sudoers instead of /path/sudoers)";
+    				print "$Error\n\n";
+				}
+				else {
+					print "${Red}[Transfer Failed]${Clear}\n";
+				}
 			}
 
-			print "$Error\n\n";
 			my $Update_Status = $DB_Management->prepare("UPDATE `distribution` SET
 				`status` = ?,
 				`last_updated` = NOW()
