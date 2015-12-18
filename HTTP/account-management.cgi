@@ -46,8 +46,8 @@ my $Delete_User = $CGI->param("Delete_User");
 my $Delete_User_Confirm = $CGI->param("Delete_User_Confirm");
 my $User_Name_Delete = $CGI->param("User_Name_Delete");
 
-my $User_Name = $Session->param("User_Name");  
-my $User_Admin = $Session->param("User_Admin");  
+my $User_Name = $Session->param("User_Name");
+my $User_Admin = $Session->param("User_Admin");
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
 	if ($Rows_Returned eq '') {

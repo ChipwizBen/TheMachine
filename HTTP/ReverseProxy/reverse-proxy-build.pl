@@ -13,8 +13,16 @@ my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
 
+$| = 1;
+my $Override;
 
-my $Date = strftime "%Y-%m-%d", localtime;
+foreach my $Parameter (@ARGV) {
+	if ($Parameter eq '--override') {$Override = 1}
+	if ($Parameter eq '-h' || $Parameter eq '--help') {
+		print "\nOptions are:\n\t--override\tOverrides any database lock\n\n";
+		exit(0);
+	}
+}
 
 # Safety check for other running build processes
 
@@ -24,8 +32,23 @@ my $Date = strftime "%Y-%m-%d", localtime;
 	my ($Reverse_Proxy_Build_Lock, $Reverse_Proxy_Distribution_Lock) = $Select_Locks->fetchrow_array();
 
 		if ($Reverse_Proxy_Build_Lock == 1 || $Reverse_Proxy_Distribution_Lock == 1) {
-			print "Another build or distribution process is running. Exiting...\n";
-			exit(1);
+			if ($Override) {
+				print "Override detected. (CTRL + C to cancel)...\n\n";
+				print "Continuing in... 5\r";
+				sleep 1;
+				print "Continuing in... 4\r";
+				sleep 1;
+				print "Continuing in... 3\r";
+				sleep 1;
+				print "Continuing in... 2\r";
+				sleep 1;
+				print "Continuing in... 1\r";
+				sleep 1;	
+			}
+			else {
+				print "Another build or distribution process is running. Use --override to continue anyway. Exiting...\n";
+				exit(1);
+			}
 		}
 		else {
 			$DB_Management->do("UPDATE `lock` SET
@@ -52,7 +75,7 @@ sub write_reverse_proxy {
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
-	open( Reverse_Proxy_Config, ">$Reverse_Proxy_Location/httpd.$System_Short_Name-reverse.conf" ) or die "Can't open $Reverse_Proxy_Location/httpd.$System_Short_Name-reverse.conf";
+	open( Reverse_Proxy_Config, ">$Reverse_Proxy_Location/httpd.$System_Short_Name-reverse-proxy.conf" ) or die "Can't open $Reverse_Proxy_Location/httpd.$System_Short_Name-reverse-proxy.conf";
 
 	print Reverse_Proxy_Config "#########################################################################\n";
 	print Reverse_Proxy_Config "## $System_Name\n";
@@ -68,7 +91,8 @@ sub write_reverse_proxy {
 
 
 	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
-	`transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_ca_certificate_file`, `last_modified`, `modified_by`
+	`transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_ca_certificate_file`,
+	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `last_modified`, `modified_by`
 	FROM `reverse_proxy`
 	WHERE `active` = '1'
 	ORDER BY `server_name` ASC");
@@ -85,8 +109,12 @@ sub write_reverse_proxy {
 		my $SSL_Certificate_File = $Proxy_Entry[6];
 		my $SSL_Certificate_Key_File = $Proxy_Entry[7];
 		my $SSL_CA_Certificate_File = $Proxy_Entry[8];
-		my $Last_Modified = $Proxy_Entry[9];
-		my $Modified_By = $Proxy_Entry[10];
+		my $PFS = $Proxy_Entry[9];
+		my $RC4 = $Proxy_Entry[10];
+		my $Enforce_SSL = $Proxy_Entry[11];
+		my $HSTS = $Proxy_Entry[12];
+		my $Last_Modified = $Proxy_Entry[13];
+		my $Modified_By = $Proxy_Entry[14];
 
 		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
 		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
@@ -96,25 +124,64 @@ sub write_reverse_proxy {
 			if (!$SSL_Certificate_Key_File) {$SSL_Certificate_Key_File = $Default_SSL_Certificate_Key_File}
 			if (!$SSL_CA_Certificate_File) {$SSL_CA_Certificate_File = $Default_SSL_CA_Certificate_File}
 
+			my $CipherOrder;
+			my $CipherSuite;
+			if ($PFS && $RC4) {
+				$CipherOrder = 'SSLHonorCipherOrder on';
+				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS";
+			}
+			elsif ($PFS && !$RC4) {
+				$CipherOrder = 'SSLHonorCipherOrder on';
+				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4";
+			}
+			else {
+				$CipherOrder = '';
+				$CipherSuite = "HIGH:!SSLv2:!ADH:!aNULL:!eNULL:!NULL";
+			}
+
+			my $Enforce_SSL_Header;
+			if ($Enforce_SSL) {
+				$Enforce_SSL_Header = '
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</IfModule>';
+			}	
+			 
+
+
+
+			my $HSTS_Header;
+			if ($HSTS) {
+				$HSTS_Header = 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"';
+			}			
+
 			print Reverse_Proxy_Config <<RP_EOF;
+$Enforce_SSL_Header
+
 <IfModule mod_ssl.c>
-<VirtualHost *:443>
-    ServerName              $Server_Name
-    ProxyRequests           Off
-    ProxyPreserveHost       On
-    ProxyPass               $Source    $Destination
-    ProxyPassReverse        $Source    $Destination
+<VirtualHost $Server_Name:443>
+    ServerName               $Server_Name
 
-    SSLEngine               On
-    SSLProtocol             ALL -SSLv2 -SSLv3
-    SSLCipherSuite          HIGH:!SSLv2:!ADH:!aNULL:!eNULL:!NULL
+    ProxyRequests            Off
+    ProxyPreserveHost        On
+    ProxyPass                $Source    $Destination
+    ProxyPassReverse         $Source    $Destination
 
-    SSLCertificateFile      $SSL_Certificate_File
-    SSLCertificateKeyFile   $SSL_Certificate_Key_File
-    SSLCACertificateFile    $SSL_CA_Certificate_File
+    SSLEngine                On
+    SSLProtocol              ALL -SSLv2 -SSLv3
+    $CipherOrder
+    SSLCipherSuite           "$CipherSuite"
+    SSLInsecureRenegotiation Off
+    SSLRequireSSL
 
-    TransferLog             $Transfer_Log
-    ErrorLog                $Error_Log
+    SSLCertificateFile       $SSL_Certificate_File
+    SSLCertificateKeyFile    $SSL_Certificate_Key_File
+    SSLCACertificateFile     $SSL_CA_Certificate_File
+
+    TransferLog              $Transfer_Log
+    ErrorLog                 $Error_Log
 </VirtualHost>
 </IfModule>
 
@@ -122,7 +189,7 @@ RP_EOF
 		}
 		else {
 			print Reverse_Proxy_Config <<RP_EOF;
-<VirtualHost *:80>
+<VirtualHost $Server_Name:80>
     ServerName              $Server_Name
     ProxyRequests           Off
     ProxyPreserveHost       On
@@ -146,7 +213,7 @@ sub write_redirect {
 	my ($Default_Transfer_Log,
 		$Default_Error_Log) = Redirect_Defaults();
 
-	open( Redirect_Config, ">$Proxy_Redirect_Location/httpd.$System_Short_Name-redirect.conf" ) or die "Can't open $Proxy_Redirect_Location/httpd.$System_Short_Name-redirect.conf";
+	open( Redirect_Config, ">$Proxy_Redirect_Location/httpd.$System_Short_Name-proxy-redirect.conf" ) or die "Can't open $Proxy_Redirect_Location/httpd.$System_Short_Name-proxy-redirect.conf";
 
 	print Redirect_Config "#########################################################################\n";
 	print Redirect_Config "## $System_Name\n";
@@ -184,7 +251,7 @@ sub write_redirect {
 
 
 		print Redirect_Config <<RP_EOF;
-<VirtualHost *:80>
+<VirtualHost $Server_Name:80>
     ServerName               $Server_Name
     RedirectPermanent        $Source       $Destination
     TransferLog              $Transfer_Log

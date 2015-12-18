@@ -32,11 +32,10 @@ my $Add_Reverse_Proxy = $CGI->param("Add_Reverse_Proxy");
 			$Certificate_Key_Add =~ s/\s//g;
 		my $CA_Certificate_Add = $CGI->param("CA_Certificate_Add");
 			$CA_Certificate_Add =~ s/\s//g;
-		if ($SSL_Toggle_Add ne 'On') {
-			$Certificate_Add = '';
-			$Certificate_Key_Add = '';
-			$CA_Certificate_Add = '';
-		}
+		my $PFS_Add = $CGI->param("PFS_Add");
+		my $RC4_Add = $CGI->param("RC4_Add");
+		my $Enforce_SSL_Add = $CGI->param("Enforce_SSL_Add");
+			my $HSTS_Add = $CGI->param("HSTS_Add");
 
 my $Edit_Reverse_Proxy = $CGI->param("Edit_Reverse_Proxy");
 	my $Server_Name_Edit = $CGI->param("Server_Name_Edit");
@@ -56,11 +55,10 @@ my $Edit_Reverse_Proxy = $CGI->param("Edit_Reverse_Proxy");
 			$Certificate_Key_Edit =~ s/\s//g;
 		my $CA_Certificate_Edit = $CGI->param("CA_Certificate_Edit");
 			$CA_Certificate_Edit =~ s/\s//g;
-		if ($SSL_Toggle_Edit ne 'On') {
-			$Certificate_Edit = '';
-			$Certificate_Key_Edit = '';
-			$CA_Certificate_Edit = '';
-		}
+		my $PFS_Edit = $CGI->param("PFS_Edit");
+		my $RC4_Edit = $CGI->param("RC4_Edit");
+		my $Enforce_SSL_Edit = $CGI->param("Enforce_SSL_Edit");
+			my $HSTS_Edit = $CGI->param("HSTS_Edit");
 my $Edit_Reverse_Proxy_Post = $CGI->param("Edit_Reverse_Proxy_Post");
 
 my $Delete_Reverse_Proxy = $CGI->param("Delete_Reverse_Proxy");
@@ -190,7 +188,7 @@ sub html_add_reverse_proxy {
 
 print <<ENDHTML;
 
-<div id="small-popup-box">
+<div id="wide-popup-box">
 <a href="/ReverseProxy/reverse-proxy.cgi">
 <div id="blockclosebutton">
 </div>
@@ -204,16 +202,36 @@ function SSL_Toggle(value) {
 		document.getElementById('Cert').style.display='table-row';
 		document.getElementById('Key').style.display='table-row';
 		document.getElementById('CA').style.display='table-row';
+		document.getElementById('Enforce').style.display='table-row';
+		document.getElementById('PFS').style.display='table-row';
+		document.getElementById('RC4').style.display='table-row';
 	}
-	else if(value=="Off"){
+	else if(value=="Off") {
 		document.getElementById('Cert').style.display='none';
 		document.getElementById('Key').style.display='none';
 		document.getElementById('CA').style.display='none';
+		document.getElementById('Enforce').style.display='none';
+		document.getElementById('PFS').style.display='none';
+		document.getElementById('RC4').style.display='none';
 	}
 	else {
 		document.getElementById('Cert').style.display='none';
 		document.getElementById('Key').style.display='none';
 		document.getElementById('CA').style.display='none';
+		document.getElementById('Enforce').style.display='none';
+		document.getElementById('PFS').style.display='none';
+		document.getElementById('RC4').style.display='none';
+	}
+}
+function Enforce_SSL_Toggle(value) {
+	if(value=="1"){
+		document.getElementById('HSTS').style.display='table-row';
+	}
+	else if(value=="0"){
+		document.getElementById('HSTS').style.display='none';
+	}
+	else {
+		document.getElementById('HSTS').style.display='none';
 	}
 }
 //-->
@@ -263,6 +281,42 @@ function SSL_Toggle(value) {
 		<td style="text-align: right;">CA Certificate File:</td>
 		<td colspan="2"><input type='text' name='CA_Certificate_Add' style="width:100%" placeholder="/etc/ssl/CA-Bundle.pem"></td>
 	</tr>
+	<tr style="display: none;" id="PFS">
+		<td style="text-align: right;">PFS (Perfect Forward Secrecy):</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='PFS_Add'">
+				<option value='1'>On</option>
+				<option value='0'>Off</option>
+			</select>
+		</td>
+	</tr>
+	<tr style="display: none;" id="RC4">
+		<td style="text-align: right;">Legacy RC4 Support:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='RC4_Add'">
+				<option value='0'>Off (Recommended)</option>
+				<option value='1'>On (Not Safe)</option>
+			</select>
+		</td>
+	</tr>
+	<tr style="display: none;" id="Enforce">
+		<td style="text-align: right;">Enforce SSL:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='Enforce_SSL_Add' onchange="Enforce_SSL_Toggle(this.value);">
+				<option value='0'>No</option>
+				<option value='1'>Yes</option>
+			</select>
+		</td>
+	</tr>
+	<tr style="display: none;" id="HSTS">
+		<td style="text-align: right;">HSTS (HTTP Strict Transport Security):</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='HSTS_Add'">
+				<option value='1'>On</option>
+				<option value='0'>Off</option>
+			</select>
+		</td>
+	</tr>
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
@@ -286,8 +340,19 @@ sub add_reverse_proxy {
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
+	if ($SSL_Toggle_Add ne 'On') {
+		$Certificate_Add = '';
+		$Certificate_Key_Add = '';
+		$CA_Certificate_Add = '';
+		$PFS_Add = 0;
+		$RC4_Add = 0;
+		$Enforce_SSL_Add = 0;
+		$HSTS_Add = 0;
+	}
+
 	if (!$Transfer_Log_Add) {$Transfer_Log_Add = $Default_Transfer_Log;}
 	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log;}
+	if ($Enforce_SSL_Add == 0) {$HSTS_Add = '0'};
 
 	my $Reverse_Proxy_Insert = $DB_Reverse_Proxy->prepare("INSERT INTO `reverse_proxy` (
 		`server_name`,
@@ -298,15 +363,21 @@ sub add_reverse_proxy {
 		`ssl_certificate_file`,
 		`ssl_certificate_key_file`,
 		`ssl_ca_certificate_file`,
+		`pfs`,
+		`rc4`,
+		`enforce_ssl`,
+		`hsts`,
 		`modified_by`
 	)
 	VALUES (
+		?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?
 	)");
 
 	$Reverse_Proxy_Insert->execute($Server_Name_Add, $Source_Add, $Destination_Add, $Transfer_Log_Add, 
-	$Error_Log_Add, $Certificate_Add, $Certificate_Key_Add, $CA_Certificate_Add, $User_Name);
+	$Error_Log_Add, $Certificate_Add, $Certificate_Key_Add, $CA_Certificate_Add, 
+	$PFS_Add, $RC4_Add, $Enforce_SSL_Add, $HSTS_Add, $User_Name);
 
 	my $Reverse_Proxy_Insert_ID = $DB_Reverse_Proxy->{mysql_insertid};
 
@@ -333,7 +404,7 @@ sub html_edit_reverse_proxy {
 
 	my $Select_Reverse_Proxy = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `proxy_pass_source`,
 		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
-		`ssl_ca_certificate_file`
+		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`
 		FROM `reverse_proxy`
 		WHERE `id` = ?");
 	$Select_Reverse_Proxy->execute($Edit_Reverse_Proxy);
@@ -349,6 +420,10 @@ sub html_edit_reverse_proxy {
 		my $SSL_Certificate_File = $Reverse_Proxy_Values[5];
 		my $SSL_Certificate_Key_File = $Reverse_Proxy_Values[6];
 		my $SSL_CA_Certificate_File = $Reverse_Proxy_Values[7];
+		my $PFS = $Reverse_Proxy_Values[8];
+		my $RC4 = $Reverse_Proxy_Values[9];
+		my $Enforce_SSL = $Reverse_Proxy_Values[10];
+		my $HSTS = $Reverse_Proxy_Values[11];
 
 		my $SSL_Display;
 		my $SSL_Toggle;
@@ -364,9 +439,22 @@ sub html_edit_reverse_proxy {
 			$SSL_Display = 'none';
 		}
 
+		my $Enforce_SSL_Display;
+		my $Enforce_SSL_Toggle;
+		if ($Enforce_SSL) {
+			$Enforce_SSL_Toggle = "<option value='0'>No</option>
+				<option value='1' selected>Yes</option>";
+			$Enforce_SSL_Display = 'table-row';
+		}
+		else {
+			$Enforce_SSL_Toggle = "<option value='0' selected>No</option>
+				<option value='1'>Yes</option>";
+			$Enforce_SSL_Display = 'none';
+		}
+
 print <<ENDHTML;
 
-<div id="small-popup-box">
+<div id="wide-popup-box">
 <a href="/ReverseProxy/reverse-proxy.cgi">
 <div id="blockclosebutton">
 </div>
@@ -380,16 +468,36 @@ function SSL_Toggle(value) {
 		document.getElementById('Cert').style.display='table-row';
 		document.getElementById('Key').style.display='table-row';
 		document.getElementById('CA').style.display='table-row';
+		document.getElementById('Enforce').style.display='table-row';
+		document.getElementById('PFS').style.display='table-row';
+		document.getElementById('RC4').style.display='table-row';
 	}
-	else if(value=="Off"){
+	else if(value=="Off") {
 		document.getElementById('Cert').style.display='none';
 		document.getElementById('Key').style.display='none';
 		document.getElementById('CA').style.display='none';
+		document.getElementById('Enforce').style.display='none';
+		document.getElementById('PFS').style.display='none';
+		document.getElementById('RC4').style.display='none';
 	}
 	else {
 		document.getElementById('Cert').style.display='$SSL_Display';
 		document.getElementById('Key').style.display='$SSL_Display';
 		document.getElementById('CA').style.display='$SSL_Display';
+		document.getElementById('Enforce').style.display='$SSL_Display';
+		document.getElementById('PFS').style.display='$Enforce_SSL_Display';
+		document.getElementById('RC4').style.display='$Enforce_SSL_Display';
+	}
+}
+function Enforce_SSL_Toggle(value) {
+	if(value=="1"){
+		document.getElementById('HSTS').style.display='table-row';
+	}
+	else if(value=="0"){
+		document.getElementById('HSTS').style.display='none';
+	}
+	else {
+		document.getElementById('HSTS').style.display='none';
 	}
 }
 //-->
@@ -438,6 +546,71 @@ function SSL_Toggle(value) {
 		<td style="text-align: right;">CA Certificate File:</td>
 		<td colspan="2"><input type='text' name='CA_Certificate_Edit' value='$SSL_CA_Certificate_File' style="width:100%" placeholder="$SSL_CA_Certificate_File"></td>
 	</tr>
+	<tr style="display: $SSL_Display;" id="PFS">
+		<td style="text-align: right;">PFS (Perfect Forward Secrecy):</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='PFS_Edit'">
+ENDHTML
+
+	if ($PFS) {
+		print "<option value='1' selected>On</option>
+				<option value='0'>Off</option>";
+	}
+	else {
+		print "<option value='1'>On</option>
+				<option value='0' selected>Off</option>";
+	}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr style="display: $SSL_Display;" id="RC4">
+		<td style="text-align: right;">Legacy RC4 Support:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='RC4_Edit'">
+ENDHTML
+
+	if (!$RC4) {
+		print "<option value='0' selected>Off (Recommended)</option>
+				<option value='1'>On (Not Safe)</option>";
+	}
+	else {
+		print "<option value='0'>Off (Recommended)</option>
+				<option value='1' selected>On (Not Safe)</option>";
+	}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr style="display: $SSL_Display;" id="Enforce">
+		<td style="text-align: right;">Enforce SSL:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='Enforce_SSL_Edit' onchange="Enforce_SSL_Toggle(this.value);">
+				$Enforce_SSL_Toggle
+			</select>
+		</td>
+	</tr>
+	<tr style="display: $Enforce_SSL_Display;" id="HSTS">
+		<td style="text-align: right;">HSTS (HTTP Strict Transport Security):</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='HSTS_Edit'">
+ENDHTML
+
+	if ($HSTS) {
+		print "<option value='1' selected>On</option>
+				<option value='0'>Off</option>";
+	}
+	else {
+		print "<option value='1'>On</option>
+				<option value='0' selected>Off</option>";
+	}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
@@ -459,6 +632,26 @@ ENDHTML
 
 sub edit_reverse_proxy {
 
+	my ($Default_Transfer_Log,
+		$Default_Error_Log,
+		$Default_SSL_Certificate_File,
+		$Default_SSL_Certificate_Key_File,
+		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
+
+	if ($SSL_Toggle_Edit ne 'On') {
+		$Certificate_Edit = '';
+		$Certificate_Key_Edit = '';
+		$CA_Certificate_Edit = '';
+		$PFS_Edit = 0;
+		$RC4_Edit = 0;
+		$Enforce_SSL_Edit = 0;
+		$HSTS_Edit = 0;
+	}
+
+	if (!$Transfer_Log_Edit) {$Transfer_Log_Edit = $Default_Transfer_Log;}
+	if (!$Error_Log_Edit) {$Error_Log_Edit = $Default_Error_Log;}
+	if ($Enforce_SSL_Edit == 0) {$HSTS_Edit = '0'};
+
 	my $Update_Reverse_Proxy = $DB_Reverse_Proxy->prepare("UPDATE `reverse_proxy` SET
 		`server_name` = ?,
 		`proxy_pass_source` = ?,
@@ -468,11 +661,16 @@ sub edit_reverse_proxy {
 		`ssl_certificate_file` = ?,
 		`ssl_certificate_key_file` = ?,
 		`ssl_ca_certificate_file` = ?,
+		`pfs` = ?,
+		`rc4` = ?,
+		`enforce_ssl` = ?,
+		`hsts` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
 		
 	$Update_Reverse_Proxy->execute($Server_Name_Edit, $Source_Edit, $Destination_Edit, $Transfer_Log_Edit, $Error_Log_Edit,
-	$Certificate_Edit, $Certificate_Key_Edit, $CA_Certificate_Edit, $User_Name, $Edit_Reverse_Proxy_Post);
+		$Certificate_Edit, $Certificate_Key_Edit, $CA_Certificate_Edit, $PFS_Edit, $RC4_Edit, $Enforce_SSL_Edit, $HSTS_Edit,
+		$User_Name, $Edit_Reverse_Proxy_Post);
 
 	# Audit Log
 	my $DB_Management = DB_Management();
@@ -582,8 +780,14 @@ sub delete_reverse_proxy {
 
 sub html_output {
 
+	my ($Default_Transfer_Log,
+		$Default_Error_Log,
+		$Default_SSL_Certificate_File,
+		$Default_SSL_Certificate_Key_File,
+		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
+
 	my $Table = new HTML::Table(
-		-cols=>12,
+		-cols=>15,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -594,7 +798,6 @@ sub html_output {
 		-padding=>1
 	);
 
-
 	my $Select_Reverse_Proxy_Count = $DB_Reverse_Proxy->prepare("SELECT `id` FROM `reverse_proxy`");
 		$Select_Reverse_Proxy_Count->execute( );
 		my $Total_Rows = $Select_Reverse_Proxy_Count->rows();
@@ -602,7 +805,7 @@ sub html_output {
 
 	my $Select_Reverse_Proxies = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `proxy_pass_source`,
 		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
-		`ssl_ca_certificate_file`, `last_modified`, `modified_by`
+		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `last_modified`, `modified_by`
 		FROM `reverse_proxy`
 		WHERE `id` LIKE ?
 		OR `server_name` LIKE ?
@@ -622,8 +825,8 @@ sub html_output {
 
 	my $Rows = $Select_Reverse_Proxies->rows();
 
-	$Table->addRow( "ID", "Server Name", "Source", "Destination", "Transfer Log", "Error Log", "SSL", "", 
-		"Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->addRow( "ID", "Server Name", "Source", "Destination", "Transfer Log", "Error Log", "SSL Files", "", 
+	"Perfect Forward Secrecy", "Legacy RC4 Support", "Enforce SSL", "Last Modified", "Modified By", "Edit", "Delete" );
 	$Table->setCellColSpan(1, 7, 2); # row_num, col_num, num_cells
 	$Table->setRowClass (1, 'tbrow1');
 	
@@ -644,9 +847,13 @@ sub html_output {
 		my $Destination = $Select_Reverse_Proxies[3];
 			$Destination =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Transfer_Log = $Select_Reverse_Proxies[4];
+			my $Transfer_Log_Clean = $Transfer_Log;
 			$Transfer_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+				if (!$Transfer_Log_Clean) {$Transfer_Log = "$Default_Transfer_Log <span style=\"color: #FF8A00\">[Default]</span>"}
 		my $Error_Log = $Select_Reverse_Proxies[5];
+			my $Error_Log_Clean = $Error_Log;
 			$Error_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+				if (!$Error_Log_Clean) {$Error_Log = "$Default_Error_Log <span style=\"color: #FF8A00\">[Default]</span>"}
 		my $SSL_Certificate_File = $Select_Reverse_Proxies[6];
 			my $SSL_Certificate_File_Clean = $SSL_Certificate_File;
 			$SSL_Certificate_File =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -656,8 +863,17 @@ sub html_output {
 		my $SSL_CA_Certificate_File = $Select_Reverse_Proxies[8];
 			my $SSL_CA_Certificate_File_Clean = $SSL_CA_Certificate_File;
 			$SSL_CA_Certificate_File =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Last_Modified = $Select_Reverse_Proxies[9];
-		my $Modified_By = $Select_Reverse_Proxies[10];
+		my $PFS = $Select_Reverse_Proxies[9];
+		my $RC4 = $Select_Reverse_Proxies[10];
+		my $Enforce_SSL = $Select_Reverse_Proxies[11];
+		my $HSTS = $Select_Reverse_Proxies[12];
+		my $Last_Modified = $Select_Reverse_Proxies[13];
+		my $Modified_By = $Select_Reverse_Proxies[14];
+
+		if ($PFS) {$PFS = 'On'} else {$PFS = 'Off'};
+		if ($RC4) {$RC4 = 'On'} else {$RC4 = 'Off'};
+		if ($Enforce_SSL) {$Enforce_SSL = 'Yes'} else {$Enforce_SSL = 'No'};
+		if ($HSTS) {$Enforce_SSL = 'Yes (HSTS)'};
 
 		$Table->addRow(
 			"$DBID",
@@ -668,6 +884,9 @@ sub html_output {
 			"$Error_Log",
 			"No SSL",
 			"",
+			"$PFS",
+			"$RC4",
+			"$Enforce_SSL",
 			"$Last_Modified",
 			"$Modified_By",
 			"<a href='/ReverseProxy/reverse-proxy.cgi?Edit_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Reverse Proxy ID $DBID_Clean\" ></a>",
@@ -677,39 +896,42 @@ sub html_output {
 		if ($SSL_Certificate_File_Clean || $SSL_Certificate_Key_File_Clean || $SSL_CA_Certificate_File_Clean) {
 
 			if ($SSL_Certificate_File_Clean) {
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 7, "Cert."); # row_num, col_num, num_cells
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 8, "$SSL_Certificate_File"); # row_num, col_num, num_cells
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 7, "Cert."); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 8, "$SSL_Certificate_File"); # row_num, col_num, content
 				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 7, 'tbrowgreen');
 			}
 			else {
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 7, "Cert."); # row_num, col_num, num_cells
-				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 7, 'tbrowerror');
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 7, "Cert."); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 8, "$Default_SSL_Certificate_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 7, 'tbroworange');
 			}
 
 			if ($SSL_Certificate_Key_File_Clean) {
-				$Table->setCell($Reverse_Proxy_Row_Count-1, 7, "Key"); # row_num, col_num, num_cells
-				$Table->setCell($Reverse_Proxy_Row_Count-1, 8, "$SSL_Certificate_Key_File"); # row_num, col_num, num_cells
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 7, "Key"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 8, "$SSL_Certificate_Key_File"); # row_num, col_num, content
 				my $Row_Style = $Table->getCellStyle($Reverse_Proxy_Row_Count-2, 7);
 					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 7, $Row_Style);
 					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 8, $Row_Style);
 				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 7, 'tbrowgreen');
 			}
 			else {
-				$Table->setCell($Reverse_Proxy_Row_Count-1, 7, "Key"); # row_num, col_num, num_cells
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 7, "Key"); # row_num, col_num, content
 				my $Row_Style = $Table->getCellStyle($Reverse_Proxy_Row_Count-2, 7);
 					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 7, $Row_Style);
 					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 8, $Row_Style);
-				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 7, 'tbrowerror'); 
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 8, "$Default_SSL_Certificate_Key_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 7, 'tbroworange'); 
 			}
 
 			if ($SSL_CA_Certificate_File_Clean) {
-				$Table->setCell($Reverse_Proxy_Row_Count, 7, "CA"); # row_num, col_num, num_cells
-				$Table->setCell($Reverse_Proxy_Row_Count, 8, "$SSL_CA_Certificate_File"); # row_num, col_num, num_cells
+				$Table->setCell($Reverse_Proxy_Row_Count, 7, "CA"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count, 8, "$SSL_CA_Certificate_File"); # row_num, col_num, content
 				$Table->setCellClass ($Reverse_Proxy_Row_Count, 7, 'tbrowgreen');
 			}
 			else {
-				$Table->setCell($Reverse_Proxy_Row_Count, 7, "CA"); # row_num, col_num, num_cells
-				$Table->setCellClass ($Reverse_Proxy_Row_Count, 7, 'tbrowerror');
+				$Table->setCell($Reverse_Proxy_Row_Count, 7, "CA"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count, 8, "$Default_SSL_CA_Certificate_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
+				$Table->setCellClass ($Reverse_Proxy_Row_Count, 7, 'tbroworange');
 			}
 
 		}
@@ -718,25 +940,69 @@ sub html_output {
 			for (7..8) {
 				$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
 			}
+			$PFS = 'N/A';
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 9, "$PFS"); # row_num, col_num, content
+			$RC4 = 'N/A';
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 10, "$RC4"); # row_num, col_num, content
+			$Enforce_SSL = 'N/A';
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 11, "$Enforce_SSL"); # row_num, col_num, content
 		}
+
+
+		if ($PFS eq 'On') {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowgreen');
+		}
+		elsif ($PFS eq 'N/A') {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowdisabled');
+		}
+		else {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowerror');
+		}
+		
+		if ($RC4 eq 'Off') {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowgreen');
+		}
+		elsif ($RC4 eq 'N/A') {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowdisabled');
+		}
+		else {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowerror');
+		}
+		
+		if ($Enforce_SSL eq 'Yes') {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbroworange');
+		}
+		elsif ($Enforce_SSL =~ /HSTS/){
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbrowgreen');
+		}
+		elsif ($Enforce_SSL eq 'N/A') {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbrowdisabled');
+		}
+		else {
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbrowerror');
+		}
+		
 
 		for (1..6) {
 			$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
 		}
-		for (9..12) {
+		for (9..15) {
 			$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
 		}
 
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(9, '110px');
-	$Table->setColWidth(10, '110px');
+	$Table->setColWidth(9, '1px');
+	$Table->setColWidth(10, '1px');
 	$Table->setColWidth(11, '1px');
-	$Table->setColWidth(12, '1px');
+	$Table->setColWidth(12, '110px');
+	$Table->setColWidth(13, '110px');
+	$Table->setColWidth(14, '1px');
+	$Table->setColWidth(15, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (7, 9..12) {
+	for (7, 9..15) {
 		$Table->setColAlign($_, 'center');
 	}
 

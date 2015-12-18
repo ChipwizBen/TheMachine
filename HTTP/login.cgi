@@ -69,7 +69,7 @@ sub ldap_login {
     		`lockout_counter` = 0");
     	$Details_Update->execute($LDAP_User_Name, $LDAP_Email, $LDAP_User_Name, $LDAP_Email);
 
-		my $Permissions_Query = $DB_Management->prepare("SELECT `admin`, `ip_admin`, `icinga_admin`, `dns_admin`, `approver`, `requires_approval`, `lockout`
+		my $Permissions_Query = $DB_Management->prepare("SELECT `admin`, `ip_admin`, `icinga_admin`, `dns_admin`, `reverse_proxy_admin`, `approver`, `requires_approval`, `lockout`
 		FROM `credentials`
 		WHERE `username` = ?");
 		$Permissions_Query->execute($LDAP_User_Name);
@@ -81,9 +81,10 @@ sub ldap_login {
 			my $DB_IP_Admin = $DB_Query[1];
 			my $DB_Icinga_Admin = $DB_Query[2];
 			my $DB_DNS_Admin = $DB_Query[3];
-			my $DB_Approver = $DB_Query[4];
-			my $DB_Requires_Approval = $DB_Query[5];
-			my $DB_Lockout = $DB_Query[6];
+			my $DB_Reverse_Proxy_Admin = $DB_Query[4];
+			my $DB_Approver = $DB_Query[5];
+			my $DB_Requires_Approval = $DB_Query[6];
+			my $DB_Lockout = $DB_Query[7];
 
 			if ($DB_Lockout == 1) {
 				$Login_Message = "Your account is locked out.<br/>Please contact your administrator.";
@@ -94,6 +95,7 @@ sub ldap_login {
 			$Session->param('User_IP_Admin', $DB_Admin);
 			$Session->param('User_Icinga_Admin', $DB_Icinga_Admin);
 			$Session->param('User_DNS_Admin', $DB_DNS_Admin);
+			$Session->param('User_Reverse_Proxy_Admin', $DB_Reverse_Proxy_Admin);
 			$Session->param('User_Approver', $DB_Approver);
 			$Session->param('User_Requires_Approval', $DB_Requires_Approval);
 			$Session->flush();
@@ -113,7 +115,8 @@ sub ldap_login {
 }
 
 sub login_user {
-	my $Login_DB_Query = $DB_Management->prepare("SELECT `password`, `salt`, `email`, `admin`, `ip_admin`, `icinga_admin`, `dns_admin`, `approver`, `requires_approval`, `lockout`
+	my $Login_DB_Query = $DB_Management->prepare("SELECT `password`, `salt`, `email`, `admin`, `ip_admin`, `icinga_admin`, 
+	`dns_admin`, `reverse_proxy_admin`, `approver`, `requires_approval`, `lockout`
 	FROM `credentials`
 	WHERE `username` = ?");
 	$Login_DB_Query->execute($User_Name_Form);
@@ -128,9 +131,10 @@ sub login_user {
 		my $DB_IP_Admin = $DB_Query[4];
 		my $DB_Icinga_Admin = $DB_Query[5];
 		my $DB_DNS_Admin = $DB_Query[6];
-		my $DB_Approver = $DB_Query[7];
-		my $DB_Requires_Approval = $DB_Query[8];
-		my $DB_Lockout = $DB_Query[9];
+		my $DB_Reverse_Proxy_Admin = $DB_Query[7];
+		my $DB_Approver = $DB_Query[8];
+		my $DB_Requires_Approval = $DB_Query[9];
+		my $DB_Lockout = $DB_Query[10];
 
 		$User_Password_Form = $User_Password_Form . $DB_Salt;
 			$User_Password_Form = sha512_hex($User_Password_Form);
@@ -177,6 +181,7 @@ sub login_user {
 			$Session->param('User_IP_Admin', $DB_Admin);
 			$Session->param('User_Icinga_Admin', $DB_Icinga_Admin);
 			$Session->param('User_DNS_Admin', $DB_DNS_Admin);
+			$Session->param('User_Reverse_Proxy_Admin', $DB_Reverse_Proxy_Admin);
 			$Session->param('User_Approver', $DB_Approver);
 			$Session->param('User_Requires_Approval', $DB_Requires_Approval);
 			$Session->flush();
