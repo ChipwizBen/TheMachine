@@ -2,8 +2,6 @@
 
 use strict;
 use HTML::Table;
-use Date::Parse qw(str2time);
-use POSIX qw(strftime);
 
 my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
@@ -147,8 +145,6 @@ else {
 
 
 sub html_add_domain {
-
-my $Date = strftime "%Y-%m-%d", localtime;
 
 print <<ENDHTML;
 

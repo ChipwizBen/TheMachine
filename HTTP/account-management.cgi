@@ -19,6 +19,7 @@ my $Email_Add = $CGI->param("Email_Add");
 my $Admin_Add = $CGI->param("Admin_Add");
 my $IP_Admin_Add = $CGI->param("IP_Admin_Add");
 my $Icinga_Admin_Add = $CGI->param("Icinga_Admin_Add");
+my $DShell_Admin_Add = $CGI->param("DShell_Admin_Add");
 my $DNS_Admin_Add = $CGI->param("DNS_Admin_Add");
 my $Reverse_Proxy_Admin_Add = $CGI->param("Reverse_Proxy_Admin_Add");
 my $DSMS_Admin_Add = $CGI->param("DSMS_Admin_Add");
@@ -35,6 +36,7 @@ my $Email_Edit = $CGI->param("Email_Edit");
 my $Admin_Edit = $CGI->param("Admin_Edit");
 my $IP_Admin_Edit = $CGI->param("IP_Admin_Edit");
 my $Icinga_Admin_Edit = $CGI->param("Icinga_Admin_Edit");
+my $DShell_Admin_Edit = $CGI->param("DShell_Admin_Edit");
 my $DNS_Admin_Edit = $CGI->param("DNS_Admin_Edit");
 my $Reverse_Proxy_Admin_Edit = $CGI->param("Reverse_Proxy_Admin_Edit");
 my $DSMS_Admin_Edit = $CGI->param("DSMS_Admin_Edit");
@@ -167,6 +169,15 @@ print <<ENDHTML;
 		<td style="text-align: right;"><input type="radio" name="Icinga_Admin_Add" value="1"></td>
 		<td>Yes</td>
 		<td style="text-align: right;"><input type="radio" name="Icinga_Admin_Add" value="0" checked></td>
+		<td>No</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Can modify D-Shell:</td>
+		<td style="text-align: right;"><input type="radio" name="DShell_Admin_Add" value="1"></td>
+		<td>Yes</td>
+		<td style="text-align: right;"><input type="radio" name="DShell_Admin_Add" value="0" checked></td>
 		<td>No</td>
 		<td></td>
 		<td></td>
@@ -371,6 +382,7 @@ sub add_user {
 		`admin`,
 		`ip_admin`,
 		`icinga_admin`,
+		`dshell_admin`,
 		`dns_admin`,
 		`reverse_proxy_admin`,
 		`dsms_admin`,
@@ -387,7 +399,7 @@ sub add_user {
 	VALUES (
 		NULL,
 		?, ?, ?, ?,
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?,
 		'0000-00-00 00:00:00',
 		'0000-00-00 00:00:00',
@@ -398,7 +410,7 @@ sub add_user {
 
 	$User_Insert->execute(
 		$User_Name_Add, $Password_Add, $Salt, $Email_Add, 
-		$Admin_Add, $IP_Admin_Add, $Icinga_Admin_Add, $DNS_Admin_Add,
+		$Admin_Add, $IP_Admin_Add, $Icinga_Admin_Add, $DShell_Admin_Add, $DNS_Admin_Add,
 		$Reverse_Proxy_Admin_Add, $DSMS_Admin_Add, $Approver_Add, $Requires_Approval_Add, $Lockout_Add, 
 		$User_Name);
 
@@ -415,6 +427,7 @@ sub add_user {
 
 	if ($IP_Admin_Add == 1) {$IP_Admin_Add = 'can allocate IP addresses'} else {$IP_Admin_Add = 'cannot allocate IP addresses'}
 	if ($Icinga_Admin_Add == 1) {$Icinga_Admin_Add = 'can edit Icinga'} else {$Icinga_Admin_Add = 'cannot edit Icinga'}
+	if ($DShell_Admin_Add == 1) {$DShell_Admin_Add = 'can edit D-Shell'} else {$DShell_Admin_Add = 'cannot edit D-Shell'}
 	if ($DNS_Admin_Add == 1) {$DNS_Admin_Add = 'can edit DNS'} else {$DNS_Admin_Add = 'cannot edit DNS'}
 	if ($Reverse_Proxy_Admin_Add == 1) {$Reverse_Proxy_Admin_Add = 'can edit Reverse Proxy'} else {$Reverse_Proxy_Admin_Add = 'cannot edit Reverse Proxy'}
 	if ($DSMS_Admin_Add == 1) {$DSMS_Admin_Add = 'can edit DSMS'} else {$DSMS_Admin_Add = 'cannot edit DSMS'}
@@ -436,14 +449,14 @@ sub add_user {
 	)");
 
 	$Audit_Log_Submission->execute("Account Management", "Add",
-		"$User_Name added a new system account as Account ID $Account_Insert_ID: $User_Name_Add ($Email_Add). $User_Name_Add $Admin_Add, $Approver_Add, $Requires_Approval_Add and $Lockout_Add. $User_Name_Add $IP_Admin_Add, $Icinga_Admin_Add, $DNS_Admin_Add, $Reverse_Proxy_Admin_Add and $DSMS_Admin_Add.", $User_Name);
+		"$User_Name added a new system account as Account ID $Account_Insert_ID: $User_Name_Add ($Email_Add). $User_Name_Add $Admin_Add, $Approver_Add, $Requires_Approval_Add and $Lockout_Add. $User_Name_Add $IP_Admin_Add, $Icinga_Admin_Add, $DShell_Admin_Add, $DNS_Admin_Add, $Reverse_Proxy_Admin_Add and $DSMS_Admin_Add.", $User_Name);
 	#/ Audit Log
 
 } # sub add_user
 
 sub html_edit_user {
 
-	my $Select_User = $DB_Management->prepare("SELECT `username`, `admin`, `ip_admin`, `icinga_admin`, `dns_admin`,
+	my $Select_User = $DB_Management->prepare("SELECT `username`, `admin`, `ip_admin`, `icinga_admin`, `dshell_admin`, `dns_admin`,
 	`reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, `lockout`, `last_modified`, `modified_by`, `email`
 	FROM `credentials`
 	WHERE `id` = ?");
@@ -456,15 +469,16 @@ sub html_edit_user {
 		my $Admin_Extract = $DB_User[1];
 		my $IP_Admin_Extract = $DB_User[2];
 		my $Icinga_Admin_Extract = $DB_User[3];
-		my $DNS_Admin_Extract = $DB_User[4];
-		my $Reverse_Proxy_Admin_Extract = $DB_User[5];
-		my $DSMS_Admin_Extract = $DB_User[6];
-		my $Approver_Extract = $DB_User[7];
-		my $Requires_Approval_Extract = $DB_User[8];
-		my $Lockout_Extract = $DB_User[9];
-		my $Last_Modified_Extract = $DB_User[10];
-		my $Modified_By_Extract = $DB_User[11];
-		my $Email_Extract = $DB_User[12];
+		my $DShell_Admin_Extract = $DB_User[4];
+		my $DNS_Admin_Extract = $DB_User[5];
+		my $Reverse_Proxy_Admin_Extract = $DB_User[6];
+		my $DSMS_Admin_Extract = $DB_User[7];
+		my $Approver_Extract = $DB_User[8];
+		my $Requires_Approval_Extract = $DB_User[9];
+		my $Lockout_Extract = $DB_User[10];
+		my $Last_Modified_Extract = $DB_User[11];
+		my $Modified_By_Extract = $DB_User[12];
+		my $Email_Extract = $DB_User[13];
 
 print <<ENDHTML;
 <div id="wide-popup-box">
@@ -573,6 +587,33 @@ print <<ENDHTML;
 		<td style="text-align: right;"><input type="radio" name="Icinga_Admin_Edit" value="1"></td>
 		<td>Yes</td>
 		<td style="text-align: right;"><input type="radio" name="Icinga_Admin_Edit" value="0" checked></td>
+		<td>No</td>
+		<td></td>
+		<td></td>
+ENDHTML
+}
+
+print <<ENDHTML;
+	</tr>
+	<tr>
+		<td style="text-align: right;">Can modify D-Shell:</td>
+ENDHTML
+
+if ($DShell_Admin_Extract == 1) {
+print <<ENDHTML;
+		<td style="text-align: right;"><input type="radio" name="DShell_Admin_Edit" value="1" checked></td>
+		<td>Yes</td>
+		<td style="text-align: right;"><input type="radio" name="DShell_Admin_Edit" value="0"></td>
+		<td>No</td>
+		<td></td>
+		<td></td>
+ENDHTML
+}
+else {
+print <<ENDHTML;
+		<td style="text-align: right;"><input type="radio" name="DShell_Admin_Edit" value="1"></td>
+		<td>Yes</td>
+		<td style="text-align: right;"><input type="radio" name="DShell_Admin_Edit" value="0" checked></td>
 		<td>No</td>
 		<td></td>
 		<td></td>
@@ -843,6 +884,7 @@ sub edit_user {
 		$Session->param('User_Admin', $Admin_Edit);
 		$Session->param('User_IP_Admin', $IP_Admin_Edit);
 		$Session->param('User_Icinga_Admin', $Icinga_Admin_Edit);
+		$Session->param('User_DShell_Admin', $DShell_Admin_Edit);
 		$Session->param('User_DNS_Admin', $DNS_Admin_Edit);
 		$Session->param('User_Reverse_Proxy_Admin', $Reverse_Proxy_Admin_Edit);
 		$Session->param('User_DSMS_Admin', $DSMS_Admin_Edit);
@@ -910,6 +952,7 @@ sub edit_user {
 			`admin` = ?,
 			`ip_admin` = ?,
 			`icinga_admin` = ?,
+			`dshell_admin` = ?,
 			`dns_admin` = ?,
 			`reverse_proxy_admin` = ?,
 			`dsms_admin` = ?,
@@ -921,8 +964,8 @@ sub edit_user {
 			WHERE `id` = ?");
 
 		$Update_Credentials->execute($User_Name_Edit, $Password_Edit, $Salt, $Email_Edit, $Admin_Edit,
-			$IP_Admin_Edit, $Icinga_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit, $DSMS_Admin_Edit, 
-			$Approver_Edit, $Requires_Approval_Edit, $Lockout_Edit, $User_Name, $Edit_User_Post);
+			$IP_Admin_Edit, $Icinga_Admin_Edit, $DShell_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit, 
+			$DSMS_Admin_Edit, $Approver_Edit, $Requires_Approval_Edit, $Lockout_Edit, $User_Name, $Edit_User_Post);
 
 		# Audit Log
 		if ($Admin_Edit == 1) {
@@ -937,6 +980,7 @@ sub edit_user {
 
 		if ($IP_Admin_Edit == 1) {$IP_Admin_Edit = 'can allocate IP addresses'} else {$IP_Admin_Edit = 'cannot allocate IP addresses'}
 		if ($Icinga_Admin_Edit == 1) {$Icinga_Admin_Edit = 'can edit Icinga'} else {$Icinga_Admin_Edit = 'cannot edit Icinga'}
+		if ($DShell_Admin_Edit == 1) {$DShell_Admin_Edit = 'can edit D-Shell'} else {$DShell_Admin_Edit = 'cannot edit D-Shell'}
 		if ($DNS_Admin_Edit == 1) {$DNS_Admin_Edit = 'can edit DNS'} else {$DNS_Admin_Edit = 'cannot edit DNS'}
 		if ($Reverse_Proxy_Admin_Edit == 1) {$Reverse_Proxy_Admin_Edit = 'can edit Reverse Proxy'} else {$Reverse_Proxy_Admin_Edit = 'cannot edit Reverse Proxy'}
 		if ($DSMS_Admin_Edit == 1) {$DSMS_Admin_Edit = 'can edit DSMS'} else {$DSMS_Admin_Edit = 'cannot edit DSMS'}
@@ -956,7 +1000,7 @@ sub edit_user {
 		)");
 
 		$Audit_Log_Submission->execute("Account Management", "Modify",
-			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit and $DSMS_Admin_Edit. $User_Name also changed $User_Name_Edit"."'s "."password.", $User_Name);
+			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, $DShell_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit and $DSMS_Admin_Edit. $User_Name also changed $User_Name_Edit"."'s "."password.", $User_Name);
 		#/ Audit Log
 
 	}
@@ -968,6 +1012,7 @@ sub edit_user {
 			`admin` = ?,
 			`ip_admin` = ?,
 			`icinga_admin` = ?,
+			`dshell_admin` = ?,
 			`dns_admin` = ?,
 			`reverse_proxy_admin` = ?,
 			`dsms_admin` = ?,
@@ -979,7 +1024,7 @@ sub edit_user {
 			WHERE `id` = ?");
 
 		$Update_Credentials->execute($User_Name_Edit, $Email_Edit, $Admin_Edit,	$IP_Admin_Edit, $Icinga_Admin_Edit,
-		$DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit, $DSMS_Admin_Edit, $Approver_Edit, $Requires_Approval_Edit, 
+		$DShell_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit, $DSMS_Admin_Edit, $Approver_Edit, $Requires_Approval_Edit, 
 		$Lockout_Edit, $User_Name, $Edit_User_Post);
 
 		# Audit Log
@@ -995,6 +1040,7 @@ sub edit_user {
 
 		if ($IP_Admin_Edit == 1) {$IP_Admin_Edit = 'can allocate IP addresses'} else {$IP_Admin_Edit = 'cannot allocate IP addresses'}
 		if ($Icinga_Admin_Edit == 1) {$Icinga_Admin_Edit = 'can edit Icinga'} else {$Icinga_Admin_Edit = 'cannot edit Icinga'}
+		if ($DShell_Admin_Edit == 1) {$DShell_Admin_Edit = 'can edit D-Shell'} else {$DShell_Admin_Edit = 'cannot edit D-Shell'}
 		if ($DNS_Admin_Edit == 1) {$DNS_Admin_Edit = 'can edit DNS'} else {$DNS_Admin_Edit = 'cannot edit DNS'}
 		if ($Reverse_Proxy_Admin_Edit == 1) {$Reverse_Proxy_Admin_Edit = 'can edit Reverse Proxy'} else {$Reverse_Proxy_Admin_Edit = 'cannot edit Reverse Proxy'}
 		if ($DSMS_Admin_Edit == 1) {$DSMS_Admin_Edit = 'can edit DSMS'} else {$DSMS_Admin_Edit = 'cannot edit DSMS'}
@@ -1014,7 +1060,7 @@ sub edit_user {
 		)");
 
 		$Audit_Log_Submission->execute("Account Management", "Modify",
-			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit and $DSMS_Admin_Edit. $User_Name_Edit"."'s "."password was not changed.", $User_Name);
+			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, $DShell_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit and $DSMS_Admin_Edit. $User_Name_Edit"."'s "."password was not changed.", $User_Name);
 		#/ Audit Log
 
 	}
@@ -1146,7 +1192,7 @@ sub html_output {
 	}
 
 my $Table = new HTML::Table(
-	-cols=>15,
+	-cols=>16,
 	-align=>'center',
 	-border=>0,
 	-rules=>'cols',
@@ -1160,12 +1206,12 @@ my $Table = new HTML::Table(
 
 
 $Table->addRow ( "User Name", "Email Address", "Last Login", "Last Active", "System Admin", "IP Admin", "Icinga Admin", 
-	"DNS Admin", "Rev. Proxy Admin", "DSMS Admin", "Approver", "Requires Approval", "Lockout", "Last Modified", 
+	"D-Shell Admin", "DNS Admin", "Rev. Proxy Admin", "DSMS Admin", "Approver", "Requires Approval", "Lockout", "Last Modified", 
 	"Modified By", "Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
 
 my $Select_Users = $DB_Management->prepare("SELECT `id`, `username`, `email`, `last_login`, `last_active`,  `admin`, 
-`ip_admin`, `icinga_admin`, `dns_admin`, `reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, 
+`ip_admin`, `icinga_admin`, `dshell_admin`, `dns_admin`, `reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, 
 `lockout`, `last_modified`, `modified_by`
 FROM `credentials`
 ORDER BY `last_active` DESC
@@ -1187,14 +1233,15 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 	my $Admin_Extract = $DB_User[5];
 	my $IP_Admin_Extract = $DB_User[6];
 	my $Icinga_Admin_Extract = $DB_User[7];
-	my $DNS_Admin_Extract = $DB_User[8];
-	my $Reverse_Proxy_Admin_Extract = $DB_User[9];
-	my $DSMS_Admin_Extract = $DB_User[10];
-	my $Approver_Extract = $DB_User[11];
-	my $Requires_Approval_Extract = $DB_User[12];
-	my $Lockout_Extract = $DB_User[13];
-	my $Last_Modified_Extract = $DB_User[14];
-	my $Modified_By_Extract = $DB_User[15];
+	my $DShell_Admin_Extract = $DB_User[8];
+	my $DNS_Admin_Extract = $DB_User[9];
+	my $Reverse_Proxy_Admin_Extract = $DB_User[10];
+	my $DSMS_Admin_Extract = $DB_User[11];
+	my $Approver_Extract = $DB_User[12];
+	my $Requires_Approval_Extract = $DB_User[13];
+	my $Lockout_Extract = $DB_User[14];
+	my $Last_Modified_Extract = $DB_User[15];
+	my $Modified_By_Extract = $DB_User[16];
 	
 
 	if ($Admin_Extract == 1) {
@@ -1209,6 +1256,7 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 
 	if ($IP_Admin_Extract == 1) {$IP_Admin_Extract = "Yes";} else {$IP_Admin_Extract = "No";}
 	if ($Icinga_Admin_Extract == 1) {$Icinga_Admin_Extract = "Yes";} else {$Icinga_Admin_Extract = "No";}
+	if ($DShell_Admin_Extract == 1) {$DShell_Admin_Extract = "Yes";} else {$DShell_Admin_Extract = "No";}
 	if ($DNS_Admin_Extract == 1) {$DNS_Admin_Extract = "Yes";} else {$DNS_Admin_Extract = "No";}
 	if ($Reverse_Proxy_Admin_Extract == 1) {$Reverse_Proxy_Admin_Extract = "Yes";} else {$Reverse_Proxy_Admin_Extract = "No";}
 	if ($DSMS_Admin_Extract == 1) {$DSMS_Admin_Extract = "Yes";} else {$DSMS_Admin_Extract = "No";}
@@ -1226,6 +1274,7 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 		$Admin_Extract,
 		$IP_Admin_Extract,
 		$Icinga_Admin_Extract,
+		$DShell_Admin_Extract,
 		$DNS_Admin_Extract,
 		$Reverse_Proxy_Admin_Extract,
 		$DSMS_Admin_Extract,
@@ -1247,28 +1296,29 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 
 	if ($IP_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 6, 'tbroworange');}
 	if ($Icinga_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 7, 'tbroworange');}
-	if ($DNS_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 8, 'tbroworange');}
-	if ($Reverse_Proxy_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 9, 'tbroworange');}
-	if ($DSMS_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 10, 'tbroworange');}
+	if ($DShell_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 8, 'tbroworange');}
+	if ($DNS_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 9, 'tbroworange');}
+	if ($Reverse_Proxy_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 10, 'tbroworange');}
+	if ($DSMS_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 11, 'tbroworange');}
 
-	if ($Approver_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 11, 'tbrowpurple');}
+	if ($Approver_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 12, 'tbrowpurple');}
 
 	if ($Requires_Approval_Extract eq 'Yes') {
-		$Table->setCellClass ($User_Row_Count, 12, 'tbrowgreen');
+		$Table->setCellClass ($User_Row_Count, 13, 'tbrowgreen');
 	}
 	else {
-		$Table->setCellClass ($User_Row_Count, 12, 'tbrowerror');
+		$Table->setCellClass ($User_Row_Count, 13, 'tbrowerror');
 	}
 
-	if ($Lockout_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 13, 'tbrowerror');}
+	if ($Lockout_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 14, 'tbrowerror');}
 	
-	for (5 .. 13) {
+	for (5 .. 14) {
 		$Table->setColWidth($_, '1px');
 	}
-	$Table->setColWidth(16, '1px');
 	$Table->setColWidth(17, '1px');
+	$Table->setColWidth(18, '1px');
 
-	for (3 .. 17) {
+	for (3 .. 18) {
 		$Table->setColAlign($_, 'center');
 	}
 

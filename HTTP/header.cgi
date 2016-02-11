@@ -122,7 +122,6 @@ print <<ENDHTML;
 						</ul>
 					</li>
 					<li><a href="/changelog.cgi">System Changelog</a></li>
-					<li><a href="/resources/Sudoers_Management_System_Manual.pdf">System Manual</a></li>
 				</ul>
 			</li>
 			<li><a href="/#"><span>&nbsp; IP</span></a>
@@ -134,6 +133,10 @@ print <<ENDHTML;
 					<li><a href="/IP/ipv6-allocations.cgi">#IPv6 Allocations (todo)</a></li>
 				</ul>
 			</li>
+
+
+<!--
+
 			<li><a href="/#"><span>&nbsp; Icinga</span></a>
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
@@ -150,6 +153,15 @@ print <<ENDHTML;
 					<li><a href="/Icinga/icinga-commands.cgi">Commands</a></li>
 					<li><a href="/Icinga/icinga-contacts.cgi">Contacts</a></li>
 					<li><a href="/Icinga/icinga-time-periods.cgi">Time Periods</a></li>
+				</ul>
+			</li>
+
+-->
+
+			<li><a href="/#"><span>&nbsp; D-Shell</span></a>
+				<ul>
+					<li><a href="/D-Shell/command-sets.cgi">Command Sets</a></li>
+					<li><a href="/D-Shell/jobs.cgi">Jobs</a></li>
 				</ul>
 			</li>
 			<li><a href="/#"><span>&nbsp; DNS</span></a>

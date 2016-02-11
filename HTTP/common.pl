@@ -22,7 +22,7 @@ sub System_Name {
 
 	# This is the system's name, used for system identification during login, written to the sudoers file to identify which system owns the sudoers file, is used in password reset emails to identify the source, and other general uses.
 
-	my $System_Name = 'System Harmony and Integration Tool';
+	my $System_Name = 'The Machine';
 	return $System_Name;
 
 } # sub System_Name
@@ -31,7 +31,7 @@ sub System_Short_Name {
 
 	# This is the system's shortened name, which is used in short descriptions. It can be the same as the full name in System_Name if you want, but it might get busy on some screens if your system name is long. It's encouraged to keep this short (less than 10 characters).
 
-	my $System_Short_Name = 'SHIT';
+	my $System_Short_Name = 'The Machine';
 	return $System_Short_Name;
 
 } # sub System_Short_Name
@@ -148,7 +148,7 @@ sub Sudoers_Location {
 
 	# This is not necessarily the location of the /etc/sudoers file. This is the path that the system writes the temporary sudoers file to. It could be /etc/sudoers, but you ought to consider the rights that Apache will need to overwrite that file, and the implications of giving Apache those rights. If you want to automate it end to end, you should consider writing a temporary sudoers file, then using a separate root cron job to overwrite /etc/sudoers, which is the recommended procedure, instead of directly writing to it. Of course, if you do not intend on using the DSMS system to manage /etc/sudoers on the local machine, then this should NOT be /etc/sudoers. For sudoers locations on remote machines, see DSMS_Distribution_Defaults, or set individual remote sudoers locations through the web panel.
 
-	my $Sudoers_Location = '/var/www/html/sudoers';
+	my $Sudoers_Location = '../sudoers';
 	return $Sudoers_Location;
 
 } # sub Sudoers_Location
@@ -157,10 +157,46 @@ sub Sudoers_Storage {
 
 	# This is the directory where replaced sudoers files are stored. You do not need a trailing slash.
 
-	my $Sudoers_Storage = '/var/www/html/Storage/Sudoers';
+	my $Sudoers_Storage = '../Storage/Sudoers';
 	return $Sudoers_Storage;
 
 } # sub Sudoers_Storage
+
+sub Sudoers_Owner_ID {
+
+	# For changing the ownership of the sudoers file after it's created, we need to specify an owner. It is recommended to keep this as the default, which is ‘root’.
+
+	my $Owner = 'root';
+
+	if ($_[0] eq 'Full') {
+		# To return ownership name for system status.
+		return $Owner;
+		exit(0);
+	}
+
+	my $Owner_ID = getpwnam $Owner;
+	return $Owner_ID;
+
+} # sub Sudoers_Owner_ID
+
+sub Sudoers_Group_ID {
+
+	# For chowning sudoers after it's created, perl's chown needs a group ID. I could've 
+	# hard-coded this to use apache, but sometimes Apache Server doesn't run under apache 
+	# (like when it runs as httpd), so here you can specify a different group user.
+
+	my $Group = 'apache';
+
+	if ($_[0] eq 'Full') {
+		# To return group ownership name for system status.
+		return $Group;
+		exit(0);
+	}
+
+	my $Group_ID = getpwnam $Group;
+	return $Group_ID;
+
+} # sub Sudoers_Group_ID
 
 sub DNS_Zone_Master_File {
 
@@ -301,6 +337,40 @@ sub DNS_Storage {
 
 } # sub DNS_Storage
 
+sub DNS_Owner_ID {
+
+	# For changing the ownership of the DNS file after it's created, we need to specify an owner. It is recommended to keep this as the default, which is ‘root’.
+
+	my $Owner = 'root';
+
+	if ($_[0] eq 'Full') {
+		# To return ownership name for system status.
+		return $Owner;
+		exit(0);
+	}
+
+	my $Owner_ID = getpwnam $Owner;
+	return $Owner_ID;
+
+} # sub DNS_Owner_ID
+
+sub DNS_Group_ID {
+
+	# For chowning DNS after it's created, perl's chown needs a group ID.
+
+	my $Group = 'bind';
+
+	if ($_[0] eq 'Full') {
+		# To return group ownership name for system status.
+		return $Group;
+		exit(0);
+	}
+
+	my $Group_ID = getpwnam $Group;
+	return $Group_ID;
+
+} # sub DNS_Group_ID
+
 sub Reverse_Proxy_Location {
 
 	# This is the path that the system writes the temporary reverse proxy files to, before it is picked up by cron.
@@ -325,10 +395,19 @@ sub Reverse_Proxy_Storage {
 
 	# This is the directory where replaced reverse proxy files are stored. You do not need a trailing slash.
 
-	my $Reverse_Proxy_Storage = '/var/www/html/Storage/ReverseProxy';
+	my $Reverse_Proxy_Storage = '../Storage/ReverseProxy';
 	return $Reverse_Proxy_Storage;
 
 } # sub Reverse_Proxy_Storage
+
+sub Proxy_Redirect_Storage {
+
+	# This is the directory where replaced proxy redirect files are stored. You do not need a trailing slash.
+
+	my $Proxy_Redirect_Storage = '../Storage/ReverseProxy';
+	return $Proxy_Redirect_Storage;
+
+} # sub Proxy_Redirect_Storage
 
 sub DB_Management {
 
@@ -449,6 +528,26 @@ sub DB_Reverse_Proxy {
 	return $DB_Reverse_Proxy;
 
 } # sub DB_Reverse_Proxy
+
+sub DB_DShell {
+
+	#  This is your D-Shell database's connection information. This is where your sudoers data is stored.
+
+	use DBI;
+
+	my $Host = 'localhost';
+	my $Port = '3306';
+	my $DB = 'DShell';
+	my $User = 'Sudoers';
+	my $Password = '<Password>';
+
+	my $DB_Reverse_Proxy = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
+		$User,
+		$Password)
+		or die "Can't connect to database: $DBI::errstr\n";
+	return $DB_Reverse_Proxy;
+
+} # sub DB_DShell
 
 sub Reverse_Proxy_Defaults {
 
@@ -707,41 +806,6 @@ sub head {
 
 } # sub head
 
-sub Sudoers_Owner_ID {
-
-	# For changing the ownership of the sudoers file after it's created, we need to specify an owner. It is recommended to keep this as the default, which is ‘root’.
-
-	my $Owner = 'root';
-
-	if ($_[0] eq 'Full') {
-		# To return ownership name for system status.
-		return $Owner;
-		exit(0);
-	}
-
-	my $Owner_ID = getpwnam $Owner;
-	return $Owner_ID;
-
-} # sub Sudoers_Owner_ID
-
-sub Sudoers_Group_ID {
-
-	# For chowning sudoers after it's created, perl's chown needs a group ID. I could've 
-	# hard-coded this to use apache, but sometimes Apache Server doesn't run under apache 
-	# (like when it runs as httpd), so here you can specify a different group user.
-
-	my $Group = 'apache';
-
-	if ($_[0] eq 'Full') {
-		# To return group ownership name for system status.
-		return $Group;
-		exit(0);
-	}
-
-	my $Group_ID = getpwnam $Group;
-	return $Group_ID;
-
-} # sub Sudoers_Group_ID
 
 ############################################################################################
 ########### The settings beyond this point are advanced, or shouldn't be changed ###########

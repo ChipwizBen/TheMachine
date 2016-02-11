@@ -2,7 +2,6 @@
 
 use strict;
 
-use Net::Ping::External qw(ping);
 use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_IN_A_OVERLAP $IP_IDENTICAL);
 use HTML::Table;
 
@@ -566,7 +565,7 @@ print <<ENDHTML;
 <form action='ipv4-allocations.cgi' method='post'>
 <table align="center" style="font-size: 12px;">
 	<tr>
-		<td>Assign to Host</td>
+		<td>Assign to Host(s)</td>
 	</tr>
 	<tr>
 		<td>

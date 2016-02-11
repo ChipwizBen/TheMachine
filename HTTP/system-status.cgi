@@ -565,6 +565,10 @@ ENDHTML
 
 sub html_dns_configuration {
 
+my $DNS_Owner = DNS_Owner_ID('Full');
+my $DNS_Owner_ID = DNS_Owner_ID();
+my $DNS_Group = DNS_Group_ID('Full');
+my $DNS_Group_ID = DNS_Group_ID();
 my $Zone_Master_File = DNS_Zone_Master_File();
 my $DNS_Internal_Location = DNS_Internal_Location();
 my $DNS_External_Location = DNS_External_Location();
@@ -593,6 +597,14 @@ my ($External_Email,
 print <<ENDHTML;
 <h3 style="text-align: center;">DNS Configuration</h3>
 	<table align='center'>
+		<tr>
+			<td style="text-align: right;">DNS Build File Ownership</td>
+			<td style='color: #00FF00;'>$DNS_Owner ($DNS_Owner_ID)</td>
+		</tr>
+		<tr>
+			<td style="text-align: right;">DNS Build File Group Ownership</td>
+			<td style='color: #00FF00;'>$DNS_Group ($DNS_Group_ID)</td>
+		</tr>
 		<tr>
 			<td style="text-align: right;">Zone Master File Location</td>
 			<td style='color: #00FF00;'>$Zone_Master_File</td>
@@ -707,6 +719,7 @@ sub html_reverse_proxy_configuration {
 my $Reverse_Proxy_Location = Reverse_Proxy_Location();
 my $Proxy_Redirect_Location = Proxy_Redirect_Location();
 my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
+my $Proxy_Redirect_Storage = Proxy_Redirect_Storage();
 my ($Reverse_Proxy_Transfer_Log,
 	$Reverse_Proxy_Error_Log,
 	$Reverse_Proxy_SSL_Certificate_File,
@@ -727,8 +740,12 @@ print <<ENDHTML;
 			<td style='color: #00FF00;'>$Proxy_Redirect_Location</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Legacy Proxy File Storage Location</td>
+			<td style="text-align: right;">Legacy Reverse Proxy File Storage Location</td>
 			<td style='color: #00FF00;'>$Reverse_Proxy_Storage</td>
+		</tr>
+		<tr>
+			<td style="text-align: right;">Legacy Proxy Rediret File Storage Location</td>
+			<td style='color: #00FF00;'>$Proxy_Redirect_Storage</td>
 		</tr>
 		<tr>
 			<td>&nbsp;</td>
