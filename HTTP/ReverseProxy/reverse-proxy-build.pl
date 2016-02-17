@@ -142,11 +142,11 @@ sub write_reverse_proxy {
 			my $Enforce_SSL_Header;
 			if ($Enforce_SSL) {
 				$Enforce_SSL_Header = '
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{HTTPS} off
-    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
-</IfModule>';
+    <IfModule mod_rewrite.c>
+        RewriteEngine On
+        RewriteCond %{HTTPS} off
+        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+    </IfModule>';
 			}	
 			 
 
@@ -158,12 +158,17 @@ sub write_reverse_proxy {
 			}			
 
 			print Reverse_Proxy_Config <<RP_EOF;
-$Enforce_SSL_Header
+<VirtualHost $Server_Name:80>
+	ServerName               $Server_Name
+	$Enforce_SSL_Header
+
+</VirtualHost>
 
 <IfModule mod_ssl.c>
-<VirtualHost $Server_Name:443>
-    ServerName               $Server_Name
+<VirtualHost *:443>
 
+    ServerName               $Server_Name
+    SSLProxyEngine           On
     ProxyRequests            Off
     ProxyPreserveHost        On
     ProxyPass                $Source    $Destination
@@ -174,7 +179,6 @@ $Enforce_SSL_Header
     $CipherOrder
     SSLCipherSuite           "$CipherSuite"
     SSLInsecureRenegotiation Off
-    SSLRequireSSL
 
     SSLCertificateFile       $SSL_Certificate_File
     SSLCertificateKeyFile    $SSL_Certificate_Key_File
@@ -189,14 +193,15 @@ RP_EOF
 		}
 		else {
 			print Reverse_Proxy_Config <<RP_EOF;
-<VirtualHost $Server_Name:80>
-    ServerName              $Server_Name
-    ProxyRequests           Off
-    ProxyPreserveHost       On
-    ProxyPass               $Source    $Destination
-    ProxyPassReverse        $Source    $Destination
-    TransferLog             $Transfer_Log
-    ErrorLog                $Error_Log
+<VirtualHost *:80>
+    ServerName            $Server_Name
+    ProxyEngine           On
+    ProxyRequests         Off
+    ProxyPreserveHost     On
+    ProxyPass             $Source    $Destination
+    ProxyPassReverse      $Source    $Destination
+    TransferLog           $Transfer_Log
+    ErrorLog              $Error_Log
 </VirtualHost>
 
 RP_EOF
@@ -259,6 +264,7 @@ sub write_redirect {
     <Location /*>
         Order deny,allow
         Allow from all
+        Require all granted
     </Location>
 </VirtualHost>
 
