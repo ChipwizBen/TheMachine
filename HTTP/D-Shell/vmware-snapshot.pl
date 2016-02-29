@@ -9,153 +9,525 @@ my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
+my $System_Short_Name = System_Short_Name();
+my $Version = Version();
 my $DB_DShell = DB_DShell();
-my $Fork_Count = 1;
-my $Debug = 1;
+my $Note = "If you've got another snapshot/remove process running for this VM, VMWare won't let you do two at a time. This can also happen if you specify to remove snapshots and take a new one - VMWare sometimes can't delete them fast enough (and there's no way to see what's processing on the command line :-[ ) Try again in 10 minutes.";
+my %Hosts_Found = ();
 
 $| = 1;
-my $Green = "\e[0;32;40m";
-my $Yellow = "\e[0;33;40m";
-my $Red = "\e[0;31;40m";
+my $Green = "\e[0;32;10m";
+my $Yellow = "\e[0;33;10m";
+my $Red = "\e[0;31;10m";
+my $Pink = "\e[1;35;10m";
+my $Blue = "\e[1;34;10m";
 my $Clear = "\e[0m";
 
-my @Hosts = (
-#	'wellshiny',
-#	'pgdb2',
-	'schofieldbj'
-);
+my $Help = "
+${Green}$System_Short_Name version $Version
+
+Options are:
+	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug)
+	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes thread data
+	${Blue}-t, --threads\t\t${Green}Sets the number of threads to use for connecting to nodes. By default the number of threads matches the number of nodes. Setting it more than this is a BAD idea (for load).
+	${Blue}-H, --hosts\t\t${Green}A list of hosts to snapshot, comma seperated (no spaces!) [e.g.: -H host01,host02,host03]
+	${Blue}-c, --count\t\t${Green}Counts the snapshots belonging to the VM, including those done by $System_Short_Name
+	${Blue}-s, --snapshot\t\t${Green}Takes a snapshot of the listed hosts
+	${Blue}-r, --remove\t\t${Green}Removes snapshots for listed hosts that were created by $System_Short_Name
+	${Blue}-e, --erase\t\t${Green}Removes ALL snapshots for listed hosts
+
+${Green}Examples:
+	${Green}## Snapshot server01
+	${Blue}$0 -s -H server01
+
+	${Green}## Remove all snapshots for server01/02/03, then takes a snapshot of each, with verbose turned on
+	${Blue}$0 -v -e -s -H server01,server02,server03
+
+	${Green}## Count the snapshots for server01/02 only (verbose needed for counting output) with 5 threads
+	${Blue}$0 -v -H server01,server02 -t 5${Clear}\n\n";
+
+
+if (!@ARGV) {
+	print $Help;
+	exit(0);
+}
+
+my @Hosts;
 my @Nodes = (
 	'vhost1.nwk1.com',
 	'vhost2.nwk1.com',
-	'vhost7.nwk1.com'
+	'vhost3.nwk1.com',
+	'vhost4.nwk1.com',
+	'vhost5.nwk1.com',
+	'vhost6.nwk1.com',
+	'vhost7.nwk1.com',
+	'vhost8.nwk1.com',
+	'vhost9.nwk1.com',
+#	'vhost10.nwk1.com',
+#	'vhost11.nwk1.com',
+#	'vhost12.nwk1.com',
+#	'vhost13.nwk1.com',
+	'vhost14.nwk1.com',
+	'vhost15.nwk1.com',
+	'vhost16.nwk1.com',
+	'vhost17.nwk1.com',
+	'vhost18.nwk1.com'
+#	'vhost19.nwk1.com',
+#	'vhost20.nwk1.com'
 );
 
-#my @Hosts = ( 'schofieldbj');
+my $Threads = scalar(keys @Nodes);
+my $Verbose = 0;
+my $Very_Verbose = 0;
+my $Command_Timeout = 3;
 
-my $SSH_Fork = new Parallel::ForkManager($Fork_Count);
+my $Count;
+my $Snapshot;
+my $Remove;
+my $Erase;
+foreach my $Parameter (@ARGV) {
+	if ($Parameter eq '-v' || $Parameter eq '--verbose') {
+		$Verbose = 1;
+		print "${Red}## ${Green}Verbose is on. ${Yellow}Hosts${Green}, ${Blue}Nodes${Green}, ${Pink}Commands${Green}.${Clear}\n";
+	}
+	if ($Parameter eq '-V' || $Parameter eq '--very-verbose') {
+		$Verbose = 1;
+		$Very_Verbose = 1;
+		print "${Red}## ${Green}Very Verbose is on. ${Yellow}Hosts${Green}, ${Blue}Nodes${Green}, ${Pink}Commands${Green}.${Clear}\n";
+	}
+	if ($Parameter eq '-H' || $Parameter eq '--hosts') {
+		my @Discovered_Hosts = @ARGV;
+		while (my $Discovered_Host = shift @Discovered_Hosts) {
+			if ($Discovered_Host =~ /-H/ || $Discovered_Host =~ /--hosts/) {
+				$Discovered_Host = shift @Discovered_Hosts;
+				@Hosts = split(',', $Discovered_Host);
+				last;
+			}
+		}
+		if ($Verbose) {
+			foreach my $Host_Input_Check (@Hosts) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found host ${Yellow}$Host_Input_Check ${Green}in parameter list${Clear}\n";
+			}
+			sleep 2;
+		}
+	}
+	if ($Parameter eq '-c' || $Parameter eq '--count') {
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Listed hosts will be snapshotted${Clear}\n";
+		}
+		$Count = 1;
+	}
+	if ($Parameter eq '-s' || $Parameter eq '--snapshot') {
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Listed hosts will be snapshotted${Clear}\n";
+		}
+		$Snapshot = 1;
+	}
+	if ($Parameter eq '-r' || $Parameter eq '--remove') {
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Snapshots will be removed for listed hosts that were created by $System_Short_Name${Clear}\n";
+		}
+		$Remove = 1;
+	}
+	elsif ($Parameter eq '-e' || $Parameter eq '--erase') {
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}ALL snapshots will be removed for listed hosts${Clear}\n";
+		}
+		$Erase = 1;
+	}
+	if ($Parameter eq '-t' || $Parameter eq '--threads') {
+		my @Threads = @ARGV;
+		while (my $Thread = shift @Threads) {
+			if ($Thread =~ /-t/ || $Thread =~ /--threads/) {
+				$Thread = shift @Threads;
+				$Threads = $Thread;
+				last;
+			}
+		}
+	}
+	if ($Parameter eq '-h' || $Parameter eq '--help') {
+		print $Help;
+		exit(0);
+	}
+}
+
+
+if ($Verbose) {
+	my $Time_Stamp = strftime "%H:%M:%S", localtime;
+	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Threads set to $Threads${Clear}\n";
+}
+
+
+my $SSH_Fork = new Parallel::ForkManager($Threads);
 	$SSH_Fork->run_on_start(
-    	sub { my ($PID, $Host)=@_;
-			print "D-Shell: $Host has started, PID: $PID.\n";
+    	sub { my ($PID, $Thread_Name)=@_;
+    		if ($Very_Verbose) {
+    			print "D-Shell Thread: $Thread_Name has started, PID: $PID.\n";
+    		}
 		}
 	);
 	$SSH_Fork->run_on_finish(
 		sub {
-			my ($PID, $Exit_Code, $Host) = @_;
+			my ($PID, $Exit_Code, $Thread_Name, $Exit_Signal, $Core_Dump, $Return) = @_;
 			my $Notes;
 			if ($Exit_Code == 1) {$Notes = ' (Regular command failure)'}
 			if (($Exit_Code == 1000) || $Exit_Code == 232) {$Notes = ' (Failed on WAITFOR - probably no match found)'}
 			if ($Exit_Code == 233) {$Notes = ' (Probably SSH authentication failure)'}
 			if ($Exit_Code == 255) {$Notes = ' (SSH session died)'}
-			print "D-Shell: $Host (PID:$PID) has finished. Exit code: $Exit_Code${Notes}.\n";
+
+			my $Host = $Thread_Name;
+				$Host =~ s/.*\(processing (.*)\.*\)/$1/;
+
+			my $Output = ${$Return}; # Return is a scalar reference, not the scalar itself
+
+			if ($Output ne 'X') {
+				$Hosts_Found{$Host} = $Output;
+			}
+
+			if ($Very_Verbose) {
+				print "D-Shell Thread: $Thread_Name (PID:$PID) has finished. Exit code: $Exit_Code${Notes}.\n";
+			}
 		}
 	);
 
-		foreach my $Host (@Hosts) {
+	foreach my $Host (@Hosts) {
 
-			foreach my $Node (@Nodes) {
+		$Hosts_Found{$Host} = 'X';
 
-				my $PID = $SSH_Fork->start ("$Node ($Host)") and next;
+		foreach my $Check_Node (@Nodes) {
 
-				my $Log_File = "/tmp/$Node";
-				my $Start_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
-				system("echo 'Job started at $Start_Time.' >> $Log_File");
+			my $PID = $SSH_Fork->start ("$Check_Node (processing $Host)") and next;
 
-				my $SSH = Net::SSH::Expect->new (
-					host => "$Node",
-					password=> '<Password>',
-					user => 'root',
-					log_file => "$Log_File",
-					timeout => 1,
-					exp_internal => 0,
-					exp_debug => 0,
-					raw_pty => 0
-				);
+			my $Log_File = "/tmp/$Check_Node";
+			my $Start_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
+			system("echo 'Job started at $Start_Time.' >> $Log_File");
 
-				my $Login = $SSH->login(1);
-#				if ($Login !~ /VMWare/) {
-#					print "Could not login to $Node. Output was: $Login\n";
-#					$SSH_Fork->finish(233);
-#				}
-
-				#while ( defined (my $Line = $SSH->read_all()) ) {print $Line} # Keeps the text flowing
-
-				my $Discovery_Command = 'vim-cmd vmsvc/getallvms';
-				if ($Debug == 1) {
-					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					system("echo '${Red}## Debug (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Discovery_Command ${Green}on node $Node, looking for $Host${Clear}\n' >> $Log_File");
-					print "${Red}## Debug (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Discovery_Command ${Green}on node $Node, looking for $Host${Clear}\n";
-				}
-				my $Command_Timeout = '3';
-				# Get all VM IDs
-				$SSH->send($Discovery_Command);
-				my $VM_On_Node;
-				my $Node_VM_ID;
-				while ( defined (my $Line = $SSH->read_line()) ) {
-
-					my $VM_ID = $Line;
-						$VM_ID =~ s/^(\d*)\s*(\w*)\s*\[.*/$1/;
-					my $VM_Name = $Line;
-						$VM_Name =~ s/^(\d*)\s*(\w*)\s*\[.*/$2/;
-
-					if ($VM_Name =~ /$Host/) {
-						$VM_On_Node = 'Yes';
-						$Node_VM_ID = $VM_ID;
-					}
-				}
-				if ($VM_On_Node eq 'Yes') {
-					if ($Debug == 1) {
-						my $Time_Stamp = strftime "%H:%M:%S", localtime;
-						system("echo '${Red}## Debug (PID:$$) $Time_Stamp ## ${Green}$Host found on node $Node (VMID $Node_VM_ID)${Clear}\n' >> $Log_File");
-						print "${Red}## Debug (PID:$$) $Time_Stamp ## ${Green}$Host found on node $Node (VMID $Node_VM_ID)${Clear}\n";
-					}
-				}
-				else {
-					if ($Debug == 1) {
-						my $Time_Stamp = strftime "%H:%M:%S", localtime;
-						system("echo '${Red}## Debug (PID:$$) $Time_Stamp ## ${Yellow}$Host not found on node $Node, closing the SSH session on $Node${Clear}\n' >> $Log_File");
-						print "${Red}## Debug (PID:$$) $Time_Stamp ## ${Yellow}$Host not found on node $Node, closing the SSH session on $Node${Clear}\n";
-					}
-					$SSH->close();
-					$SSH_Fork->finish;
-				}
-
-#				my $Time_Date_Stamp = strftime "%H:%M:%S %d/%m/%Y", localtime;
-#				my $Snapshot_Name = "'TheMachine: VMID $Node_VM_ID'";
-#				my $Snapshot_Description = "'Snapshot taken by The Machine at $Time_Date_Stamp.'";
-#				my $Include_Memory = 1;
-				if ($Debug == 1) {
-					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					system("echo '${Red}## Debug (PID:$$) $Time_Stamp ## ${Yellow}Removing snapshot for $Host on node $Node${Clear}\n' >> $Log_File");
-					print "${Red}## Debug (PID:$$) $Time_Stamp ## ${Yellow}Removing snapshot for $Host on node $Node${Clear}\n";
-				}
-				my $Remove_Snapshot_Command = "vim-cmd vmsvc/snapshot.removeall $Node_VM_ID";
-				$SSH->exec($Remove_Snapshot_Command, $Command_Timeout);
-
-#vim-cmd vmsvc/snapshot.remove 25 [TheMachine:*]
-
-				my $Time_Date_Stamp = strftime "%H:%M:%S %d/%m/%Y", localtime;
-				my $Snapshot_Name = "TheMachine: VMID $Node_VM_ID";
-				my $Snapshot_Description = "Snapshot taken by The Machine at $Time_Date_Stamp.";
-				my $Include_Memory = 1;
-				my $Snapshot_Command = "vim-cmd vmsvc/snapshot.create $Node_VM_ID '$Snapshot_Name' '$Snapshot_Description' $Include_Memory 0";
-				$SSH->exec($Snapshot_Command, $Command_Timeout);
-				
-				
-				my $EC = $SSH->exec('echo $?', $Command_Timeout);
-					print "Exit code for $Snapshot_Command: $EC\n";
-
-				my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
-				system("echo 'Job ended at $End_Time.' >> $Log_File");
-
-				$SSH->close();
-				$SSH_Fork->finish;
-
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to node ${Blue}$Check_Node${Clear}\n";
 			}
 
-		}
-	
-		$SSH_Fork->wait_all_children;
-		print "All servers have completed their tasks!\n";
+			my $SSH = Net::SSH::Expect->new (
+				host => $Check_Node,
+				password=> '<Password>',
+				user => 'root',
+				log_file => $Log_File,
+				timeout => 1,
+				exp_internal => 0,
+				exp_debug => 0,
+				raw_pty => 0
+			);
 
+			my $Login = $SSH->login(1) or die "Login failed to $Check_Node\n";
+#			if ($Login !~ /VMWare/) {
+#				print "Could not login to $Node. Output was: $Login\n";
+#				$SSH_Fork->finish(233);
+#			}
+
+			#while ( defined (my $Line = $SSH->read_all()) ) {print $Line} # Keeps the text flowing
+
+			my ($Node_VM_ID, $Node) = &find_vm($Host, $Check_Node, $SSH, $Command_Timeout, $Log_File);
+			if ($Node_VM_ID && $Node_VM_ID ne 'X' && $Node) {
+				if ($Count || (!$Remove && !$Erase && !$Snapshot)) {
+					&count_snapshot($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File);
+				}
+				if ($Remove) {
+					&remove_snapshots($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File);
+				}
+				elsif ($Erase) {
+					&erase_all_snapshots($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File);
+				}
+				if ($Snapshot) {
+					&take_snapshot($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File);
+				}
+			}
+
+			my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
+			system("echo 'Job ($Host) ended at $End_Time.' >> $Log_File");
+
+			my $Return;
+			if ($Node_VM_ID eq 'X') {
+				$Return = 'X';
+			}
+			else {
+				$Return = 'Y';
+			}
+
+			$SSH->close();
+			$SSH_Fork->finish(0, \$Return); # Return is a scalar reference, not the scalar itself
+
+		} # Nodes
+
+	} # Hosts
+
+	$SSH_Fork->wait_all_children;
+
+	my @Host_Results = keys %Hosts_Found;
+	my $Error;
+	for my $Host (@Host_Results) {
+		if ($Hosts_Found{$Host} eq 'X') {
+			print "${Yellow}$Host ${Red}was not found on any node, or a node had problems returning results${Clear}\n";
+			$Error = 1;
+		}
+	}
+
+	if ($Error) {
+		print "${Green}All tasks are complete, ${Red}but there were some errors ${Green}(listed immediately above).${Clear}\n";
+	}
+	else {
+		print "${Green}All tasks completed without errors!${Clear}\n";
+	}
+
+sub find_vm {
+
+my ($Host, $Check_Node, $SSH, $Command_Timeout, $Log_File) = @_;
+
+	my $Discovery_Command = 'vim-cmd vmsvc/getallvms';
+	if ($Verbose) {
+		my $Time_Stamp = strftime "%H:%M:%S", localtime;
+		system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}$Discovery_Command ${Green}on node ${Blue}$Check_Node${Green}, looking for ${Yellow}$Host${Clear}\n' >> $Log_File");
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}$Discovery_Command ${Green}on node ${Blue}$Check_Node${Green}, looking for ${Yellow}$Host${Clear}\n";
+	}
+
+	# Get all VM IDs
+	$SSH->send($Discovery_Command);
+	my $VM_On_Node;
+	my $Node_VM_ID;
+	while ( defined (my $Line = $SSH->read_line()) ) {
+
+		my $VM_ID = $Line;
+			$VM_ID =~ s/^(\d*)\s*(\w*)\s*\[.*/$1/;
+		my $VM_Name = $Line;
+			$VM_Name =~ s/^(\d*)\s*(\w*)\s*\[.*/$2/;
+
+		if ($VM_Name =~ /^$Host$/) {
+			$VM_On_Node = 'Yes';
+			$Node_VM_ID = $VM_ID;
+		}
+	}
+	if ($VM_On_Node eq 'Yes') {
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}$Host ${Green}found on node ${Blue}$Check_Node ${Green}(VMID $Node_VM_ID)${Clear}\n' >> $Log_File");
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}$Host ${Green}found on node ${Blue}$Check_Node ${Green}(VMID $Node_VM_ID)${Clear}\n";
+			
+		}
+		my @VM = ($Node_VM_ID, $Check_Node);
+		return @VM;
+	}
+	else {
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}$Host ${Red}not found ${Green}on node ${Blue}$Check_Node${Green}, closing the SSH session${Clear}\n' >> $Log_File");
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}$Host ${Red}not found ${Green}on node ${Blue}$Check_Node${Green}, closing the SSH session${Clear}\n";
+		}
+		$Node_VM_ID = 'X';
+		my @VM = ($Node_VM_ID, $Check_Node);
+		return @VM;
+		$SSH->close();
+	}
+} # sub find_vm
+
+sub remove_snapshots {
+
+my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
+
+	print "${Green}Removing $System_Short_Name snapshots for ${Yellow}$Host${Green} on node ${Blue}$Node${Clear}\n";
+	my $Count_Our_Snapshots = "vim-cmd vmsvc/snapshot.get $Node_VM_ID | grep -A1 $System_Short_Name | grep Id | wc -l";
+		my $Our_Snapshot_Count = $SSH->exec($Count_Our_Snapshots, $Command_Timeout);
+			$Our_Snapshot_Count =~ s/.*wc -l(.*)/$1/;
+			$Our_Snapshot_Count =~ s/[^0-9+]//g;
+	my $Get_Our_Snapshots = "vim-cmd vmsvc/snapshot.get $Node_VM_ID | grep -A1 $System_Short_Name | grep Id";
+		my $Our_Snapshots = $SSH->exec($Get_Our_Snapshots, $Command_Timeout);
+
+	if ($Our_Snapshot_Count ne '' && $Our_Snapshot_Count > 0) {
+
+		my @Our_Snapshots = split('\n', $Our_Snapshots);
 	
+	  	while (my $Our_Snapshot = shift @Our_Snapshots) {
+	  		$Our_Snapshot =~ s/.*grep Id(.*)/$1/;
+	  		$Our_Snapshot =~ s/[^0-9+]//g;
+			my $Remove_Snapshot_Command = "vim-cmd vmsvc/snapshot.remove $Node_VM_ID $Our_Snapshot";
+	
+			if ($Verbose && $Our_Snapshot) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot ID $Our_Snapshot for ${Yellow}$Host on node ${Blue}$Node${Clear}\n' >> $Log_File");
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot ID $Our_Snapshot for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+				system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}$Remove_Snapshot_Command ${Green}for host ${Yellow}$Host ${Green}on node ${Blue}$Node${Green}${Clear}\n' >> $Log_File");
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}$Remove_Snapshot_Command ${Green}for host ${Yellow}$Host ${Green}on node ${Blue}$Node${Green}${Clear}\n";
+			}
+			if ($Our_Snapshot) {
+				$SSH->exec($Remove_Snapshot_Command, $Command_Timeout);
+				print "${Green}Removing $System_Short_Name snapshot ID $Our_Snapshot for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+			}
+
+			my $EC = $SSH->exec('echo $?', $Command_Timeout);
+			$EC =~ s/[^0-9+]//g;
+			if ($EC) {
+				my $Error = "\n\tHost: $Host (VMID $Node_VM_ID)\n\tNode: $Node\n\tCommand: $Remove_Snapshot_Command\n\tExit Status: $EC\n\tNote: $Note";
+				print "\nError ocurred: $Error\n\n";
+			}
+			if ($EC == 0) {
+				$EC = "${Green}$EC";
+			}
+			else {
+				$EC = "${Red}$EC";
+			}
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Exit code for ${Yellow}$Host ${Green}remove snapshot ID $Our_Snapshot on ${Blue}$Node${Green}: $EC${Clear}\n";
+				system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Exit code for ${Yellow}$Host ${Green}remove snapshot ID $Our_Snapshot on ${Blue}$Node${Green}: $EC${Clear}\n' >> $Log_File");
+			}
+
+	  	}
+	}
+	else {
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Could not find any snapshots created by $System_Short_Name that we could remove for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n' >> $Log_File");
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Could not find any snapshots created by $System_Short_Name that we could remove for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+		}
+	}
+
+} # sub remove_snapshots
+
+sub erase_all_snapshots {
+
+my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
+
+	print "${Green}Removing ALL snapshots for ${Yellow}$Host${Green} on node ${Blue}$Node${Clear}\n";
+	my $Remove_Snapshot_Command = "vim-cmd vmsvc/snapshot.removeall $Node_VM_ID";
+	if ($Verbose) {
+		my $Time_Stamp = strftime "%H:%M:%S", localtime;
+		system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots for ${Yellow}$Host on node ${Blue}$Node${Clear}\n' >> $Log_File");
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+		system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}$Remove_Snapshot_Command ${Green}for host ${Yellow}$Host ${Green}on node ${Blue}$Node${Green}${Clear}\n' >> $Log_File");
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}$Remove_Snapshot_Command ${Green}for host ${Yellow}$Host ${Green}on node ${Blue}$Node${Green}${Clear}\n";
+	}
+	$SSH->exec($Remove_Snapshot_Command, $Command_Timeout);
+
+	my $EC = $SSH->exec('echo $?', $Command_Timeout);
+	$EC =~ s/[^0-9+]//g;
+	if ($EC) {
+		my $Error = "\n\tHost: $Host (VMID $Node_VM_ID)\n\tNode: $Node\n\tCommand: $Remove_Snapshot_Command\n\tExit Status: $EC\n\tNote: $Note";
+		print "\nError ocurred: $Error\n\n";
+	}
+	if ($EC == 0) {
+		$EC = "${Green}$EC";
+	}
+	else {
+		$EC = "${Red}$EC";
+	}
+	if ($Verbose) {
+		my $Time_Stamp = strftime "%H:%M:%S", localtime;
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Exit code for ${Yellow}$Host ${Green}remove all snapshots on ${Blue}$Node${Green}: $EC${Clear}\n";
+		system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Exit code for ${Yellow}$Host ${Green}remove all snapshots on ${Blue}$Node${Green}: $EC${Clear}\n' >> $Log_File");
+	}
+
+} # sub erase_all_snapshots
+
+sub take_snapshot {
+
+my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
+
+	my $Time_Date_Stamp = strftime "%H:%M:%S %d/%m/%Y", localtime;
+	my $Snapshot_Name = "$System_Short_Name: $Host (VMID: $Node_VM_ID)";
+	my $Snapshot_Description = "Snapshot taken of $Host by $System_Short_Name on node $Node at $Time_Date_Stamp.";
+	my $Include_Memory = 1;
+	my $Snapshot_Command = "vim-cmd vmsvc/snapshot.create $Node_VM_ID '$Snapshot_Name' '$Snapshot_Description' $Include_Memory 0";
+
+	if ($Verbose) {
+		my $Time_Stamp = strftime "%H:%M:%S", localtime;
+		my $Snapshot_Command_Esc = $Snapshot_Command;
+			$Snapshot_Command_Esc =~ s/'/"/g;
+		system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking memory snapshot of ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n' >> $Log_File");
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking memory snapshot of ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+		system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}${Snapshot_Command_Esc} ${Green}on node ${Blue}$Node${Clear}\n' >> $Log_File");
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}${Snapshot_Command_Esc} ${Green}on node ${Blue}$Node${Clear}\n";
+	}
+
+	$SSH->exec($Snapshot_Command, $Command_Timeout);
+
+	print "${Green}Memory snapshot started of ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+
+	my $EC = $SSH->exec('echo $?', $Command_Timeout);
+	$EC =~ s/[^0-9+]//g;
+	if ($EC) {
+		print "${Green}Memory snapshot of ${Yellow}$Host ${Red}failed ${Green}on node ${Blue}$Node ${Green}- trying normal snapshot instead${Clear}\n";
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Memory snapshot of ${Yellow}$Host ${Green}on node ${Blue}$Node ${Red}failed${Green}. Trying normal snapshot.${Clear}\n' >> $Log_File");
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Memory snapshot of ${Yellow}$Host ${Green}on node ${Blue}$Node ${Red}failed${Green}. Trying normal snapshot.${Clear}\n";
+		}
+		my $Include_Memory = 0;
+		my $Snapshot_Command = "vim-cmd vmsvc/snapshot.create $Node_VM_ID '$Snapshot_Name' '$Snapshot_Description' $Include_Memory 0";
+	
+		$SSH->exec($Snapshot_Command, $Command_Timeout);
+	
+		my $EC = $SSH->exec('echo $?', $Command_Timeout);
+		$EC =~ s/[^0-9+]//g;
+		if ($EC) {
+			my $Error = "\n\tHost: $Host (VMID $Node_VM_ID)\n\tNode: $Node\n\tCommand: $Snapshot_Command\n\tExit Status: $EC\n\tNote: $Note";
+			print "\nError ocurred: $Error\n\n";
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Normal snapshot of ${Yellow}$Host ${Green}on node ${Blue}$Node ${Red}also failed${Clear}\n' >> $Log_File");
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Normal snapshot of ${Yellow}$Host ${Green}on node ${Blue}$Node ${Red}also failed${Clear}\n";
+			}
+		}
+
+		if ($EC == 0) {
+			$EC = "${Green}$EC";
+		}
+		else {
+			$EC = "${Red}$EC";
+		}
+	}
+	if ($Verbose) {
+		my $Time_Stamp = strftime "%H:%M:%S", localtime;
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Exit code for ${Yellow}$Host ${Green}snapshot on ${Blue}$Node${Green}: $EC${Clear}\n";
+		system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Exit code for ${Yellow}$Host ${Green}snapshot on ${Blue}$Node${Green}: $EC${Clear}\n' >> $Log_File");
+	}
+
+} # sub take_snapshot
+
+sub count_snapshot {
+
+my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
+
+	my $Check_Snapshot = "vim-cmd vmsvc/snapshot.get $Node_VM_ID | grep Id | wc -l";
+	my $Check_Our_Snapshot = "vim-cmd vmsvc/snapshot.get $Node_VM_ID | grep Name | grep $System_Short_Name | wc -l";
+	my $Check_Is_Currently_Snapshotting = "vim-cmd vmsvc/get.tasklist $Node_VM_ID | grep createSnapshot | wc -l";
+	if ($Verbose) {
+		my $Time_Stamp = strftime "%H:%M:%S", localtime;
+		system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Checking for snapshots of ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n' >> $Log_File");
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Checking for snapshots of ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+	}
+	my $Snapshot_Count = $SSH->exec($Check_Snapshot, $Command_Timeout);
+		$Snapshot_Count =~ s/.*wc -l(.*)/$1/;
+		$Snapshot_Count =~ s/[^0-9+]//g;
+	my $Our_Snapshot_Count = $SSH->exec($Check_Our_Snapshot, $Command_Timeout);
+		$Our_Snapshot_Count =~ s/.*wc -l(.*)/$1/;
+		$Our_Snapshot_Count =~ s/[^0-9+]//g;
+	my $Is_Snapshotting = $SSH->exec($Check_Is_Currently_Snapshotting, $Command_Timeout);
+		$Is_Snapshotting =~ s/.*wc -l(.*)/$1/;
+		$Is_Snapshotting =~ s/[^0-9+]//g;
+
+		if ($Is_Snapshotting > 0) {
+			$Is_Snapshotting = 'and is currently creating a new snapshot';
+		}
+		else {
+			undef $Is_Snapshotting;
+		}
+
+	system("echo '${Yellow}$Host ${Green}has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Short_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n' >> $Log_File");
+	print "${Yellow}$Host ${Green}(VMID $Node_VM_ID) has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Short_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n";
+
+} # sub count_snapshot
+
 1;

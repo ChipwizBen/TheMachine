@@ -4019,7 +4019,7 @@ sub html_output {
 				"$Approved",
 				"$Last_Modified<br />$Last_Approved",
 				"$Modified_By<br />$Approved_By",
-				"<a href='/DSMS/sudoers-rules.cgi?Approve_Rule_ID=$DBID_Clean&Approve_Rule_Name=$DB_Rule_Name_Clean'><img src=\"/resources/imgs/buttons/confirm.png\" alt=\"Approve Rule ID $DBID_Clean\" ></a>",
+				"<a href='/DSMS/sudoers-rules.cgi?Approve_Rule_ID=$DBID_Clean&Approve_Rule_Name=$DB_Rule_Name_Clean'><img src=\"/resources/imgs/confirm.png\" alt=\"Approve Rule ID $DBID_Clean\" ></a>",
 				"<a href='/DSMS/sudoers-rules.cgi?View_Notes=$DBID_Clean'>
 					<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 						<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
@@ -4048,7 +4048,7 @@ sub html_output {
 				"$Approved",
 				"$Last_Modified<br />$Last_Approved",
 				"$Modified_By<br />$Approved_By",
-				"<img src=\"/resources/imgs/buttons/confirm-dim.png\" alt=\"You cannot approve this rule\" >",
+				"<img src=\"/resources/imgs/confirm-dim.png\" alt=\"You cannot approve this rule\" >",
 				"<a href='/DSMS/sudoers-rules.cgi?View_Notes=$DBID_Clean'>
 					<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 						<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>

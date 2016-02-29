@@ -27,9 +27,9 @@ my $Verbose;
 
 foreach my $Parameter (@ARGV) {
 	if ($Parameter eq '--override') {$Override = 1}
-	if ($Parameter eq '--verbose') {$Verbose = 1}
+	if ($Parameter eq '--verbose' || $Parameter eq '-v') {$Verbose = 1}
 	if ($Parameter eq '-h' || $Parameter eq '--help') {
-		print "\nOptions are:\n\t--override\tOverrides any database lock\n\t--verbose\tTurns on verbose output\n\n";
+		print "\nOptions are:\n\t--override\tOverrides any database lock\n\t-v, --verbose\tTurns on verbose output\n\n";
 		exit(0);
 	}
 }
