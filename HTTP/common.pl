@@ -31,7 +31,7 @@ sub System_Short_Name {
 
 	# This is the system's shortened name, which is used in short descriptions. It can be the same as the full name in System_Name if you want, but it might get busy on some screens if your system name is long. It's encouraged to keep this short (less than 10 characters).
 
-	my $System_Short_Name = 'TheMachine';
+	my $System_Short_Name = 'The Machine';
 	return $System_Short_Name;
 
 } # sub System_Short_Name
@@ -98,7 +98,7 @@ sub LDAP_Login {
 			port => $LDAP_Port,
 			timeout => $Timeout,
 			#filter => $LDAP_Filter,
-		) or die "Can't connect to LDAP server: $@";
+		) or die "Can't connect to LDAP server $LDAP_Server:$LDAP_Port with timeout $Timeout seconds. $@";
 		my $Bind = $LDAP_Connection->bind(
 			$LDAP_User_Name_Prefixed,
 			password => $LDAP_Password,

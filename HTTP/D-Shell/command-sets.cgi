@@ -7,22 +7,33 @@ my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
+my $System_Name = System_Name();
 my $Header = Header();
 my $Footer = Footer();
+my $DB_Management = DB_Management();
 my $DB_DShell = DB_DShell();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Command = $CGI->param("Add_Command");
+	my $Command_Add_Final = $CGI->param("Command_Add_Final");
 	my $Command_Name_Add = $CGI->param("Command_Name_Add");
 	my $Command_Add = $CGI->param("Command_Add");
-	my $Description_Add = $CGI->param("Description_Add");
+	my $Command_Description_Add = $CGI->param("Description_Add");
+	my $Command_Owner_Add = $CGI->param("Owner_Add");
+	my $Add_Command_Dependency_Temp_New = $CGI->param("Add_Command_Dependency_Temp_New");
+	my $Add_Command_Dependency_Temp_Existing = $CGI->param("Add_Command_Dependency_Temp_Existing");
+	my $Delete_Command_Add_Dependency_Entry_ID = $CGI->param("Delete_Command_Add_Dependency_Entry_ID");
 
 my $Edit_Command = $CGI->param("Edit_Command");
-my $Edit_Command_Post = $CGI->param("Edit_Command_Post");
+	my $Command_Edit_Final = $CGI->param("Command_Edit_Final");
 	my $Command_Name_Edit = $CGI->param("Command_Name_Edit");
 	my $Command_Edit = $CGI->param("Command_Edit");
-	my $Description_Edit = $CGI->param("Description_Edit");
+	my $Command_Description_Edit = $CGI->param("Description_Edit");
+	my $Command_Owner_Edit = $CGI->param("Owner_Edit");
+	my $Edit_Command_Dependency_Temp_New = $CGI->param("Edit_Command_Dependency_Temp_New");
+	my $Edit_Command_Dependency_Temp_Existing = $CGI->param("Edit_Command_Dependency_Temp_Existing");
+	my $Delete_Command_Edit_Dependency_Entry_ID = $CGI->param("Delete_Command_Edit_Dependency_Entry_ID");
 
 my $Delete_Command = $CGI->param("Delete_Command");
 my $Delete_Command_Confirm = $CGI->param("Delete_Command_Confirm");
@@ -38,6 +49,7 @@ my $Run_Command_Final = $CGI->param("Run_Command_Final");
 	
 
 my $User_Name = $Session->param("User_Name");
+my $User_ID = $Session->param("User_ID");
 my $User_DShell_Admin = $Session->param("User_DShell_Admin");
 
 if (!$User_Name) {
@@ -53,7 +65,7 @@ if ($Rows_Returned eq '') {
 	$Rows_Returned='100';
 }
 
-if ($Add_Command) {
+if ($Add_Command && !$Command_Add_Final) {
 	if ($User_DShell_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -68,7 +80,7 @@ if ($Add_Command) {
 		&html_add_command;
 	}
 }
-elsif ($Command_Add) {
+elsif ($Add_Command && $Command_Add_Final) {
 	if ($User_DShell_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -85,7 +97,7 @@ elsif ($Command_Add) {
 		exit(0);
 	}
 }
-elsif ($Edit_Command) {
+elsif ($Edit_Command && !$Command_Edit_Final) {
 	if ($User_DShell_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -100,7 +112,7 @@ elsif ($Edit_Command) {
 		&html_edit_command;
 	}
 }
-elsif ($Edit_Command_Post) {
+elsif ($Edit_Command && $Command_Edit_Final) {
 	if ($User_DShell_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -191,41 +203,177 @@ else {
 
 sub html_add_command {
 
+if ($Add_Command_Dependency_Temp_New) {
+	if ($Add_Command_Dependency_Temp_Existing !~ m/^$Add_Command_Dependency_Temp_New,/g &&
+	$Add_Command_Dependency_Temp_Existing !~ m/,$Add_Command_Dependency_Temp_New$/g &&
+	$Add_Command_Dependency_Temp_Existing !~ m/,$Add_Command_Dependency_Temp_New,/g) {
+		$Add_Command_Dependency_Temp_Existing = $Add_Command_Dependency_Temp_Existing . $Add_Command_Dependency_Temp_New . ",";
+	}
+}
+
+if ($Delete_Command_Add_Dependency_Entry_ID) {$Add_Command_Dependency_Temp_Existing =~ s/$Delete_Command_Add_Dependency_Entry_ID//;}
+$Add_Command_Dependency_Temp_Existing =~ s/,,/,/g;
+
+my $Command_Set_Dependencies;
+my @Command_Set_Dependencies = split(',', $Add_Command_Dependency_Temp_Existing);
+
+foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
+
+	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`
+		FROM `command_sets`
+		WHERE `id` = ? ");
+	$Command_Set_Query->execute($Command_Set_Dependency);
+		
+	while ( my $Command_Set_Name = $Command_Set_Query->fetchrow_array() ) {
+		my $Command_Set_Name_Character_Limited = substr( $Command_Set_Name, 0, 60 );
+			if ($Command_Set_Name_Character_Limited ne $Command_Set_Name) {
+				$Command_Set_Name_Character_Limited = $Command_Set_Name_Character_Limited . '...';
+			}
+			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited"
+				. " <a href='/D-Shell/command-sets.cgi?
+				Add_Command=1&
+				Command_Name_Add=$Command_Name_Add&
+				Owner_Add=$Command_Owner_Add&
+				Command_Add=$Command_Add&
+				Description_Add=$Command_Description_Add&
+				Add_Command_Dependency_Temp_Existing=$Add_Command_Dependency_Temp_Existing&
+				Delete_Command_Add_Dependency_Entry_ID=$Command_Set_Dependency&
+				Add_Command=1
+				' class='tooltip' text=\"Remove $Command_Set_Name from list\"><span style='color: #FFC600'>[Remove]</span></a>"
+				. "</td></tr>";
+	}
+}
+
 print <<ENDHTML;
 
-<div id="wide-popup-box">
+<div id="full-width-popup-box">
 <a href="/D-Shell/command-sets.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Add New Command</h3>
+<h3 align="center">Add New Command Set</h3>
 
 <form action='/D-Shell/command-sets.cgi' name='Add_Command' method='post' >
 
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Name:</td>
-		<td colspan="2"><input type='text' name='Command_Name_Add' style="width:100%" maxlength='128' placeholder="Update Command" required autofocus></td>
+		<td colspan="2"><input type='text' name='Command_Name_Add' value='$Command_Name_Add' style="width:100%" maxlength='128' placeholder="Update Command" required autofocus></td>
+	</tr>
 	<tr>
-		<td style="text-align: right;">Command:</td>
-		<td colspan="2"><textarea name="Command_Add" style="width: 300px; height: 150px" placeholder="Command Set" required=""></textarea></td>
+		<td style="text-align: right;">Used By:</td>
+		<td style="text-align: left;">
+			<select name='Owner_Add' style="width: 200px">
+				<option value='0' selected>Everybody</option>
+				<option value='$User_ID' selected>Only Me</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Command(s):</td>
+		<td colspan="2"><textarea name="Command_Add" style="width: 800px; height: 150px" placeholder="Command Set" required="">$Command_Add</textarea></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Description:</td>
-		<td colspan="2"><input type='text' name='Description_Add' style="width:100%" maxlength='1024' placeholder=""></td>
+		<td colspan="2"><input type='text' name='Description_Add' value='$Command_Description_Add' style="width:100%" maxlength='1024' placeholder="This command set does bla bla."></td>
 	<tr>
+	<tr>
+		<td style="text-align: right;">Dependencies:</td>
+		<td style="text-align: left;">
+			<select name='Add_Command_Dependency_Temp_New' onchange='this.form.submit()' style="width: 400px">
+ENDHTML
+
+	print "<option value='' selected>--Select a Command Set Dependency--</option>";
+
+	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`
+		FROM `command_sets`
+		ORDER BY `name`"
+	);
+
+	$Select_Command_Sets->execute();
+
+
+	while ( my ($Command_Set_ID, $Command_Set_Name) = $Select_Command_Sets->fetchrow_array() )
+	{
+
+		my $Command_Set_Character_Limited = substr( $Command_Set_Name, 0, 60 );
+			if ($Command_Set_Character_Limited ne $Command_Set_Name) {
+				$Command_Set_Character_Limited = $Command_Set_Character_Limited . '...';
+			}
+		print "<option value='$Command_Set_ID'>$Command_Set_Character_Limited</option>";
+
+	}
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+
 </table>
 
-<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-	You can give the processor special instructions by using these tags:
-	<li><span style='color: #00FF00;'>*PAUSE xx</span> - Pauses for xx seconds before processing the next command (e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot.</li>
-	<li><span style='color: #00FF00;'>*WAITFOR xx</span> - Waits for xx to appear on the console before processing the next command (e.g. '*WAITFOR password:' to wait for a password prompt). Useful for changing passwords, scripting the answers to interactive questions, sudo elevation, etc.  Accepts regular expressions.</li>
-	<li><span style='color: #00FF00;'>*SEND xx</span> - Sends characters to the console (e.g. '*SEND y' to send the letter y to the console). Best used with WAITFOR, it's useful for answering the prompts that WAITFOR is looking for.</li>
-</ul>
+<hr width="50%">
+
+ENDHTML
+
+if ($Command_Set_Dependencies) {
+print <<ENDHTML;
+			<table align = "center">
+				<tr>
+					<td style="padding-right: 15px">Command Set Dependencies</td>
+				</tr>
+				$Command_Set_Dependencies
+			</table>
+ENDHTML
+}
+else {
+	print "<span style='text-align: left; color: #FFC600;'>No Command Set Dependencies</span>";
+}
+
+print <<ENDHTML;
 
 <hr width="50%">
-<div style="text-align: center"><input type=submit name='ok' value='Add Command'></div>
+
+<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
+	<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
+	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
+		<ul style="list-style-type:circle">
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> Takes a VMWare snapshot of the host.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> Removes VMWare snapshots taken by $System_Name.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
+		</ul>
+	<li><span style='color: #FC64FF;'>*PAUSE</span> <span style='color: #00FF00;'>xx</span> - Pauses for xx seconds before processing the next command 
+		(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot.</li>
+	<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>xx</span> - Waits for xx to appear on the console before processing the next 
+		command. Useful for changing passwords, scripting the answers to interactive questions, sudo elevation, etc. 
+		Accepts regular expressions. The default wait time is 120 seconds; after than the system assumes that something has 
+		gone wrong - you can customise the wait time by appending a duration to the tag (see example below).</li>
+		<ul style="list-style-type:circle">
+			<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>password:</span> (waits for a password prompt)</li>
+			<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>Is this ok?</span> (waits for the 'Is this ok?' prompt like the one seen in yum)</li>
+			<li><span style='color: #FC64FF;'>*WAITFOR300</span> <span style='color: #00FF00;'>Is this ok?</span> (waits up to 300 seconds (5 minutes) for the 
+				'Is this ok?' prompt in yum. You can set 300 to be any second value - e.g. 3600 would be 1 hour.)</li>
+		</ul>
+	<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>xx</span> - Sends characters to the console (e.g. '*SEND y' to send the letter y 
+		to the console). Best used with WAITFOR, it's useful for answering the prompts that WAITFOR is looking for. <b>You should 
+		also use SEND to submit the command <i>before</i> you want to use WAITFOR immediately after it. Not doing so will make the processor wait for the prompt and then wait for your 
+		WAITFOR (this is unlikely to be what you intended).</b> You should use SEND for any command that you believe might need interaction, as well as for any answer (see the working example below).</li>
+		<ul style="list-style-type:circle">
+			<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span> (sends the yum update command, then monitor the output 
+				instead of monitoring the process)</li>
+			<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>d</span> (sends the letter d to just download the packages instead of installing them)</li>
+			<ul style="list-style-type:square">
+				<li>Working example of yum update:
+				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span></li>
+				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*WAITFOR60</span> <span style='color: #00FF00;'>Is this ok?</span></li>
+				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>y</span></li>
+		</ul>
+</ul>
+
+<input type='hidden' name='Add_Command' value='1'>
+<input type='hidden' name='Add_Command_Dependency_Temp_Existing' value='$Add_Command_Dependency_Temp_Existing'>
+
+<hr width="50%">
+<div style="text-align: center"><input type=submit name='Command_Add_Final' value='Add Command Set'></div>
 
 </form>
 
@@ -239,17 +387,18 @@ sub add_command {
 		`name`,
 		`command`,
 		`description`,
+		`owner_id`,
 		`modified_by`
 	)
 	VALUES (
-		?, ?, ?, ?
+		?, ?, ?, ?, ?
 	)");
 
-	$Command_Insert->execute($Command_Name_Add, $Command_Add, $Description_Add, $User_Name);
+	$Command_Insert->execute($Command_Name_Add, $Command_Add, $Command_Description_Add, $Command_Owner_Add, $User_Name);
 
 	my $Command_Insert_ID = $DB_DShell->{mysql_insertid};
 
-	# Audit Log
+	# Audit Log (Command Set)
 	my $DB_Management = DB_Management();
 	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
 		`category`,
@@ -261,8 +410,54 @@ sub add_command {
 		?, ?, ?, ?
 	)");
 	
-	$Audit_Log_Submission->execute("D-Shell", "Add", "$User_Name added $Command_Add. The system assigned it Command ID $Command_Insert_ID.", $User_Name);
-	# / Audit Log
+	$Audit_Log_Submission->execute("D-Shell", "Add", "$User_Name added $Command_Name_Add. The system assigned it Command ID $Command_Insert_ID.", $User_Name);
+	# / Audit Log (Command Set)
+
+	### Dependencies
+	$Add_Command_Dependency_Temp_Existing =~ s/^,//;
+	$Add_Command_Dependency_Temp_Existing =~ s/,$//;
+	my @Dependencies = split(',', $Add_Command_Dependency_Temp_Existing);
+
+	foreach my $Dependency (@Dependencies) {
+
+		my $Dependency_Insert = $DB_DShell->prepare("INSERT INTO `command_set_dependency` (
+			`id`,
+			`command_set_id`,
+			`dependent_command_set_id`,
+			`order`
+		)
+		VALUES (
+			NULL,
+			?,
+			?,
+			?
+		)");
+		
+		$Dependency_Insert->execute($Command_Insert_ID, $Dependency, '0');
+
+		# Audit Log (Dependency)
+		my $Select_Command_Set = $DB_DShell->prepare("SELECT `name` FROM `command_sets` WHERE `id` = ?");
+		$Select_Command_Set->execute($Dependency);
+		while ( (my $Name) = $Select_Command_Set->fetchrow_array() )
+		{
+			my $DB_Management = DB_Management();
+			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+				`category`,
+				`method`,
+				`action`,
+				`username`
+			)
+			VALUES (
+				?,
+				?,
+				?,
+				?
+			)");
+			$Audit_Log_Submission->execute("D-Shell", "Add", "$User_Name added Command Set $Name [ID $Dependency] as a dependency of $Command_Name_Add [Command Set ID $Command_Insert_ID]", $User_Name);
+		}
+		# / Audit Log
+	}
+	### / Dependencies
 
 	return($Command_Insert_ID);
 
@@ -270,88 +465,222 @@ sub add_command {
 
 sub html_edit_command {
 
-	my $Select_Command = $DB_DShell->prepare("SELECT `name`, `command`, `description`
-	FROM `command_sets`
-	WHERE `id` = ?");
-	$Select_Command->execute($Edit_Command);
+	## Existing Command Set Details
 
-	while ( my @Commands = $Select_Command->fetchrow_array() )
-	{
-		my $Command_Name = $Commands[0];
-		my $Command = $Commands[1];
-		my $Description = $Commands[2];
+	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `name`, `command`, `description`, `owner_id`
+		FROM `command_sets`
+		WHERE `id` = ?"
+	);
+
+	$Select_Command_Sets->execute($Edit_Command);
+
+	while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_array() ) {
+		if (!$Command_Name_Edit) {$Command_Name_Edit = $Select_Command_Sets[0]}
+		if (!$Command_Edit) {$Command_Edit = $Select_Command_Sets[1]}
+		if (!$Command_Description_Edit) {$Command_Description_Edit = $Select_Command_Sets[2]}
+		if (!$Command_Owner_Edit) {$Command_Owner_Edit = $Select_Command_Sets[3]}
+	}
+
+	## / Existing Command Set Details
+
+	## Existing Command Set Dependencies
+
+	my $Select_Command_Set_Dependencies = $DB_DShell->prepare("SELECT `dependent_command_set_id`
+		FROM `command_set_dependency`
+		WHERE `command_set_id` = ?"
+	);
+
+	$Select_Command_Set_Dependencies->execute($Edit_Command);
+
+	my $Discovered_Existing_Dependencies;
+	while ( my $Command_Set_Dependencies = $Select_Command_Set_Dependencies->fetchrow_array() ) {
+		$Discovered_Existing_Dependencies = $Discovered_Existing_Dependencies . $Command_Set_Dependencies . ',';
+	}
+
+	if (!$Edit_Command_Dependency_Temp_Existing) {
+		$Edit_Command_Dependency_Temp_Existing = $Discovered_Existing_Dependencies;
+	}
+
+	## / Existing Command Set Dependencies
+
+if ($Edit_Command_Dependency_Temp_New) {
+	if ($Edit_Command_Dependency_Temp_Existing !~ m/^$Edit_Command_Dependency_Temp_New,/g &&
+	$Edit_Command_Dependency_Temp_Existing !~ m/,$Edit_Command_Dependency_Temp_New$/g &&
+	$Edit_Command_Dependency_Temp_Existing !~ m/,$Edit_Command_Dependency_Temp_New,/g) {
+		$Edit_Command_Dependency_Temp_Existing = $Edit_Command_Dependency_Temp_Existing . $Edit_Command_Dependency_Temp_New . ",";
+	}
+}
+
+if ($Delete_Command_Edit_Dependency_Entry_ID) {$Edit_Command_Dependency_Temp_Existing =~ s/$Delete_Command_Edit_Dependency_Entry_ID//;}
+$Edit_Command_Dependency_Temp_Existing =~ s/,,/,/g;
+
+$Edit_Command_Dependency_Temp_Existing =~ s/^,//;
+
+my $Command_Set_Dependencies;
+my @Command_Set_Dependencies = split(',', $Edit_Command_Dependency_Temp_Existing);
+
+foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
+
+	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`
+		FROM `command_sets`
+		WHERE `id` = ? ");
+	$Command_Set_Query->execute($Command_Set_Dependency);
+		
+	while ( my $Command_Set_Name = $Command_Set_Query->fetchrow_array() ) {
+		my $Command_Set_Name_Character_Limited = substr( $Command_Set_Name, 0, 60 );
+			if ($Command_Set_Name_Character_Limited ne $Command_Set_Name) {
+				$Command_Set_Name_Character_Limited = $Command_Set_Name_Character_Limited . '...';
+			}
+			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited"
+				. " <a href='/D-Shell/command-sets.cgi?
+				Edit_Command=$Edit_Command&
+				Command_Name_Edit=$Command_Name_Edit&
+				Owner_Edit=$Command_Owner_Edit&
+				Command_Edit=$Command_Edit&
+				Description_Edit=$Command_Description_Edit&
+				Edit_Command_Dependency_Temp_Existing=$Edit_Command_Dependency_Temp_Existing&
+				Delete_Command_Edit_Dependency_Entry_ID=$Command_Set_Dependency&
+				Edit_Command=1
+				' class='tooltip' text=\"Remove $Command_Set_Name from list\"><span style='color: #FFC600'>[Remove]</span></a>"
+				. "</td></tr>";
+	}
+}
 
 print <<ENDHTML;
 
-<div id="wide-popup-box">
+<div id="full-width-popup-box">
 <a href="/D-Shell/command-sets.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Edit Command</h3>
+<h3 align="center">Edit Command Set</h3>
 
-<form action='/D-Shell/command-sets.cgi' name='Edit_Commands' method='post' >
+<form action='/D-Shell/command-sets.cgi' name='Edit_Command' method='post' >
 
 <table align = "center">
 	<tr>
-		<td style="text-align: right;">Command:</td>
-		<td colspan="2"><input type='text' name='Command_Name_Edit' value='$Command_Name' style="width:100%" maxlength='128' placeholder="$Command_Name" required autofocus></td>
+		<td style="text-align: right;">Name:</td>
+		<td colspan="2"><input type='text' name='Command_Name_Edit' value='$Command_Name_Edit' style="width:100%" maxlength='128' placeholder="Update Command" required autofocus></td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Command:</td>
-		<td colspan="2"><textarea name="Command_Edit" style="width: 300px; height: 150px" placeholder="$Command" required="">$Command</textarea></td>
+		<td style="text-align: right;">Used By:</td>
+		<td style="text-align: left;">
+			<select name='Owner_Edit' style="width: 200px">
+				<option value='0' selected>Everybody</option>
+				<option value='$User_ID' selected>Only Me</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Command(s):</td>
+		<td colspan="2"><textarea name="Command_Edit" style="width: 800px; height: 150px" placeholder="Command Set" required="">$Command_Edit</textarea></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Description:</td>
-		<td colspan="2"><input type='text' name='Description_Edit' value='$Description' style="width:100%" maxlength='1024' placeholder="$Command_Name"></td>
+		<td colspan="2"><input type='text' name='Description_Edit' value='$Command_Description_Edit' style="width:100%" maxlength='1024' placeholder="This command set does bla bla."></td>
+	<tr>
+	<tr>
+		<td style="text-align: right;">Dependencies:</td>
+		<td style="text-align: left;">
+			<select name='Edit_Command_Dependency_Temp_New' onchange='this.form.submit()' style="width: 400px">
+ENDHTML
+
+	print "<option value='' selected>--Select a Command Set Dependency--</option>";
+
+	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`
+		FROM `command_sets`
+		ORDER BY `name`"
+	);
+
+	$Select_Command_Sets->execute();
+
+
+	while ( my ($Command_Set_ID, $Command_Set_Name) = $Select_Command_Sets->fetchrow_array() )
+	{
+		if ($Command_Set_ID != $Edit_Command) { 
+			my $Command_Set_Character_Limited = substr( $Command_Set_Name, 0, 60 );
+				if ($Command_Set_Character_Limited ne $Command_Set_Name) {
+					$Command_Set_Character_Limited = $Command_Set_Character_Limited . '...';
+				}
+			print "<option value='$Command_Set_ID'>$Command_Set_Character_Limited</option>";
+		}
+	}
+print <<ENDHTML;
+			</select>
+		</td>
 	</tr>
+
 </table>
 
+<hr width="50%">
+
+ENDHTML
+
+if ($Command_Set_Dependencies) {
+print <<ENDHTML;
+			<table align = "center">
+				<tr>
+					<td style="padding-right: 15px">Command Set Dependencies</td>
+				</tr>
+				$Command_Set_Dependencies
+			</table>
+ENDHTML
+}
+else {
+	print "<span style='text-align: left; color: #FFC600;'>No Command Set Dependencies</span>";
+}
+
+print <<ENDHTML;
+
+<hr width="50%">
+
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-	You can give the processor special instructions by using these tags:
-	<li><span style='color: #00FF00;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
+	<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
+	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
 		<ul style="list-style-type:circle">
-			<li><span style='color: #00FF00;'>*VSNAPSHOT TAKE</span> Takes a VMWare snapshot of the host.</li>
-		<li><span style='color: #00FF00;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for this host.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> Takes a VMWare snapshot of the host.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> Removes VMWare snapshots taken by $System_Name.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
 		</ul>
-	<li><span style='color: #00FF00;'>*PAUSE xx</span> - Pauses for xx seconds before processing the next command 
+	<li><span style='color: #FC64FF;'>*PAUSE</span> <span style='color: #00FF00;'>xx</span> - Pauses for xx seconds before processing the next command 
 		(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot.</li>
-	<li><span style='color: #00FF00;'>*WAITFOR xx</span> - Waits for xx to appear on the console before processing the next 
+	<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>xx</span> - Waits for xx to appear on the console before processing the next 
 		command. Useful for changing passwords, scripting the answers to interactive questions, sudo elevation, etc. 
 		Accepts regular expressions. The default wait time is 120 seconds; after than the system assumes that something has 
-		gone wrong - you can change the default wait time (see below).</li>
+		gone wrong - you can customise the wait time by appending a duration to the tag (see example below).</li>
 		<ul style="list-style-type:circle">
-			<li><span style='color: #00FF00;'>*WAITFOR password:</span> (to wait for a password prompt)</li>
-			<li><span style='color: #00FF00;'>*WAITFOR Is this ok?</span> (to wait for the 'Is this ok?' prompt in yum)</li>
-			<li><span style='color: #00FF00;'>*WAITFOR300 Is this ok?</span> (to wait up to 300 seconds (5 minutes) for the 
-				'Is this ok?' prompt in yum)</li>
+			<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>password:</span> (waits for a password prompt)</li>
+			<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>Is this ok?</span> (waits for the 'Is this ok?' prompt like the one seen in yum)</li>
+			<li><span style='color: #FC64FF;'>*WAITFOR300</span> <span style='color: #00FF00;'>Is this ok?</span> (waits up to 300 seconds (5 minutes) for the 
+				'Is this ok?' prompt in yum. You can set 300 to be any second value - e.g. 3600 would be 1 hour.)</li>
 		</ul>
-	<li><span style='color: #00FF00;'>*SEND xx</span> - Sends characters to the console (e.g. '*SEND y' to send the letter y 
-		to the console). Best used with WAITFOR, it's useful for answering the prompts that WAITFOR is looking for. You should 
-		also use SEND to submit the command <i>before</i> you want to use WAITFOR immediately after it. You should use SEND 
-		for any command that you believe might need interaction, as well as for any answer  (see the working example below).</li>
+	<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>xx</span> - Sends characters to the console (e.g. '*SEND y' to send the letter y 
+		to the console). Best used with WAITFOR, it's useful for answering the prompts that WAITFOR is looking for. <b>You should 
+		also use SEND to submit the command <i>before</i> you want to use WAITFOR immediately after it. Not doing so will make the processor wait for the prompt and then wait for your 
+		WAITFOR (this is unlikely to be what you intended).</b> You should use SEND for any command that you believe might need interaction, as well as for any answer (see the working example below).</li>
 		<ul style="list-style-type:circle">
-			<li><span style='color: #00FF00;'>*SEND yum update</span> (to send the yum update command, then monitor the output 
+			<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span> (sends the yum update command, then monitor the output 
 				instead of monitoring the process)</li>
-			<li><span style='color: #00FF00;'>*SEND d</span> (to send the letter d to just download the packages instead of installing them)</li>
+			<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>d</span> (sends the letter d to just download the packages instead of installing them)</li>
 			<ul style="list-style-type:square">
-				<li>Working example of yum update prompt:
-				<li style='color: #00FF00; list-style-type:none;'>*SEND yum update</li>
-				<li style='color: #00FF00; list-style-type:none;'>*WAITFOR60 Is this ok?</li>
-				<li style='color: #00FF00; list-style-type:none;'>*SEND d</li>
+				<li>Working example of yum update:
+				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span></li>
+				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*WAITFOR60</span> <span style='color: #00FF00;'>Is this ok?</span></li>
+				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>y</span></li>
 		</ul>
 </ul>
 
+<input type='hidden' name='Edit_Command' value='$Edit_Command'>
+<input type='hidden' name='Edit_Command_Dependency_Temp_Existing' value='$Edit_Command_Dependency_Temp_Existing'>
+
 <hr width="50%">
-<input type='hidden' name='Edit_Command_Post' value='$Edit_Command'>
-<div style="text-align: center"><input type=submit name='ok' value='Edit Command'></div>
+<div style="text-align: center"><input type=submit name='Command_Edit_Final' value='Edit Command Set'></div>
 
 </form>
 
 ENDHTML
 
-	}
 } # sub html_edit_command
 
 sub edit_command {
@@ -360,12 +689,13 @@ sub edit_command {
 		`name` = ?,
 		`command` = ?,
 		`description` = ?,
+		`owner_id` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
 		
-	$Update_Command->execute($Command_Name_Edit, $Command_Edit, $Description_Edit, $User_Name, $Edit_Command_Post);
+	$Update_Command->execute($Command_Name_Edit, $Command_Edit, $Command_Description_Edit, $Command_Owner_Edit, $User_Name, $Edit_Command);
 
-	# Audit Log
+	# Audit Log (Command Set)
 	my $DB_Management = DB_Management();
 	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
 		`category`,
@@ -377,14 +707,66 @@ sub edit_command {
 		?, ?, ?, ?
 	)");
 
-	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name modified command ID $Edit_Command_Post. It is now recorded as $Command_Edit.", $User_Name);
-	# / Audit Log
+	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name modified Command Set ID $Edit_Command. It is now recorded as $Command_Edit.", $User_Name);
+	# / Audit Log (Command Set)
+
+	### Dependencies
+	$Edit_Command_Dependency_Temp_Existing =~ s/^,//;
+	$Edit_Command_Dependency_Temp_Existing =~ s/,$//;
+	my @Dependencies = split(',', $Edit_Command_Dependency_Temp_Existing);
+
+
+	my $Clear_Old_Dependency_Links = $DB_DShell->prepare("DELETE from `command_set_dependency`
+		WHERE `command_set_id` = ?");
+	
+	$Clear_Old_Dependency_Links->execute($Edit_Command);
+
+	foreach my $Dependency (@Dependencies) {
+
+		my $Dependency_Insert = $DB_DShell->prepare("INSERT INTO `command_set_dependency` (
+			`id`,
+			`command_set_id`,
+			`dependent_command_set_id`,
+			`order`
+		)
+		VALUES (
+			NULL,
+			?,
+			?,
+			?
+		)");
+		
+		$Dependency_Insert->execute($Edit_Command, $Dependency, '0');
+
+		# Audit Log (Dependency)
+		my $Select_Command_Set = $DB_DShell->prepare("SELECT `name` FROM `command_sets` WHERE `id` = ?");
+		$Select_Command_Set->execute($Dependency);
+		while ( (my $Name) = $Select_Command_Set->fetchrow_array() )
+		{
+			my $DB_Management = DB_Management();
+			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+				`category`,
+				`method`,
+				`action`,
+				`username`
+			)
+			VALUES (
+				?,
+				?,
+				?,
+				?
+			)");
+			$Audit_Log_Submission->execute("D-Shell", "Edit", "$User_Name edited Command Set $Name [ID $Dependency] as a dependency of $Command_Name_Edit [Command Set ID $Edit_Command]", $User_Name);
+		}
+		# / Audit Log
+	}
+	### / Dependencies
 
 } # sub edit_command
 
 sub html_delete_command {
 
-	my $Select_Command = $DB_DShell->prepare("SELECT `command`
+	my $Select_Command = $DB_DShell->prepare("SELECT `name`
 	FROM `command_sets`
 	WHERE `id` = ?");
 
@@ -401,13 +783,13 @@ print <<ENDHTML;
 </div>
 </a>
 
-<h3 align="center">Delete Command</h3>
+<h3 align="center">Delete Command Set</h3>
 
 <form action='/D-Shell/command-sets.cgi' method='post' >
-<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this command?</p>
+<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this command set?</p>
 <table align = "center">
 	<tr>
-		<td style="text-align: right;">Command:</td>
+		<td style="text-align: right;">Command Set:</td>
 		<td style="text-align: left; color: #00FF00;">$Command_Extract</td>
 	</tr>
 </table>
@@ -417,7 +799,7 @@ print <<ENDHTML;
 
 
 <hr width="50%">
-<div style="text-align: center"><input type=submit name='ok' value='Delete Command'></div>
+<div style="text-align: center"><input type=submit name='ok' value='Delete Command Set'></div>
 
 </form>
 
@@ -429,7 +811,7 @@ ENDHTML
 sub delete_command {
 
 	# Audit Log
-	my $Select_Commands = $DB_DShell->prepare("SELECT `command`
+	my $Select_Commands = $DB_DShell->prepare("SELECT `name`
 		FROM `command_sets`
 		WHERE `id` = ?");
 
@@ -449,7 +831,7 @@ sub delete_command {
 			?, ?, ?, ?
 		)");
 
-		$Audit_Log_Submission->execute("D-Shell", "Delete", "$User_Name deleted $Command_Extract, command ID $Delete_Command_Confirm.", $User_Name);
+		$Audit_Log_Submission->execute("D-Shell", "Delete", "$User_Name deleted Command Set $Command_Extract, Command Set ID $Delete_Command_Confirm.", $User_Name);
 
 	}
 	# / Audit Log
@@ -458,6 +840,11 @@ sub delete_command {
 		WHERE `id` = ?");
 	
 	$Delete_Command->execute($Delete_Command_Confirm);
+
+	my $Delete_Dependency_Links = $DB_DShell->prepare("DELETE from `command_set_dependency`
+		WHERE `command_set_id` = ?");
+	
+	$Delete_Dependency_Links->execute($Delete_Command_Confirm);
 
 } # sub delete_command
 
@@ -565,7 +952,7 @@ ENDHTML
 
 if ($Hosts) {
 print <<ENDHTML;
-			<table>
+			<table align = "center">
 				<tr>
 					<td style="padding-right: 15px">Host Name</td>
 				</tr>
@@ -594,6 +981,7 @@ ENDHTML
 
 sub run_command {
 
+	$Add_Host_Temp_Existing =~ s/^,//;
 	$Add_Host_Temp_Existing =~ s/,$//;
 
 	# Audit Log
@@ -618,7 +1006,7 @@ sub run_command {
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>6,
+		-cols=>11,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -635,7 +1023,7 @@ sub html_output {
 		my $Total_Rows = $Select_Command_Count->rows();
 
 
-	my $Select_Commands = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `last_modified`, `modified_by`
+	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `last_modified`, `modified_by`
 		FROM `command_sets`
 		WHERE `id` LIKE ?
 		OR `name` LIKE ?
@@ -646,51 +1034,94 @@ sub html_output {
 	);
 
 	if ($ID_Filter) {
-		$Select_Commands->execute($ID_Filter, $ID_Filter, $ID_Filter, $ID_Filter);
+		$Select_Command_Sets->execute($ID_Filter, $ID_Filter, $ID_Filter, $ID_Filter);
 	}
 	else {
-		$Select_Commands->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+		$Select_Command_Sets->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
 	}
 
-	my $Rows = $Select_Commands->rows();
+	my $Rows = $Select_Command_Sets->rows();
 
-	$Table->addRow( "ID", "Command Name", "Command", "Description", "Last Modified", "Modified By", "Queue Job", "Edit", "Delete" );
+	$Table->addRow( "ID", "Command Name", "Command", "Description", "Dependencies", "Owner", "Last Modified", "Modified By", "Queue Job", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Command_Row_Count=1;
-
-	while ( my @Select_Commands = $Select_Commands->fetchrow_array() )
+	while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_array() )
 	{
 
-		$Command_Row_Count++;
-
-		my $DBID = $Select_Commands[0];
+		my $DBID = $Select_Command_Sets[0];
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Command_Name = $Select_Commands[1];
+		my $Command_Name = $Select_Command_Sets[1];
 			$Command_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Command = $Select_Commands[2];
+		my $Command = $Select_Command_Sets[2];
 			$Command =~ s/\r/<br \/>/g;
-			if ($Command =~ /^\*/) {$Command = "<span style='color: #00FF00;'>$Command</span>"}
+			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #00FF00;'>$1<\/span>$2/g;
+			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 			my $Line_Count = $Command =~ tr/\n//;
-				$Line_Count++;				
-		my $Description = $Select_Commands[3];
-			$Description =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Host_Types = $Select_Commands[4];
-		my $Last_Modified = $Select_Commands[5];
-		my $Modified_By = $Select_Commands[6];
+				$Line_Count++;
+		my $Command_Description = $Select_Command_Sets[3];
+			$Command_Description =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Command_Owner_ID = $Select_Command_Sets[4];
+		my $Last_Modified = $Select_Command_Sets[5];
+		my $Modified_By = $Select_Command_Sets[6];
+
+		## Gather dependency data
+		my $Command_Set_Dependencies;
+		my $Select_Command_Set_Dependencies = $DB_DShell->prepare("SELECT `dependent_command_set_id`
+			FROM `command_set_dependency`
+			WHERE `command_set_id` = ?
+			ORDER BY `order` ASC"
+		);
+		$Select_Command_Set_Dependencies->execute($DBID_Clean);
+	
+		while ( my @Dependencies = $Select_Command_Set_Dependencies->fetchrow_array() )
+		{
+			my $Dependent_Command_Set_ID = $Dependencies[0];
+
+			my $Select_Dependency_Name = $DB_DShell->prepare("SELECT `name`, `description`
+				FROM `command_sets`
+				WHERE `id` = ?"
+			);
+			$Select_Dependency_Name->execute($Dependent_Command_Set_ID);
+			my ($Dependency_Name, $Dependency_Description) = $Select_Dependency_Name->fetchrow_array();
+
+			$Dependency_Description =~ s/(.{40}[^\s]*)\s+/$1\n/g; # Takes the first 40 chars, then breaks at next linespace
+
+			$Command_Set_Dependencies = $Command_Set_Dependencies . 
+			"<a href='/D-Shell/command-sets.cgi?ID_Filter=$Dependent_Command_Set_ID' class='tooltip' text=\"$Dependency_Description\">$Dependency_Name</a><br/>";
+		}
+		## / Gather dependency data
+
+		## Discover owner
+
+		my $Command_Owner;
+		if ($Command_Owner_ID == 0) {
+			$Command_Owner = 'System';
+		}
+		else {
+			my $Discover_Owner = $DB_Management->prepare("SELECT `username`
+				FROM `credentials`
+				WHERE `id` = ?"
+			);
+			$Discover_Owner->execute($Command_Owner_ID);
+			$Command_Owner = $Discover_Owner->fetchrow_array();
+		}
+
+		## / Discover owner
 
 		$Table->addRow(
-			"$DBID",
-			"$Command_Name",
+			$DBID,
+			$Command_Name,
 			"<details>
 				<summary>#This command set has $Line_Count lines. Expand to view.</summary>
 				<p>$Command</p>
 			</details>",
-			"$Description",
-			"$Last_Modified",
-			"$Modified_By",
+			$Command_Description,
+			$Command_Set_Dependencies,
+			$Command_Owner,
+			$Last_Modified,
+			$Modified_By,
 			"<a href='/D-Shell/command-sets.cgi?Run_Command=$DBID_Clean'><img src=\"/resources/imgs/forward.png\" alt=\"Run Command ID $DBID_Clean\" ></a>",
 			"<a href='/D-Shell/command-sets.cgi?Edit_Command=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Command ID $DBID_Clean\" ></a>",
 			"<a href='/D-Shell/command-sets.cgi?Delete_Command=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Command ID $DBID_Clean\" ></a>"
@@ -699,14 +1130,16 @@ sub html_output {
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(5, '110px');
+	$Table->setColStyle (4, 'max-width: 400px;');
 	$Table->setColWidth(6, '110px');
-	$Table->setColWidth(7, '1px');
-	$Table->setColWidth(8, '1px');
+	$Table->setColWidth(7, '110px');
+	$Table->setColWidth(8, '110px');
 	$Table->setColWidth(9, '1px');
+	$Table->setColWidth(10, '1px');
+	$Table->setColWidth(11, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (5..9) {
+	for (5..11) {
 		$Table->setColAlign($_, 'center');
 	}
 
@@ -751,10 +1184,10 @@ print <<ENDHTML;
 			<form action='/D-Shell/command-sets.cgi' method='post' >
 			<table>
 				<tr>
-					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Command</span></td>
+					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Command Set</span></td>
 				</tr>
 				<tr>
-					<td align="center"><input type='submit' name='Add_Command' value='Add Command'></td>
+					<td align="center"><input type='submit' name='Add_Command' value='Add Command Set'></td>
 				</tr>
 			</table>
 			</form>
@@ -763,10 +1196,10 @@ print <<ENDHTML;
 			<form action='/D-Shell/command-sets.cgi' method='post' >
 			<table>
 				<tr>
-					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Command</span></td>
+					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Command Set</span></td>
 				</tr>
 				<tr>
-					<td style="text-align: right;"><input type=submit name='Edit Command' value='Edit Command'></td>
+					<td style="text-align: right;"><input type=submit name='Edit Command' value='Edit Command Set'></td>
 					<td align="center">
 						<select name='Edit_Command' style="width: 150px">
 ENDHTML

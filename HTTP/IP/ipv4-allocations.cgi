@@ -26,6 +26,7 @@ my $Final_Parent = $CGI->param("Final_Parent");
 my $Submit_Allocation = $CGI->param("Submit_Allocation");
 
 my $Final_Block_Manual = $CGI->param("Final_Block_Manual");
+my $Location_Input_Manual = $CGI->param("Location_Input_Manual");
 
 my $Edit_Block = $CGI->param("Edit_Block");
 my $Block_Edit = $CGI->param("Block_Edit");
@@ -132,7 +133,7 @@ elsif ($Submit_Allocation) {
 		exit(0);
 	}
 }
-elsif ($Final_Block_Manual) {
+elsif ($Final_Block_Manual && $Location_Input_Manual) {
 	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -666,6 +667,8 @@ sub add_block {
 	VALUES (
 		?, ?, ?
 	)");
+
+	if ($Location_Input_Manual) {$Final_Parent = $Location_Input_Manual}
 
 	$Block_Insert->execute($Final_Allocation, $Final_Parent, $User_Name);
 
@@ -1393,8 +1396,6 @@ print <<ENDHTML;
 <div id="full-page-block">
 <h2 style='text-align:center;'>IPv4 Manual Allocation</h2>
 
-<h4 style='text-align:center; color: #00FF00;'><a href='ipv4-allocations.cgi'>Click here to switch back to Automatic Allocation Mode</a></h4>
-
 <form action='ipv4-allocations.cgi' method='post'>
 <table align = "center">
 	<tr>
@@ -1402,14 +1403,24 @@ print <<ENDHTML;
 			EXTREME CAUTION! HERE BE DRAGONS!
 		</td>
 	</tr>
+</table>
+
+<h4 style='text-align:center; color: #00FF00;'><a href='ipv4-allocations.cgi'>Click here to switch back to Automatic Allocation Mode</a></h4>
+
+<table align = "center">
 	<tr>
 		<td style="font-size: 16px; text-align: center; color: #FF0000;">
-			It is possible to create duplicate or overlapping allocations
+			It is possible to create duplicate or overlapping allocations here if you're not careful.
 		</td>
 	</tr>
 	<tr>
 		<td style="font-size: 16px; text-align: center; color: #FF0000;">
-			It is possible to create allocations outside of the defined ranges
+			It is possible to create allocations outside of the defined ranges here if you're not careful.
+		</td>
+	</tr>
+	<tr>
+		<td style="font-size: 16px; text-align: center; color: #FF0000;">
+			There's also an audit log so everybody will know it was you that broke all the internets. And you'll become a meme.
 		</td>
 	</tr>
 </table>
@@ -1419,7 +1430,35 @@ print <<ENDHTML;
 <table align = "center">
 	<tr>
 		<td>
-			Usable CIDR Block:
+			Parent Block:
+		</td>
+		<td>
+			<select name='Location_Input_Manual'>
+ENDHTML
+
+		my $Location_Retreive = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
+		FROM `ipv4_blocks`
+		ORDER BY `ip_block_name` ASC");
+		
+		$Location_Retreive->execute( );
+		
+		while ( my @DB_Output = $Location_Retreive->fetchrow_array() )
+		{
+			my $IP_Block_ID = $DB_Output[0];
+			my $IP_Block_Name = $DB_Output[1];
+			my $IP_Block_Description = $DB_Output[2];
+			my $IP_Block = $DB_Output[3];
+		
+			print "<option value='$IP_Block'>$IP_Block_Name [$IP_Block] (ID: $IP_Block_ID) $IP_Block_Description</option>";
+		
+		}
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Usable CIDR Notated Block:
 		</td>
 		<td>
 			<input type='text' name='Final_Block_Manual' placeholder='192.168.0.0/32' required>

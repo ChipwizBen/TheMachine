@@ -212,22 +212,51 @@ my $SSH_Fork = new Parallel::ForkManager($Threads);
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to node ${Blue}$Check_Node${Clear}\n";
 			}
 
+			my $Retry_Count = 0;
+			my $Max_Retry_Count = 10;
+			my $Connection_Timeout = 2;
 			my $SSH = Net::SSH::Expect->new (
 				host => $Check_Node,
 				password=> '<Password>',
 				user => 'root',
 				log_file => $Log_File,
-				timeout => 1,
+				timeout => $Connection_Timeout,
 				exp_internal => 0,
 				exp_debug => 0,
 				raw_pty => 0
 			);
 
-			my $Login = $SSH->login(1) or die "Login failed to $Check_Node\n";
-#			if ($Login !~ /VMWare/) {
-#				print "Could not login to $Node. Output was: $Login\n";
-#				$SSH_Fork->finish(233);
-#			}
+			while (1) {
+				my $Hello = eval{$SSH->login();};
+			
+				last if defined $Hello;
+				last if $Retry_Count >= $Max_Retry_Count;
+				$Retry_Count++;
+			
+				my $Connection_Timeout_Plus = $Connection_Timeout;
+				$Connection_Timeout_Plus += 2;
+				if ($Verbose) {
+					print "Tried to connect to $Check_Node with $Connection_Timeout second timeout but failed. Timeout increased to $Connection_Timeout_Plus, trying again (attempt $Retry_Count of $Max_Retry_Count)...\n";
+				}
+				$Connection_Timeout = $Connection_Timeout_Plus;
+			
+				$SSH = Net::SSH::Expect->new (
+					host => $Check_Node,
+					password=> '<Password>',
+					user => 'root',
+					log_file => $Log_File,
+					timeout => $Connection_Timeout,
+					exp_internal => 0,
+					exp_debug => 0,
+					raw_pty => 0
+				);
+				sleep 1;
+			}
+
+			if ($Retry_Count == $Max_Retry_Count) {
+				print "Couldn't connect to $Check_Node after $Retry_Count attempts. Terminating the job.\n";
+				exit(1);
+			}
 
 			#while ( defined (my $Line = $SSH->read_all()) ) {print $Line} # Keeps the text flowing
 
@@ -301,9 +330,9 @@ my ($Host, $Check_Node, $SSH, $Command_Timeout, $Log_File) = @_;
 	while ( defined (my $Line = $SSH->read_line()) ) {
 
 		my $VM_ID = $Line;
-			$VM_ID =~ s/^(\d*)\s*(\w*)\s*\[.*/$1/;
+			$VM_ID =~ s/^(\d*)\s*([a-zA-Z0-9\-\_]*)\s*\[.*/$1/;
 		my $VM_Name = $Line;
-			$VM_Name =~ s/^(\d*)\s*(\w*)\s*\[.*/$2/;
+			$VM_Name =~ s/^(\d*)\s*([a-zA-Z0-9\-\_]*)\s*\[.*/$2/;
 
 		if ($VM_Name =~ /^$Host$/) {
 			$VM_On_Node = 'Yes';

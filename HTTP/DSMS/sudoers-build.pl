@@ -22,16 +22,42 @@ my $Group = Sudoers_Group_ID();
 
 my $Date = strftime "%Y-%m-%d", localtime;
 
+$| = 1;
+my $Override;
+
+foreach my $Parameter (@ARGV) {
+        if ($Parameter eq '--override') {$Override = 1}
+        if ($Parameter eq '-h' || $Parameter eq '--help') {
+                print "\nOptions are:\n\t--override\tOverrides any database lock\n\n";
+                exit(0);
+        }
+}
+
 # Safety check for other running build processes
 
-	my $Select_Locks = $DB_Management->prepare("SELECT `sudoers-build` FROM `lock`");
+	my $Select_Locks = $DB_Management->prepare("SELECT `sudoers-build`, `sudoers-distribution` FROM `lock`");
 	$Select_Locks->execute();
 
 	my ($Sudoers_Build_Lock, $Sudoers_Distribution_Lock) = $Select_Locks->fetchrow_array();
 
 		if ($Sudoers_Build_Lock == 1 || $Sudoers_Distribution_Lock == 1) {
-			print "Another build or distribution process is running. Exiting...\n";
-			exit(1);
+			if ($Override) {
+				print "Override detected. (CTRL + C to cancel)...\n\n";
+				print "Continuing in... 5\r";
+				sleep 1;
+				print "Continuing in... 4\r";
+				sleep 1;
+				print "Continuing in... 3\r";
+				sleep 1;
+				print "Continuing in... 2\r";
+				sleep 1;
+				print "Continuing in... 1\r";
+				sleep 1;
+			}
+			else {
+				print "Another build or distribution process is running. Use --override to continue anyway. Exiting...\n";
+				exit(1);
+			}
 		}
 		else {
 			$DB_Management->do("UPDATE `lock` SET

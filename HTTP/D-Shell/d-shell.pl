@@ -2,7 +2,6 @@
 
 use strict;
 use Net::SSH::Expect;
-use Parallel::ForkManager;
 use POSIX qw(strftime);
 
 my $Common_Config;
@@ -159,24 +158,54 @@ if ($Status == 4) {
 my $Log_File = "/tmp/$Job_ID";
 $Host = 'schofieldbj';
 
+my $Retry_Count = 0;
+my $Max_Retry_Count = 10;
+my $Connection_Timeout = 2;
 my $SSH = Net::SSH::Expect->new (
 	host => $Host,
 	user => 'schofieldbj',
 	password=> 'qwePOI123!',
 	log_file => $Log_File,
-	timeout => 1,
+	timeout => $Connection_Timeout,
 	exp_internal => $Very_Verbose,
 	exp_debug => 0,
 	raw_pty => 1
 );
 
-my $Login = $SSH->login(10);
-if ($Login !~ /Last/) {
-	print "Could not login to $Host. Output was: $Login\n";
+while (1) {
+	my $Hello = eval{$SSH->login();};
+
+	last if defined $Hello;
+	last if $Retry_Count >= $Max_Retry_Count;
+	$Retry_Count++;
+
+	my $Connection_Timeout_Plus = $Connection_Timeout;
+	$Connection_Timeout_Plus += 2;
+	if ($Verbose) {
+		print "Tried to connect to $Host with $Connection_Timeout second timeout but failed. Timeout increased to $Connection_Timeout_Plus, trying again (attempt $Retry_Count of $Max_Retry_Count)...\n";
+	}
+	$Connection_Timeout = $Connection_Timeout_Plus;
+
+	$SSH = Net::SSH::Expect->new (
+		host => $Host,
+		user => 'schofieldbj',
+		password=> 'qwePOI123!',
+		log_file => $Log_File,
+		timeout => $Connection_Timeout,
+		exp_internal => $Very_Verbose,
+		exp_debug => 0,
+		raw_pty => 1
+	);
+	sleep 1;
+}
+
+if ($Retry_Count == $Max_Retry_Count) {
+	print "Couldn't connect to $Host after $Retry_Count attempts. Terminating the job.\n";
+	exit(1);
 }
 
 #$SSH->exec("stty raw -echo"); # Shows all remote command outputs on local console
-$SSH->timeout(1);
+$SSH->timeout(5);
 
 	my $Start_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
 	system("echo 'Job ended at $Start_Time.' >> $Log_File");
@@ -203,9 +232,9 @@ foreach my $Command (@Commands) {
 	$Job_Status_Update->execute($Job_ID, $Command, 'Currently Running...', 'System');
 	my $Job_Status_Update_ID = $DB_DShell->{mysql_insertid};		
 
-	while ( defined (my $Line = $SSH->read_all()) ) {
+#	while ( defined (my $Line = $SSH->read_all()) ) {
 		# Do nothing! Clearing the input stream for the next command
-	} 
+#	} 
 
 	my $Command_Output;
 	my $Exit_Code;
@@ -257,7 +286,7 @@ foreach my $Command (@Commands) {
 				$Exit_Code = 0;
 			}
 			else {
-				#system("echo '${Red}No match for '$Wait' after $Wait_Timeout seconds. Closing the SSH session for $Host.${Clear}\n' >> $Log_File");
+				system("echo '${Red}No match for '$Wait' after $Wait_Timeout seconds. Closing the SSH session for $Host.${Clear}\n' >> $Log_File");
 				print "${Red}No match for '$Wait' after $Wait_Timeout seconds. Closing the SSH session for $Host.${Clear}\n";
 				$Command_Output = "$Wait Match NOT Found!";
 				$Exit_Code = 1;

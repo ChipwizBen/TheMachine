@@ -141,12 +141,15 @@ sub write_reverse_proxy {
 
 			my $Enforce_SSL_Header;
 			if ($Enforce_SSL) {
-				$Enforce_SSL_Header = '
+				$Enforce_SSL_Header = "
     <IfModule mod_rewrite.c>
         RewriteEngine On
         RewriteCond %{HTTPS} off
         RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
-    </IfModule>';
+    </IfModule>
+    <IfModule !mod_rewrite.c>
+        Redirect                 /       https://$Server_Name
+    </IfModule>";
 			}	
 			 
 
@@ -175,6 +178,7 @@ sub write_reverse_proxy {
     ProxyPassReverse         $Source    $Destination
 
     SSLEngine                On
+    $HSTS_Header
     SSLProtocol              ALL -SSLv2 -SSLv3
     $CipherOrder
     SSLCipherSuite           "$CipherSuite"
@@ -258,14 +262,9 @@ sub write_redirect {
 		print Redirect_Config <<RP_EOF;
 <VirtualHost $Server_Name:80>
     ServerName               $Server_Name
-    RedirectPermanent        $Source       $Destination
+    Redirect                 $Source       $Destination
     TransferLog              $Transfer_Log
     ErrorLog                 $Error_Log
-    <Location /*>
-        Order deny,allow
-        Allow from all
-        Require all granted
-    </Location>
 </VirtualHost>
 
 RP_EOF
