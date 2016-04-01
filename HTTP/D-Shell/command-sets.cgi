@@ -34,6 +34,7 @@ my $Edit_Command = $CGI->param("Edit_Command");
 	my $Edit_Command_Dependency_Temp_New = $CGI->param("Edit_Command_Dependency_Temp_New");
 	my $Edit_Command_Dependency_Temp_Existing = $CGI->param("Edit_Command_Dependency_Temp_Existing");
 	my $Delete_Command_Edit_Dependency_Entry_ID = $CGI->param("Delete_Command_Edit_Dependency_Entry_ID");
+	my $Edit_Command_Revision = $CGI->param("Edit_Command_Revision");
 
 my $Delete_Command = $CGI->param("Delete_Command");
 my $Delete_Command_Confirm = $CGI->param("Delete_Command_Confirm");
@@ -219,17 +220,17 @@ my @Command_Set_Dependencies = split(',', $Add_Command_Dependency_Temp_Existing)
 
 foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 
-	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`
+	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ? ");
 	$Command_Set_Query->execute($Command_Set_Dependency);
 		
-	while ( my $Command_Set_Name = $Command_Set_Query->fetchrow_array() ) {
+	while ( my ($Command_Set_Name, $Command_Set_Revision) = $Command_Set_Query->fetchrow_array() ) {
 		my $Command_Set_Name_Character_Limited = substr( $Command_Set_Name, 0, 60 );
 			if ($Command_Set_Name_Character_Limited ne $Command_Set_Name) {
 				$Command_Set_Name_Character_Limited = $Command_Set_Name_Character_Limited . '...';
 			}
-			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited"
+			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited [Rev. $Command_Set_Revision]"
 				. " <a href='/D-Shell/command-sets.cgi?
 				Add_Command=1&
 				Command_Name_Add=$Command_Name_Add&
@@ -286,7 +287,7 @@ ENDHTML
 
 	print "<option value='' selected>--Select a Command Set Dependency--</option>";
 
-	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`
+	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
 		FROM `command_sets`
 		ORDER BY `name`"
 	);
@@ -294,14 +295,14 @@ ENDHTML
 	$Select_Command_Sets->execute();
 
 
-	while ( my ($Command_Set_ID, $Command_Set_Name) = $Select_Command_Sets->fetchrow_array() )
+	while ( my ($Command_Set_ID, $Command_Set_Name, $Command_Set_Revision) = $Select_Command_Sets->fetchrow_array() )
 	{
 
 		my $Command_Set_Character_Limited = substr( $Command_Set_Name, 0, 60 );
 			if ($Command_Set_Character_Limited ne $Command_Set_Name) {
 				$Command_Set_Character_Limited = $Command_Set_Character_Limited . '...';
 			}
-		print "<option value='$Command_Set_ID'>$Command_Set_Character_Limited</option>";
+		print "<option value='$Command_Set_ID'>$Command_Set_Character_Limited [Rev. $Command_Set_Revision]</option>";
 
 	}
 print <<ENDHTML;
@@ -467,18 +468,20 @@ sub html_edit_command {
 
 	## Existing Command Set Details
 
-	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `name`, `command`, `description`, `owner_id`
+	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `name`, `command`, `description`, `owner_id`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?"
 	);
 
 	$Select_Command_Sets->execute($Edit_Command);
 
+	my $Command_Revision_Edit;
 	while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_array() ) {
 		if (!$Command_Name_Edit) {$Command_Name_Edit = $Select_Command_Sets[0]}
 		if (!$Command_Edit) {$Command_Edit = $Select_Command_Sets[1]}
 		if (!$Command_Description_Edit) {$Command_Description_Edit = $Select_Command_Sets[2]}
 		if (!$Command_Owner_Edit) {$Command_Owner_Edit = $Select_Command_Sets[3]}
+		$Command_Revision_Edit = $Select_Command_Sets[4];
 	}
 
 	## / Existing Command Set Details
@@ -521,17 +524,17 @@ my @Command_Set_Dependencies = split(',', $Edit_Command_Dependency_Temp_Existing
 
 foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 
-	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`
+	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ? ");
 	$Command_Set_Query->execute($Command_Set_Dependency);
-		
-	while ( my $Command_Set_Name = $Command_Set_Query->fetchrow_array() ) {
+
+	while ( my ($Command_Set_Name, $Command_Set_Revision) = $Command_Set_Query->fetchrow_array() ) {
 		my $Command_Set_Name_Character_Limited = substr( $Command_Set_Name, 0, 60 );
 			if ($Command_Set_Name_Character_Limited ne $Command_Set_Name) {
 				$Command_Set_Name_Character_Limited = $Command_Set_Name_Character_Limited . '...';
 			}
-			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited"
+			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited [Rev. $Command_Set_Revision]"
 				. " <a href='/D-Shell/command-sets.cgi?
 				Edit_Command=$Edit_Command&
 				Command_Name_Edit=$Command_Name_Edit&
@@ -546,6 +549,8 @@ foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 	}
 }
 
+my $Command_Revision_Edit_Plus_One = $Command_Revision_Edit + 1;
+
 print <<ENDHTML;
 
 <div id="full-width-popup-box">
@@ -554,7 +559,20 @@ print <<ENDHTML;
 </div>
 </a>
 
-<h3 align="center">Edit Command Set</h3>
+<h3 align="center">Edit Command Set ID $Edit_Command</h3>
+
+<table align = "center">
+	<tr>
+		<td style="text-align: right;">Current revision:</td>
+		<td style='color: #00FF00;'>$Command_Revision_Edit</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Next revision:</td>
+		<td style='color: #00FF00;'>$Command_Revision_Edit_Plus_One</td>
+	</tr>
+</table>
+
+<br />
 
 <form action='/D-Shell/command-sets.cgi' name='Edit_Command' method='post' >
 
@@ -588,22 +606,22 @@ ENDHTML
 
 	print "<option value='' selected>--Select a Command Set Dependency--</option>";
 
-	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`
+	my $Select_Dependency_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
 		FROM `command_sets`
 		ORDER BY `name`"
 	);
 
-	$Select_Command_Sets->execute();
+	$Select_Dependency_Command_Sets->execute();
 
 
-	while ( my ($Command_Set_ID, $Command_Set_Name) = $Select_Command_Sets->fetchrow_array() )
+	while ( my ($Command_Set_ID, $Command_Set_Name, $Command_Set_Revision) = $Select_Dependency_Command_Sets->fetchrow_array() )
 	{
 		if ($Command_Set_ID != $Edit_Command) { 
 			my $Command_Set_Character_Limited = substr( $Command_Set_Name, 0, 60 );
 				if ($Command_Set_Character_Limited ne $Command_Set_Name) {
 					$Command_Set_Character_Limited = $Command_Set_Character_Limited . '...';
 				}
-			print "<option value='$Command_Set_ID'>$Command_Set_Character_Limited</option>";
+			print "<option value='$Command_Set_ID'>$Command_Set_Character_Limited [Rev. $Command_Set_Revision]</option>";
 		}
 	}
 print <<ENDHTML;
@@ -672,6 +690,7 @@ print <<ENDHTML;
 </ul>
 
 <input type='hidden' name='Edit_Command' value='$Edit_Command'>
+<input type='hidden' name='Edit_Command_Revision' value='$Command_Revision_Edit_Plus_One'>
 <input type='hidden' name='Edit_Command_Dependency_Temp_Existing' value='$Edit_Command_Dependency_Temp_Existing'>
 
 <hr width="50%">
@@ -685,15 +704,20 @@ ENDHTML
 
 sub edit_command {
 
-	my $Update_Command = $DB_DShell->prepare("UPDATE `command_sets` SET
-		`name` = ?,
-		`command` = ?,
-		`description` = ?,
-		`owner_id` = ?,
-		`modified_by` = ?
-		WHERE `id` = ?");
-		
-	$Update_Command->execute($Command_Name_Edit, $Command_Edit, $Command_Description_Edit, $Command_Owner_Edit, $User_Name, $Edit_Command);
+	my $Update_Command = $DB_DShell->prepare("INSERT INTO `command_sets` (
+		`name`,
+		`command`,
+		`description`,
+		`owner_id`,
+		`revision`,
+		`revision_parent`,
+		`modified_by`
+	)
+	VALUES (
+		?, ?, ?, ?, ?, ?, ?
+	)");
+
+	$Update_Command->execute($Command_Name_Edit, $Command_Edit, $Command_Description_Edit, $Command_Owner_Edit, $Edit_Command_Revision, $Edit_Command, $User_Name);
 
 	# Audit Log (Command Set)
 	my $DB_Management = DB_Management();
@@ -707,7 +731,7 @@ sub edit_command {
 		?, ?, ?, ?
 	)");
 
-	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name modified Command Set ID $Edit_Command. It is now recorded as $Command_Edit.", $User_Name);
+	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name created a new revision (Rev. $Edit_Command_Revision) for $Command_Name_Edit (Command Set ID $Edit_Command). It is now recorded as $Command_Edit.", $User_Name);
 	# / Audit Log (Command Set)
 
 	### Dependencies
@@ -756,7 +780,7 @@ sub edit_command {
 				?,
 				?
 			)");
-			$Audit_Log_Submission->execute("D-Shell", "Edit", "$User_Name edited Command Set $Name [ID $Dependency] as a dependency of $Command_Name_Edit [Command Set ID $Edit_Command]", $User_Name);
+			$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name modified $Command_Name_Edit [Command Set ID $Edit_Command] to have the dependency $Name [Command Set ID $Dependency].", $User_Name);
 		}
 		# / Audit Log
 	}
@@ -1006,7 +1030,7 @@ sub run_command {
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>11,
+		-cols=>12,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -1023,31 +1047,32 @@ sub html_output {
 		my $Total_Rows = $Select_Command_Count->rows();
 
 
-	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `last_modified`, `modified_by`
+	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
 		FROM `command_sets`
 		WHERE `id` LIKE ?
 		OR `name` LIKE ?
 		OR `command` LIKE ?
+		OR `revision` LIKE ?
 		OR `description` LIKE ?
 		ORDER BY `name` ASC
 		LIMIT 0 , $Rows_Returned"
 	);
 
 	if ($ID_Filter) {
-		$Select_Command_Sets->execute($ID_Filter, $ID_Filter, $ID_Filter, $ID_Filter);
+		$Select_Command_Sets->execute($ID_Filter, '', '', '', '');
 	}
 	else {
-		$Select_Command_Sets->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+		$Select_Command_Sets->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
 	}
 
-	my $Rows = $Select_Command_Sets->rows();
-
-	$Table->addRow( "ID", "Command Name", "Command", "Description", "Dependencies", "Owner", "Last Modified", "Modified By", "Queue Job", "Edit", "Delete" );
+	$Table->addRow( "ID", "Command Name", "Command", "Description", "Dependencies", "Owner", 
+		"Last Modified", "Modified By", "Revision History", "Queue Job", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_array() )
+	my $Rows;
+	COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_array() )
 	{
-
+		$Rows++;
 		my $DBID = $Select_Command_Sets[0];
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -1055,7 +1080,7 @@ sub html_output {
 			$Command_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Command = $Select_Command_Sets[2];
 			$Command =~ s/\r/<br \/>/g;
-			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #00FF00;'>$1<\/span>$2/g;
+			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 			my $Line_Count = $Command =~ tr/\n//;
@@ -1063,8 +1088,20 @@ sub html_output {
 		my $Command_Description = $Select_Command_Sets[3];
 			$Command_Description =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Command_Owner_ID = $Select_Command_Sets[4];
-		my $Last_Modified = $Select_Command_Sets[5];
-		my $Modified_By = $Select_Command_Sets[6];
+		my $Command_Revision = $Select_Command_Sets[5];
+			$Command_Revision =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Command_Revision_Parent = $Select_Command_Sets[6];
+		my $Last_Modified = $Select_Command_Sets[7];
+		my $Modified_By = $Select_Command_Sets[8];
+
+		## Latest revision
+		my $Select_Child = $DB_DShell->prepare("SELECT `id` FROM `command_sets` WHERE `revision_parent` = ?");
+		$Select_Child->execute($DBID);
+		my $Children = $Select_Child->rows();
+		if ($Children > 0) {
+			$Rows--;
+			next COMMAND_SET;
+		}
 
 		## Gather dependency data
 		my $Command_Set_Dependencies;
@@ -1079,17 +1116,18 @@ sub html_output {
 		{
 			my $Dependent_Command_Set_ID = $Dependencies[0];
 
-			my $Select_Dependency_Name = $DB_DShell->prepare("SELECT `name`, `description`
+			my $Select_Dependency_Name = $DB_DShell->prepare("SELECT `name`, `description`, `revision`
 				FROM `command_sets`
 				WHERE `id` = ?"
 			);
 			$Select_Dependency_Name->execute($Dependent_Command_Set_ID);
-			my ($Dependency_Name, $Dependency_Description) = $Select_Dependency_Name->fetchrow_array();
+			my ($Dependency_Name, $Dependency_Description, $Dependency_Revision) = $Select_Dependency_Name->fetchrow_array();
 
 			$Dependency_Description =~ s/(.{40}[^\s]*)\s+/$1\n/g; # Takes the first 40 chars, then breaks at next linespace
 
 			$Command_Set_Dependencies = $Command_Set_Dependencies . 
-			"<a href='/D-Shell/command-sets.cgi?ID_Filter=$Dependent_Command_Set_ID' class='tooltip' text=\"$Dependency_Description\">$Dependency_Name</a><br/>";
+			"<a href='/D-Shell/command-sets.cgi?ID_Filter=$Dependent_Command_Set_ID' class='tooltip' 
+			text=\"$Dependency_Description\">$Dependency_Name <span style='color: #00FF00;'>[Rev. $Dependency_Revision]</span></a><br/>";
 		}
 		## / Gather dependency data
 
@@ -1112,7 +1150,7 @@ sub html_output {
 
 		$Table->addRow(
 			$DBID,
-			$Command_Name,
+			$Command_Name . "<br /> <span style='color: #00FF00;'>Revision " . $Command_Revision . "</span>",
 			"<details>
 				<summary>#This command set has $Line_Count lines. Expand to view.</summary>
 				<p>$Command</p>
@@ -1122,6 +1160,7 @@ sub html_output {
 			$Command_Owner,
 			$Last_Modified,
 			$Modified_By,
+			"<a href='/D-Shell/command-sets.cgi?Revision_History=$DBID_Clean'><img src=\"/resources/imgs/history.png\" alt=\"Revision History for Command ID $DBID_Clean\" ></a>",
 			"<a href='/D-Shell/command-sets.cgi?Run_Command=$DBID_Clean'><img src=\"/resources/imgs/forward.png\" alt=\"Run Command ID $DBID_Clean\" ></a>",
 			"<a href='/D-Shell/command-sets.cgi?Edit_Command=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Command ID $DBID_Clean\" ></a>",
 			"<a href='/D-Shell/command-sets.cgi?Delete_Command=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Command ID $DBID_Clean\" ></a>"
@@ -1134,12 +1173,14 @@ sub html_output {
 	$Table->setColWidth(6, '110px');
 	$Table->setColWidth(7, '110px');
 	$Table->setColWidth(8, '110px');
-	$Table->setColWidth(9, '1px');
-	$Table->setColWidth(10, '1px');
-	$Table->setColWidth(11, '1px');
+	$Table->setColWidth(9, '40px');
+	$Table->setColWidth(10, '40px');
+	$Table->setColWidth(11, '40px');
+	$Table->setColWidth(12, '40px');
 
 	$Table->setColAlign(1, 'center');
-	for (5..11) {
+	$Table->setColAlign(2, 'center');
+	for (4..12) {
 		$Table->setColAlign($_, 'center');
 	}
 

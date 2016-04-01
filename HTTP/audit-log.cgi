@@ -140,6 +140,9 @@ sub html_output {
 		elsif ($Method_Clean eq 'Revoke') {
 			$Table->setCellClass (-1, 3, 'tbrowerror');
 		}
+		elsif ($Method_Clean eq 'Run') {
+			$Table->setCellClass (-1, 3, 'tbrowgreen');
+		}
 
 		$Table->setColWidth(1, '1px');
 		$Table->setColWidth(5, '110px');

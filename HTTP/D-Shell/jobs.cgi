@@ -17,6 +17,9 @@ my ($CGI, $Session, $Cookie) = CGI();
 
 my $Run_Job = $CGI->param("Run_Job");
 my $Job_Log = $CGI->param("Job_Log");
+my $Trigger_Job = $CGI->param("Trigger_Job");
+my $Captured_User_Name = $CGI->param("Captured_User_Name");
+my $Captured_Password = $CGI->param("Captured_Password");
 
 my $User_Name = $Session->param("User_Name");
 my $User_DShell_Admin = $Session->param("User_DShell_Admin");
@@ -34,7 +37,7 @@ if ($Rows_Returned eq '') {
 }
 
 
-if ($Run_Job) {
+if ($Trigger_Job && $Captured_User_Name && $Captured_Password) {
 	if ($User_DShell_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -43,13 +46,20 @@ if ($Run_Job) {
 		exit(0);
 	}
 	else {
-		&run_job;
-		my $Message_Green = "Job ID $Run_Job started.";
+		my $PID = &run_job;
+		my $Message_Green = "Job ID $Trigger_Job started as user $Captured_User_Name (PID: $PID).";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /D-Shell/jobs.cgi\n\n";
+		undef $Trigger_Job;
+		print $CGI->redirect(-url=>'/D-Shell/jobs.cgi');
 		exit(0);
 	}
+}
+elsif ($Run_Job) {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_run_job;
 }
 elsif ($Job_Log) {
 		require $Header;
@@ -61,6 +71,42 @@ else {
 	require $Header;
 	&html_output;
 	require $Footer;
+}
+
+sub html_run_job {
+
+print <<ENDHTML;
+
+<div id="small-popup-box">
+<a href="/D-Shell/jobs.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Run Job ID $Run_Job</h3>
+
+<form action='/D-Shell/jobs.cgi' name='Job_Trigger' method='post' >
+
+<table align = "center">
+	<tr>
+		<td style="text-align: right;">User Name:</td>
+		<td><input type='text' name='Captured_User_Name' style="width:100%" placeholder="SSH User Name" required autofocus></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Password:</td>
+		<td><input type='password' name='Captured_Password' style="width:100%" placeholder="SSH Password" required></td>
+	</tr>
+</table>
+
+<hr width="50%">
+
+<input type='hidden' name='Trigger_Job' value='$Run_Job'>
+
+<div style="text-align: center"><input type=submit name='Job_Trigger' value='Run Job'></div>
+
+</form>
+ENDHTML
+
 }
 
 sub run_job {
@@ -76,13 +122,32 @@ sub run_job {
 	VALUES (
 		?, ?, ?, ?
 	)");
-	
-	$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Name started Job ID $Run_Job.", $User_Name);
+
+	$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Name started Job ID $Trigger_Job with username $Captured_User_Name.", $User_Name);
 	# / Audit Log
 
-	system("./d-shell.pl -j $Run_Job");
 
-}
+	$SIG{CHLD} = 'IGNORE';
+	my $PID = fork();
+	if (defined $PID && $PID == 0) {
+		use IPC::Run qw(run);
+
+#		my @echo = "echo";
+#		my @Password = $Captured_Password;
+#		my @Magic = "./d-shell.pl";
+#		my $Params = "-j $Trigger_Job -u $Captured_User_Name";
+#		run \@echo, \$Captured_Password, '|', \@Magic, \$Params;
+
+
+		#system "echo CP: $Captured_Password >> /tmp/output 2>&1";
+		exec "echo $Captured_Password | ./d-shell.pl -j $Trigger_Job -u $Captured_User_Name >> /tmp/output 2>&1";
+		#exec "./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Captured_Password >> /tmp/output 2>&1";
+		exit(0);
+	}
+
+	return $PID;
+
+} # sub run_job
 
 sub html_job_log {
 
@@ -113,8 +178,15 @@ sub html_job_log {
 	{
 		$Row_Count++;
 		my $Command = $Entries[0];
+			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 		my $Exit_Code = $Entries[1];
 		my $Output = $Entries[2];
+			$Output =~ s/\n/<br \/>/g;
+			if ($Output =~ m/Skipped comment \/ empty line./) {
+				$Output = "<span style='color: #FFC600;'>$Output</span>";
+			}
+			
 		my $Task_Started = $Entries[3];
 		my $Task_Ended = $Entries[4];
 		my $Modified_By = $Entries[5];
@@ -146,9 +218,10 @@ sub html_job_log {
 	if ($Row_Count == 0) {
 		undef $Table;
 		undef $Row_Count;
+		$Entry_Count = "No log entries for Job ID $Job_Log yet."
 	}
 	else {
-		$Entry_Count = "$Entry_Count status entires found, latest first."
+		$Entry_Count = "$Entry_Count log entires found."
 	}
 
 print <<ENDHTML;
@@ -163,6 +236,8 @@ print <<ENDHTML;
 <p>$Entry_Count</p>
 
 $Table
+
+<br />
 
 ENDHTML
 
@@ -198,7 +273,7 @@ sub html_output {
 
 	my $Rows = $Select_Jobs->rows();
 
-	$Table->addRow( "ID", "Host", "Command Set", "Currently Running Command", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
+	$Table->addRow( "ID", "Host", "Execution Sets", "Currently Running Command", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Job_Row_Count=1;
@@ -221,12 +296,12 @@ sub html_output {
 		$Host_Query->execute($Host_ID);
 		my $Host_Name = $Host_Query->fetchrow_array();
 
-		my $Command_Query = $DB_DShell->prepare("SELECT `name`
+		my $Command_Query = $DB_DShell->prepare("SELECT `name`, `description`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?");
 		$Command_Query->execute($Command_Set_ID);
-		my $Command_Name = $Command_Query->fetchrow_array();
-		$Command_Name = "<a href='/D-Shell/command-sets.cgi?ID_Filter=$Command_Set_ID'>$Command_Name</a>";
+		my ($Command_Name, $Command_Description, $Command_Revision) = $Command_Query->fetchrow_array();
+		$Command_Name = "CSet: <a href='/D-Shell/command-sets.cgi?ID_Filter=$Command_Set_ID' class='tooltip' text=\"$Command_Description\"><span style='color: #FF8A00;'>$Command_Name</span> <span style='color: #00FF00;'>[Rev. $Command_Revision]</span></a>";
 
 		## Gather dependency data
 		my $Command_Set_Dependencies;
@@ -241,21 +316,21 @@ sub html_output {
 		{
 			my $Dependent_Command_Set_ID = $Dependencies[0];
 
-			my $Select_Dependency_Name = $DB_DShell->prepare("SELECT `name`, `description`
+			my $Select_Dependency_Name = $DB_DShell->prepare("SELECT `name`, `description`, `revision`
 				FROM `command_sets`
 				WHERE `id` = ?"
 			);
 			$Select_Dependency_Name->execute($Dependent_Command_Set_ID);
-			my ($Dependency_Name, $Dependency_Description) = $Select_Dependency_Name->fetchrow_array();
+			my ($Dependency_Name, $Dependency_Description, $Dependency_Revision) = $Select_Dependency_Name->fetchrow_array();
 
 			$Dependency_Description =~ s/(.{40}[^\s]*)\s+/$1\n/g; # Takes the first 40 chars, then breaks at next linespace
 
 			$Command_Set_Dependencies = $Command_Set_Dependencies . 
-			"<a href='/D-Shell/command-sets.cgi?ID_Filter=$Dependent_Command_Set_ID' class='tooltip' text=\"$Dependency_Description\">$Dependency_Name</a>, ";
+			"<a href='/D-Shell/command-sets.cgi?ID_Filter=$Dependent_Command_Set_ID' class='tooltip' text=\"$Dependency_Description\"><span style='color: #FF8A00;'>$Dependency_Name</span> <span style='color: #00FF00;'>[Rev. $Dependency_Revision]</span></a>, ";
 		}
 		if ($Command_Set_Dependencies) {
 			$Command_Set_Dependencies =~ s/,\s$//;
-			$Command_Set_Dependencies = '[Dependencies: ' . $Command_Set_Dependencies . ']';
+			$Command_Set_Dependencies = '<br />Deps: ' . $Command_Set_Dependencies;
 		}
 		## / Gather dependency data
 
@@ -303,8 +378,33 @@ sub html_output {
 		}
 		elsif ($Status == 3) {$Status = 'Stopped';}
 		elsif ($Status == 4) {
-			$Running_Command = 'None, Job Killed.';
+			$Running_Command = 'None, Job Pending.';
 			$Status = 'Pending';
+			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+		}
+		elsif ($Status == 5) {
+			$Running_Command = 'Job Failed! Connection timout, network or host resolution problems and an unwritable log file are the most likely causes. Try running it manually.';
+			$Status = 'Error';
+			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+		}
+		elsif ($Status == 6) {
+			$Running_Command = 'Job Failed! Bad credentials are the most likely cause. Try running it manually.';
+			$Status = 'Error';
+			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+		}
+		elsif ($Status == 7) {
+			$Running_Command = 'Job Failed! Bailed out on unmatched WAITFOR. Check the log for what appeared.';
+			$Status = 'Error';
+			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+		}
+		elsif ($Status == 8) {
+			$Running_Command = 'Execution Failed! User Name not caught.';
+			$Status = 'Error';
+			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+		}
+		elsif ($Status == 9) {
+			$Running_Command = 'Execution Failed! Password not caught.';
+			$Status = 'Error';
 			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 		}
 		else {$Status = 'Error';}

@@ -29,9 +29,10 @@ sub System_Name {
 
 sub System_Short_Name {
 
-	# This is the system's shortened name, which is used in short descriptions. It can be the same as the full name in System_Name if you want, but it might get busy on some screens if your system name is long. It's encouraged to keep this short (less than 10 characters).
+	# This is the system's shortened name, which is used in short descriptions. It can be the same as the full name in System_Name if you want, but it might get busy on some screens if your system name is long.
+	# THERE SHOULD BE NO SPACES OR SPECIAL CHARACTERS. It's also encouraged to keep this short (less than 10 characters).
 
-	my $System_Short_Name = 'The Machine';
+	my $System_Short_Name = 'TheMachine';
 	return $System_Short_Name;
 
 } # sub System_Short_Name
