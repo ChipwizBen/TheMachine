@@ -210,9 +210,13 @@ sub html_job_log {
 	}
 
 	$Table->setColAlign(1, 'center');
+	$Table->setColAlign(2, 'left');
+	$Table->setColAlign(3, 'left');
 	for (4..7) {
 		$Table->setColAlign($_, 'center');
 	}
+	$Table->setCellAlign(1, 2, 'center');
+	$Table->setCellAlign(1, 3, 'center');
 
 	my $Entry_Count = $Row_Count;
 	if ($Row_Count == 0) {

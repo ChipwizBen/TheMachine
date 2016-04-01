@@ -718,6 +718,7 @@ sub edit_command {
 	)");
 
 	$Update_Command->execute($Command_Name_Edit, $Command_Edit, $Command_Description_Edit, $Command_Owner_Edit, $Edit_Command_Revision, $Edit_Command, $User_Name);
+	my $Command_Insert_ID = $DB_DShell->{mysql_insertid};
 
 	# Audit Log (Command Set)
 	my $DB_Management = DB_Management();
@@ -731,7 +732,7 @@ sub edit_command {
 		?, ?, ?, ?
 	)");
 
-	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name created a new revision (Rev. $Edit_Command_Revision) for $Command_Name_Edit (Command Set ID $Edit_Command). It is now recorded as $Command_Edit.", $User_Name);
+	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name created a new revision (Rev. $Edit_Command_Revision) for $Command_Name_Edit (Command Set ID $Edit_Command, now ID $Command_Insert_ID). It is now recorded as $Command_Edit.", $User_Name);
 	# / Audit Log (Command Set)
 
 	### Dependencies
@@ -743,7 +744,7 @@ sub edit_command {
 	my $Clear_Old_Dependency_Links = $DB_DShell->prepare("DELETE from `command_set_dependency`
 		WHERE `command_set_id` = ?");
 	
-	$Clear_Old_Dependency_Links->execute($Edit_Command);
+	$Clear_Old_Dependency_Links->execute($Command_Insert_ID);
 
 	foreach my $Dependency (@Dependencies) {
 
@@ -760,7 +761,7 @@ sub edit_command {
 			?
 		)");
 		
-		$Dependency_Insert->execute($Edit_Command, $Dependency, '0');
+		$Dependency_Insert->execute($Command_Insert_ID, $Dependency, '0');
 
 		# Audit Log (Dependency)
 		my $Select_Command_Set = $DB_DShell->prepare("SELECT `name` FROM `command_sets` WHERE `id` = ?");
@@ -780,7 +781,7 @@ sub edit_command {
 				?,
 				?
 			)");
-			$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name modified $Command_Name_Edit [Command Set ID $Edit_Command] to have the dependency $Name [Command Set ID $Dependency].", $User_Name);
+			$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name modified $Command_Name_Edit [Command Set ID $Command_Insert_ID] to have the dependency $Name [Command Set ID $Dependency].", $User_Name);
 		}
 		# / Audit Log
 	}
@@ -1127,7 +1128,7 @@ sub html_output {
 
 			$Command_Set_Dependencies = $Command_Set_Dependencies . 
 			"<a href='/D-Shell/command-sets.cgi?ID_Filter=$Dependent_Command_Set_ID' class='tooltip' 
-			text=\"$Dependency_Description\">$Dependency_Name <span style='color: #00FF00;'>[Rev. $Dependency_Revision]</span></a><br/>";
+			text=\"$Dependency_Description\"><span style='color: #FF8A00;'>$Dependency_Name</span> <span style='color: #00FF00;'>[Rev. $Dependency_Revision]</span></a><br/>";
 		}
 		## / Gather dependency data
 
@@ -1150,7 +1151,7 @@ sub html_output {
 
 		$Table->addRow(
 			$DBID,
-			$Command_Name . "<br /> <span style='color: #00FF00;'>Revision " . $Command_Revision . "</span>",
+			"<span style='color: #FF8A00;'>" . $Command_Name . "</span><br /> <span style='color: #00FF00;'>Revision " . $Command_Revision . "</span>",
 			"<details>
 				<summary>#This command set has $Line_Count lines. Expand to view.</summary>
 				<p>$Command</p>
