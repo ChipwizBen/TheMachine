@@ -126,22 +126,16 @@ sub run_job {
 	$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Name started Job ID $Trigger_Job with username $Captured_User_Name.", $User_Name);
 	# / Audit Log
 
+	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		`status` = ?,
+		`modified_by` = ?
+		WHERE `id` = ?");
+	$Update_Job->execute( '10', $User_Name, $Trigger_Job);
 
 	$SIG{CHLD} = 'IGNORE';
 	my $PID = fork();
 	if (defined $PID && $PID == 0) {
-		use IPC::Run qw(run);
-
-#		my @echo = "echo";
-#		my @Password = $Captured_Password;
-#		my @Magic = "./d-shell.pl";
-#		my $Params = "-j $Trigger_Job -u $Captured_User_Name";
-#		run \@echo, \$Captured_Password, '|', \@Magic, \$Params;
-
-
-		#system "echo CP: $Captured_Password >> /tmp/output 2>&1";
-		exec "echo $Captured_Password | ./d-shell.pl -j $Trigger_Job -u $Captured_User_Name >> /tmp/output 2>&1";
-		#exec "./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Captured_Password >> /tmp/output 2>&1";
+		exec "./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Captured_Password >> /tmp/output 2>&1 &";
 		exit(0);
 	}
 
@@ -411,7 +405,16 @@ sub html_output {
 			$Status = 'Error';
 			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 		}
-		else {$Status = 'Error';}
+		elsif ($Status == 10) {
+			$Running_Command = $Held_Running_Command;
+			$Status = 'Starting...';
+			$Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
+		}
+		else {
+			$Running_Command = 'Unhandled exit code. This is not supposed to happen.';
+			$Status = 'Error';
+			$Button = "<img src=\"/resources/imgs/delete.png\" alt=\"Something bad happened :(\" >";
+		}
 
 		$Table->addRow(
 			$DBID,
@@ -434,6 +437,7 @@ sub html_output {
 
 		if ($Status eq 'Job Complete') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowdarkgreen');}
 		if ($Status eq 'Running') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowgreen');}
+		if ($Status eq 'Starting...') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowgreen');}
 		if ($Status eq 'Paused') {$Table->setCellClass ($Job_Row_Count, 5, 'tbroworange');}
 		if ($Status eq 'Pending') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowgrey');}
 		if ($Status eq 'Error') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowerror');}

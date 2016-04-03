@@ -18,6 +18,7 @@ my $Very_Verbose = 0;
 my $Ignore_Bad_Exit_Code = 0;
 my $Command_Timeout = 3;
 
+$0 = 'D-Shell';
 $| = 1;
 my $Green = "\e[0;32;10m";
 my $Yellow = "\e[0;33;10m";
@@ -44,10 +45,10 @@ Options are:
 
 ${Green}Examples:
 	${Green}## Run a job
-	${Blue}$0 -j 643 -u ben${Clear}
+	${Blue}./d-shell.pl -j 643 -u ben${Clear}
 
 	${Green}## Run a job dependency
-	${Blue}$0 -p 643 -c 542 -H 435 -d 2 -u ben${Clear}\n\n";
+	${Blue}./d-shell.pl -p 643 -c 542 -H 435 -d 2 -u ben${Clear}\n\n";
 
 
 if (!@ARGV) {
@@ -61,6 +62,7 @@ my $Dependent_Command_Set_ID;
 my $Dependent_Host_ID;
 my $Dependency_Chain_ID = 0;
 my $User_Name;
+my $User_Password;
 foreach my $Parameter (@ARGV) {
 	if ($Parameter eq '-v' || $Parameter eq '--verbose') {
 		$Verbose = 1;
@@ -133,6 +135,15 @@ foreach my $Parameter (@ARGV) {
 			}
 		}
 	}
+	if ($Parameter eq '-P' || $Parameter eq '--password') {
+		my @Password = @ARGV;
+		while ($User_Password = shift @Password) {
+			if ($User_Password =~ /-P/ || $User_Password =~ /--dependencychain/) {
+				$User_Password = shift @Password;
+				last;
+			}
+		}
+	}
 }
 
 if (!$Parent_ID) {
@@ -140,15 +151,14 @@ if (!$Parent_ID) {
 }
 my $Log_File = "/tmp/$Parent_ID";
 
-my $User_Password;
 if ((!$Discovered_Job_ID && !$Dependent_Command_Set_ID) || !$User_Name) {
 	print "Something went wrong. Did you pass a Job ID or a Command Set and a User Name?\n";
 	exit(1);
 }
-else {
+if (!defined $User_Password) {
 	use Term::ReadKey;
-	ReadMode 5; # noecho TTY mode
-	#print "Password for $User_Name:";
+	ReadMode 4; # noecho TTY mode
+	print "Password for $User_Name:";
 	$User_Password = <STDIN>;
 	ReadMode 0; # Reset TTY mode
 }
@@ -164,7 +174,6 @@ if (!defined $User_Name) {
 }
 if (!defined $User_Password) {
 	print "${Red}## Password not caught (User Name was $User_Name). Exiting... (PID: $$).${Clear}\n";
-	system "echo User Name was $User_Name. P: $User_Password. >> /tmp/output";
 	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?
@@ -192,7 +201,7 @@ elsif (!$Discovered_Job_ID && $Dependent_Command_Set_ID) {
 	my $Dependency_Processor = &processor($Dependent_Host_ID, $Connected_Host, $Dependent_Command_Set_ID);
 }
 else {
-	print "${Red}## Did you read the manual? Shitting pants and exiting (PID: $$).${Clear}\n";
+	print "${Red}## Did you read the manual or help? Shitting pants and exiting (PID: $$).${Clear}\n";
 	exit(1);
 }
 	
@@ -259,7 +268,7 @@ sub job_discovery {
 			exit(0);
 		}
 	}
-	if ($Status == 4) {
+	if ($Status == 4 || $Status == 10) {
 		print "${Green}Job ID ${Blue}$Job_ID${Green} is pending. Starting job...${Clear}\n";
 		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 			`status` = ?,
@@ -329,7 +338,7 @@ sub host_connection {
 		last if $Hello =~ m/uid/;
 		last if $Retry_Count >= $Max_Retry_Count;
 		if ($Hello =~ m/Permission denied/) {
-			print "Supplied credentials failed. Terminating the job $User_Password.\n";
+			print "Supplied credentials failed. Terminating the job.\n";
 			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
@@ -383,8 +392,8 @@ sub processor {
 	
 	while ( my $Command_Set_Dependency_ID = $Discover_Dependencies->fetchrow_array() ) {
 		print "${Green}I've discovered that Command Set ID ${Blue}$Process_Command_Set_ID${Green} is dependent on Command Set ID ${Blue}$Command_Set_Dependency_ID${Green}. Processing Command Set ID ${Blue}$Command_Set_Dependency_ID${Green} as dependency ${Blue}$Dependency_Chain_ID${Green}. ${Clear}\n";
-		print "${Green}Executing: ${Blue}$0 -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name ${Clear}\n";
-		my $System_Exit_Code = system "echo '$User_Password' | $0 -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name";
+		print "${Green}Executing: ${Blue}./d-shell.pl -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name ${Clear}\n";
+		my $System_Exit_Code = system "./d-shell.pl -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name -P $User_Password";
 		if ($System_Exit_Code == 0) {
 			print "${Green}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Green} execution complete. Exit code was $System_Exit_Code.${Clear}\n";
 		}
@@ -433,7 +442,7 @@ sub processor {
 	#	} 
 	
 		my $Command_Output;
-		my $Exit_Code = 999;
+		my $Exit_Code = 7;
 		if (($Command =~ /^#/) || ($Command eq undef)) {
 			if ($Verbose == 1) {
 				#system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Skipping comment/empty line ${Blue}$Command${Clear}\n' >> $Log_File");
@@ -514,6 +523,7 @@ sub processor {
 				#system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending ${Yellow}$Send ${Green}to $Connected_Host${Clear}\n' >> $Log_File");
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending '${Yellow}$Send${Green}'${Clear}\n";
 			}
+			if ($Send eq '') {$Send = ' '}
 			$Connected_Host->send($Send);
 			$Command_Output = "'$Send' sent.";
 			$Exit_Code = 0;
