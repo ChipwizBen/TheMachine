@@ -11,6 +11,7 @@ require $Common_Config;
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
 my $DB_DShell = DB_DShell();
+my $DShell_Job_Log_Location = DShell_Job_Log_Location();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my $Override = 0;
 my $Verbose = 0;
@@ -149,7 +150,7 @@ foreach my $Parameter (@ARGV) {
 if (!$Parent_ID) {
 	$Parent_ID = $Discovered_Job_ID;
 }
-my $Log_File = "/tmp/$Parent_ID";
+my $DShell_Job_Log_File = "$DShell_Job_Log_Location/$Parent_ID";
 
 if ((!$Discovered_Job_ID && !$Dependent_Command_Set_ID) || !$User_Name) {
 	print "Something went wrong. Did you pass a Job ID or a Command Set and a User Name?\n";
@@ -320,7 +321,7 @@ sub host_connection {
 			host => $Host,
 			user => $User_Name,
 			password=> $User_Password,
-			log_file => $Log_File,
+			log_file => $DShell_Job_Log_File,
 			timeout => $Connection_Timeout,
 			exp_internal => $Very_Verbose,
 			exp_debug => 0,
@@ -380,7 +381,7 @@ sub processor {
 	$Dependency_Chain_ID++;
 
 	my $Start_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
-	system("echo 'Job ended at $Start_Time.' >> $Log_File");
+	system("echo 'Job started at $Start_Time.' >> $DShell_Job_Log_File");
 
 	## Discover dependencies
 	my $Discover_Dependencies = $DB_DShell->prepare("SELECT `dependent_command_set_id`
@@ -491,9 +492,9 @@ sub processor {
 					$Exit_Code = 0;
 				}
 				else {
-					system("echo '${Red}No match for '$Wait' after $Wait_Timeout seconds. Closing the SSH session.${Clear}\n' >> $Log_File");
+					system("echo '${Red}No match for '$Wait' after $Wait_Timeout seconds. Closing the SSH session.${Clear}\n' >> $DShell_Job_Log_File");
 					print "${Red}No match for '$Wait' after $Wait_Timeout seconds. Closing the SSH session.${Clear}\n";
-					$Command_Output = "$Wait Match NOT Found! Last line was: $Line. Full job log at $Log_File.";
+					$Command_Output = "$Wait Match NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_File.";
 					$Exit_Code = 7;
 					last LINEFEED;
 				}
@@ -579,7 +580,7 @@ sub processor {
 	$Update_Job->execute( '0', $User_Name, $Parent_ID);
 
 my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
-system("echo 'Job ended at $End_Time.' >> $Log_File");
+system("echo 'Job ended at $End_Time.' >> $DShell_Job_Log_File");
 
 } # sub processor
 

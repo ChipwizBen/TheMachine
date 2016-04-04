@@ -40,6 +40,10 @@ my $Delete_Command = $CGI->param("Delete_Command");
 my $Delete_Command_Confirm = $CGI->param("Delete_Command_Confirm");
 my $Command_Delete = $CGI->param("Command_Delete");
 
+my $Revision_History = $CGI->param("Revision_History");
+	my $Diff = $CGI->param("Diff");
+	my $Diff_Previous = $CGI->param("Diff_Previous");
+
 my $Run_Command = $CGI->param("Run_Command");
 	my $Add_Host_Group_Temp_New = $CGI->param("Add_Host_Group_Temp_New");
 	my $Add_Host_Group_Temp_Existing = $CGI->param("Add_Host_Group_Temp_Existing");
@@ -130,6 +134,18 @@ elsif ($Edit_Command && $Command_Edit_Final) {
 		exit(0);
 	}
 }
+elsif ($Revision_History) {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_revision_history;
+}
+elsif ($Diff && $Diff_Previous) {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_diff_revision;
+}
 elsif ($Delete_Command) {
 	if ($User_DShell_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
@@ -177,7 +193,7 @@ elsif ($Run_Command && !$Run_Command_Final) {
 		&html_run_command;
 	}
 }
-elsif ($Run_Command && $Run_Command_Final) {
+elsif ($Run_Command && $Run_Command_Final && $Add_Host_Temp_Existing) {
 	if ($User_DShell_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -791,13 +807,13 @@ sub edit_command {
 
 sub html_delete_command {
 
-	my $Select_Command = $DB_DShell->prepare("SELECT `name`
+	my $Select_Command = $DB_DShell->prepare("SELECT `name`, `revision`
 	FROM `command_sets`
 	WHERE `id` = ?");
 
 	$Select_Command->execute($Delete_Command);
 	
-	while ( my $Command_Extract = $Select_Command->fetchrow_array() )
+	while ( my ($Command_Name, $Command_Revision) = $Select_Command->fetchrow_array() )
 	{
 
 
@@ -815,12 +831,12 @@ print <<ENDHTML;
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Command Set:</td>
-		<td style="text-align: left; color: #00FF00;">$Command_Extract</td>
+		<td style="text-align: left; color: #00FF00;">$Command_Name [Rev. $Command_Revision]</td>
 	</tr>
 </table>
 
 <input type='hidden' name='Delete_Command_Confirm' value='$Delete_Command'>
-<input type='hidden' name='Command_Delete' value='$Command_Extract'>
+<input type='hidden' name='Command_Delete' value='$Command_Name [Rev. $Command_Revision]'>
 
 
 <hr width="50%">
@@ -835,14 +851,46 @@ ENDHTML
 
 sub delete_command {
 
+	# Dependency check
+	my $Dependency_Check = $DB_DShell->prepare("SELECT `command_set_id`
+		FROM `command_set_dependency`
+		WHERE `dependent_command_set_id` = ?"
+	);
+	$Dependency_Check->execute($Delete_Command_Confirm);
+	my $Rows = $Dependency_Check->rows();
+	
+	if ($Rows > 0) {
+		my $Dependencies;
+		while (my $Dependency = $Dependency_Check->fetchrow_array() )
+		{
+			my $Dependency_Discovery = $DB_DShell->prepare("SELECT `name`, `revision`
+				FROM `command_sets`
+				WHERE `id` = ?"
+			);
+			$Dependency_Discovery->execute($Dependency);
+			while (my ($Dependency_Name, $Dependency_Revision) = $Dependency_Discovery->fetchrow_array() )
+			{
+				$Dependencies = $Dependencies . "$Dependency_Name [Rev. $Dependency_Revision], ";
+			}
+		}
+		$Dependencies =~ s/,\s$//;
+		
+		my $Message_Red="Cannot delete Command Set ID $Delete_Command_Confirm as the following are dependent on it: $Dependencies.";
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/command-sets.cgi\n\n";
+		exit(0);
+
+	}
+
 	# Audit Log
-	my $Select_Commands = $DB_DShell->prepare("SELECT `name`
+	my $Select_Commands = $DB_DShell->prepare("SELECT `name`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?");
 
 	$Select_Commands->execute($Delete_Command_Confirm);
 
-	while ( my ( $Command_Extract ) = $Select_Commands->fetchrow_array() )
+	while ( my ( $Command_Name, $Command_Revision ) = $Select_Commands->fetchrow_array() )
 	{
 
 		my $DB_Management = DB_Management();
@@ -856,7 +904,7 @@ sub delete_command {
 			?, ?, ?, ?
 		)");
 
-		$Audit_Log_Submission->execute("D-Shell", "Delete", "$User_Name deleted Command Set $Command_Extract, Command Set ID $Delete_Command_Confirm.", $User_Name);
+		$Audit_Log_Submission->execute("D-Shell", "Delete", "$User_Name deleted Command Set $Command_Name [Rev. $Command_Revision], Command Set ID $Delete_Command_Confirm.", $User_Name);
 
 	}
 	# / Audit Log
@@ -938,8 +986,7 @@ print <<ENDHTML;
 </div>
 </a>
 
-<h3 align="center">Run Command Set</h3>
-<p style='color: #00FF00;'>$Command_Name</p>
+<h3 align="center">Run Command Set <span style='color: #00FF00;'>$Command_Name</span></h3>
 
 <form action='/D-Shell/command-sets.cgi' name='Run_Command' method='post' >
 
@@ -1028,6 +1075,178 @@ sub run_command {
 
 }
 
+sub html_diff_revision {
+
+	use Text::Diff;
+
+	my $Select_First_Diff = $DB_DShell->prepare("SELECT `name`, `command`
+		FROM `command_sets`
+		WHERE `id` = ?"
+	);
+
+	$Select_First_Diff->execute($Diff_Previous);
+
+	my $Diff_One_Name;
+	my $Diff_One_Command;
+	while ( my @Diff_One = $Select_First_Diff->fetchrow_array() ) {
+			$Diff_One_Name = $Diff_One[0];
+			$Diff_One_Command = $Diff_One[1];
+	}
+
+	my $Select_Second_Diff = $DB_DShell->prepare("SELECT `name`, `command`
+		FROM `command_sets`
+		WHERE `id` = ?"
+	);
+
+	$Select_Second_Diff->execute($Diff);
+
+	my $Diff_Two_Name;
+	my $Diff_Two_Command;
+	while ( my @Diff_Two = $Select_Second_Diff->fetchrow_array() ) {
+			$Diff_Two_Name = $Diff_Two[0];
+			$Diff_Two_Command = $Diff_Two[1];
+	}
+ 
+	my $Diff_Compare = diff \$Diff_One_Command, \$Diff_Two_Command, { STYLE => 'Text::Diff::HTML' };
+	$Diff_Compare =~ s/\r/<br \/>/g;
+print <<ENDHTML;
+
+<style>
+	.file span { display: block; }
+	.file .fileheader, .file .hunkheader {color: #FFFFFF; }
+	.file .hunk .ctx { background: #0000FF;}
+	.file .hunk ins { background: #007200; text-decoration: none; display: block; }
+	.file .hunk del { background: #FF0000; text-decoration: none; display: block; }
+</style>
+
+<div id="full-width-popup-box">
+<a href="/D-Shell/command-sets.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Diff of Command Set ID <span style='color: #00FF00;'>$Diff</span> and <span style='color: #00FF00;'>$Diff_Previous</span></h3>
+
+<table align='center'>
+	<tr>
+		<td>$Diff_One_Name (ID $Diff)</td>
+		<td>$Diff_Two_Name (ID $Diff_Previous)</td>
+	</tr>
+	<tr>
+		<td colspan='2'>$Diff_Compare</td>
+		
+	</tr>
+</table>
+
+
+
+
+<br />
+
+ENDHTML
+
+
+} # sub html_diff_revision
+
+sub html_revision_history {
+
+	my $Table = new HTML::Table(
+		-cols=>8,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'95%',
+		-spacing=>0,
+		-padding=>1
+	);
+
+	$Table->addRow( "ID", "Command Name", "Command", "Description", "Owner", 
+		"Last Modified", "Modified By", "Diff with Previous" );
+	$Table->setRowClass (1, 'tbrow1');
+
+	my $Revision = $Revision_History;
+	while ($Revision ne 'Last') {
+		my $Select_Command = $DB_DShell->prepare("SELECT `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
+			FROM `command_sets`
+			WHERE `id` LIKE ?"
+		);
+	
+		$Select_Command->execute($Revision);
+	
+		while ( my @Revision = $Select_Command->fetchrow_array() ) {
+			my $Command_Name = $Revision[0];
+			my $Command_Set = $Revision[1];
+				$Command_Set =~ s/\r/<br \/>/g;
+				$Command_Set =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+				$Command_Set =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
+			my $Command_Description = $Revision[2];
+			my $Command_Owner_ID = $Revision[3];
+			my $Command_Revision = $Revision[4];
+				my $Command_Revision_Previous = $Command_Revision - 1;
+			my $Command_Parent = $Revision[5];
+			my $Last_Modified = $Revision[6];
+			my $Modified_By = $Revision[7];
+
+			## Discover owner
+	
+			my $Command_Owner;
+			if ($Command_Owner_ID == 0) {
+				$Command_Owner = 'System';
+			}
+			else {
+				my $Discover_Owner = $DB_Management->prepare("SELECT `username`
+					FROM `credentials`
+					WHERE `id` = ?"
+				);
+				$Discover_Owner->execute($Command_Owner_ID);
+				$Command_Owner = $Discover_Owner->fetchrow_array();
+			}
+	
+			## / Discover owner
+
+			my $Diff;
+			if ($Command_Parent) {
+				$Diff = "<a href='/D-Shell/command-sets.cgi?Diff=$Revision&Diff_Previous=$Command_Parent'><img src=\"/resources/imgs/diff.png\" alt=\"Diff Rev. $Command_Revision and Rev. $Command_Revision_Previous\" ></a>";
+			}
+			else {
+				$Diff = 'N/A';
+			}
+
+			$Table->addRow($Revision, "$Command_Name [Rev. $Command_Revision]", $Command_Set, $Command_Description, $Command_Owner, 
+			$Last_Modified, $Modified_By, 
+			$Diff);
+	
+			if ($Command_Parent) {
+				$Revision = $Command_Parent;
+			}
+			else {
+				$Revision = 'Last';
+			}
+
+		}
+	}
+
+
+print <<ENDHTML;
+
+<div id="full-width-popup-box">
+<a href="/D-Shell/command-sets.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Revision history for Command Set ID <span style='color: #00FF00;'>$Revision_History</span></h3>
+
+$Table
+<br />
+
+ENDHTML
+
+
+} # sub html_revision_history
+
 sub html_output {
 
 	my $Table = new HTML::Table(
@@ -1095,13 +1314,15 @@ sub html_output {
 		my $Last_Modified = $Select_Command_Sets[7];
 		my $Modified_By = $Select_Command_Sets[8];
 
-		## Latest revision
-		my $Select_Child = $DB_DShell->prepare("SELECT `id` FROM `command_sets` WHERE `revision_parent` = ?");
-		$Select_Child->execute($DBID);
-		my $Children = $Select_Child->rows();
-		if ($Children > 0) {
-			$Rows--;
-			next COMMAND_SET;
+		## Latest revision filter
+		if (!$ID_Filter) {
+			my $Select_Child = $DB_DShell->prepare("SELECT `id` FROM `command_sets` WHERE `revision_parent` = ?");
+			$Select_Child->execute($DBID);
+			my $Children = $Select_Child->rows();
+			if ($Children > 0) {
+				$Rows--;
+				next COMMAND_SET;
+			}	
 		}
 
 		## Gather dependency data

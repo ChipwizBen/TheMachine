@@ -410,6 +410,15 @@ sub Proxy_Redirect_Storage {
 
 } # sub Proxy_Redirect_Storage
 
+sub DShell_Job_Log_Location {
+
+	# This is the directory where job logs are stored. You do not need a trailing slash.
+
+	my $DShell_Job_Log_Location = '../Storage/DShell/Job-Log';
+	return $DShell_Job_Log_Location;
+
+} # sub DShell_Job_Log_Location
+
 sub DB_Management {
 
 	# This is your management database's connection information. This could be the same database as the database in the DB_Sudoers because the two schemas have different table names to facilitate a combination. However, the management data (System Accounts, Access Log, Audit Log, etc) contain sensitive information that normal users should not be allowed access to. This access control should also be applicable to database administrators, which is why this data is stored in a separate database by default to simplify access control.
