@@ -12,6 +12,7 @@ require $Common_Config;
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
 my $DB_DShell = DB_DShell();
+my $DB_IP_Allocation = DB_IP_Allocation();
 my $Note = "If you've got another snapshot/remove process running for this VM, VMWare won't let you do two at a time. This can also happen if you specify to remove snapshots and take a new one - VMWare sometimes can't delete them fast enough (and there's no way to see what's processing on the command line :-[ ) Try again in 10 minutes.";
 my %Hosts_Found = ();
 
@@ -31,6 +32,7 @@ Options are:
 	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes thread data
 	${Blue}-t, --threads\t\t${Green}Sets the number of threads to use for connecting to nodes. By default the number of threads matches the number of nodes. Setting it more than this is a BAD idea (for load).
 	${Blue}-H, --hosts\t\t${Green}A list of hosts to snapshot, comma seperated (no spaces!) [e.g.: -H host01,host02,host03]
+	${Blue}-i, --host-ids\t\t${Green}A list of host IDs to snapshot, comma seperated (no spaces!) [e.g.: -H 4587,155,2341]
 	${Blue}-c, --count\t\t${Green}Counts the snapshots belonging to the VM, including those done by $System_Short_Name
 	${Blue}-s, --snapshot\t\t${Green}Takes a snapshot of the listed hosts
 	${Blue}-r, --remove\t\t${Green}Removes snapshots for listed hosts that were created by $System_Short_Name
@@ -53,6 +55,7 @@ if (!@ARGV) {
 }
 
 my @Hosts;
+my @Host_IDs;
 my @Nodes = (
 	'vhost1.nwk1.com',
 	'vhost2.nwk1.com',
@@ -108,6 +111,23 @@ foreach my $Parameter (@ARGV) {
 			foreach my $Host_Input_Check (@Hosts) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found host ${Yellow}$Host_Input_Check ${Green}in parameter list${Clear}\n";
+			}
+			sleep 2;
+		}
+	}
+	if ($Parameter eq '-i' || $Parameter eq '--host-ids') {
+		my @Discovered_Host_IDs = @ARGV;
+		while (my $Discovered_Host_ID = shift @Discovered_Host_IDs) {
+			if ($Discovered_Host_ID =~ /-i/ || $Discovered_Host_ID =~ /--host-ids/) {
+				$Discovered_Host_ID = shift @Discovered_Host_IDs;
+				@Host_IDs = split(',', $Discovered_Host_ID);
+				last;
+			}
+		}
+		if ($Verbose) {
+			foreach my $Host_ID_Input_Check (@Host_IDs) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found host ID ${Yellow}$Host_ID_Input_Check ${Green}in parameter list${Clear}\n";
 			}
 			sleep 2;
 		}
@@ -194,6 +214,16 @@ my $SSH_Fork = new Parallel::ForkManager($Threads);
 			}
 		}
 	);
+
+	foreach my $Host_ID (@Host_IDs) {
+		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
+		FROM `hosts`
+		WHERE `id` = ?");
+		$Host_Query->execute($Host_ID);
+		my $Host_Name = $Host_Query->fetchrow_array();
+		$Host_Name =~ s/^(.*?)\..*/$1/;
+		push @Hosts, $Host_Name;
+	}
 
 	foreach my $Host (@Hosts) {
 
@@ -300,16 +330,35 @@ my $SSH_Fork = new Parallel::ForkManager($Threads);
 	my $Error;
 	for my $Host (@Host_Results) {
 		if ($Hosts_Found{$Host} eq 'X') {
-			print "${Yellow}$Host ${Red}was not found on any node, or a node had problems returning results${Clear}\n";
+			if (@Host_IDs) {
+				print "$Host was not found on any node, or a node had problems returning results\n";
+			}
+			else {
+				print "${Yellow}$Host ${Red}was not found on any node, or a node had problems returning results${Clear}\n";
+			}
 			$Error = 1;
 		}
 	}
 
+
 	if ($Error) {
-		print "${Green}All tasks are complete, ${Red}but there were some errors ${Green}(listed immediately above).${Clear}\n";
+		if (@Host_IDs) {
+			print "All tasks are complete, but there were some errors (listed immediately above).\n";
+			exit(1);
+		}
+		else {
+			print "${Green}All tasks are complete, ${Red}but there were some errors ${Green}(listed immediately above).${Clear}\n";
+			exit(1);
+		}
 	}
 	else {
-		print "${Green}All tasks completed without errors!${Clear}\n";
+		if (@Host_IDs) {
+			exit(0);
+		}
+		else {
+			print "${Green}All tasks completed without errors!${Clear}\n";
+			exit(0);
+		}
 	}
 
 sub find_vm {
@@ -366,7 +415,12 @@ sub remove_snapshots {
 
 my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 
-	print "${Green}Removing $System_Short_Name snapshots for ${Yellow}$Host${Green} on node ${Blue}$Node${Clear}\n";
+	if (@Host_IDs) {
+		print "Removing $System_Short_Name snapshots for $Host on node $Node\n";
+	}
+	else {
+		print "${Green}Removing $System_Short_Name snapshots for ${Yellow}$Host${Green} on node ${Blue}$Node${Clear}\n";
+	}
 	my $Count_Our_Snapshots = "vim-cmd vmsvc/snapshot.get $Node_VM_ID | grep -A1 $System_Short_Name | grep Id | wc -l";
 		my $Our_Snapshot_Count = $SSH->exec($Count_Our_Snapshots, $Command_Timeout);
 			$Our_Snapshot_Count =~ s/.*wc -l(.*)/$1/;
@@ -392,9 +446,13 @@ my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 			}
 			if ($Our_Snapshot) {
 				$SSH->exec($Remove_Snapshot_Command, $Command_Timeout);
-				print "${Green}Removing $System_Short_Name snapshot ID $Our_Snapshot for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+				if (@Host_IDs) {
+					print "Removing $System_Short_Name snapshot ID $Our_Snapshot for $Host on node $Node\n";
+				}
+				else {
+					print "${Green}Removing $System_Short_Name snapshot ID $Our_Snapshot for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+				}
 			}
-
 			my $EC = $SSH->exec('echo $?', $Command_Timeout);
 			$EC =~ s/[^0-9+]//g;
 			if ($EC) {
@@ -429,7 +487,12 @@ sub erase_all_snapshots {
 
 my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 
-	print "${Green}Removing ALL snapshots for ${Yellow}$Host${Green} on node ${Blue}$Node${Clear}\n";
+	if (@Host_IDs) {
+		print "Removing ALL snapshots for $Host on node $Node\n";
+	}
+	else {
+		print "${Green}Removing ALL snapshots for ${Yellow}$Host${Green} on node ${Blue}$Node${Clear}\n";
+	}
 	my $Remove_Snapshot_Command = "vim-cmd vmsvc/snapshot.removeall $Node_VM_ID";
 	if ($Verbose) {
 		my $Time_Stamp = strftime "%H:%M:%S", localtime;
@@ -482,12 +545,22 @@ my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 
 	$SSH->exec($Snapshot_Command, $Command_Timeout);
 
-	print "${Green}Memory snapshot started of ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+	if (@Host_IDs) {
+		print "Memory snapshot started of $Host on node $Node\n";
+	}
+	else {
+		print "${Green}Memory snapshot started of ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+	}
 
 	my $EC = $SSH->exec('echo $?', $Command_Timeout);
 	$EC =~ s/[^0-9+]//g;
 	if ($EC) {
-		print "${Green}Memory snapshot of ${Yellow}$Host ${Red}failed ${Green}on node ${Blue}$Node ${Green}- trying normal snapshot instead${Clear}\n";
+		if (@Host_IDs) {
+			print "Memory snapshot of $Host failed on node $Node - trying normal snapshot instead\n";
+		}
+		else {
+			print "${Green}Memory snapshot of ${Yellow}$Host ${Red}failed ${Green}on node ${Blue}$Node ${Green}- trying normal snapshot instead${Clear}\n";
+		}
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
 			system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Memory snapshot of ${Yellow}$Host ${Green}on node ${Blue}$Node ${Red}failed${Green}. Trying normal snapshot.${Clear}\n' >> $Log_File");
@@ -555,7 +628,12 @@ my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 		}
 
 	system("echo '${Yellow}$Host ${Green}has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Short_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n' >> $Log_File");
-	print "${Yellow}$Host ${Green}(VMID $Node_VM_ID) has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Short_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n";
+	if (@Host_IDs) {
+		print "$Host (VMID $Node_VM_ID) has $Snapshot_Count snapshots, $Our_Snapshot_Count of which were created by $System_Short_Name, on node $Node $Is_Snapshotting\n";
+	}
+	else {
+		print "${Yellow}$Host ${Green}(VMID $Node_VM_ID) has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Short_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n";
+	}
 
 } # sub count_snapshot
 

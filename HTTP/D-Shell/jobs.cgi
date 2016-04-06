@@ -21,6 +21,10 @@ my $Trigger_Job = $CGI->param("Trigger_Job");
 my $Captured_User_Name = $CGI->param("Captured_User_Name");
 my $Captured_Password = $CGI->param("Captured_Password");
 
+my $Pause_Job = $CGI->param("Pause_Job");
+my $Stop_Job = $CGI->param("Stop_Job");
+my $Resume_Job = $CGI->param("Resume_Job");
+
 my $User_Name = $Session->param("User_Name");
 my $User_DShell_Admin = $Session->param("User_DShell_Admin");
 
@@ -61,6 +65,60 @@ elsif ($Run_Job) {
 		require $Footer;
 		&html_run_job;
 }
+elsif ($Pause_Job) {
+	if ($User_DShell_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/jobs.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&pause_job;
+		my $Message_Orange = "Job ID $Pause_Job paused.";
+		$Session->param('Message_Orange', $Message_Orange);
+		$Session->flush();
+		undef $Trigger_Job;
+		print $CGI->redirect(-url=>'/D-Shell/jobs.cgi');
+		exit(0);
+	}
+}
+elsif ($Stop_Job) {
+	if ($User_DShell_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/jobs.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&stop_job;
+		my $Message_Orange = "Job ID $Stop_Job stopped.";
+		$Session->param('Message_Orange', $Message_Orange);
+		$Session->flush();
+		undef $Trigger_Job;
+		print $CGI->redirect(-url=>'/D-Shell/jobs.cgi');
+		exit(0);
+	}
+}
+elsif ($Resume_Job) {
+	if ($User_DShell_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/jobs.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&resume_job;
+		my $Message_Green = "Job ID $Resume_Job resumed.";
+		$Session->param('Message_Green', $Message_Green);
+		$Session->flush();
+		undef $Trigger_Job;
+		print $CGI->redirect(-url=>'/D-Shell/jobs.cgi');
+		exit(0);
+	}
+}
 elsif ($Job_Log) {
 		require $Header;
 		&html_output;
@@ -89,11 +147,11 @@ print <<ENDHTML;
 
 <table align = "center">
 	<tr>
-		<td style="text-align: right;">User Name:</td>
+		<td style="text-align: right;">SSH Username:</td>
 		<td><input type='text' name='Captured_User_Name' style="width:100%" placeholder="SSH User Name" required autofocus></td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Password:</td>
+		<td style="text-align: right;">SSH Password:</td>
 		<td><input type='password' name='Captured_Password' style="width:100%" placeholder="SSH Password" required></td>
 	</tr>
 </table>
@@ -108,6 +166,81 @@ print <<ENDHTML;
 ENDHTML
 
 }
+
+sub pause_job {
+
+	# Audit Log
+	my $DB_Management = DB_Management();
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+
+	$Audit_Log_Submission->execute("D-Shell", "Pause", "$User_Name paused Job ID $Pause_Job.", $User_Name);
+	# / Audit Log
+
+	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		`status` = ?,
+		`modified_by` = ?
+		WHERE `id` = ?");
+	$Update_Job->execute( '2', $User_Name, $Pause_Job);
+
+} # sub pause_job
+
+sub stop_job {
+
+	# Audit Log
+	my $DB_Management = DB_Management();
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+
+	$Audit_Log_Submission->execute("D-Shell", "Stop", "$User_Name killed Job ID $Stop_Job.", $User_Name);
+	# / Audit Log
+
+	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		`status` = ?,
+		`modified_by` = ?
+		WHERE `id` = ?");
+	$Update_Job->execute( '3', $User_Name, $Stop_Job);
+
+} # sub stop_job
+
+sub resume_job {
+
+	# Audit Log
+	my $DB_Management = DB_Management();
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+
+	$Audit_Log_Submission->execute("D-Shell", "Resume", "$User_Name resumed Job ID $Resume_Job.", $User_Name);
+	# / Audit Log
+
+	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		`status` = ?,
+		`modified_by` = ?
+		WHERE `id` = ?");
+	$Update_Job->execute( '1', $User_Name, $Resume_Job);
+
+} # sub resume_job
 
 sub run_job {
 
@@ -261,7 +394,7 @@ sub html_output {
 		my $Total_Rows = $Select_Job_Count->rows();
 
 
-	my $Select_Jobs = $DB_DShell->prepare("SELECT `id`, `host_id`, `command_set_id`, `status`, `last_modified`, `modified_by`
+	my $Select_Jobs = $DB_DShell->prepare("SELECT `id`, `host_id`, `command_set_id`, `on_failure`, `status`, `last_modified`, `modified_by`
 		FROM `jobs`
 		ORDER BY `id` DESC
 		LIMIT 0 , $Rows_Returned"
@@ -271,7 +404,7 @@ sub html_output {
 
 	my $Rows = $Select_Jobs->rows();
 
-	$Table->addRow( "ID", "Host", "Execution Sets", "Currently Running Command", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
+	$Table->addRow( "ID", "Host", "Execution Sets", "Currently Running Command", "On Failure", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Job_Row_Count=1;
@@ -284,9 +417,10 @@ sub html_output {
 		my $DBID = $Jobs[0];
 		my $Host_ID = $Jobs[1];
 		my $Command_Set_ID = $Jobs[2];
-		my $Status = $Jobs[3];
-		my $Last_Modified = $Jobs[4];
-		my $Modified_By = $Jobs[5];
+		my $On_Failure = $Jobs[3];
+		my $Status = $Jobs[4];
+		my $Last_Modified = $Jobs[5];
+		my $Modified_By = $Jobs[6];
 
 		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
 		FROM `hosts`
@@ -354,66 +488,98 @@ sub html_output {
 		);
 		$Select_Currently_Running_Command->execute($DBID);
 		my $Held_Running_Command = $Select_Currently_Running_Command->fetchrow_array();
+			$Held_Running_Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+			$Held_Running_Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 
 		### / Discover Currently Running Command
 
-		my $Button;
+		my $Control_Button;
+		my $Kill_Button;
 		if ($Status == 0) {
 			$Running_Command = 'None, Job Complete.';
 			$Status = 'Job Complete';
-			$Button = '<img src="/resources/imgs/confirm.png" alt="Job Complete" >';
+			$Control_Button = '<img src="/resources/imgs/confirm.png" alt="Job Complete" >';
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
 			$Table->setCellClass ($Job_Row_Count, 9, 'tbrowdarkgreen');
 		}
 		elsif ($Status == 1) {
 			$Running_Command = $Held_Running_Command;
 			$Status = 'Running';
-			$Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 2) {
 			$Running_Command = 'None, Processing Paused...';
 			$Status = 'Paused';
-			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Resume_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
-		elsif ($Status == 3) {$Status = 'Stopped';}
+		elsif ($Status == 3) {
+			$Running_Command = 'This job was killed manually.';
+			$Status = 'Killed';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
+		}
 		elsif ($Status == 4) {
 			$Running_Command = 'None, Job Pending.';
 			$Status = 'Pending';
-			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 5) {
 			$Running_Command = 'Job Failed! Connection timout, network or host resolution problems and an unwritable log file are the most likely causes. Try running it manually.';
 			$Status = 'Error';
-			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 6) {
 			$Running_Command = 'Job Failed! Bad credentials are the most likely cause. Try running it manually.';
 			$Status = 'Error';
-			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 7) {
 			$Running_Command = 'Job Failed! Bailed out on unmatched WAITFOR. Check the log for what appeared.';
 			$Status = 'Error';
-			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 8) {
 			$Running_Command = 'Execution Failed! User Name not caught.';
 			$Status = 'Error';
-			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 9) {
 			$Running_Command = 'Execution Failed! Password not caught.';
 			$Status = 'Error';
-			$Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 10) {
 			$Running_Command = $Held_Running_Command;
 			$Status = 'Starting...';
-			$Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+		}
+		elsif ($Status == 11) {
+			$Running_Command = 'On failure set to kill. Failure condition met - job killed.';
+			$Status = 'Killed';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		else {
 			$Running_Command = 'Unhandled exit code. This is not supposed to happen.';
 			$Status = 'Error';
-			$Button = "<img src=\"/resources/imgs/delete.png\" alt=\"Something bad happened :(\" >";
+			$Control_Button = "<img src=\"/resources/imgs/delete.png\" alt=\"Something bad happened :(\" >";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+		}
+
+		if ($On_Failure) {
+			$On_Failure = 'Kill Job';
+		}
+		else {
+			$On_Failure = 'Continue Job';
 		}
 
 		$Table->addRow(
@@ -421,6 +587,7 @@ sub html_output {
 			$Host_Name,
 			"$Command_Name $Command_Set_Dependencies",
 			$Running_Command,
+			$On_Failure,
 			$Status,
 			$Last_Modified,
 			$Modified_By,
@@ -431,30 +598,32 @@ sub html_output {
 					</p>
 				</div>
 			</a>",
-			$Button,
-			"<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>"
+			$Control_Button,
+			$Kill_Button
 		);
 
-		if ($Status eq 'Job Complete') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowdarkgreen');}
-		if ($Status eq 'Running') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowgreen');}
-		if ($Status eq 'Starting...') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowgreen');}
-		if ($Status eq 'Paused') {$Table->setCellClass ($Job_Row_Count, 5, 'tbroworange');}
-		if ($Status eq 'Pending') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowgrey');}
-		if ($Status eq 'Error') {$Table->setCellClass ($Job_Row_Count, 5, 'tbrowerror');}
+		if ($Status eq 'Job Complete') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowdarkgreen');}
+		if ($Status eq 'Running') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgreen');}
+		if ($Status eq 'Killed') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowerror');}
+		if ($Status eq 'Starting...') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgreen');}
+		if ($Status eq 'Paused') {$Table->setCellClass ($Job_Row_Count, 6, 'tbroworange');}
+		if ($Status eq 'Pending') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgrey');}
+		if ($Status eq 'Error') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowerror');}
 
 	}
 
 
 	$Table->setColWidth(1, '1px');
 	$Table->setColWidth(5, '90px');
-	$Table->setColWidth(6, '110px');
+	$Table->setColWidth(6, '90px');
 	$Table->setColWidth(7, '110px');
-	$Table->setColWidth(8, '1px');
+	$Table->setColWidth(8, '110px');
 	$Table->setColWidth(9, '1px');
 	$Table->setColWidth(10, '1px');
+	$Table->setColWidth(11, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (5..10) {
+	for (5..11) {
 		$Table->setColAlign($_, 'center');
 	}
 

@@ -41,6 +41,7 @@ my $Delete_Command_Confirm = $CGI->param("Delete_Command_Confirm");
 my $Command_Delete = $CGI->param("Command_Delete");
 
 my $Revision_History = $CGI->param("Revision_History");
+	my $Master_Revision = $CGI->param("Master_Revision");
 	my $Diff = $CGI->param("Diff");
 	my $Diff_Previous = $CGI->param("Diff_Previous");
 
@@ -50,8 +51,12 @@ my $Run_Command = $CGI->param("Run_Command");
 	my $Add_Host_Temp_New = $CGI->param("Add_Host_Temp_New");
 	my $Add_Host_Temp_Existing = $CGI->param("Add_Host_Temp_Existing");
 	my $Delete_Host_Run_Entry_ID = $CGI->param("Delete_Host_Run_Entry_ID");
+	my $Run_Toggle_Add = $CGI->param("Run_Toggle_Add");
+	my $User_Name_Add = $CGI->param("User_Name_Add");
+	my $Password_Add = $CGI->param("Password_Add");
+	my $On_Failure_Add = $CGI->param("On_Failure_Add");
 my $Run_Command_Final = $CGI->param("Run_Command_Final");
-	
+
 
 my $User_Name = $Session->param("User_Name");
 my $User_ID = $Session->param("User_ID");
@@ -203,7 +208,7 @@ elsif ($Run_Command && $Run_Command_Final && $Add_Host_Temp_Existing) {
 	}
 	else {
 		&run_command;
-		my $Message_Green = 'Job(s) submitted - click here to view the status.';
+		my $Message_Green = '<a href="/D-Shell/jobs.cgi">Job(s) submitted - click here to view the status.</a>';
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
 		print "Location: /D-Shell/command-sets.cgi\n\n";
@@ -354,6 +359,7 @@ print <<ENDHTML;
 	<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
 	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
 		<ul style="list-style-type:circle">
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT COUNT</span> Counts the VMWare snapshots of the host..</li>
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> Takes a VMWare snapshot of the host.</li>
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> Removes VMWare snapshots taken by $System_Name.</li>
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
@@ -673,6 +679,7 @@ print <<ENDHTML;
 	<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
 	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
 		<ul style="list-style-type:circle">
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT COUNT</span> Counts the VMWare snapshots of the host..</li>
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> Takes a VMWare snapshot of the host.</li>
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> Removes VMWare snapshots taken by $System_Name.</li>
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
@@ -978,6 +985,25 @@ else {
 	}
 }
 
+my $Run_Now_Checked;
+my $Run_Now_Disabled;
+my $On_Failure_Continue;
+my $On_Failure_Kill;
+if ($Run_Toggle_Add eq 'on') {
+	$Run_Now_Checked = 'checked';
+	$Run_Now_Disabled = '';
+}
+else {
+	$Run_Now_Checked = '';
+	$Run_Now_Disabled = 'disabled';
+}
+if ($On_Failure_Add) {
+	$On_Failure_Kill = 'checked';
+}
+else {
+	$On_Failure_Continue = 'checked';
+}
+
 print <<ENDHTML;
 
 <div id="wide-popup-box">
@@ -987,6 +1013,28 @@ print <<ENDHTML;
 </a>
 
 <h3 align="center">Run Command Set <span style='color: #00FF00;'>$Command_Name</span></h3>
+
+<SCRIPT LANGUAGE="JavaScript"><!--
+function Run_Job_Toggle() {
+	if(document.Run_Command.Run_Toggle_Add.checked)
+	{
+		document.Run_Command.User_Name_Add.disabled=false;
+		document.Run_Command.Password_Add.disabled=false;
+		document.Run_Command.User_Name_Add.value="$User_Name_Add";
+		document.Run_Command.Password_Add.value="$Password_Add";
+		document.Run_Command.Run_Command_Final.value="Run Job";
+	}
+	else
+	{
+		document.Run_Command.User_Name_Add.disabled=true;
+		document.Run_Command.Password_Add.disabled=true;
+		document.Run_Command.User_Name_Add.value="$User_Name_Add";
+		document.Run_Command.Password_Add.value="$Password_Add";
+		document.Run_Command.Run_Command_Final.value="Queue Job";
+	}
+}
+//-->
+</SCRIPT>
 
 <form action='/D-Shell/command-sets.cgi' name='Run_Command' method='post' >
 
@@ -1033,16 +1081,48 @@ print <<ENDHTML;
 ENDHTML
 }
 else {
-	print "<span style='text-align: left; color: #FFC600;'>None</span>";
+	print "<span style='text-align: left; color: #FFC600;'>No hosts yet selected</span>";
 }
 
 print <<ENDHTML;
+
+<br /><br />
+
+<table align="center">
+	<tr>
+		<td style="text-align: right;">On command failure:</td>
+		<td style="text-align: right;"><input type="radio" name="On_Failure_Add" value="0" $On_Failure_Continue></td>
+		<td style="text-align: left; color: #00FF00;">Continue Job</td>
+		<td style="text-align: right;"><input type="radio" name="On_Failure_Add" value="1" $On_Failure_Kill></td>
+		<td style="text-align: left; color: #FFC600;">Kill Job</td>
+	</tr>
+</table>
+
 <hr width="50%">
-<div style="text-align: center"><input type=submit name='Run_Command_Final' value='Run Commands on Hosts'></div>
+
+<table align="center">
+	<tr>
+		<td style="text-align: right;">Run Job Now?:</td>
+		<td colspan='4' align='left'><input type="checkbox" onclick="Run_Job_Toggle()" name="Run_Toggle_Add" $Run_Now_Checked></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">SSH Username:</td>
+		<td colspan='4'><input type="text" name="User_Name_Add" value="$User_Name_Add" placeholder="SSH Username" style="width:100%" $Run_Now_Disabled></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">SSH Password:</td>
+		<td colspan='4'><input type="password" name="Password_Add" value="$Password_Add" placeholder="SSH Password" style="width:100%" $Run_Now_Disabled></td>
+	</tr>
+</table>
+
+<hr width="50%">
+
+<div style="text-align: center"><input type=submit name='Run_Command_Final' value='Queue Job'></div>
 
 <input type='hidden' name='Run_Command' value='$Run_Command'>
-
 <input type='hidden' name='Add_Host_Temp_Existing' value='$Add_Host_Temp_Existing'>
+
+<br />
 
 </form>
 
@@ -1068,10 +1148,15 @@ sub run_command {
 		?, ?, ?, ?
 	)");
 	
-	$Audit_Log_Submission->execute("D-Shell", "Queue", "$User_Name queued a job (executed as -c $Run_Command -H $Add_Host_Temp_Existing).", $User_Name);
+	$Audit_Log_Submission->execute("D-Shell", "Queue", "$User_Name queued a job.", $User_Name);
 	# / Audit Log
 
-	system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing");
+	if ($Run_Toggle_Add) {
+		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -u $User_Name_Add -P $Password_Add -f $On_Failure_Add -X $User_Name");
+	}
+	else {
+		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing");
+	}
 
 }
 
@@ -1109,6 +1194,7 @@ sub html_diff_revision {
  
 	my $Diff_Compare = diff \$Diff_One_Command, \$Diff_Two_Command, { STYLE => 'Text::Diff::HTML' };
 	$Diff_Compare =~ s/\r/<br \/>/g;
+
 print <<ENDHTML;
 
 <style>
@@ -1120,7 +1206,7 @@ print <<ENDHTML;
 </style>
 
 <div id="full-width-popup-box">
-<a href="/D-Shell/command-sets.cgi">
+<a href="/D-Shell/command-sets.cgi?Revision_History=$Master_Revision">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1178,6 +1264,9 @@ sub html_revision_history {
 		while ( my @Revision = $Select_Command->fetchrow_array() ) {
 			my $Command_Name = $Revision[0];
 			my $Command_Set = $Revision[1];
+				$Command_Set =~ s/</&lt;/g;
+				$Command_Set =~ s/>/&gt;/g;
+				$Command_Set =~ s/  /&nbsp;&nbsp;/g;
 				$Command_Set =~ s/\r/<br \/>/g;
 				$Command_Set =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 				$Command_Set =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
@@ -1208,7 +1297,7 @@ sub html_revision_history {
 
 			my $Diff;
 			if ($Command_Parent) {
-				$Diff = "<a href='/D-Shell/command-sets.cgi?Diff=$Revision&Diff_Previous=$Command_Parent'><img src=\"/resources/imgs/diff.png\" alt=\"Diff Rev. $Command_Revision and Rev. $Command_Revision_Previous\" ></a>";
+				$Diff = "<a href='/D-Shell/command-sets.cgi?Master_Revision=$Revision_History&Diff=$Revision&Diff_Previous=$Command_Parent'><img src=\"/resources/imgs/diff.png\" alt=\"Diff Rev. $Command_Revision and Rev. $Command_Revision_Previous\" ></a>";
 			}
 			else {
 				$Diff = 'N/A';
@@ -1228,6 +1317,12 @@ sub html_revision_history {
 		}
 	}
 
+	$Table->setColAlign(2, 'left');
+	$Table->setColAlign(3, 'left');
+	$Table->setColAlign(4, 'left');
+	$Table->setCellAlign(1, 2, 'center');
+	$Table->setCellAlign(1, 3, 'center');
+	$Table->setCellAlign(1, 4, 'center');
 
 print <<ENDHTML;
 
@@ -1267,21 +1362,25 @@ sub html_output {
 		my $Total_Rows = $Select_Command_Count->rows();
 
 
-	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
-		FROM `command_sets`
-		WHERE `id` LIKE ?
-		OR `name` LIKE ?
-		OR `command` LIKE ?
-		OR `revision` LIKE ?
-		OR `description` LIKE ?
-		ORDER BY `name` ASC
-		LIMIT 0 , $Rows_Returned"
-	);
-
+	my $Select_Command_Sets;
 	if ($ID_Filter) {
-		$Select_Command_Sets->execute($ID_Filter, '', '', '', '');
+		$Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
+			FROM `command_sets`
+			WHERE `id` = ?"
+		);
+		$Select_Command_Sets->execute($ID_Filter);
 	}
 	else {
+		$Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
+			FROM `command_sets`
+			WHERE `id` = ?
+			OR `name` LIKE ?
+			OR `command` LIKE ?
+			OR `revision` LIKE ?
+			OR `description` LIKE ?
+			ORDER BY `name` ASC
+			LIMIT 0 , $Rows_Returned"
+		);
 		$Select_Command_Sets->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
 	}
 
@@ -1299,6 +1398,9 @@ sub html_output {
 		my $Command_Name = $Select_Command_Sets[1];
 			$Command_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Command = $Select_Command_Sets[2];
+			$Command =~ s/</&lt;/g;
+			$Command =~ s/>/&gt;/g;
+			$Command =~ s/  /&nbsp;&nbsp;/g;
 			$Command =~ s/\r/<br \/>/g;
 			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
@@ -1370,6 +1472,9 @@ sub html_output {
 
 		## / Discover owner
 
+		if (!$Command_Set_Dependencies) {
+			$Command_Set_Dependencies = 'None';
+		}
 		$Table->addRow(
 			$DBID,
 			"<span style='color: #FF8A00;'>" . $Command_Name . "</span><br /> <span style='color: #00FF00;'>Revision " . $Command_Revision . "</span>",
@@ -1402,7 +1507,7 @@ sub html_output {
 
 	$Table->setColAlign(1, 'center');
 	$Table->setColAlign(2, 'center');
-	for (4..12) {
+	for (5..12) {
 		$Table->setColAlign($_, 'center');
 	}
 

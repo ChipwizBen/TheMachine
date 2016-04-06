@@ -61,7 +61,7 @@ my $Discovered_Job_ID;
 my $Parent_ID;
 my $Dependent_Command_Set_ID;
 my $Dependent_Host_ID;
-my $Dependency_Chain_ID = 0;
+my $Dependency_Chain_ID;
 my $User_Name;
 my $User_Password;
 foreach my $Parameter (@ARGV) {
@@ -147,10 +147,15 @@ foreach my $Parameter (@ARGV) {
 	}
 }
 
+my $Top_Level_Job;
 if (!$Parent_ID) {
+	$Top_Level_Job = 1;
 	$Parent_ID = $Discovered_Job_ID;
 }
-my $DShell_Job_Log_File = "$DShell_Job_Log_Location/$Parent_ID";
+if (!$Dependency_Chain_ID) {
+	$Dependency_Chain_ID = 0;
+}
+my $DShell_Job_Log_File = "$DShell_Job_Log_Location/$Parent_ID-$Dependency_Chain_ID";
 
 if ((!$Discovered_Job_ID && !$Dependent_Command_Set_ID) || !$User_Name) {
 	print "Something went wrong. Did you pass a Job ID or a Command Set and a User Name?\n";
@@ -192,6 +197,7 @@ if (!$Dependent_Command_Set_ID && $Discovered_Job_ID) {
 	print "${Red}## ${Green}Discovered Host ${Blue}$Host${Green} (PID: $$).${Clear}\n";
 	my $Connected_Host = &host_connection($Host);
 	my $Job_Processor = &processor($Host_ID, $Connected_Host, $Command_Set_ID);
+	
 }
 elsif (!$Discovered_Job_ID && $Dependent_Command_Set_ID) {
 	print "\n${Green}Starting dependent Command Set ID ${Blue}$Dependent_Command_Set_ID${Green} as User ${Blue}$User_Name${Green}...${Clear}\n";
@@ -217,8 +223,12 @@ sub job_discovery {
 	");
 	$Select_Job->execute($Job_ID);
 	my ($Host_ID, $Command_Set_ID, $Status) = $Select_Job->fetchrow_array();
-	
-	
+	my $Job_Exists = $Select_Job->rows();
+
+	if ($Job_Exists == 0) {
+		print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} was not found.${Clear}\n";
+		exit(0);
+	}
 	if ($Status == 0) {
 		if ($Override) {
 			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed. Override is enabled, so we're running it again!${Clear}\n";
@@ -255,20 +265,6 @@ sub job_discovery {
 			WHERE `id` = ?");
 		$Update_Job->execute( '1', $User_Name, $Parent_ID);
 	}
-	if ($Status == 3) {
-		if ($Override) {
-			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has been stopped manually. Override is enabled, so we're starting it again!${Clear}\n";
-			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
-				`status` = ?,
-				`modified_by` = ?
-				WHERE `id` = ?");
-			$Update_Job->execute( '1', $User_Name, $Parent_ID);
-		}
-		else {
-			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has been stopped manually. Override is NOT enabled, so we won't start it again! Exiting...${Clear}\n";
-			exit(0);
-		}
-	}
 	if ($Status == 4 || $Status == 10) {
 		print "${Green}Job ID ${Blue}$Job_ID${Green} is pending. Starting job...${Clear}\n";
 		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
@@ -277,7 +273,7 @@ sub job_discovery {
 			WHERE `id` = ?");
 		$Update_Job->execute( '1', $User_Name, $Parent_ID);
 	}
-	if ($Status == 5 || $Status == 6) {
+	if ($Status == 3 || $Status == 5 || $Status == 6 || $Status == 7 || $Status == 8 || $Status == 9 || $Status == 11) {
 		print "${Green}Job ID ${Blue}$Job_ID${Green} was stopped. Restarting job...${Clear}\n";
 		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 			`status` = ?,
@@ -378,10 +374,6 @@ sub host_connection {
 sub processor {
 
 	my ($Host_ID, $Connected_Host, $Process_Command_Set_ID) = @_;
-	$Dependency_Chain_ID++;
-
-	my $Start_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
-	system("echo 'Job started at $Start_Time.' >> $DShell_Job_Log_File");
 
 	## Discover dependencies
 	my $Discover_Dependencies = $DB_DShell->prepare("SELECT `dependent_command_set_id`
@@ -392,9 +384,13 @@ sub processor {
 	$Discover_Dependencies->execute($Process_Command_Set_ID);
 	
 	while ( my $Command_Set_Dependency_ID = $Discover_Dependencies->fetchrow_array() ) {
+		$Dependency_Chain_ID++;
+		my ($Verbose_Switch, $Very_Verbose_Switch);
+		if ($Verbose) {$Verbose_Switch = '-v '}
+		if ($Very_Verbose) {$Very_Verbose_Switch = '-V '}
 		print "${Green}I've discovered that Command Set ID ${Blue}$Process_Command_Set_ID${Green} is dependent on Command Set ID ${Blue}$Command_Set_Dependency_ID${Green}. Processing Command Set ID ${Blue}$Command_Set_Dependency_ID${Green} as dependency ${Blue}$Dependency_Chain_ID${Green}. ${Clear}\n";
-		print "${Green}Executing: ${Blue}./d-shell.pl -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name ${Clear}\n";
-		my $System_Exit_Code = system "./d-shell.pl -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name -P $User_Password";
+		print "${Green}Executing: ${Blue}./d-shell.pl ${Verbose_Switch}${Very_Verbose_Switch}-p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name${Clear}\n";
+		my $System_Exit_Code = system "./d-shell.pl ${Verbose_Switch}${Very_Verbose_Switch}-p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name -P $User_Password";
 		if ($System_Exit_Code == 0) {
 			print "${Green}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Green} execution complete. Exit code was $System_Exit_Code.${Clear}\n";
 		}
@@ -412,11 +408,72 @@ sub processor {
 	$Select_Commands->execute($Process_Command_Set_ID);
 	my ($Command_Name, $Commands) = $Select_Commands->fetchrow_array();
 
-	my @Commands = split('\r', $Commands);
+
+
+	if ($Top_Level_Job) {
+		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`output`,
+			`task_started`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, NOW(), ?
+		)");
 	
+		$Update_Job_Status->execute($Parent_ID, "### Main job, $Command_Name, started.", '', 'System');
+		my $Start_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
+		system("echo 'Job started at $Start_Time.' >> $DShell_Job_Log_File");
+	}
+	else {
+		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`output`,
+			`task_started`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, NOW(), ?
+		)");
+	
+		$Update_Job_Status->execute($Parent_ID, "### Dependency Set $Dependency_Chain_ID, $Command_Name, started.", '', 'System');
+		my $Start_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
+		system("echo 'Dependency Set $Dependency_Chain_ID, $Command_Name, started at $Start_Time.' >> $DShell_Job_Log_File");
+	}
+
+
+
+	my @Commands = split('\r', $Commands);
+
 	foreach my $Command (@Commands) {
 		$Command =~ s/\n//;
 		$Command =~ s/\r//;
+
+		my $Job_Paused;
+		while ($Job_Paused ne 'No') {
+			my $Query_Control_Status = $DB_DShell->prepare("SELECT `status`, `modified_by`
+				FROM `jobs`
+				WHERE `id` = ?
+			");
+			$Query_Control_Status->execute($Parent_ID);
+
+			my ($Query_Status, $Query_Modified_By) = $Query_Control_Status->fetchrow_array();
+			if ($Query_Status == 2) {
+				print "${Green}Job paused by $Query_Modified_By.${Clear}\n";
+				$Job_Paused = 'Yes';
+			}
+			else {
+				$Job_Paused = 'No';
+			}
+			if ($Query_Status == 3) {
+				print "${Red}Job killed by $Query_Modified_By. Terminating job.${Clear}\n";
+				my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
+				system("echo 'Job killed at $End_Time by $Query_Modified_By.' >> $DShell_Job_Log_File");
+				exit(0);
+			}
+		}
 
 		my $Predictable_Prompt = $System_Short_Name;
 			$Predictable_Prompt =~ s/\s//g;
@@ -438,9 +495,9 @@ sub processor {
 		$Update_Job_Status->execute($Parent_ID, $Command, 'Currently Running...', 'System');
 		my $Job_Status_Update_ID = $DB_DShell->{mysql_insertid};		
 	
-	#	while ( defined (my $Line = $SSH->read_all()) ) {
-			# Do nothing! Clearing the input stream for the next command
-	#	} 
+#		while ( defined (my $Line = $SSH->read_all()) ) {
+#			Do nothing! Clearing the input stream for the next command
+#		} 
 	
 		my $Command_Output;
 		my $Exit_Code = 7;
@@ -462,6 +519,58 @@ sub processor {
 			sleep $Pause;
 			$Command_Output = "Paused for $Pause seconds.";
 			$Exit_Code = 0;
+		}
+		elsif ($Command =~ /^\*VSNAPSHOT.*/) {
+			my $Snapshot = $Command;
+			$Snapshot =~ s/\*VSNAPSHOT (.*)/$1/;
+			if ($Verbose == 1) {
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Performing a snapshot operation${Clear}\n";
+			}
+			elsif ($Snapshot eq 'COUNT') {
+				if ($Verbose == 1) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Counting snapshots${Clear}\n";
+				}
+				$Command_Output = `./vmware-snapshot.pl -c -i $Host_ID`;
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error counting snapshots. $Exit_Code";
+				}
+			}
+			elsif ($Snapshot eq 'TAKE') {
+				if ($Verbose == 1) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
+				}
+				$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID`;
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error taking a snapshot. $Exit_Code";
+				}
+				sleep 300;
+			}
+			elsif($Snapshot eq 'REMOVE') {
+				if ($Verbose == 1) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshots${Clear}\n";
+				}
+				$Command_Output = `./vmware-snapshot.pl -r -i $Host_ID`;
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error removing $System_Short_Name snapshots. $Exit_Code";
+				}
+			}
+			elsif($Snapshot eq 'REMOVEALL') {
+				if ($Verbose == 1) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots${Clear}\n";
+				}
+				$Command_Output = `./vmware-snapshot.pl -e -i $Host_ID`;
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error removing all snapshots. $Exit_Code";
+				}
+			}
+			else {
+				$Command_Output = "Found that you wanted to perform a snapshot operation. Couldn't determine exactly what. Perhaps you misspelt an option.";
+				$Exit_Code = 1;
+			}
 		}
 		elsif ($Command =~ /^\*WAITFOR.*/) {
 			my $Wait_Timeout = 600;
@@ -552,11 +661,46 @@ sub processor {
 				if ($Verbose) {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## Exit code for ${Yellow}$Command${Red}: ${Blue}$Exit_Code${Clear}\n";
 				}
+				my $Select_Failure_Action = $DB_DShell->prepare("SELECT `on_failure`
+					FROM `jobs`
+					WHERE `id` = ?
+				");
+				$Select_Failure_Action->execute($Parent_ID);
+				my ($On_Failure) = $Select_Failure_Action->fetchrow_array();
+
+				if ($On_Failure) {
+					$Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+						`exit_code` = ?,
+						`output` = ?,
+						`task_ended` = NOW(),
+						`modified_by` = ?
+						WHERE `id` = ?");
+					$Command_Output =~ s/\[$Predictable_Prompt\]//g;
+					$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+					my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+						`job_id`,
+						`command`,
+						`output`,
+						`task_ended`,
+						`modified_by`
+					)
+					VALUES (
+						?, ?, ?, NOW(), ?
+					)");
+					$Update_Job_Status->execute($Parent_ID, "### Last action failed. On failure set to kill. Killing job.", '', 'System');
+					my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+						`status` = ?,
+						`modified_by` = ?
+						WHERE `id` = ?");
+					$Update_Job->execute( '11', $User_Name, $Parent_ID);
+					exit($Exit_Code);
+				}
 			}
 			else {
 				if ($Verbose) {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Exit code for ${Yellow}$Command${Green}: ${Blue}$Exit_Code${Clear}\n";
 				}
+
 			}
 		}
 	
@@ -570,17 +714,47 @@ sub processor {
 		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
 	
 	}
-				
-	$Connected_Host->close();
-	
-	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
-		`status` = ?,
-		`modified_by` = ?
-		WHERE `id` = ?");
-	$Update_Job->execute( '0', $User_Name, $Parent_ID);
 
-my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
-system("echo 'Job ended at $End_Time.' >> $DShell_Job_Log_File");
+	$Connected_Host->close();
+
+	if ($Top_Level_Job) {
+		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute( '0', $User_Name, $Parent_ID);
+		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`output`,
+			`task_ended`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, NOW(), ?
+		)");
+	
+		$Update_Job_Status->execute($Parent_ID, "### Main job, $Command_Name, complete.", '', 'System');
+		my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
+		system("echo 'Job completed at $End_Time.' >> $DShell_Job_Log_File");
+	}
+	else {
+		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`output`,
+			`task_ended`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, NOW(), ?
+		)");
+
+		$Update_Job_Status->execute($Parent_ID, "### Dependency Set $Dependency_Chain_ID, $Command_Name, complete.", '', 'System');
+		my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
+		system("echo 'Dependency Set ID $Dependency_Chain_ID, $Command_Name, ended at $End_Time.' >> $DShell_Job_Log_File");
+	}
+
 
 } # sub processor
 

@@ -414,7 +414,7 @@ sub DShell_Job_Log_Location {
 
 	# This is the directory where job logs are stored. You do not need a trailing slash.
 
-	my $DShell_Job_Log_Location = '../Storage/DShell/Job-Log';
+	my $DShell_Job_Log_Location = '../Storage/D-Shell/Job-Log';
 	return $DShell_Job_Log_Location;
 
 } # sub DShell_Job_Log_Location
