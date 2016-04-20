@@ -110,6 +110,10 @@ sub html_output {
 			my $Method_Clean = $Method;
 			$Method =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Action = $Select_Logs[3];
+			$Action =~ s/</&lt;/g;
+			$Action =~ s/>/&gt;/g;
+			$Action =~ s/  /&nbsp;&nbsp;/g;
+			$Action =~ s/\r/<br \/>/g;
 			$Action =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $User = $Select_Logs[4];
 			$User =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -142,6 +146,12 @@ sub html_output {
 		}
 		elsif ($Method_Clean eq 'Run') {
 			$Table->setCellClass (-1, 3, 'tbrowgreen');
+		}
+		elsif ($Method_Clean eq 'Receive') {
+			$Table->setCellClass (-1, 3, 'tbrowpurple');
+		}
+		elsif ($Method_Clean eq 'Queue') {
+			$Table->setCellClass (-1, 3, 'tbrowyellow');
 		}
 
 		$Table->setColWidth(1, '1px');

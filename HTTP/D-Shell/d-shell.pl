@@ -17,7 +17,8 @@ my $Override = 0;
 my $Verbose = 0;
 my $Very_Verbose = 0;
 my $Ignore_Bad_Exit_Code = 0;
-my $Command_Timeout = 3;
+#my $Command_Timeout = 180;
+my $Command_Timeout = 5;
 
 $0 = 'D-Shell';
 $| = 1;
@@ -330,7 +331,8 @@ sub host_connection {
 
 		#my $Hello = eval{$SSH->login();};
 		my $Test_Command = 'id';
-		$Hello = $SSH->exec($Test_Command, $Command_Timeout);
+		my $ID_Command_Timeout = 1;
+		$Hello = $SSH->exec($Test_Command, $ID_Command_Timeout);
 	
 		last if $Hello =~ m/uid/;
 		last if $Retry_Count >= $Max_Retry_Count;
@@ -648,13 +650,16 @@ sub processor {
 			} 
 			# Set a predictable prompt every time so that we can filter it even if the remote system changes it after a command (such as switching user).
 
-			$Connected_Host->exec($Set_Predictable_Prompt, $Command_Timeout);
+			my $Set_Prompt_Timeout = 1;
+			$Connected_Host->exec($Set_Predictable_Prompt, $Set_Prompt_Timeout);
 
 			$Command_Output = $Connected_Host->exec($Command, $Command_Timeout);
 			$Command_Output =~ s/\n\e.*//g; # Clears newlines, escapes (ESC)
 			$Command_Output =~ s/\e.*//g;
 			$Command_Output =~ s/^$Command//;
-			$Exit_Code = $Connected_Host->exec('echo $?', $Command_Timeout);
+			$Command_Output =~ s/.*\r//g;
+			my $Exit_Code_Timeout = 1;
+			$Exit_Code = $Connected_Host->exec('echo $?', $Exit_Code_Timeout);
 			$Exit_Code =~ s/[^0-9+]//g;
 			#$Exit_Code =~ s/.$//; # Uncomment this when running from command line
 			if ($Exit_Code) {

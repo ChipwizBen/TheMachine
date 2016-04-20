@@ -98,6 +98,7 @@ sub LDAP_Login {
 			$LDAP_Server,
 			port => $LDAP_Port,
 			timeout => $Timeout,
+			start_tls => 1,
 			#filter => $LDAP_Filter,
 		) or die "Can't connect to LDAP server $LDAP_Server:$LDAP_Port with timeout $Timeout seconds. $@";
 		my $Bind = $LDAP_Connection->bind(

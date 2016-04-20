@@ -75,8 +75,9 @@ foreach my $Parameter (@ARGV) {
 	if ($Parameter eq '-X') {
 		my @User_Triggers = @ARGV;
 		while ($User_Trigger = shift @User_Triggers) {
-			if ($User_Trigger =~ /-f/ || $User_Trigger =~ /--failure/) {
+			if ($User_Trigger =~ /-X/) {
 				$User_Trigger = shift @User_Triggers;
+				$User_Trigger =~ s/MagicTagSpace/ /g;
 				last;
 			}
 		}

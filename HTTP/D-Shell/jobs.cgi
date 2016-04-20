@@ -305,10 +305,20 @@ sub html_job_log {
 	{
 		$Row_Count++;
 		my $Command = $Entries[0];
+			$Command =~ s/</&lt;/g;
+			$Command =~ s/>/&gt;/g;
+			$Command =~ s/  /&nbsp;&nbsp;/g;
+			$Command =~ s/\r/<br \/>/g;
 			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
+			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Exit_Code = $Entries[1];
 		my $Output = $Entries[2];
+			$Output =~ s/</&lt;/g;
+			$Output =~ s/>/&gt;/g;
+			$Output =~ s/  /&nbsp;&nbsp;/g;
+			$Output =~ s/^.*\r.*$//g;
+			$Output =~ s/\r/<br \/>/g;
 			$Output =~ s/\n/<br \/>/g;
 			if ($Output =~ m/Skipped comment \/ empty line./) {
 				$Output = "<span style='color: #FFC600;'>$Output</span>";
@@ -344,6 +354,9 @@ sub html_job_log {
 	}
 	$Table->setCellAlign(1, 2, 'center');
 	$Table->setCellAlign(1, 3, 'center');
+
+	$Table->setColStyle (2, 'max-width: 500px; word-wrap: break-word;');
+	$Table->setColStyle (3, 'max-width: 500px;');
 
 	my $Entry_Count = $Row_Count;
 	if ($Row_Count == 0) {
@@ -433,7 +446,7 @@ sub html_output {
 		WHERE `id` = ?");
 		$Command_Query->execute($Command_Set_ID);
 		my ($Command_Name, $Command_Description, $Command_Revision) = $Command_Query->fetchrow_array();
-		$Command_Name = "CSet: <a href='/D-Shell/command-sets.cgi?ID_Filter=$Command_Set_ID' class='tooltip' text=\"$Command_Description\"><span style='color: #FF8A00;'>$Command_Name</span> <span style='color: #00FF00;'>[Rev. $Command_Revision]</span></a>";
+		$Command_Name = "<a href='/D-Shell/command-sets.cgi?ID_Filter=$Command_Set_ID' class='tooltip' text=\"$Command_Description\"><span style='font-size: 15px; color: #FF8A00;'>$Command_Name</span> <span style='color: #00FF00;'>[Rev. $Command_Revision]</span></a>";
 
 		## Gather dependency data
 		my $Command_Set_Dependencies;

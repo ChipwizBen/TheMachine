@@ -10,6 +10,7 @@ my ($CGI, $Session, $Cookie) = CGI();
 my $Header = Header();
 my $Footer = Footer();
 my $Sudoers_Location = Sudoers_Location();
+	$Sudoers_Location =~ s/\.\.\///;
 my $md5sum = md5sum();
 my $cut = cut();
 

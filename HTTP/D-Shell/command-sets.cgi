@@ -19,6 +19,9 @@ my $Add_Command = $CGI->param("Add_Command");
 	my $Command_Add_Final = $CGI->param("Command_Add_Final");
 	my $Command_Name_Add = $CGI->param("Command_Name_Add");
 	my $Command_Add = $CGI->param("Command_Add");
+		$Command_Add =~ s/<MagicTagNewLine>/\n/g;
+		$Command_Add =~ s/<MagicTagComment>/#/g;
+		$Command_Add =~ s/<MagicTagPlus>/\+/g;
 	my $Command_Description_Add = $CGI->param("Description_Add");
 	my $Command_Owner_Add = $CGI->param("Owner_Add");
 	my $Add_Command_Dependency_Temp_New = $CGI->param("Add_Command_Dependency_Temp_New");
@@ -29,6 +32,9 @@ my $Edit_Command = $CGI->param("Edit_Command");
 	my $Command_Edit_Final = $CGI->param("Command_Edit_Final");
 	my $Command_Name_Edit = $CGI->param("Command_Name_Edit");
 	my $Command_Edit = $CGI->param("Command_Edit");
+		$Command_Edit =~ s/<MagicTagNewLine>/\n/g;
+		$Command_Edit =~ s/<MagicTagComment>/#/g;
+		$Command_Edit =~ s/<MagicTagPlus>/\+/g;
 	my $Command_Description_Edit = $CGI->param("Description_Edit");
 	my $Command_Owner_Edit = $CGI->param("Owner_Edit");
 	my $Edit_Command_Dependency_Temp_New = $CGI->param("Edit_Command_Dependency_Temp_New");
@@ -251,12 +257,16 @@ foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 			if ($Command_Set_Name_Character_Limited ne $Command_Set_Name) {
 				$Command_Set_Name_Character_Limited = $Command_Set_Name_Character_Limited . '...';
 			}
+			my $Command_Add_Delete_Dependency_Link = $Command_Add;
+			$Command_Add_Delete_Dependency_Link =~ s/\n/<MagicTagNewLine>/g;
+			$Command_Add_Delete_Dependency_Link =~ s/#/<MagicTagComment>/g;
+			$Command_Add_Delete_Dependency_Link =~ s/\+/<MagicTagPlus>/g;
 			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited [Rev. $Command_Set_Revision]"
 				. " <a href='/D-Shell/command-sets.cgi?
 				Add_Command=1&
 				Command_Name_Add=$Command_Name_Add&
 				Owner_Add=$Command_Owner_Add&
-				Command_Add=$Command_Add&
+				Command_Add=$Command_Add_Delete_Dependency_Link&
 				Description_Add=$Command_Description_Add&
 				Add_Command_Dependency_Temp_Existing=$Add_Command_Dependency_Temp_Existing&
 				Delete_Command_Add_Dependency_Entry_ID=$Command_Set_Dependency&
@@ -556,12 +566,16 @@ foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 			if ($Command_Set_Name_Character_Limited ne $Command_Set_Name) {
 				$Command_Set_Name_Character_Limited = $Command_Set_Name_Character_Limited . '...';
 			}
+			my $Command_Edit_Delete_Dependency_Link = $Command_Edit;
+			$Command_Edit_Delete_Dependency_Link =~ s/\n/<MagicTagNewLine>/g;
+			$Command_Edit_Delete_Dependency_Link =~ s/#/<MagicTagComment>/g;
+			$Command_Edit_Delete_Dependency_Link =~ s/\+/<MagicTagPlus>/g;
 			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited [Rev. $Command_Set_Revision]"
 				. " <a href='/D-Shell/command-sets.cgi?
 				Edit_Command=$Edit_Command&
 				Command_Name_Edit=$Command_Name_Edit&
 				Owner_Edit=$Command_Owner_Edit&
-				Command_Edit=$Command_Edit&
+				Command_Edit=$Command_Edit_Delete_Dependency_Link&
 				Description_Edit=$Command_Description_Edit&
 				Edit_Command_Dependency_Temp_Existing=$Edit_Command_Dependency_Temp_Existing&
 				Delete_Command_Edit_Dependency_Entry_ID=$Command_Set_Dependency&
@@ -1151,8 +1165,10 @@ sub run_command {
 	$Audit_Log_Submission->execute("D-Shell", "Queue", "$User_Name queued a job.", $User_Name);
 	# / Audit Log
 
+	my $Push_User_Name = $User_Name;
+		$Push_User_Name =~ s/\s/MagicTagSpace/g;
 	if ($Run_Toggle_Add) {
-		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -u $User_Name_Add -P $Password_Add -f $On_Failure_Add -X $User_Name");
+		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -u $User_Name_Add -P $Password_Add -f $On_Failure_Add -X ${Push_User_Name}");
 	}
 	else {
 		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing");
@@ -1248,7 +1264,7 @@ sub html_revision_history {
 		-padding=>1
 	);
 
-	$Table->addRow( "ID", "Command Name", "Command", "Description", "Owner", 
+	$Table->addRow( "ID", "Command Set Name", "Commands", "Description", "Owner", 
 		"Last Modified", "Modified By", "Diff with Previous" );
 	$Table->setRowClass (1, 'tbrow1');
 
@@ -1384,7 +1400,7 @@ sub html_output {
 		$Select_Command_Sets->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
 	}
 
-	$Table->addRow( "ID", "Command Name", "Command", "Description", "Dependencies", "Owner", 
+	$Table->addRow( "ID", "Command Set Name", "Commands", "Description", "Dependencies", "Owner", 
 		"Last Modified", "Modified By", "Revision History", "Queue Job", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
@@ -1405,6 +1421,7 @@ sub html_output {
 			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+			
 			my $Line_Count = $Command =~ tr/\n//;
 				$Line_Count++;
 		my $Command_Description = $Select_Command_Sets[3];
@@ -1477,7 +1494,7 @@ sub html_output {
 		}
 		$Table->addRow(
 			$DBID,
-			"<span style='color: #FF8A00;'>" . $Command_Name . "</span><br /> <span style='color: #00FF00;'>Revision " . $Command_Revision . "</span>",
+			"<span style='font-size: 15px; color: #FF8A00;'>" . $Command_Name . "</span><br /> <span style='color: #00FF00;'>Revision " . $Command_Revision . "</span>",
 			"<details>
 				<summary>#This command set has $Line_Count lines. Expand to view.</summary>
 				<p>$Command</p>
@@ -1496,7 +1513,8 @@ sub html_output {
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColStyle (4, 'max-width: 400px;');
+	$Table->setColStyle (3, 'max-width: 500px; word-wrap: break-word;');
+	$Table->setColStyle (4, 'max-width: 500px;');
 	$Table->setColWidth(6, '110px');
 	$Table->setColWidth(7, '110px');
 	$Table->setColWidth(8, '110px');
