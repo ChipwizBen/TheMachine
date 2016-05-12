@@ -817,6 +817,41 @@ sub head {
 
 } # sub head
 
+sub nmap {
+
+	# Manually set the path to `nmap` here, or just leave this as default and the system 
+	# will try to determine its location through `which nmap --skip-alias`
+
+	my $nmap = `which nmap --skip-alias`;
+
+	$nmap =~ s/\n//g;
+	return $nmap;
+
+} # sub nmap
+
+sub ps {
+
+	# Manually set the path to `ps` here, or just leave this as default and the system 
+	# will try to determine its location through `which ps --skip-alias`
+
+	my $ps = `which ps --skip-alias`;
+
+	$ps =~ s/\n//g;
+	return $ps;
+
+} # sub ps
+
+sub wc {
+
+	# Manually set the path to `wc` here, or just leave this as default and the system 
+	# will try to determine its location through `which wc --skip-alias`
+
+	my $wc = `which wc --skip-alias`;
+
+	$wc =~ s/\n//g;
+	return $wc;
+
+} # sub wc
 
 ############################################################################################
 ########### The settings beyond this point are advanced, or shouldn't be changed ###########

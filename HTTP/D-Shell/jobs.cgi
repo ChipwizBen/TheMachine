@@ -14,6 +14,9 @@ my $Footer = Footer();
 my $DB_DShell = DB_DShell();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
+my $ps = ps();
+my $grep = sudo_grep();
+my $wc = wc();
 
 my $Run_Job = $CGI->param("Run_Job");
 my $Job_Log = $CGI->param("Job_Log");
@@ -328,7 +331,7 @@ sub html_job_log {
 		my $Task_Ended = $Entries[4];
 		my $Modified_By = $Entries[5];
 
-		if ($Exit_Code == 0) {
+		if ($Exit_Code eq '0' || $Exit_Code eq undef) {
 			$Exit_Code = "<span style='color: #00FF00;'>$Exit_Code</span>"; 
 			$Output = "<span style='color: #00FF00;'>$Output</span>";
 		}
@@ -435,6 +438,18 @@ sub html_output {
 		my $Last_Modified = $Jobs[5];
 		my $Modified_By = $Jobs[6];
 
+		if ($Status == 1 || $Status == 10) {
+			my $Processing = `$ps aux | $grep 'JobID $DBID' | grep -v grep | wc -l`;
+			if ($Processing == 0) {
+				$Status = 12;
+				my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute($Status, $User_Name, $DBID);
+			}
+		}
+
 		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
 		FROM `hosts`
 		WHERE `id` = ?");
@@ -540,7 +555,7 @@ sub html_output {
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 5) {
-			$Running_Command = 'Job Failed! Connection timout, network or host resolution problems and an unwritable log file are the most likely causes. Try running it manually.';
+			$Running_Command = 'Job Failed! Connection timout, network or host resolution problems are the most likely causes. Try running it manually.';
 			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
@@ -578,6 +593,24 @@ sub html_output {
 		elsif ($Status == 11) {
 			$Running_Command = 'On failure set to kill. Failure condition met - job killed.';
 			$Status = 'Killed';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
+		elsif ($Status == 12) {
+			$Running_Command = 'Lost the remote prompt. Command timeout, SSH connection died or the Job was terminated by the system.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
+		elsif ($Status == 13) {
+			$Running_Command = 'Died during startup - possible SSH known_hosts mismatch.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
+		elsif ($Status == 99) {
+			$Running_Command = 'My head fell off. I don\'t know why.';
+			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}

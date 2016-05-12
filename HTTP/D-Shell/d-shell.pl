@@ -13,12 +13,14 @@ my $Version = Version();
 my $DB_DShell = DB_DShell();
 my $DShell_Job_Log_Location = DShell_Job_Log_Location();
 my $DB_IP_Allocation = DB_IP_Allocation();
+my $nmap = nmap();
+my $grep = sudo_grep();
 my $Override = 0;
 my $Verbose = 0;
 my $Very_Verbose = 0;
 my $Ignore_Bad_Exit_Code = 0;
-#my $Command_Timeout = 180;
-my $Command_Timeout = 5;
+my $Wait_Timeout = 10;
+my $Command_Timeout = 2;
 
 $0 = 'D-Shell';
 $| = 1;
@@ -152,10 +154,15 @@ my $Top_Level_Job;
 if (!$Parent_ID) {
 	$Top_Level_Job = 1;
 	$Parent_ID = $Discovered_Job_ID;
+	$0 = "D-Shell [JobID $Parent_ID]";
 }
 if (!$Dependency_Chain_ID) {
 	$Dependency_Chain_ID = 0;
 }
+else {
+	$0 = "D-Shell [JobID $Parent_ID, ChainID $Dependency_Chain_ID]";
+}
+
 my $DShell_Job_Log_File = "$DShell_Job_Log_Location/$Parent_ID-$Dependency_Chain_ID";
 
 if ((!$Discovered_Job_ID && !$Dependent_Command_Set_ID) || !$User_Name) {
@@ -311,6 +318,27 @@ sub host_connection {
 	my $Max_Retry_Count = 10;
 	my $Connection_Timeout = 2;
 
+	my $SSH_Check;
+	my $Attempts;
+	while ($SSH_Check !~ /open/) {
+	
+		$Attempts++;
+	
+		$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open|closed|filtered'`;
+		sleep 1;
+	
+		if ($Attempts >= 10) {
+			print "Unresolved host, no route to host or SSH not responding. Terminating the job.\n";
+			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+			$Update_Job->execute( '5', $User_Name, $Parent_ID);
+			exit(1);
+		}
+	
+	}
+
 	my $Hello;
 	while (1) {
 
@@ -325,11 +353,9 @@ sub host_connection {
 			raw_pty => 1,
 			restart_timeout_upon_receive => 1
 		);
-		$SSH->login();
+		eval { $SSH->login(); }; &epic_failure('Login', $@) if $@;
 		sleep 1;
 
-
-		#my $Hello = eval{$SSH->login();};
 		my $Test_Command = 'id';
 		my $ID_Command_Timeout = 1;
 		$Hello = $SSH->exec($Test_Command, $ID_Command_Timeout);
@@ -448,7 +474,7 @@ sub processor {
 
 
 	my @Commands = split('\r', $Commands);
-
+	my $Command_Count = $#Commands;
 	foreach my $Command (@Commands) {
 		$Command =~ s/\n//;
 		$Command =~ s/\r//;
@@ -479,7 +505,8 @@ sub processor {
 
 		my $Predictable_Prompt = $System_Short_Name;
 			$Predictable_Prompt =~ s/\s//g;
-		my $Set_Predictable_Prompt = "PS1=[$Predictable_Prompt]";
+			$Predictable_Prompt = "[$Predictable_Prompt]";
+		my $Set_Predictable_Prompt = "PS1=$Predictable_Prompt";
 
 		my $Time_Stamp = strftime "%H:%M:%S", localtime;
 	
@@ -515,7 +542,6 @@ sub processor {
 			my $Pause = $Command;
 			$Pause =~ s/\*PAUSE (.*)/$1/;
 			if ($Verbose == 1) {
-				#system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for ${Blue}$Pause ${Green}seconds on $Connected_Host${Clear}\n' >> $Log_File");
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for ${Blue}$Pause ${Green}seconds${Clear}\n";
 			}
 			sleep $Pause;
@@ -575,7 +601,6 @@ sub processor {
 			}
 		}
 		elsif ($Command =~ /^\*WAITFOR.*/) {
-			my $Wait_Timeout = 600;
 			my $Wait = $Command;
 			if ($Wait =~ m/^\*WAITFOR\d/) {
 				$Wait_Timeout = $Wait;
@@ -585,9 +610,8 @@ sub processor {
 			else {
 				$Wait =~ s/\*WAITFOR (.*)/$1/;
 			}
-	
+
 			if ($Verbose == 1) {
-				#system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Waiting for the prompt ${Yellow}$Wait ${Green}for ${Blue}$Wait_Timeout ${Green}seconds on $Connected_Host${Clear}\n' >> $Log_File");
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Waiting for the prompt ${Yellow}$Wait ${Green}for ${Blue}$Wait_Timeout ${Green}seconds${Clear}\n";
 			}
 			my $Match;
@@ -596,7 +620,6 @@ sub processor {
 				if ($Match) {
 					if ($Verbose == 1) {
 						$Time_Stamp = strftime "%H:%M:%S", localtime;
-						#system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found match for ${Yellow}$Wait ${Green}on $Connected_Host${Clear}\n' >> $Log_File");
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found match for ${Yellow}$Wait${Clear}\n";
 					}
 					$Command_Output = "$Wait Match Found!";
@@ -632,7 +655,6 @@ sub processor {
 			my $Send = $Command;
 			$Send =~ s/\*SEND (.*)/$1/;
 			if ($Verbose == 1) {
-				#system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending ${Yellow}$Send ${Green}to $Connected_Host${Clear}\n' >> $Log_File");
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending '${Yellow}$Send${Green}'${Clear}\n";
 			}
 			if ($Send eq '') {$Send = ' '}
@@ -642,27 +664,78 @@ sub processor {
 		}
 		else {
 			if ($Verbose == 1) {
-				#system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Command ${Green}on $Connected_Host${Clear}\n' >> $Log_File");
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Command${Clear}\n";
 			}
-			while ( defined (my $Line = $Connected_Host->read_all()) ) {
+	#		while ( defined (my $Line = $Connected_Host->read_all()) ) {
 				#Do nothing! Clearing the input stream for the next command
-			} 
+	#		} 
 			# Set a predictable prompt every time so that we can filter it even if the remote system changes it after a command (such as switching user).
 
 			my $Set_Prompt_Timeout = 1;
+			# Stop system from polluting history file
+			$Connected_Host->exec(' export HISTFILE=/dev/null', 1);
+		
+			# Set a prompt that we can handle
 			$Connected_Host->exec($Set_Predictable_Prompt, $Set_Prompt_Timeout);
 
-			$Command_Output = $Connected_Host->exec($Command, $Command_Timeout);
+			$Connected_Host->send($Command);
+			eval { $Command_Output = $Connected_Host->read_all(); }; &epic_failure('PrePrompt Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@; # Immediately grab the output
+			$Connected_Host->send(' Command_Exit=`echo $?`');
+			$Connected_Host->send(" $Set_Predictable_Prompt");
+			$Connected_Host->send(' echo $PS1');
+
+			my $Match = $Connected_Host->waitfor(".*$Predictable_Prompt.*", $Wait_Timeout, '-re');
+
+			eval { $Command_Output = $Command_Output . $Connected_Host->read_all(); }; &epic_failure('PostPrompt Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@; # Grab the rest of the output
 			$Command_Output =~ s/\n\e.*//g; # Clears newlines, escapes (ESC)
 			$Command_Output =~ s/\e.*//g;
-			$Command_Output =~ s/^$Command//;
+			$Command_Output =~ s/^\Q$Command\E//; # Escaping any potential regex in $Command
 			$Command_Output =~ s/.*\r//g;
+			$Command_Output =~ s/\Q$Predictable_Prompt\E//g;
+
+			if ($Match) {
+			 	if ($Verbose == 1) {
+					$Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Prompt '$Predictable_Prompt' found. Continuing... ${Clear}\n";
+				}
+			}
+			else {
+				system("echo '${Red}Prompt '$Predictable_Prompt' lost while waiting $Wait_Timeout seconds for ${Yellow}$Command${Clear}\n' >> $DShell_Job_Log_File");
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Prompt '$Predictable_Prompt' lost while waiting $Wait_Timeout seconds for ${Yellow}$Command${Clear}\n";
+				$Command_Output = "Prompt lost. Command Timeout? Output was:\n\n$Command_Output\n\n Full job log at $DShell_Job_Log_File.";
+				$Exit_Code = 12;
+				$Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+					`exit_code` = ?,
+					`output` = ?,
+					`task_ended` = NOW(),
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Command_Output =~ s/\[$Predictable_Prompt\]//g;
+				$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+				my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+					`job_id`,
+					`command`,
+					`output`,
+					`task_ended`,
+					`modified_by`
+				)
+				VALUES (
+					?, ?, ?, NOW(), ?
+				)");
+				$Update_Job_Status->execute($Parent_ID, "### Lost the remote prompt. Command timeout, perhaps?", '', 'System');
+				my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+				exit($Exit_Code);
+			} 
+
 			my $Exit_Code_Timeout = 1;
-			$Exit_Code = $Connected_Host->exec('echo $?', $Exit_Code_Timeout);
+			$Exit_Code = $Connected_Host->exec('echo $Command_Exit', $Exit_Code_Timeout);
+			$Exit_Code =~ s/.*\]//g;
 			$Exit_Code =~ s/[^0-9+]//g;
-			#$Exit_Code =~ s/.$//; # Uncomment this when running from command line
-			if ($Exit_Code) {
+			if ($Exit_Code != 0) {
 				if ($Verbose) {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## Exit code for ${Yellow}$Command${Red}: ${Blue}$Exit_Code${Clear}\n";
 				}
@@ -705,10 +778,9 @@ sub processor {
 				if ($Verbose) {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Exit code for ${Yellow}$Command${Green}: ${Blue}$Exit_Code${Clear}\n";
 				}
-
 			}
 		}
-	
+
 		$Command_Output =~ s/\[$Predictable_Prompt\]//g;
 		$Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
 			`exit_code` = ?,
@@ -717,7 +789,7 @@ sub processor {
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
-	
+
 	}
 
 	$Connected_Host->close();
@@ -762,5 +834,135 @@ sub processor {
 
 
 } # sub processor
+
+sub epic_failure {
+	my ($Location, $Error, $Command_Output, $Job_Status_Update_ID) = @_;
+	my $Exit_Code;
+
+	if ($Command_Output =~ /closed by remote host/) {
+		$Exit_Code = 12;
+
+		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+
+		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+			`exit_code` = ?,
+			`output` = ?,
+			`task_ended` = NOW(),
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+
+		$Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`exit_code`,
+			`output`,
+			`task_ended`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, ?, NOW(), ?
+		)");
+		$Update_Job_Status->execute($Parent_ID, "### SSH connection closed at $Location. $Command_Output", $Exit_Code, $Error, 'System');
+		print "SSH connection closed at $Location.\n";
+	}
+	elsif ($Error =~ /SSHProcessError/) {
+		$Exit_Code = 12;
+		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+
+		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+			`exit_code` = ?,
+			`output` = ?,
+			`task_ended` = NOW(),
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+
+		$Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`exit_code`,
+			`output`,
+			`task_ended`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, ?, NOW(), ?
+		)");
+		$Update_Job_Status->execute($Parent_ID, "### Job died with SSHProcessError at $Location.", $Exit_Code, $Error, 'System');
+		print "Job died with SSHProcessError at $Location.\n";
+	}
+	elsif ($Error =~ /SSHConnectionAborted/) {
+		$Exit_Code = 12;
+		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+
+		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+			`exit_code` = ?,
+			`output` = ?,
+			`task_ended` = NOW(),
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+
+		$Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`exit_code`,
+			`output`,
+			`task_ended`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, ?, NOW(), ?
+		)");
+		$Update_Job_Status->execute($Parent_ID, "### Job died with SSHConnectionAborted at $Location.", $Exit_Code, $Error, 'System');
+		print "Job died with SSHConnectionAborted at $Location.\n";
+	}
+	else {
+		$Exit_Code = 99;
+		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+
+		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+			`exit_code` = ?,
+			`output` = ?,
+			`task_ended` = NOW(),
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+
+		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`exit_code`,
+			`output`,
+			`task_ended`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, ?, NOW(), ?
+		)");
+		$Update_Job_Status->execute($Parent_ID, "### Job died in unhandled circumstance at $Location.", $Exit_Code, $Error, 'System');
+		print "Job died in unhandled circumstance at $Location.\n";
+	}
+
+	exit($Exit_Code);
+
+} # sub epic_failure
 
 1;
