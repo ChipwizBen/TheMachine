@@ -875,14 +875,14 @@ sub html_output {
 			$Table->setCellClass ($Record_Row_Count, 8, 'tbrowpurple');
 		}
 		else {
-			$Table->setCellClass ($Record_Row_Count, 8, 'tbrowerror');
+			$Table->setCellClass ($Record_Row_Count, 8, 'tbrowred');
 		}
 
 		if ($Active eq 'Yes') {
 			$Table->setCellClass ($Record_Row_Count, 10, 'tbrowgreen');
 		}
 		else {
-			$Table->setCellClass ($Record_Row_Count, 10, 'tbrowerror');
+			$Table->setCellClass ($Record_Row_Count, 10, 'tbrowred');
 		}
 
 		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {

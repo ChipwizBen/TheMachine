@@ -1291,7 +1291,7 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 		$Table->setCellClass ($User_Row_Count, 5, 'tbroworange');
 	}
 	elsif ($Admin_Extract eq 'Yes') {
-		$Table->setCellClass ($User_Row_Count, 5, 'tbrowerror');
+		$Table->setCellClass ($User_Row_Count, 5, 'tbrowred');
 	}
 
 	if ($IP_Admin_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 6, 'tbroworange');}
@@ -1307,10 +1307,10 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 		$Table->setCellClass ($User_Row_Count, 13, 'tbrowgreen');
 	}
 	else {
-		$Table->setCellClass ($User_Row_Count, 13, 'tbrowerror');
+		$Table->setCellClass ($User_Row_Count, 13, 'tbrowred');
 	}
 
-	if ($Lockout_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 14, 'tbrowerror');}
+	if ($Lockout_Extract eq 'Yes') {$Table->setCellClass ($User_Row_Count, 14, 'tbrowred');}
 	
 	for (5 .. 14) {
 		$Table->setColWidth($_, '1px');

@@ -614,7 +614,7 @@ table {
 	color: #FFFFFF;
 	}
 
-.tbrowerror {
+.tbrowred {
 	background-color: #FF0000;
 	color: #FFFFFF;
 	}
@@ -887,6 +887,90 @@ table {
 	color: #293e77;
 	background-color: #293e77;
 	height: 1px;
+	}
+
+
+/*
+-----Nests-----
+*/
+
+.block-nest {
+	width: 100%;
+	position: relative;
+	-webkit-box-orient: horizontal;
+	-moz-box-orient: horizontal;
+	display: flex;
+	box-orient: horizontal;
+	}
+
+.vertical-nest {
+	flex-direction: column;
+	}
+      
+.vertical-nest div {
+	margin-bottom: 20px;
+	}
+
+#main-block {
+	color: #FFFFFF;
+	width: 100%;
+	padding: 10px;
+	margin: 10px;
+	background-color: #293E77;
+	border-color: #25AAE1;
+	border-style: solid;
+	border-top-width: 2px;
+	border-right-width: 2px;
+	border-bottom-width: 2px;
+	border-left-width: 2px;
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	box-shadow: 10px 10px 10px rgba(119, 119, 119, 1);
+	-webkit-box-shadow: 10px 10px 10px rgba(119, 119, 119, 1);
+	z-index: 1;
+	}
+
+#blue-block {
+	color: #FFFFFF;
+	background-color: #293e77;
+	min-width: 200px;
+	max-width: 600px;
+	padding: 10px;
+	margin: 10px;
+	border-color: #25aae1;
+	border-style: solid;
+	border-top-width: 2px;
+	border-right-width: 2px;
+	border-bottom-width: 2px;
+	border-left-width: 2px;
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	box-shadow: 10px 10px 10px rgba(119, 119, 119, 1);
+	-webkit-box-shadow: 10px 10px 10px rgba(119, 119, 119, 1);
+	z-index: 1;
+	}
+
+#orange-block {
+	color: #FFFFFF;
+	padding: 10px;
+	margin: 10px;
+	background-color: #FF6100;
+	min-width: 200px;
+	max-width: 600px;
+	border-color: #293e77;
+	border-style: solid;
+	border-top-width: 2px;
+	border-right-width: 2px;
+	border-bottom-width: 2px;
+	border-left-width: 2px;
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	box-shadow: 10px 10px 10px rgba(119, 119, 119, 1);
+	-webkit-box-shadow: 10px 10px 10px rgba(119, 119, 119, 1);
+	z-index: 1;
 	}
 
 

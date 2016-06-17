@@ -31,6 +31,7 @@ Hello there, intrepid random file executer! If you're reading this, you're proba
 Options are:
 	${Blue}-u, --username\t\t${Green}Username for the remote host(s). Will also trigger the job.
 	${Blue}-P, --password\t\t${Green}Password for the remote host(s)
+	${Blue}-k, --key\t\t${Green}Pass the key ID used to connect to the server
 	${Blue}-f, --failure\t\t${Green}Specify the on-failure behaviour (0 is continue, 1 is die)
 	${Blue}-c, --command-set\t${Green}The ID of the command set
 	${Blue}-H, --hosts\t\t${Green}A comma sperated list of host IDs (no spaces!) [e.g.: -H 302,5943,2140]
@@ -51,6 +52,9 @@ my $Trigger_Job;
 my $User_Trigger;
 my $Captured_User_Name;
 my $Captured_Password;
+my $Captured_Key;
+my $Captured_Key_Lock;
+my $Captured_Key_Passphrase;
 my $On_Failure;
 foreach my $Parameter (@ARGV) {
 	if ($Parameter eq '-H' || $Parameter eq '--hosts') {
@@ -96,6 +100,33 @@ foreach my $Parameter (@ARGV) {
 		while ($Captured_Password = shift @Captured_Passwords) {
 			if ($Captured_Password =~ /-P/ || $Captured_Password =~ /--password/) {
 				$Captured_Password = shift @Captured_Passwords;
+				last;
+			}
+		}
+	}
+	if ($Parameter eq '-k' || $Parameter eq '--key') {
+		my @Captured_Keys = @ARGV;
+		while ($Captured_Key = shift @Captured_Keys) {
+			if ($Captured_Key =~ /-k/ || $Captured_Key =~ /--key/) {
+				$Captured_Key = shift @Captured_Keys;
+				last;
+			}
+		}
+	}
+	if ($Parameter eq '-L' || $Parameter eq '--lock') {
+		my @Captured_Key_Locks = @ARGV;
+		while ($Captured_Key_Lock = shift @Captured_Key_Locks) {
+			if ($Captured_Key_Lock =~ /-L/ || $Captured_Key_Lock =~ /--lock/) {
+				$Captured_Key_Lock = shift @Captured_Key_Locks;
+				last;
+			}
+		}
+	}
+	if ($Parameter eq '-K' || $Parameter eq '--passphrase') {
+		my @Captured_Key_Passphrases = @ARGV;
+		while ($Captured_Key_Passphrase = shift @Captured_Key_Passphrases) {
+			if ($Captured_Key_Passphrase =~ /-K/ || $Captured_Key_Passphrase =~ /--passphrase/) {
+				$Captured_Key_Passphrase = shift @Captured_Key_Passphrases;
 				last;
 			}
 		}
@@ -146,7 +177,7 @@ if ($Command_Set && @Hosts) {
 
 		$Audit_Log_Submission->execute("D-Shell", "Receive", "The job scheduler received a job to run command set ID $Command_Set on host ID $Host.", "System");
 
-		if ($Command_Insert_ID && $Captured_User_Name) {
+		if ($Command_Insert_ID) {
 			# Audit Log
 			my $DB_Management = DB_Management();
 			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
@@ -159,7 +190,7 @@ if ($Command_Set && @Hosts) {
 				?, ?, ?, ?
 			)");
 		
-			$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Trigger started Job ID $Command_Insert_ID with username $Captured_User_Name.", $User_Trigger);
+			$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Trigger started Job ID $Command_Insert_ID.", $User_Trigger);
 			# / Audit Log
 
 			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
@@ -171,8 +202,36 @@ if ($Command_Set && @Hosts) {
 			$SIG{CHLD} = 'IGNORE';
 			my $PID = fork();
 			if (defined $PID && $PID == 0) {
-				exec "./d-shell.pl -j $Command_Insert_ID -u $Captured_User_Name -P $Captured_Password >> /tmp/output 2>&1 &";
-				exit(0);
+				my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+					`category`,
+					`method`,
+					`action`,
+					`username`
+				)
+				VALUES (
+					?, ?, ?, ?
+				)");
+				if ($Captured_User_Name && $Captured_Password) {
+					$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with username $Captured_User_Name.", $User_Trigger);
+					exec "./d-shell.pl -j $Command_Insert_ID -u $Captured_User_Name -P $Captured_Password >> /dev/null 2>&1 &";
+				}
+				elsif ($Captured_Key && $Captured_Key_Lock) {
+					if ($Captured_Key_Passphrase) {
+						$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with key.", $User_Trigger);
+						exec "./d-shell.pl -j $Command_Insert_ID -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase >> /dev/null 2>&1 &";
+						exit(0);
+					}
+					else {
+						$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with key.", $User_Trigger);
+						exec "./d-shell.pl -j $Command_Insert_ID -k $Captured_Key -L $Captured_Key_Lock >> /dev/null 2>&1 &";
+						exit(0);						
+					}
+
+				}
+				else {
+					print "Didn't get what I expected. Dying.";
+					exit(1);
+				}
 			}
 		}
 	}

@@ -36,6 +36,13 @@ my $Add_Reverse_Proxy = $CGI->param("Add_Reverse_Proxy");
 		my $RC4_Add = $CGI->param("RC4_Add");
 		my $Enforce_SSL_Add = $CGI->param("Enforce_SSL_Add");
 			my $HSTS_Add = $CGI->param("HSTS_Add");
+	my $X_Frame_Options_Add = $CGI->param("X_Frame_Options_Add");
+	my $X_XSS_Protection_Add = $CGI->param("X_XSS_Protection_Add");
+	my $X_Content_Type_Options_Add = $CGI->param("X_Content_Type_Options_Add");
+	my $Content_Security_Policy_Add = $CGI->param("Content_Security_Policy_Add");
+	my $X_Permitted_Cross_Domain_Policies_Add = $CGI->param("X_Permitted_Cross_Domain_Policies_Add");
+	my $X_Powered_By_Add = $CGI->param("X_Powered_By_Add");
+	my $Custom_Attributes_Add = $CGI->param("Custom_Attributes_Add");
 
 my $Edit_Reverse_Proxy = $CGI->param("Edit_Reverse_Proxy");
 	my $Server_Name_Edit = $CGI->param("Server_Name_Edit");
@@ -59,11 +66,20 @@ my $Edit_Reverse_Proxy = $CGI->param("Edit_Reverse_Proxy");
 		my $RC4_Edit = $CGI->param("RC4_Edit");
 		my $Enforce_SSL_Edit = $CGI->param("Enforce_SSL_Edit");
 			my $HSTS_Edit = $CGI->param("HSTS_Edit");
+	my $X_Frame_Options_Edit = $CGI->param("X_Frame_Options_Edit");
+	my $X_XSS_Protection_Edit = $CGI->param("X_XSS_Protection_Edit");
+	my $X_Content_Type_Options_Edit = $CGI->param("X_Content_Type_Options_Edit");
+	my $Content_Security_Policy_Edit = $CGI->param("Content_Security_Policy_Edit");
+	my $X_Permitted_Cross_Domain_Policies_Edit = $CGI->param("X_Permitted_Cross_Domain_Policies_Edit");
+	my $X_Powered_By_Edit = $CGI->param("X_Powered_By_Edit");
+	my $Custom_Attributes_Edit = $CGI->param("Custom_Attributes_Edit");
 my $Edit_Reverse_Proxy_Post = $CGI->param("Edit_Reverse_Proxy_Post");
 
 my $Delete_Reverse_Proxy = $CGI->param("Delete_Reverse_Proxy");
 my $Delete_Reverse_Proxy_Confirm = $CGI->param("Delete_Reverse_Proxy_Confirm");
 my $Reverse_Proxy_Delete = $CGI->param("Reverse_Proxy_Delete");
+
+my $View_Reverse_Proxy = $CGI->param("View_Reverse_Proxy");
 
 my $User_Name = $Session->param("User_Name");
 my $User_Reverse_Proxy_Admin = $Session->param("User_Reverse_Proxy_Admin");
@@ -175,6 +191,12 @@ elsif ($Delete_Reverse_Proxy_Confirm) {
 		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
 		exit(0);
 	}
+}
+elsif ($View_Reverse_Proxy) {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_view_reverse_proxy;
 }
 else {
 	require $Header;
@@ -317,6 +339,67 @@ function Enforce_SSL_Toggle(value) {
 			</select>
 		</td>
 	</tr>
+	<tr>
+		<td style="text-align: right;">X-Frame-Options:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_Frame_Options_Add'">
+				<option value='0' selected>Default</option>
+				<option value='1'>Deny</option>
+				<option value='2'>SameOrigin</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">X-XSS-Protection:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_XSS_Protection_Add'">
+				<option value='0' selected>Default</option>
+				<option value='1'>1; mode=block</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">X-Content-Type-Options:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_Content_Type_Options_Add'">
+				<option value='0' selected>Default</option>
+				<option value='1'>nosniff</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Content-Security-Policy:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='Content_Security_Policy_Add'">
+				<option value='0' selected>Default</option>
+				<option value='1'>default-src 'self'</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">X-Permitted-Cross-Domain-Policies:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_Permitted_Cross_Domain_Policies_Add'">
+				<option value='0' selected>Default</option>
+				<option value='1'>none</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">X-Powered-By:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_Powered_By_Add'">
+				<option value='0' selected>Default</option>
+				<option value='1'>unset</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Custom Attributes:</td>
+		<td colspan="2" style="text-align: left;">
+			<textarea name='Custom_Attributes_Add' placeholder='&lt;Location "/admin"&gt;Require ip 192.168.0.0/16&lt;/Location&gt;'></textarea>
+		</td>
+	</tr>
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
@@ -367,17 +450,28 @@ sub add_reverse_proxy {
 		`rc4`,
 		`enforce_ssl`,
 		`hsts`,
+		`frame_options`,
+		`xss_protection`,
+		`content_type_options`,
+		`content_security_policy`,
+		`permitted_cross_domain_policies`,
+		`powered_by`,
+		`custom_attributes`,
 		`modified_by`
 	)
 	VALUES (
 		?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?, ?
+		?, ?, ?, ?,
+		?, ?, ?, ?,
+		?, ?, ?, ?
 	)");
 
 	$Reverse_Proxy_Insert->execute($Server_Name_Add, $Source_Add, $Destination_Add, $Transfer_Log_Add, 
 	$Error_Log_Add, $Certificate_Add, $Certificate_Key_Add, $CA_Certificate_Add, 
-	$PFS_Add, $RC4_Add, $Enforce_SSL_Add, $HSTS_Add, $User_Name);
+	$PFS_Add, $RC4_Add, $Enforce_SSL_Add, $HSTS_Add, 
+	$X_Frame_Options_Add, $X_XSS_Protection_Add, $X_Content_Type_Options_Add, $Content_Security_Policy_Add,
+	$X_Permitted_Cross_Domain_Policies_Add, $X_Powered_By_Add, $Custom_Attributes_Add, $User_Name);
 
 	my $Reverse_Proxy_Insert_ID = $DB_Reverse_Proxy->{mysql_insertid};
 
@@ -404,7 +498,8 @@ sub html_edit_reverse_proxy {
 
 	my $Select_Reverse_Proxy = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `proxy_pass_source`,
 		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
-		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`
+		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,
+		`content_security_policy`, `permitted_cross_domain_policies`, `powered_by`, `custom_attributes`
 		FROM `reverse_proxy`
 		WHERE `id` = ?");
 	$Select_Reverse_Proxy->execute($Edit_Reverse_Proxy);
@@ -424,6 +519,13 @@ sub html_edit_reverse_proxy {
 		my $RC4 = $Reverse_Proxy_Values[9];
 		my $Enforce_SSL = $Reverse_Proxy_Values[10];
 		my $HSTS = $Reverse_Proxy_Values[11];
+		my $X_Frame_Options = $Reverse_Proxy_Values[12];
+		my $X_XSS_Protection = $Reverse_Proxy_Values[13];
+		my $X_Content_Type_Options = $Reverse_Proxy_Values[14];
+		my $Content_Security_Policy = $Reverse_Proxy_Values[15];
+		my $X_Permitted_Cross_Domain_Policies = $Reverse_Proxy_Values[16];
+		my $X_Powered_By = $Reverse_Proxy_Values[17];
+		my $Custom_Attributes = $Reverse_Proxy_Values[18];
 
 		my $SSL_Display;
 		my $SSL_Toggle;
@@ -611,6 +713,140 @@ print <<ENDHTML;
 			</select>
 		</td>
 	</tr>
+	<tr>
+		<td style="text-align: right;">X-Frame-Options:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_Frame_Options_Edit'">
+ENDHTML
+
+	if ($X_Frame_Options == 1) {
+		print "<option value='0'>Default</option>
+		<option value='1' selected>Deny</option>
+		<option value='2'>SameOrigin</option>";
+	}
+	elsif ($X_Frame_Options == 2) {
+		print "<option value='0'>Default</option>
+		<option value='1'>Deny</option>
+		<option value='2' selected>SameOrigin</option>";
+	}
+	else {
+		print "<option value='0' selected>Default</option>
+		<option value='1'>Deny</option>
+		<option value='2'>SameOrigin</option>";
+	}
+
+print <<ENDHTML;
+
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">X-XSS-Protection:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_XSS_Protection_Edit'">
+ENDHTML
+
+	if ($X_XSS_Protection) {
+		$X_XSS_Protection = 'Header always set X-XSS-Protection "1; mode=block"';
+		print "<option value='0'>Default</option>
+		<option value='1' selected>1; mode=block</option>";
+	}
+	else {
+		print "<option value='0' selected>Default</option>
+		<option value='1'>1; mode=block</option>";
+	}
+
+print <<ENDHTML;
+
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">X-Content-Type-Options:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_Content_Type_Options_Edit'">
+
+ENDHTML
+
+	if ($X_Content_Type_Options) {
+		print "<option value='0'>Default</option>
+		<option value='1' selected>nosniff</option>";
+	}
+	else {
+		print "<option value='0' selected>Default</option>
+		<option value='1'>nosniff</option>";
+	}
+
+print <<ENDHTML;
+
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Content-Security-Policy:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='Content_Security_Policy_Edit'">
+ENDHTML
+
+	if ($Content_Security_Policy) {
+		print "<option value='0'>Default</option>
+		<option value='1' selected>default-src 'self'</option>";
+	}
+	else {
+		print "<option value='0' selected>Default</option>
+		<option value='1'>default-src 'self'</option>";
+	}
+
+print <<ENDHTML;
+
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">X-Permitted-Cross-Domain-Policies:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_Permitted_Cross_Domain_Policies_Edit'">
+ENDHTML
+
+	if ($X_Permitted_Cross_Domain_Policies) {
+		print "<option value='0'>Default</option>
+		<option value='1' selected>none</option>";
+	}
+	else {
+		print "<option value='0' selected>Default</option>
+		<option value='1'>none</option>";
+	}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">X-Powered-By:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='X_Powered_By_Edit'">
+ENDHTML
+
+	if ($X_Powered_By) {
+		print "<option value='0'>Default</option>
+		<option value='1' selected>unset</option>";
+	}
+	else {
+		print "<option value='0' selected>Default</option>
+		<option value='1'>unset</option>";
+	}
+
+print <<ENDHTML;
+
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Custom Attributes:</td>
+		<td colspan="2" style="text-align: left;">
+			<textarea name='Custom_Attributes_Edit' placeholder='$Custom_Attributes'>$Custom_Attributes</textarea>
+		</td>
+	</tr>
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
@@ -665,12 +901,20 @@ sub edit_reverse_proxy {
 		`rc4` = ?,
 		`enforce_ssl` = ?,
 		`hsts` = ?,
+		`frame_options` = ?,
+		`xss_protection` = ?,
+		`content_type_options` = ?,
+		`content_security_policy` = ?,
+		`permitted_cross_domain_policies` = ?,
+		`powered_by` = ?,
+		`custom_attributes` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
-		
+
 	$Update_Reverse_Proxy->execute($Server_Name_Edit, $Source_Edit, $Destination_Edit, $Transfer_Log_Edit, $Error_Log_Edit,
 		$Certificate_Edit, $Certificate_Key_Edit, $CA_Certificate_Edit, $PFS_Edit, $RC4_Edit, $Enforce_SSL_Edit, $HSTS_Edit,
-		$User_Name, $Edit_Reverse_Proxy_Post);
+		$X_Frame_Options_Edit, $X_XSS_Protection_Edit, $X_Content_Type_Options_Edit, $Content_Security_Policy_Edit,
+		$X_Permitted_Cross_Domain_Policies_Edit, $X_Powered_By_Edit, $Custom_Attributes_Edit, $User_Name, $Edit_Reverse_Proxy_Post);
 
 	# Audit Log
 	my $DB_Management = DB_Management();
@@ -778,6 +1022,200 @@ sub delete_reverse_proxy {
 
 } # sub delete_reverse_proxy
 
+sub html_view_reverse_proxy {
+
+	my ($Default_Transfer_Log,
+		$Default_Error_Log,
+		$Default_SSL_Certificate_File,
+		$Default_SSL_Certificate_Key_File,
+		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
+
+	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
+	`transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_ca_certificate_file`,
+	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
+	`permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
+	FROM `reverse_proxy`
+	WHERE `id` = ?
+	ORDER BY `server_name` ASC");
+	$Record_Query->execute($View_Reverse_Proxy);
+
+	my $Reverse_Proxy_Entry;
+	while ( my @Proxy_Entry = $Record_Query->fetchrow_array() )
+	{
+		my $Server_Name = $Proxy_Entry[0];
+		my $Source = $Proxy_Entry[1];
+		my $Destination = $Proxy_Entry[2];
+		my $Transfer_Log = $Proxy_Entry[3];
+		my $Error_Log = $Proxy_Entry[4];
+		my $SSL_Certificate_File = $Proxy_Entry[5];
+		my $SSL_Certificate_Key_File = $Proxy_Entry[6];
+		my $SSL_CA_Certificate_File = $Proxy_Entry[7];
+		my $PFS = $Proxy_Entry[8];
+		my $RC4 = $Proxy_Entry[9];
+		my $Enforce_SSL = $Proxy_Entry[10];
+		my $HSTS = $Proxy_Entry[11];
+		my $Frame_Options = $Proxy_Entry[12];
+		my $XSS_Protection = $Proxy_Entry[13];
+		my $Content_Type_Options = $Proxy_Entry[14];
+		my $Content_Security_Policy = $Proxy_Entry[15];
+		my $Permitted_Cross_Domain_Policies = $Proxy_Entry[16];
+		my $Powered_By = $Proxy_Entry[17];
+		my $Custom_Attributes = $Proxy_Entry[18];
+		my $Last_Modified = $Proxy_Entry[19];
+		my $Modified_By = $Proxy_Entry[20];
+
+		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
+		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
+
+		if ($SSL_Certificate_File && $SSL_Certificate_Key_File && $SSL_CA_Certificate_File) {
+			if (!$SSL_Certificate_File) {$SSL_Certificate_File = $Default_SSL_Certificate_File}
+			if (!$SSL_Certificate_Key_File) {$SSL_Certificate_Key_File = $Default_SSL_Certificate_Key_File}
+			if (!$SSL_CA_Certificate_File) {$SSL_CA_Certificate_File = $Default_SSL_CA_Certificate_File}
+
+			my $CipherOrder;
+			my $CipherSuite;
+			if ($PFS && $RC4) {
+				$CipherOrder = 'SSLHonorCipherOrder on';
+				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS";
+			}
+			elsif ($PFS && !$RC4) {
+				$CipherOrder = 'SSLHonorCipherOrder on';
+				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4";
+			}
+			else {
+				$CipherOrder = '';
+				$CipherSuite = "HIGH:!SSLv2:!ADH:!aNULL:!eNULL:!NULL";
+			}
+
+			my $Enforce_SSL_Header;
+			if ($Enforce_SSL) {
+				$Enforce_SSL_Header = "
+    <IfModule mod_rewrite.c>
+        RewriteEngine On
+        RewriteCond %{HTTPS} off
+        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+    </IfModule>
+    <IfModule !mod_rewrite.c>
+        Redirect                 /       https://$Server_Name
+    </IfModule>";
+			}	
+
+			my $HSTS_Header;
+			if ($HSTS) {
+				$HSTS_Header = 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"';
+			}			
+
+		my $Headers;
+		if ($Frame_Options == 1) {
+			$Frame_Options = 'Header always set X-Frame-Options deny';
+			$Headers = $Headers . $Frame_Options . '\n    ';
+		}
+			elsif ($Frame_Options == 2) {
+				$Frame_Options = 'Header always set X-Frame-Options sameorigin';
+				$Headers = $Headers . $Frame_Options . '\n    ';
+			}
+		if ($XSS_Protection) {
+			$XSS_Protection = 'Header always set X-XSS-Protection "1; mode=block"';
+			$Headers = $Headers . $XSS_Protection . '\n    ';
+		}
+		if ($Content_Type_Options) {
+			$Content_Type_Options = 'Header always set X-Content-Type-Options nosniff';
+			$Headers = $Headers . $Content_Type_Options . '\n    ';
+		}
+		if ($Content_Security_Policy) {
+			$Content_Security_Policy = 'Header always set Content-Security-Policy "default-src \'self\'"';
+			$Headers = $Headers . $Content_Security_Policy . '\n    ';
+		}
+		if ($Permitted_Cross_Domain_Policies) {
+			$Permitted_Cross_Domain_Policies = 'Header always set X-Permitted-Cross-Domain-Policies none';
+			$Headers = $Headers . $Permitted_Cross_Domain_Policies . '\n    ';
+		}
+		if ($Powered_By) {
+			$Powered_By = 'Header unset X-Powered-By';
+			$Headers = $Headers . $Powered_By . '\n    ';
+		}
+
+			$Reverse_Proxy_Entry = "
+<VirtualHost *:80>
+
+    ServerName               $Server_Name
+    $Enforce_SSL_Header
+
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+
+    ServerName               $Server_Name
+
+    SSLProxyEngine           On
+    ProxyRequests            Off
+    ProxyPreserveHost        On
+    ProxyPass                $Source    $Destination
+    ProxyPassReverse         $Source    $Destination
+
+    SSLEngine                On
+    SSLProtocol              ALL -SSLv2 -SSLv3
+    $CipherOrder
+    SSLCipherSuite           \"$CipherSuite\"
+    SSLInsecureRenegotiation Off
+
+    SSLCertificateFile       $SSL_Certificate_File
+    SSLCertificateKeyFile    $SSL_Certificate_Key_File
+    SSLCACertificateFile     $SSL_CA_Certificate_File
+
+    TransferLog              $Transfer_Log
+    ErrorLog                 $Error_Log
+
+    $HSTS_Header
+    $Headers
+    $Custom_Attributes
+</VirtualHost>
+</IfModule>
+"
+		}
+		else {
+			$Reverse_Proxy_Entry = "
+<VirtualHost *:80>
+
+    ServerName            $Server_Name
+
+    ProxyEngine           On
+    ProxyRequests         Off
+    ProxyPreserveHost     On
+    ProxyPass             $Source    $Destination
+    ProxyPassReverse      $Source    $Destination
+    TransferLog           $Transfer_Log
+    ErrorLog              $Error_Log
+    $Custom_Attributes
+</VirtualHost>
+
+";
+		}
+	}
+
+$Reverse_Proxy_Entry =~ s/</&lt;/g;
+$Reverse_Proxy_Entry =~ s/>/&gt;/g;
+$Reverse_Proxy_Entry =~ s/\\n/<br>/g;
+
+print <<ENDHTML;
+
+<div id="wide-popup-box">
+<a href="/ReverseProxy/reverse-proxy.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Config for Reverse Proxy ID $View_Reverse_Proxy</h3>
+
+<pre style='text-align: left; max-width:660px; padding-left:20px; white-space:pre-wrap; word-wrap:break-word;'><code>$Reverse_Proxy_Entry</code></pre>
+
+</div>
+
+ENDHTML
+
+} #sub html_view_reverse_proxy
+
 sub html_output {
 
 	my ($Default_Transfer_Log,
@@ -805,7 +1243,8 @@ sub html_output {
 
 	my $Select_Reverse_Proxies = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `proxy_pass_source`,
 		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
-		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `last_modified`, `modified_by`
+		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,
+		`content_security_policy`, `permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
 		FROM `reverse_proxy`
 		WHERE `id` LIKE ?
 		OR `server_name` LIKE ?
@@ -825,9 +1264,11 @@ sub html_output {
 
 	my $Rows = $Select_Reverse_Proxies->rows();
 
-	$Table->addRow( "ID", "Server Name", "Source", "Destination", "Transfer Log", "Error Log", "SSL Files", "", 
-	"Perfect Forward Secrecy", "Legacy RC4 Support", "Enforce SSL", "Last Modified", "Modified By", "Edit", "Delete" );
-	$Table->setCellColSpan(1, 7, 2); # row_num, col_num, num_cells
+	$Table->addRow( "ID", "Server Name", "Source<br /><span style='color: #B6B600'>Destination</span>", 
+	"Transfer Log<br /><span style='color: #B6B600'>Error Log</span>", "SSL Files", "", "Header Flags", 
+	"Perfect Forward Secrecy", "Legacy RC4 Support", "Enforce SSL", "Custom Attributes", 
+	"Last Modified<br /><span style='color: #B6B600'>Modified By</span>", "View", "Edit", "Delete" );
+	$Table->setCellColSpan(1, 5, 2); # row_num, col_num, num_cells
 	$Table->setRowClass (1, 'tbrow1');
 	
 	my $Reverse_Proxy_Row_Count=1;
@@ -867,28 +1308,46 @@ sub html_output {
 		my $RC4 = $Select_Reverse_Proxies[10];
 		my $Enforce_SSL = $Select_Reverse_Proxies[11];
 		my $HSTS = $Select_Reverse_Proxies[12];
-		my $Last_Modified = $Select_Reverse_Proxies[13];
-		my $Modified_By = $Select_Reverse_Proxies[14];
+		my $Frame_Options = $Select_Reverse_Proxies[13];
+		my $XSS_Protection = $Select_Reverse_Proxies[14];
+		my $Content_Type_Options = $Select_Reverse_Proxies[15];
+		my $Content_Security_Policy = $Select_Reverse_Proxies[16];
+		my $Permitted_Cross_Domain_Policies = $Select_Reverse_Proxies[17];
+		my $Powered_By = $Select_Reverse_Proxies[18];
+		my $Custom_Attributes = $Select_Reverse_Proxies[19];
+		my $Last_Modified = $Select_Reverse_Proxies[20];
+		my $Modified_By = $Select_Reverse_Proxies[21];
 
 		if ($PFS) {$PFS = 'On'} else {$PFS = 'Off'};
 		if ($RC4) {$RC4 = 'On'} else {$RC4 = 'Off'};
 		if ($Enforce_SSL) {$Enforce_SSL = 'Yes'} else {$Enforce_SSL = 'No'};
 		if ($HSTS) {$Enforce_SSL = 'Yes (HSTS)'};
+		if ($Custom_Attributes) {$Custom_Attributes = 'Yes'} else {$Custom_Attributes = 'No'}
+
+		my $Headers;
+		if ($Frame_Options == 1) {$Frame_Options = 'X-Frame-Options: deny'; $Headers = $Headers . $Frame_Options . '<br />'}
+			elsif ($Frame_Options == 2) {$Frame_Options = 'X-Frame-Options: sameorigin'; $Headers = $Headers . $Frame_Options . '<br />'}
+		if ($XSS_Protection) {$XSS_Protection = 'X-XSS-Protection: 1; mode=block'; $Headers = $Headers . $XSS_Protection . '<br />'}
+		if ($Content_Type_Options) {$Content_Type_Options = 'X-Content-Type-Options: nosniff'; $Headers = $Headers . $Content_Type_Options . '<br />'}
+		if ($Content_Security_Policy) {$Content_Security_Policy = 'Content-Security-Policy: default-src \'self\''; $Headers = $Headers . $Content_Security_Policy . '<br />'}
+		if ($Permitted_Cross_Domain_Policies) {$Permitted_Cross_Domain_Policies = 'X-Permitted-Cross-Domain-Policies: none'; $Headers = $Headers . $Permitted_Cross_Domain_Policies . '<br />'}
+		if ($Powered_By) {$Powered_By = 'X-Powered-By: unset'; $Headers = $Headers . $Powered_By . '<br />'}
+
 
 		$Table->addRow(
 			"$DBID",
 			"$Server_Name",
-			"$Source",
-			"$Destination",
-			"$Transfer_Log",
-			"$Error_Log",
+			"$Source<br /><span style='color: #B6B600'>$Destination</span>",
+			"$Transfer_Log<br /><span style='color: #B6B600'>$Error_Log</span>",
 			"No SSL",
 			"",
+			"$Headers",
 			"$PFS",
 			"$RC4",
 			"$Enforce_SSL",
-			"$Last_Modified",
-			"$Modified_By",
+			"$Custom_Attributes",
+			"$Last_Modified<br /><span style='color: #B6B600'>$Modified_By</span>",
+			"<a href='/ReverseProxy/reverse-proxy.cgi?View_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Reverse Proxy ID $DBID_Clean\" ></a>",
 			"<a href='/ReverseProxy/reverse-proxy.cgi?Edit_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Reverse Proxy ID $DBID_Clean\" ></a>",
 			"<a href='/ReverseProxy/reverse-proxy.cgi?Delete_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Reverse Proxy ID $DBID_Clean\" ></a>"
 		);
@@ -896,113 +1355,116 @@ sub html_output {
 		if ($SSL_Certificate_File_Clean || $SSL_Certificate_Key_File_Clean || $SSL_CA_Certificate_File_Clean) {
 
 			if ($SSL_Certificate_File_Clean) {
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 7, "Cert."); # row_num, col_num, content
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 8, "$SSL_Certificate_File"); # row_num, col_num, content
-				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 7, 'tbrowgreen');
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 5, "Cert."); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 6, "$SSL_Certificate_File"); # row_num, col_num, content
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 5, 'tbrowgreen');
 			}
 			else {
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 7, "Cert."); # row_num, col_num, content
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 8, "$Default_SSL_Certificate_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
-				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 7, 'tbroworange');
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 5, "Cert."); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 6, "$Default_SSL_Certificate_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 5, 'tbroworange');
 			}
 
 			if ($SSL_Certificate_Key_File_Clean) {
-				$Table->setCell($Reverse_Proxy_Row_Count-1, 7, "Key"); # row_num, col_num, content
-				$Table->setCell($Reverse_Proxy_Row_Count-1, 8, "$SSL_Certificate_Key_File"); # row_num, col_num, content
-				my $Row_Style = $Table->getCellStyle($Reverse_Proxy_Row_Count-2, 7);
-					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 7, $Row_Style);
-					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 8, $Row_Style);
-				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 7, 'tbrowgreen');
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 5, "Key"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 6, "$SSL_Certificate_Key_File"); # row_num, col_num, content
+				my $Row_Style = $Table->getCellStyle($Reverse_Proxy_Row_Count-2, 5);
+					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 5, $Row_Style);
+					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 6, $Row_Style);
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 5, 'tbrowgreen');
 			}
 			else {
-				$Table->setCell($Reverse_Proxy_Row_Count-1, 7, "Key"); # row_num, col_num, content
-				my $Row_Style = $Table->getCellStyle($Reverse_Proxy_Row_Count-2, 7);
-					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 7, $Row_Style);
-					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 8, $Row_Style);
-				$Table->setCell($Reverse_Proxy_Row_Count-1, 8, "$Default_SSL_Certificate_Key_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
-				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 7, 'tbroworange'); 
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 5, "Key"); # row_num, col_num, content
+				my $Row_Style = $Table->getCellStyle($Reverse_Proxy_Row_Count-2, 5);
+					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 5, $Row_Style);
+					$Table->setCellStyle($Reverse_Proxy_Row_Count-1, 6, $Row_Style);
+				$Table->setCell($Reverse_Proxy_Row_Count-1, 6, "$Default_SSL_Certificate_Key_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
+				$Table->setCellClass ($Reverse_Proxy_Row_Count-1, 5, 'tbroworange'); 
 			}
 
 			if ($SSL_CA_Certificate_File_Clean) {
-				$Table->setCell($Reverse_Proxy_Row_Count, 7, "CA"); # row_num, col_num, content
-				$Table->setCell($Reverse_Proxy_Row_Count, 8, "$SSL_CA_Certificate_File"); # row_num, col_num, content
-				$Table->setCellClass ($Reverse_Proxy_Row_Count, 7, 'tbrowgreen');
+				$Table->setCell($Reverse_Proxy_Row_Count, 5, "CA"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count, 6, "$SSL_CA_Certificate_File"); # row_num, col_num, content
+				$Table->setCellClass ($Reverse_Proxy_Row_Count, 5, 'tbrowgreen');
 			}
 			else {
-				$Table->setCell($Reverse_Proxy_Row_Count, 7, "CA"); # row_num, col_num, content
-				$Table->setCell($Reverse_Proxy_Row_Count, 8, "$Default_SSL_CA_Certificate_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
-				$Table->setCellClass ($Reverse_Proxy_Row_Count, 7, 'tbroworange');
+				$Table->setCell($Reverse_Proxy_Row_Count, 5, "CA"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count, 6, "$Default_SSL_CA_Certificate_File <span style=\"color: #FF8A00\">[Default]</span>"); # row_num, col_num, content
+				$Table->setCellClass ($Reverse_Proxy_Row_Count, 5, 'tbroworange');
 			}
 
 		}
 		else {
-			$Table->setCellColSpan($Reverse_Proxy_Row_Count-2, 7, 2); # row_num, col_num, num_cells
-			for (7..8) {
+			$Table->setCellColSpan($Reverse_Proxy_Row_Count-2, 5, 2); # row_num, col_num, num_cells
+			for (5..6) {
 				$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
 			}
+
 			$PFS = 'N/A';
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 9, "$PFS"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 8, "$PFS"); # row_num, col_num, content
 			$RC4 = 'N/A';
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 10, "$RC4"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 9, "$RC4"); # row_num, col_num, content
 			$Enforce_SSL = 'N/A';
-				$Table->setCell($Reverse_Proxy_Row_Count-2, 11, "$Enforce_SSL"); # row_num, col_num, content
+				$Table->setCell($Reverse_Proxy_Row_Count-2, 10, "$Enforce_SSL"); # row_num, col_num, content
 		}
 
 
 		if ($PFS eq 'On') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowgreen');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 8, 'tbrowgreen');
 		}
 		elsif ($PFS eq 'N/A') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowdisabled');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 8, 'tbrowdisabled');
 		}
 		else {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowerror');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 8, 'tbrowred');
 		}
 		
 		if ($RC4 eq 'Off') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowgreen');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowgreen');
 		}
 		elsif ($RC4 eq 'N/A') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowdisabled');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowdisabled');
 		}
 		else {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowerror');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowred');
 		}
 		
 		if ($Enforce_SSL eq 'Yes') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbroworange');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbroworange');
 		}
 		elsif ($Enforce_SSL =~ /HSTS/){
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbrowgreen');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowgreen');
 		}
 		elsif ($Enforce_SSL eq 'N/A') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbrowdisabled');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowdisabled');
 		}
 		else {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbrowerror');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowred');
 		}
-		
 
-		for (1..6) {
+		if ($Custom_Attributes eq 'Yes') {$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 11, 'tbroworange');}
+
+		for (1..4) {
 			$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
 		}
-		for (9..15) {
+		for (7..15) {
 			$Table->setCellRowSpan($Reverse_Proxy_Row_Count-2, $_, 3); # row_num, col_num, num_cells
 		}
 
 	}
 
 	$Table->setColWidth(1, '1px');
+	$Table->setColWidth(8, '1px');
 	$Table->setColWidth(9, '1px');
 	$Table->setColWidth(10, '1px');
 	$Table->setColWidth(11, '1px');
 	$Table->setColWidth(12, '110px');
-	$Table->setColWidth(13, '110px');
+	$Table->setColWidth(13, '1px');
 	$Table->setColWidth(14, '1px');
 	$Table->setColWidth(15, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (7, 9..15) {
+	for (5, 8..15) {
 		$Table->setColAlign($_, 'center');
 	}
 

@@ -271,7 +271,8 @@ sub run_job {
 	$SIG{CHLD} = 'IGNORE';
 	my $PID = fork();
 	if (defined $PID && $PID == 0) {
-		exec "./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Captured_Password >> /tmp/output 2>&1 &";
+		my $Enc = enc($Captured_Password);
+		exec "./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Enc >> /tmp/output 2>&1 &";
 		exit(0);
 	}
 
@@ -312,7 +313,7 @@ sub html_job_log {
 			$Command =~ s/>/&gt;/g;
 			$Command =~ s/  /&nbsp;&nbsp;/g;
 			$Command =~ s/\r/<br \/>/g;
-			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Exit_Code = $Entries[1];
@@ -608,6 +609,18 @@ sub html_output {
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
+		elsif ($Status == 14) {
+			$Running_Command = 'Server didn\'t come back after a controlled reboot.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
+		elsif ($Status == 15) {
+			$Running_Command = 'Failed to decrypt SSH key. Wrong unlock password?';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
 		elsif ($Status == 99) {
 			$Running_Command = 'My head fell off. I don\'t know why.';
 			$Status = 'Error';
@@ -650,11 +663,11 @@ sub html_output {
 
 		if ($Status eq 'Job Complete') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowdarkgreen');}
 		if ($Status eq 'Running') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgreen');}
-		if ($Status eq 'Killed') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowerror');}
+		if ($Status eq 'Killed') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowred');}
 		if ($Status eq 'Starting...') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgreen');}
 		if ($Status eq 'Paused') {$Table->setCellClass ($Job_Row_Count, 6, 'tbroworange');}
 		if ($Status eq 'Pending') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgrey');}
-		if ($Status eq 'Error') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowerror');}
+		if ($Status eq 'Error') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowred');}
 
 	}
 

@@ -61,6 +61,10 @@ my $Run_Command = $CGI->param("Run_Command");
 	my $User_Name_Add = $CGI->param("User_Name_Add");
 	my $Password_Add = $CGI->param("Password_Add");
 	my $On_Failure_Add = $CGI->param("On_Failure_Add");
+	my $SSH_Key = $CGI->param("SSH_Key");
+	my $Key_Lock_Phrase = $CGI->param("Key_Lock_Phrase");
+	my $Key_Passphrase = $CGI->param("Key_Passphrase");
+
 my $Run_Command_Final = $CGI->param("Run_Command_Final");
 
 
@@ -1026,7 +1030,7 @@ print <<ENDHTML;
 </div>
 </a>
 
-<h3 align="center">Run Command Set <span style='color: #00FF00;'>$Command_Name</span></h3>
+<h3 align="center">Queue Command Set <span style='color: #00FF00;'>$Command_Name</span></h3>
 
 <SCRIPT LANGUAGE="JavaScript"><!--
 function Run_Job_Toggle() {
@@ -1127,6 +1131,44 @@ print <<ENDHTML;
 		<td style="text-align: right;">SSH Password:</td>
 		<td colspan='4'><input type="password" name="Password_Add" value="$Password_Add" placeholder="SSH Password" style="width:100%" $Run_Now_Disabled></td>
 	</tr>
+	<tr>
+		<td colspan='5'>-- or --</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Key:</td>
+		<td colspan="3" style="text-align: left;">
+			<select name='SSH_Key' style="width: 300px">
+ENDHTML
+
+### Keys
+				my $Key_List_Query = $DB_Management->prepare("SELECT `id`, `key_name`, `key_username`, `key_passphrase`
+				FROM `auth`
+				ORDER BY `key_name` ASC");
+				$Key_List_Query->execute( );
+
+				print "<option value='' selected>--Select a Key--</option>";
+
+				while ( my ($ID, $Key_Name, $Key_User, $Key_Passphrase) = my @Key_List_Query = $Key_List_Query->fetchrow_array() )
+				{
+					my $Key_Name_Character_Limited = substr( $Key_Name, 0, 40 );
+						if ($Key_Name_Character_Limited ne $Key_Name) {
+							$Key_Name_Character_Limited = $Key_Name_Character_Limited . '...';
+						}
+					print "<option value='$ID'>$Key_Name_Character_Limited [$Key_User]</option>";
+				}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Key Lock Phrase:</td>
+		<td colspan='4'><input type="password" name="Key_Lock_Phrase" placeholder="DB Lock Phrase" style="width:100%"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Key Passphrase:</td>
+		<td colspan='4'><input type="password" name="Key_Passphrase" placeholder="Key Passphrase" style="width:100%"></td>
+	</tr>
 </table>
 
 <hr width="50%">
@@ -1168,10 +1210,27 @@ sub run_command {
 	my $Push_User_Name = $User_Name;
 		$Push_User_Name =~ s/\s/MagicTagSpace/g;
 	if ($Run_Toggle_Add) {
-		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -u $User_Name_Add -P $Password_Add -f $On_Failure_Add -X ${Push_User_Name}");
+		if ($Password_Add) {
+			my $Password = enc($Password_Add);
+			system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -u $User_Name_Add -P $Password -f $On_Failure_Add -X ${Push_User_Name}");			
+		}
+		elsif ($SSH_Key) {
+			$Key_Lock_Phrase =~ s/\s//g;
+			my $Lock = enc($Key_Lock_Phrase);
+			if ($Key_Passphrase) {
+				my $Passphrase = enc($Key_Passphrase);
+				system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -k $SSH_Key -L $Lock -K $Passphrase -f $On_Failure_Add -X ${Push_User_Name}");
+			}
+			else {
+				system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -k $SSH_Key -L $Lock -f $On_Failure_Add -X ${Push_User_Name}");
+			}
+
+		}
+
+
 	}
 	else {
-		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing");
+		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -f $On_Failure_Add -X ${Push_User_Name}");
 	}
 
 }
@@ -1284,7 +1343,7 @@ sub html_revision_history {
 				$Command_Set =~ s/>/&gt;/g;
 				$Command_Set =~ s/  /&nbsp;&nbsp;/g;
 				$Command_Set =~ s/\r/<br \/>/g;
-				$Command_Set =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+				$Command_Set =~ s/(#{1,}[\s\w'"`,.!\?\/\\\-|]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 				$Command_Set =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			my $Command_Description = $Revision[2];
 			my $Command_Owner_ID = $Revision[3];
@@ -1418,7 +1477,7 @@ sub html_output {
 			$Command =~ s/>/&gt;/g;
 			$Command =~ s/  /&nbsp;&nbsp;/g;
 			$Command =~ s/\r/<br \/>/g;
-			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\-|]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 			

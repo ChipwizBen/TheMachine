@@ -141,7 +141,7 @@ sub write_reverse_proxy {
 
 			my $Enforce_SSL_Header;
 			if ($Enforce_SSL) {
-				$Enforce_SSL_Header = "
+				$Enforce_SSL_Header = '
     <IfModule mod_rewrite.c>
         RewriteEngine On
         RewriteCond %{HTTPS} off
@@ -149,7 +149,7 @@ sub write_reverse_proxy {
     </IfModule>
     <IfModule !mod_rewrite.c>
         Redirect                 /       https://$Server_Name
-    </IfModule>";
+    </IfModule>';
 			}	
 			 
 
@@ -160,8 +160,10 @@ sub write_reverse_proxy {
 				$HSTS_Header = 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"';
 			}			
 
+#Header always append X-Frame-Options SAMEORIGIN
+
 			print Reverse_Proxy_Config <<RP_EOF;
-<VirtualHost $Server_Name:80>
+<VirtualHost *:80>
 	ServerName               $Server_Name
 	$Enforce_SSL_Header
 
@@ -169,7 +171,6 @@ sub write_reverse_proxy {
 
 <IfModule mod_ssl.c>
 <VirtualHost *:443>
-
     ServerName               $Server_Name
     SSLProxyEngine           On
     ProxyRequests            Off

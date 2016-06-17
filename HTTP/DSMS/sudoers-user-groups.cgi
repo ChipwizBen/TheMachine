@@ -1659,7 +1659,7 @@ sub html_output {
 			$Table->setCellClass ($Group_Row_Count, 5, 'tbrowgreen');
 		}
 		else {
-			$Table->setCellClass ($Group_Row_Count, 5, 'tbrowerror');
+			$Table->setCellClass ($Group_Row_Count, 5, 'tbrowred');
 		}
 
 		if ($Group_Expires ne 'Never' && $Group_Expires_Epoch < $Today_Epoch) {

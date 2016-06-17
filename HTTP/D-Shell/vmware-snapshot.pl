@@ -66,10 +66,10 @@ my @Nodes = (
 	'vhost7.nwk1.com',
 	'vhost8.nwk1.com',
 	'vhost9.nwk1.com',
-#	'vhost10.nwk1.com',
-#	'vhost11.nwk1.com',
-#	'vhost12.nwk1.com',
-#	'vhost13.nwk1.com',
+	'vhost10.nwk1.com',
+	'vhost11.nwk1.com',
+	'vhost12.nwk1.com',
+	'vhost13.nwk1.com',
 	'vhost14.nwk1.com',
 	'vhost15.nwk1.com',
 	'vhost16.nwk1.com',
@@ -82,7 +82,7 @@ my @Nodes = (
 my $Threads = scalar(keys @Nodes);
 my $Verbose = 0;
 my $Very_Verbose = 0;
-my $Command_Timeout = 3;
+my $Command_Timeout = 5;
 
 my $Count;
 my $Snapshot;

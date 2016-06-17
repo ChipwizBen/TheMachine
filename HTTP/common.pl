@@ -420,6 +420,15 @@ sub DShell_Job_Log_Location {
 
 } # sub DShell_Job_Log_Location
 
+sub DShell_tmp_Location {
+
+	# This is the directory where temporary files are are stored. You do not need a trailing slash.
+
+	my $DShell_tmp_Location = '../Storage/D-Shell/tmp';
+	return $DShell_tmp_Location;
+
+} # sub DShell_tmp_Location
+
 sub DB_Management {
 
 	# This is your management database's connection information. This could be the same database as the database in the DB_Sudoers because the two schemas have different table names to facilitate a combination. However, the management data (System Accounts, Access Log, Audit Log, etc) contain sensitive information that normal users should not be allowed access to. This access control should also be applicable to database administrators, which is why this data is stored in a separate database by default to simplify access control.
@@ -713,7 +722,8 @@ sub CGI {
 				TableName=>'cgi_sessions',
 				IdColName=>'id',
 				DataColName=>'session_data',
-				Handle=>$DB_Management
+				Handle=>$DB_Management,
+				secure  =>  1
 			});
 			$Session->flush();
 		}
@@ -908,6 +918,52 @@ sub Random_Alpha_Numeric_Password {
 	
 } # sub Random_Alpha_Numeric_Password
 
+sub enc {
+
+	use MIME::Base64;
+	my $Query = $_[0];
+
+	my @Chars = split(" ", "5 6 7 8 9");
+	srand;
+
+	my $Random_Value;
+	my $Enc_Length = 1;
+	my $Loop_Limit;
+	for (my $i=1; $i <= $Enc_Length ;$i++) {
+		$Random_Value = int(rand 5);
+		$Loop_Limit .= $Chars[$Random_Value];
+	}
+
+	my $Loop=0;
+	while ($Loop != $Loop_Limit) {
+		$Loop++;
+		$Query = encode_base64($Query);
+		$Query =~ s/\n//g;
+	}
+
+	$Query = $Query . $Loop_Limit;
+	return $Query;
+
+} # sub enc
+
+sub dec {
+
+	use MIME::Base64;
+	my $Query = $_[0];
+
+	my $Enc_Length = $Query;
+		$Enc_Length =~ s/.*([0-9*])$/$1/;
+		$Query =~ s/(.*)[0-9*]$/$1/;
+
+	for (my $i=1; $i <= $Enc_Length ;$i++) {
+		$Query =~ s/\n//g;
+		$Query = decode_base64($Query);
+	}
+
+	return $Query;
+
+} # sub dec
+
 sub Salt {
 
 	#Do not touch this. DO. NOT. TOUCH. THIS.
@@ -939,7 +995,7 @@ sub Salt {
 	}
 
 	return $Random_Salt;
-	
+
 } # sub Salt
 
 1;

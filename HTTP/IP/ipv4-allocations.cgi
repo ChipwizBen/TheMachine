@@ -654,7 +654,7 @@ sub add_block {
 		my $Message_Red="Block: $Final_Allocation already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4_allocations.cgi\n\n";
+		print "Location: /IP/ipv4-allocations.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Block Check
