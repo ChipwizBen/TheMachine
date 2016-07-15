@@ -390,7 +390,6 @@ print <<ENDHTML;
 		<td colspan='3'><input type="text" style="width: 300px" name="Expires_Date_Add" value="$Date" placeholder="YYYY-MM-DD" disabled></td>
 	</tr>
 	<tr>
-	<tr>
 		<td style="text-align: right;">Active:</td>
 		<td></td>
 		<td style="text-align: left;"><input type="radio" name="Active_Add" value="1" checked>Yes</td>
@@ -545,7 +544,7 @@ sub add_group {
 		?, ?, ?, ?
 	)");
 	
-	$Audit_Log_Submission->execute("User Groups", "Add", "$User_Name added $Group_Name_Add as a $System_Group_Toggle_Add Group, set it $Active_Add and to $Expires_Date_Add. $User_Count users were attached$Users_Attached. The system assigned it User Group ID $Group_Insert_ID.", $User_Name);
+	$Audit_Log_Submission->execute("DSMS User Groups", "Add", "$User_Name added $Group_Name_Add as a $System_Group_Toggle_Add Group, set it $Active_Add and to $Expires_Date_Add. $User_Count users were attached$Users_Attached. The system assigned it User Group ID $Group_Insert_ID.", $User_Name);
 	# / Audit Log
 
 	return($Group_Insert_ID, $User_Count);
@@ -1046,7 +1045,7 @@ sub edit_group {
 	if ($Rules_Revoked > 0) {
 		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified User Group ID $Edit_Group, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 	}
-	$Audit_Log_Submission->execute("User Groups", "Modify", "$User_Name modified User Group ID $Edit_Group. The new entry is recorded as $System_Group_Toggle_Edit Group $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $User_Count new users were attached$Users_Attached.", $User_Name);
+	$Audit_Log_Submission->execute("DSMS User Groups", "Modify", "$User_Name modified User Group ID $Edit_Group. The new entry is recorded as $System_Group_Toggle_Edit Group $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $User_Count new users were attached$Users_Attached.", $User_Name);
 	# / Audit Log
 
 	return($User_Count);
@@ -1179,7 +1178,7 @@ sub delete_group {
 		if ($Rules_Revoked > 0) {
 			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted User Group ID $Delete_Group_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 		}
-		$Audit_Log_Submission->execute("User Groups", "Delete", "$User_Name deleted User Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name, set $Active and $Expires. It had $Users_Attached", $User_Name);
+		$Audit_Log_Submission->execute("DSMS User Groups", "Delete", "$User_Name deleted User Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name, set $Active and $Expires. It had $Users_Attached", $User_Name);
 
 	}
 	# / Audit Log
@@ -1244,7 +1243,7 @@ sub delete_user {
 		if ($Rules_Revoked > 0) {
 			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted User ID $Delete_User_ID from User Group ID $Delete_User_From_Group_ID, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 		}
-		$Audit_Log_Submission->execute("User Groups", "Delete", "$User_Name removed $Username [User ID $Delete_User_ID] from User Group $Delete_User_From_Group_Name [User Group ID $Delete_User_From_Group_ID].", $User_Name);
+		$Audit_Log_Submission->execute("DSMS User Groups", "Delete", "$User_Name removed $Username [User ID $Delete_User_ID] from User Group $Delete_User_From_Group_Name [User Group ID $Delete_User_From_Group_ID].", $User_Name);
 
 	}
 	# / Audit Log

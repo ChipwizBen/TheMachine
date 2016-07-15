@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Group = $CGI->param("Add_Group");
@@ -47,16 +47,8 @@ my $Delete_Host_From_Group_ID = $CGI->param("Delete_Host_From_Group_ID");
 my $Delete_Host_Name = $CGI->param("Delete_Host_Name");
 my $Delete_Host_From_Group_Name = $CGI->param("Delete_Host_From_Group_Name");
 
-my $Show_Links = $CGI->param("Show_Links");
-my $Show_Links_Name = $CGI->param("Show_Links_Name");
-
-my $View_Notes = $CGI->param("View_Notes");
-my $New_Note = $CGI->param("New_Note");
-my $New_Note_ID = $CGI->param("New_Note_ID");
-
 my $User_Name = $Session->param("User_Name");
-my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
-my $User_Approver = $Session->param("User_Approver");
+my $User_IP_Admin = $Session->param("User_IP_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -72,11 +64,11 @@ if ($Rows_Returned eq '') {
 }
 
 if ($Add_Group && !$Add_Group_Final) {
-	if ($User_DSMS_Admin != 1) {
+	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -87,11 +79,11 @@ if ($Add_Group && !$Add_Group_Final) {
 	}
 }
 elsif ($Add_Group_Final) {
-	if ($User_DSMS_Admin != 1) {
+	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -99,16 +91,16 @@ elsif ($Add_Group_Final) {
 		my $Message_Green="$Group_Name_Add added successfully as ID $Group_ID with $Host_Count attached hosts";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 }
 elsif ($Edit_Group && !$Edit_Group_Final) {
-	if ($User_DSMS_Admin != 1) {
+	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -119,11 +111,11 @@ elsif ($Edit_Group && !$Edit_Group_Final) {
 	}
 }
 elsif ($Edit_Group_Final) {
-	if ($User_DSMS_Admin != 1) {
+	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -131,16 +123,16 @@ elsif ($Edit_Group_Final) {
 		my $Message_Green="$Group_Name_Edit edited successfully with $Host_Count newly attached hosts";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 }
 elsif ($Delete_Group) {
-	if ($User_DSMS_Admin != 1) {
+	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -151,11 +143,11 @@ elsif ($Delete_Group) {
 	}
 }
 elsif ($Delete_Group_Confirm) {
-	if ($User_DSMS_Admin != 1) {
+	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -163,16 +155,16 @@ elsif ($Delete_Group_Confirm) {
 		my $Message_Green="$Group_Name_Delete deleted successfully";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 }
 elsif ($Delete_Host_ID && $Delete_Host_From_Group_ID) {
-	if ($User_DSMS_Admin != 1) {
+	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -180,29 +172,9 @@ elsif ($Delete_Host_ID && $Delete_Host_From_Group_ID) {
 		my $Message_Green="$Delete_Host_Name removed from $Delete_Host_From_Group_Name successfully";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
-}
-elsif ($Show_Links) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_show_links;
-}
-elsif ($View_Notes) {
-	require $Header;
-	&html_output;
-	require $Footer;
-	&html_notes;
-}
-elsif ($New_Note && $New_Note_ID) {
-	&add_note;
-	require $Header;
-	&html_output;
-	require $Footer;
-	$View_Notes = $New_Note_ID;
-	&html_notes;
 }
 else {
 	require $Header;
@@ -227,68 +199,44 @@ my @Hosts = split(',', $Add_Host_Temp_Existing);
 
 foreach my $Host (@Hosts) {
 
-	my $Host_Query = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
+	my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
 		FROM `hosts`
 		WHERE `id` = ? ");
 	$Host_Query->execute($Host);
 
-	while ( (my $Host_Name, my $IP, my $Expires, my $Active) = my @Host_Query = $Host_Query->fetchrow_array() )
+	while ( my ($Host_Name, $Type) = my @Host_Query = $Host_Query->fetchrow_array() )
 	{
 
 		my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 			if ($Host_Name_Character_Limited ne $Host_Name) {
 				$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 			}
-
-		my $Expires_Epoch;
-		my $Today_Epoch = time;
-		if ($Expires =~ /^0000-00-00$/) {
-			$Expires = 'Never';
-		}
-		else {
-			$Expires_Epoch = str2time("$Expires"."T23:59:59");
-		}
-
-		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Hosts = $Hosts . "<tr><td align='left' style='color: #B1B1B1'>$Host_Name_Character_Limited</td> <td align='left' style='color: #B1B1B1'>$IP</td></tr>";
-		}
-		elsif ($Active) {
-			$Hosts = $Hosts . "<tr><td align='left' style='color: #00FF00'>$Host_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$IP</td></tr>";
-		}
-		else {
-			$Hosts = $Hosts . "<tr><td align='left' style='color: #FF0000'>$Host_Name_Character_Limited</td> <td align='left' style='color: #FF0000'>$IP</td></tr>";
-		}
+			if ($Type) {
+				my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+				FROM `host_types`
+				WHERE `id` LIKE ?");
+				$Select_Type->execute($Type);
+				$Type = $Select_Type->fetchrow_array();
+				$Hosts = $Hosts . "<tr><td align='left'>$Host_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$Type</td></tr>";
+			}
+			else {
+				$Hosts = $Hosts . "<tr><td align='left'>$Host_Name_Character_Limited</td> <td align='left' style='color: #FFFF00'>undefined</td></tr>";
+			}
 		
 	}
 
 }
 
-my $Date = strftime "%Y-%m-%d", localtime;
-
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/DSMS/sudoers-host-groups.cgi">
+<a href="/IP/host-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Group</h3>
 
-<SCRIPT LANGUAGE="JavaScript"><!--
-function Expire_Toggle() {
-	if(document.Add_Group.Expires_Toggle_Add.checked)
-	{
-		document.Add_Group.Expires_Date_Add.disabled=false;
-	}
-	else
-	{
-		document.Add_Group.Expires_Date_Add.disabled=true;
-	}
-}
-//-->
-</SCRIPT>
-
-<form action='/DSMS/sudoers-host-groups.cgi' name='Add_Group' method='post' >
+<form action='/IP/host-groups.cgi' name='Add_Group' method='post' >
 
 <table align = "center">
 	<tr>
@@ -303,38 +251,30 @@ function Expire_Toggle() {
 			<select name='Add_Host_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-				my $Host_List_Query = $DB_Sudoers->prepare("SELECT `id`, `hostname`, `ip`, `expires`, `active`
+				my $Host_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`, `type`
 				FROM `hosts`
 				ORDER BY `hostname` ASC");
 				$Host_List_Query->execute( );
 				
 				print "<option value='' selected>--Select a Host--</option>";
 				
-				while ( (my $ID, my $Host_Name, my $IP, my $Expires, my $Active) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
+				while ( my ($ID, $Host_Name, $Host_Type) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
 				{
 
 					my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 						if ($Host_Name_Character_Limited ne $Host_Name) {
 							$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 						}
-
-					my $Expires_Epoch;
-					my $Today_Epoch = time;
-					if ($Expires =~ /^0000-00-00$/) {
-						$Expires = 'Never';
+					if ($Host_Type) {
+						my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+						FROM `host_types`
+						WHERE `id` LIKE ?");
+						$Select_Type->execute($Host_Type);
+						$Host_Type = $Select_Type->fetchrow_array();
+						print "<option value='$ID'>$Host_Name_Character_Limited ($Host_Type)</option>";
 					}
 					else {
-						$Expires_Epoch = str2time("$Expires"."T23:59:59");
-					}
-
-					if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-						print "<option style='color: #B1B1B1;' value='$ID'>$Host_Name_Character_Limited ($IP) [Expired]</option>";
-					}
-					elsif ($Active) {
-						print "<option value='$ID'>$Host_Name_Character_Limited ($IP)</option>";
-					}
-					else {
-						print "<option style='color: #FF0000;' value='$ID'>$Host_Name_Character_Limited ($IP) [Inactive]</option>";
+						print "<option value='$ID'>$Host_Name_Character_Limited</option>";
 					}
 					
 				}
@@ -354,7 +294,7 @@ print <<ENDHTML;
 			<table>
 				<tr>
 					<td>Host Name</td>
-					<td>IP Address</td>
+					<td>Type</td>
 				</tr>
 				$Hosts
 			</table>
@@ -367,11 +307,6 @@ else {
 
 print <<ENDHTML;
 		</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Expires:</td>
-		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Add"></td>
-		<td colspan='3'><input type="text" style="width: 300px" name="Expires_Date_Add" value="$Date" placeholder="YYYY-MM-DD" disabled></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Active:</td>
@@ -405,7 +340,7 @@ ENDHTML
 sub add_group {
 
 	### Existing Group_Name Check
-	my $Existing_Group_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_Group_Name_Check = $DB_IP_Allocation->prepare("SELECT `id`
 		FROM `host_groups`
 		WHERE `groupname` = ?");
 		$Existing_Group_Name_Check->execute($Group_Name_Add);
@@ -420,7 +355,7 @@ sub add_group {
 		my $Message_Red="Group Name: $Group_Name_Add already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Group_Name Check
@@ -429,7 +364,7 @@ sub add_group {
 		$Expires_Date_Add = '0000-00-00';
 	}
 
-	my $Group_Insert = $DB_Sudoers->prepare("INSERT INTO `host_groups` (
+	my $Group_Insert = $DB_IP_Allocation->prepare("INSERT INTO `host_groups` (
 		`id`,
 		`groupname`,
 		`expires`,
@@ -442,7 +377,7 @@ sub add_group {
 
 	$Group_Insert->execute($Group_Name_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
-	my $Group_Insert_ID = $DB_Sudoers->{mysql_insertid};
+	my $Group_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
 
 	$Add_Host_Temp_Existing =~ s/,$//;
 	my @Hosts = split(',', $Add_Host_Temp_Existing);
@@ -452,7 +387,7 @@ sub add_group {
 
 		$Host_Count++;
 
-		my $Host_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_host_groups_to_hosts` (
+		my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_host_groups_to_hosts` (
 			`id`,
 			`group`,
 			`host`
@@ -480,7 +415,7 @@ sub add_group {
 	my $Hosts_Attached;
 	foreach my $Host (@Hosts) {
 
-		my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`
+		my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` = ?"
 		);
@@ -515,7 +450,7 @@ sub add_group {
 		?
 	)");
 	
-	$Audit_Log_Submission->execute("DSMS Host Groups", "Add", "$User_Name added $Group_Name_Add, set it $Active_Add and to $Expires_Date_Add. $Host_Count hosts were attached$Hosts_Attached. The system assigned it Host Group ID $Group_Insert_ID.", $User_Name);
+	$Audit_Log_Submission->execute("Host Groups", "Add", "$User_Name added $Group_Name_Add, set it $Active_Add and to $Expires_Date_Add. $Host_Count hosts were attached$Hosts_Attached. The system assigned it Host Group ID $Group_Insert_ID.", $User_Name);
 	# / Audit Log
 
 	return($Group_Insert_ID, $Host_Count);
@@ -527,9 +462,9 @@ sub html_edit_group {
 ### Currently Attached Hosts Retrieval and Conversion
 
 my $Hosts;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `host`
+my $Select_Links = $DB_IP_Allocation->prepare("SELECT `host`
 	FROM `lnk_host_groups_to_hosts`
-	WHERE `group` = ? "
+	WHERE `group` = ?"
 );
 $Select_Links->execute($Edit_Group);
 
@@ -537,36 +472,28 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $Host_Query = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
+	my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
 		FROM `hosts`
 		WHERE `id` = ? ");
 	$Host_Query->execute($Link);
 		
-	while ( (my $Host_Name, my $IP, my $Expires, my $Active) = my @Host_Query = $Host_Query->fetchrow_array() )
+	while ( my ($Host_Name, $Type) = my @Host_Query = $Host_Query->fetchrow_array() )
 	{
 
 		my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 			if ($Host_Name_Character_Limited ne $Host_Name) {
 				$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 			}
-
-		my $Expires_Epoch;
-		my $Today_Epoch = time;
-		if ($Expires =~ /^0000-00-00$/) {
-			$Expires = 'Never';
+		if ($Type) {
+			my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+			FROM `host_types`
+			WHERE `id` LIKE ?");
+			$Select_Type->execute($Type);
+			$Type = $Select_Type->fetchrow_array();
+			$Hosts = $Hosts . "<tr><td align='left'>$Host_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$Type</td></tr>";
 		}
 		else {
-			$Expires_Epoch = str2time("$Expires"."T23:59:59");
-		}
-
-		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Hosts = $Hosts . "<tr><td align='left' style='color: #B1B1B1'>$Host_Name_Character_Limited</td> <td align='left' style='color: #B1B1B1'>$IP</td></tr>";
-		}
-		elsif ($Active) {
-			$Hosts = $Hosts . "<tr><td align='left' style='color: #00FF00'>$Host_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$IP</td></tr>";
-		}
-		else {
-			$Hosts = $Hosts . "<tr><td align='left' style='color: #FF0000'>$Host_Name_Character_Limited</td> <td align='left' style='color: #FF0000'>$IP</td></tr>";
+			$Hosts = $Hosts . "<tr><td align='left'>$Host_Name_Character_Limited</td> <td align='left' style='color: #FFFF00'>undefined</td></tr>";
 		}
 	}
 }
@@ -582,7 +509,7 @@ if ($Edit_Host_Temp_New) {
 	$Edit_Host_Temp_Existing !~ m/,$Edit_Host_Temp_New,/g) {
 		
 		### Check to see if new link is already attached to this group
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_IP_Allocation->prepare("SELECT `id`
 			FROM `lnk_host_groups_to_hosts`
 			WHERE `host` = ?
 			AND `group` = ? "
@@ -602,12 +529,12 @@ my @Hosts = split(',', $Edit_Host_Temp_Existing);
 
 foreach my $Host (@Hosts) {
 
-	my $Host_Query = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
+	my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
 		FROM `hosts`
 		WHERE `id` = ? ");
 	$Host_Query->execute($Host);
 		
-	while ( (my $Host_Name, my $IP, my $Expires, my $Active) = my @Host_Query = $Host_Query->fetchrow_array() )
+	while ( my ($Host_Name, $Type) = my @Host_Query = $Host_Query->fetchrow_array() )
 	{
 
 		my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
@@ -615,24 +542,18 @@ foreach my $Host (@Hosts) {
 				$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 			}
 
-		my $Expires_Epoch;
-		my $Today_Epoch = time;
-		if ($Expires =~ /^0000-00-00$/) {
-			$Expires = 'Never';
+		if ($Type) {
+			my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+			FROM `host_types`
+			WHERE `id` LIKE ?");
+			$Select_Type->execute($Type);
+			$Type = $Select_Type->fetchrow_array();
+			$Hosts_New = $Hosts_New . "<tr><td align='left'>$Host_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$Type</td></tr>";
 		}
 		else {
-			$Expires_Epoch = str2time("$Expires"."T23:59:59");
+			$Hosts_New = $Hosts_New . "<tr><td align='left'>$Host_Name_Character_Limited</td> <td align='left' style='color: #FFFF00'>undefined</td></tr>";
 		}
 
-		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Hosts_New = $Hosts_New . "<tr><td align='left' style='color: #B1B1B1'>$Host_Name_Character_Limited</td> <td align='left' style='color: #B1B1B1'>$IP</td></tr>";
-		}
-		elsif ($Active) {
-			$Hosts_New = $Hosts_New . "<tr><td align='left' style='color: #00FF00'>$Host_Name_Character_Limited</td> <td align='left' style='color: #00FF00'>$IP</td></tr>";
-		}
-		else {
-			$Hosts_New = $Hosts_New . "<tr><td align='left' style='color: #FF0000'>$Host_Name_Character_Limited</td> <td align='left' style='color: #FF0000'>$IP</td></tr>";
-		}
 	}
 }
 
@@ -641,7 +562,7 @@ foreach my $Host (@Hosts) {
 ### Group Details Retrieval
 
 if (!$Group_Name_Edit) {
-	my $Select_Group_Details = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
+	my $Select_Group_Details = $DB_IP_Allocation->prepare("SELECT `groupname`, `active`
 		FROM `host_groups`
 		WHERE `id` = ? "
 	);
@@ -650,49 +571,22 @@ if (!$Group_Name_Edit) {
 	while ( my @Select_Details = $Select_Group_Details->fetchrow_array() )
 	{
 		$Group_Name_Edit = $Select_Details[0];
-		$Expires_Date_Edit = $Select_Details[1];
-		$Active_Edit = $Select_Details[2];
+		$Active_Edit = $Select_Details[1];
 	}
 }
-
-	my $Checked;
-	my $Disabled;
-	if ($Expires_Date_Edit eq '0000-00-00' || !$Expires_Date_Edit) {
-		$Checked = '';
-		$Disabled = 'disabled';
-		$Expires_Date_Edit = strftime "%Y-%m-%d", localtime;
-	}
-	else {
-		$Checked = 'checked';
-		$Disabled = '';
-	}
 
 ### / Group Details Retrieval
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/DSMS/sudoers-host-groups.cgi">
+<a href="/IP/host-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Edit Group</h3>
 
-<SCRIPT LANGUAGE="JavaScript"><!--
-function Expire_Toggle() {
-	if(document.Edit_Group.Expires_Toggle_Edit.checked)
-	{
-		document.Edit_Group.Expires_Date_Edit.disabled=false;
-	}
-	else
-	{
-		document.Edit_Group.Expires_Date_Edit.disabled=true;
-	}
-}
-//-->
-</SCRIPT>
-
-<form action='/DSMS/sudoers-host-groups.cgi' name='Edit_Group' method='post' >
+<form action='/IP/host-groups.cgi' name='Edit_Group' method='post' >
 
 <table align = "center">
 	<tr>
@@ -707,14 +601,14 @@ function Expire_Toggle() {
 			<select name='Edit_Host_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-				my $Host_List_Query = $DB_Sudoers->prepare("SELECT `id`, `hostname`, `ip`, `expires`, `active`
+				my $Host_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`, `type`
 				FROM `hosts`
 				ORDER BY `hostname` ASC");
 				$Host_List_Query->execute( );
 				
 				print "<option value='' selected>--Select a Host--</option>";
 				
-				while ( (my $ID, my $Host_Name, my $IP, my $Expires, my $Active) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
+				while ( my ($ID, $Host_Name, $Type) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
 				{
 
 					my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
@@ -722,25 +616,18 @@ ENDHTML
 							$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 						}
 
-					my $Expires_Epoch;
-					my $Today_Epoch = time;
-					if ($Expires =~ /^0000-00-00$/) {
-						$Expires = 'Never';
+					if ($Type) {
+						my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+						FROM `host_types`
+						WHERE `id` LIKE ?");
+						$Select_Type->execute($Type);
+						$Type = $Select_Type->fetchrow_array();
+						print "<option value='$ID'>$Host_Name_Character_Limited ($Type)</option>";
 					}
 					else {
-						$Expires_Epoch = str2time("$Expires"."T23:59:59");
+						print "<option value='$ID'>$Host_Name_Character_Limited</option>";
 					}
-			
-					if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-						print "<option style='color: #B1B1B1;' value='$ID'>$Host_Name_Character_Limited ($IP) [Expired]</option>";
-					}
-					elsif ($Active) {
-						print "<option value='$ID'>$Host_Name_Character_Limited ($IP)</option>";
-					}
-					else {
-						print "<option style='color: #FF0000;' value='$ID'>$Host_Name_Character_Limited ($IP) [Inactive]</option>";
-					}
-					
+
 				}
 
 print <<ENDHTML;
@@ -758,7 +645,7 @@ print <<ENDHTML;
 			<table>
 				<tr>
 					<td>Host Name</td>
-					<td>IP Address</td>
+					<td>Type</td>
 				</tr>
 				$Hosts
 			</table>
@@ -783,7 +670,7 @@ print <<ENDHTML;
 			<table>
 				<tr>
 					<td>Host Name</td>
-					<td>IP Address</td>
+					<td>Type</td>
 				</tr>
 				$Hosts_New
 			</table>
@@ -796,11 +683,6 @@ else {
 
 print <<ENDHTML;
 		</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Expires:</td>
-		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Edit" $Checked></td>
-		<td colspan='3'><input type="text" style="width: 300px" name="Expires_Date_Edit" value="$Expires_Date_Edit" placeholder="$Expires_Date_Edit" $Disabled></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Active:</td>
@@ -851,7 +733,7 @@ ENDHTML
 sub edit_group {
 
 	### Existing Group_Name Check
-	my $Existing_Group_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_Group_Name_Check = $DB_IP_Allocation->prepare("SELECT `id`
 		FROM `host_groups`
 		WHERE `groupname` = ?
 		AND `id` != ?");
@@ -867,14 +749,14 @@ sub edit_group {
 		my $Message_Red="Group Name: $Group_Name_Edit already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /DSMS/sudoers-host-groups.cgi\n\n";
+		print "Location: /IP/host-groups.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Group_Name Check
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_IP_Allocation->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_host_groups`
 	ON `rules`.`id` = `lnk_rules_to_host_groups`.`rule`
 	SET
@@ -893,7 +775,7 @@ sub edit_group {
 		$Expires_Date_Edit = '0000-00-00';
 	}
 
-	my $Update_Group = $DB_Sudoers->prepare("UPDATE `host_groups` SET
+	my $Update_Group = $DB_IP_Allocation->prepare("UPDATE `host_groups` SET
 		`groupname` = ?,
 		`expires` = ?,
 		`active` = ?,
@@ -909,7 +791,7 @@ sub edit_group {
 
 		$Host_Count++;
 
-		my $Host_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_host_groups_to_hosts` (
+		my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_host_groups_to_hosts` (
 			`id`,
 			`group`,
 			`host`
@@ -937,7 +819,7 @@ sub edit_group {
 	my $Hosts_Attached;
 	foreach my $Host (@Hosts) {
 
-		my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`
+		my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` = ?"
 		);
@@ -973,7 +855,7 @@ sub edit_group {
 		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified Host Group ID $Edit_Group, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 	}
 
-	$Audit_Log_Submission->execute("DSMS Host Groups", "Modify", "$User_Name modified Host Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $Host_Count new hosts were attached$Hosts_Attached.", $User_Name);
+	$Audit_Log_Submission->execute("Host Groups", "Modify", "$User_Name modified Host Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $Host_Count new hosts were attached$Hosts_Attached.", $User_Name);
 	# / Audit Log
 
 	return($Host_Count);
@@ -982,7 +864,7 @@ sub edit_group {
 
 sub html_delete_group {
 
-	my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname`
+	my $Select_Group = $DB_IP_Allocation->prepare("SELECT `groupname`
 	FROM `host_groups`
 	WHERE `id` = ?");
 
@@ -995,14 +877,14 @@ sub html_delete_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/DSMS/sudoers-host-groups.cgi">
+<a href="/IP/host-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Group</h3>
 
-<form action='/DSMS/sudoers-host-groups.cgi' method='post' >
+<form action='/IP/host-groups.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this group?</p>
 <table align = "center">
 	<tr>
@@ -1027,7 +909,7 @@ ENDHTML
 sub delete_group {
 
 	# Audit Log
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `host`
+	my $Select_Links = $DB_IP_Allocation->prepare("SELECT `host`
 		FROM `lnk_host_groups_to_hosts`
 		WHERE `group` = ?"
 	);
@@ -1037,7 +919,7 @@ sub delete_group {
 	while (( my $Host_ID ) = $Select_Links->fetchrow_array() )
 	{
 
-		my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`
+		my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` = ?"
 		);
@@ -1049,7 +931,7 @@ sub delete_group {
 		}
 	}
 
-	my $Select_Hosts = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
+	my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `groupname`, `active`
 		FROM `host_groups`
 		WHERE `id` = ?");
 
@@ -1057,7 +939,7 @@ sub delete_group {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_IP_Allocation->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_host_groups`
 	ON `rules`.`id` = `lnk_rules_to_host_groups`.`rule`
 	SET
@@ -1072,16 +954,9 @@ sub delete_group {
 
 	### / Revoke Rule Approval ###
 
-	while (( my $Group_Name, my $Expires, my $Active ) = $Select_Hosts->fetchrow_array() )
+	while ( my($Group_Name, $Active) = $Select_Hosts->fetchrow_array() )
 	{
 
-		if ($Expires eq '0000-00-00') {
-			$Expires = 'does not expire';
-		}
-		else {
-			$Expires = "expires on " . $Expires;
-		}
-	
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 		$Hosts_Attached =~ s/,\s$//;
 
@@ -1106,22 +981,22 @@ sub delete_group {
 		if ($Rules_Revoked > 0) {
 			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Host Group ID $Delete_Group_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 		}
-		$Audit_Log_Submission->execute("DSMS Host Groups", "Delete", "$User_Name deleted Host Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name, set $Active and $Expires. It had $Hosts_Attached", $User_Name);
+		$Audit_Log_Submission->execute("Host Groups", "Delete", "$User_Name deleted Host Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name and set $Active. It had $Hosts_Attached", $User_Name);
 
 	}
 	# / Audit Log
 
-	my $Delete_Group = $DB_Sudoers->prepare("DELETE from `host_groups`
+	my $Delete_Group = $DB_IP_Allocation->prepare("DELETE from `host_groups`
 		WHERE `id` = ?");
 	
 	$Delete_Group->execute($Delete_Group_Confirm);
 
- 	my $Delete_Host_Links = $DB_Sudoers->prepare("DELETE from `lnk_host_groups_to_hosts`
+ 	my $Delete_Host_Links = $DB_IP_Allocation->prepare("DELETE from `lnk_host_groups_to_hosts`
 		WHERE `group` = ?");
 	
 	$Delete_Host_Links->execute($Delete_Group_Confirm);
 
- 	my $Delete_Rule_Links = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_host_groups`
+ 	my $Delete_Rule_Links = $DB_IP_Allocation->prepare("DELETE from `lnk_rules_to_host_groups`
 		WHERE `host_group` = ?");
 	
 	$Delete_Rule_Links->execute($Delete_Group_Confirm);
@@ -1132,7 +1007,7 @@ sub delete_host {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_IP_Allocation->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_host_groups`
 	ON `rules`.`id` = `lnk_rules_to_host_groups`.`rule`
 	SET
@@ -1148,7 +1023,7 @@ sub delete_host {
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`, `ip`
+	my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`, `ip`
 		FROM `hosts`
 		WHERE `id` = ?");
 
@@ -1171,262 +1046,23 @@ sub delete_host {
 		if ($Rules_Revoked > 0) {
 			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Host ID $Delete_Host_ID from Host Group ID $Delete_Host_From_Group_ID, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 		}
-		$Audit_Log_Submission->execute("DSMS Host Groups", "Delete", "$User_Name removed $Hostname ($IP) [Host ID $Delete_Host_ID] from Host Group $Delete_Host_From_Group_Name [Host Group ID $Delete_Host_From_Group_ID].", $User_Name);
+		$Audit_Log_Submission->execute("Host Groups", "Delete", "$User_Name removed $Hostname ($IP) [Host ID $Delete_Host_ID] from Host Group $Delete_Host_From_Group_Name [Host Group ID $Delete_Host_From_Group_ID].", $User_Name);
 
 	}
 	# / Audit Log
 
-	my $Delete_Host = $DB_Sudoers->prepare("DELETE from `lnk_host_groups_to_hosts`
+	my $Delete_Host = $DB_IP_Allocation->prepare("DELETE from `lnk_host_groups_to_hosts`
 		WHERE `group` = ?
 		AND `host` = ?");
 
 	$Delete_Host->execute($Delete_Host_From_Group_ID, $Delete_Host_ID);
 
-}
-
-sub html_show_links {
-
-	my $Counter;
-
-	my $Table = new HTML::Table(
-		-cols=>4,
-                -align=>'center',
-                -border=>0,
-                -rules=>'cols',
-                -evenrowclass=>'tbeven',
-                -oddrowclass=>'tbodd',
-                -width=>'90%',
-                -spacing=>0,
-                -padding=>1
-	);
-
-	$Table->addRow( "#", "Category", "Name", "Status", "View" );
-	$Table->setRowClass (1, 'tbrow1');
-
-	### Hosts
-
-	my $Select_Host_Links = $DB_Sudoers->prepare("SELECT `host`
-		FROM `lnk_host_groups_to_hosts`
-		WHERE `group` = ?"
-	);
-	$Select_Host_Links->execute($Show_Links);
-
-	while ( my @Select_Links = $Select_Host_Links->fetchrow_array() )
-	{
-		
-		my $Host_ID = $Select_Links[0];
-
-		my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `active`
-			FROM `hosts`
-			WHERE `id` = ?"
-		);
-		$Select_Hosts->execute($Host_ID);
-
-		while ( my @Select_Host_Array = $Select_Hosts->fetchrow_array() )
-		{
-
-			my $Host = $Select_Host_Array[0];
-			my $IP = $Select_Host_Array[1];
-			my $Active = $Select_Host_Array[2];
-
-			if ($Active) {$Active = "Active"} else {$Active = "<span style='color: #FF0000'>Inactive</span>"}
-
-			$Counter++;
-
-			$Table->addRow(
-			"$Counter",
-			"Host",
-			"$Host ($IP)",
-			"$Active",
-			"<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Host\" ></a>"
-			);
-		}
-	}
-
-	### Rules
-
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `rule`
-		FROM `lnk_rules_to_host_groups`
-		WHERE `host_group` = ?"
-	);
-	$Select_Links->execute($Show_Links);
-
-	while ( my @Select_Links = $Select_Links->fetchrow_array() )
-	{
-		
-		my $Rule_ID = $Select_Links[0];
-
-		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
-			FROM `rules`
-			WHERE `id` = ?"
-		);
-		$Select_Rules->execute($Rule_ID);
-
-		while ( my @Select_Rule_Array = $Select_Rules->fetchrow_array() )
-		{
-
-			my $Name = $Select_Rule_Array[0];
-			my $Active = $Select_Rule_Array[1];
-			my $Approved = $Select_Rule_Array[2];
-
-			if ($Active) {$Active = "Active"} else {$Active = "<span style='color: #FF0000'>Inactive</span>"}
-			if ($Approved) {$Approved = "Approved"} else {$Approved = "<span style='color: #FF0000'>Unapproved</span>"}
-
-			$Counter++;
-
-			$Table->addRow(
-			"$Counter",
-			"Rule",
-			"$Name",
-			"$Active<br />$Approved",
-			"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
-			);
-		}
-	}
-
-if ($Counter eq undef) {$Counter = 0};
-
-print <<ENDHTML;
-
-<div id="wide-popup-box">
-<a href="/DSMS/sudoers-host-groups.cgi">
-<div id="blockclosebutton">
-</div>
-</a>
-
-<h2 style="text-align: center; font-weight: bold;">Items linked to $Show_Links_Name</h2>
-
-<p>There are <span style="color: #00FF00;">$Counter</span> items linked to $Show_Links_Name.</p>
-
-$Table
-
-ENDHTML
-
-} # sub html_show_links
-
-sub html_notes {
-
-	my $Table = new HTML::Table(
-		-cols=>4,
-		-align=>'center',
-		-border=>0,
-		-rules=>'cols',
-		-evenrowclass=>'tbeven',
-		-oddrowclass=>'tbodd',
-		-width=>'90%',
-		-spacing=>0,
-		-padding=>1
-	);
-
-	$Table->addRow( "#", "Note", "Time", "Added By");
-	$Table->setRowClass (1, 'tbrow1');
-
-	### Discover Group Name
-	my $Group_Name;
-	my $Select_Group_Name = $DB_Sudoers->prepare("SELECT `groupname`
-	FROM `host_groups`
-	WHERE `id` = ?");
-
-	$Select_Group_Name->execute($View_Notes);
-	$Group_Name = $Select_Group_Name->fetchrow_array();
-	### / Discover Group Name
-
-	### Discover Note Count
-	my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
-		FROM `notes`
-		WHERE `type_id` = '02'
-		AND `item_id` = ?"
-	);
-	$Select_Note_Count->execute($View_Notes);
-	my $Note_Count = $Select_Note_Count->fetchrow_array();
-	### / Discover Note Count
-
-	my $Select_Notes = $DB_Sudoers->prepare("SELECT `note`, `last_modified`, `modified_by`
-	FROM `notes`
-	WHERE `type_id` = '02'
-	AND `item_id` = ?
-	ORDER BY `last_modified` DESC");
-
-	$Select_Notes->execute($View_Notes);
-
-	my $Row_Count=$Note_Count;
-	while ( my @Notes = $Select_Notes->fetchrow_array() )
-	{
-		my $Note = $Notes[0];
-		my $Last_Modified = $Notes[1];
-		my $Modified_By = $Notes[2];
-		
-		$Table->addRow($Row_Count, $Note, $Last_Modified, $Modified_By);
-		$Row_Count--;
-	}
-
-	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(3, '110px');
-	$Table->setColWidth(4, '110px');
-
-	$Table->setColAlign(1, 'center');
-	$Table->setColAlign(3, 'center');
-	$Table->setColAlign(4, 'center');
-
-	if ($Note_Count == 0) {
-		undef $Table;
-		undef $Note_Count;
-	}
-	else {
-		$Note_Count = "$Note_Count existing notes found, latest first."
-	}
-
-print <<ENDHTML;
-<div id="wide-popup-box">
-<a href="/DSMS/sudoers-host-groups.cgi">
-<div id="blockclosebutton">
-</div>
-</a>
-
-<h3 align="center">Notes for $Group_Name</h3>
-<form action='/DSMS/sudoers-host-groups.cgi' method='post'>
-
-<table align='center'>
-	<tr>
-		<td><textarea name='New_Note' placeholder='Add a new note' autofocus></textarea></td>
-	</tr>
-	<tr>
-		<td><div style="text-align: center"><input type='submit' name='Submit' value='Submit New Note'></div></td>
-	</tr>
-</table>
-
-<hr width="50%">
-
-<input type='hidden' name='New_Note_ID' value='$View_Notes'>
-</form>
-
-<p>$Note_Count</p>
-
-$Table
-
-ENDHTML
-
-} # sub html_notes
-
-sub add_note {
-
-	my $Note_Submission = $DB_Sudoers->prepare("INSERT INTO `notes` (
-		`type_id`,
-		`item_id`,
-		`note`,
-		`modified_by`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
-	$Note_Submission->execute(02, $New_Note_ID, $New_Note, $User_Name);
-
-} # sub add_note
+} # sub delete_host
 
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>11,
+		-cols=>8,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -1438,30 +1074,29 @@ sub html_output {
 	);
 
 
-	my $Select_Group_Count = $DB_Sudoers->prepare("SELECT `id` FROM `host_groups`");
+	my $Select_Group_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `host_groups`");
 		$Select_Group_Count->execute( );
 		my $Total_Rows = $Select_Group_Count->rows();
 
 
-	my $Select_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`, `last_modified`, `modified_by`
+	my $Select_Groups = $DB_IP_Allocation->prepare("SELECT `id`, `groupname`, `active`, `last_modified`, `modified_by`
 		FROM `host_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
-		OR `expires` LIKE ?
 		ORDER BY `groupname` ASC
 		LIMIT 0 , $Rows_Returned"
 	);
 
 	if ($ID_Filter) {
-		$Select_Groups->execute($ID_Filter, '', '');
+		$Select_Groups->execute($ID_Filter, '');
 	}
 	else {
-		$Select_Groups->execute("%$Filter%", "%$Filter%", "%$Filter%");
+		$Select_Groups->execute("%$Filter%", "%$Filter%");
 	}
 	
 	my $Rows = $Select_Groups->rows();
 
-	$Table->addRow( "ID", "Group Name", "Connected Hosts", "Expires", "Active", "Last Modified", "Modified By", "Links", "Notes", "Edit", "Delete" );
+	$Table->addRow( "ID", "Group Name", "Connected Hosts", "Active", "Last Modified", "Modified By", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Group_Row_Count=1;
@@ -1479,27 +1114,12 @@ sub html_output {
 		my $Group_Name = $Select_Groups[1];
 		my $Group_Name_Clean = $Group_Name;
 			$Group_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Group_Expires = $Select_Groups[2];
-		my $Group_Expires_Clean = $Group_Expires;
-			$Group_Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = $Select_Groups[3];
+		my $Active = $Select_Groups[2];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = $Select_Groups[4];
-		my $Modified_By = $Select_Groups[5];
+		my $Last_Modified = $Select_Groups[3];
+		my $Modified_By = $Select_Groups[4];
 
-		### Discover Note Count
-
-		my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
-			FROM `notes`
-			WHERE `type_id` = '02'
-			AND `item_id` = ?"
-		);
-		$Select_Note_Count->execute($DBID_Clean);
-		my $Note_Count = $Select_Note_Count->fetchrow_array();
-
-		### / Discover Note Count
-
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `host`
+		my $Select_Links = $DB_IP_Allocation->prepare("SELECT `host`
 			FROM `lnk_host_groups_to_hosts`
 			WHERE `group` = ?"
 		);
@@ -1510,7 +1130,7 @@ sub html_output {
 			
 			my $Host_ID = $Select_Links[0];
 
-			my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
+			my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
 				FROM `hosts`
 				WHERE `id` = ?"
 			);
@@ -1521,89 +1141,55 @@ sub html_output {
 
 				my $Host = $Select_Hosts[0];
 					my $Host_Clean = $Host;
-				my $IP = $Select_Hosts[1];
-				my $Expires = $Select_Hosts[2];
-				my $Active = $Select_Hosts[3];
+				my $Type = $Select_Hosts[1];
 
-				my $Expires_Epoch;
-				my $Today_Epoch = time;
-				if ($Expires =~ /^0000-00-00$/) {
-					$Expires = 'Never';
+				if ($Type){
+					my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+					FROM `host_types`
+					WHERE `id` LIKE ?");
+					$Select_Type->execute($Type);
+					$Type = $Select_Type->fetchrow_array();
+					$Host = "<a href='/IP/hosts.cgi?ID_Filter=$Host_ID'><span style='color: #00FF00'>$Host (</span><span style='color: #B1B1B1'>$Type</span><span style='color: #00FF00'>)</span></a>";
 				}
 				else {
-					$Expires_Epoch = str2time("$Expires"."T23:59:59");
+					$Host = "<a href='/IP/hosts.cgi?ID_Filter=$Host_ID'><span style='color: #00FF00'>$Host</span></a>";
 				}
-
-
-				if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-					$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #B1B1B1'>$Host ($IP)</span></a>"
-				}
-				elsif ($Active == 1) {
-					$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #00FF00'>$Host ($IP)</span></a>"
-				}
-				else {
-					$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID'><span style='color: #FF0000'>$Host ($IP)</span></a>"
-				};
-				$Hosts = $Hosts . $Host . "&nbsp;&nbsp;&nbsp;" . "<a href='/DSMS/sudoers-host-groups.cgi?Delete_Host_ID=$Host_ID&Delete_Host_From_Group_ID=$DBID_Clean&Delete_Host_Name=$Host_Clean&Delete_Host_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
+				$Hosts = $Hosts . $Host . "&nbsp;&nbsp;&nbsp;" . "<a href='/IP/host-groups.cgi?Delete_Host_ID=$Host_ID&Delete_Host_From_Group_ID=$DBID_Clean&Delete_Host_Name=$Host_Clean&Delete_Host_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
 
 			}
-		}
-
-		my $Group_Expires_Epoch;
-		my $Today_Epoch = time;
-		if ($Group_Expires_Clean =~ /^0000-00-00$/) {
-			$Group_Expires = 'Never';
-		}
-		else {
-			$Group_Expires_Epoch = str2time("$Group_Expires_Clean"."T23:59:59");
 		}
 
 		$Table->addRow(
 			"$DBID",
 			"$Group_Name",
 			"$Hosts",
-			"$Group_Expires",
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/DSMS/sudoers-host-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"/resources/imgs/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
-			"<a href='/DSMS/sudoers-host-groups.cgi?View_Notes=$DBID_Clean'>
-				<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
-					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
-						$Note_Count
-					</p>
-				</div>
-			</a>",
-			"<a href='/DSMS/sudoers-host-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
-			"<a href='/DSMS/sudoers-host-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
+			"<a href='/IP/host-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
+			"<a href='/IP/host-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
 		);
 
 
 		if ($Active eq 'Yes') {
-			$Table->setCellClass ($Group_Row_Count, 5, 'tbrowgreen');
+			$Table->setCellClass ($Group_Row_Count, 4, 'tbrowgreen');
 		}
 		else {
-			$Table->setCellClass ($Group_Row_Count, 5, 'tbrowred');
-		}
-
-		if ($Group_Expires ne 'Never' && $Group_Expires_Epoch < $Today_Epoch) {
-			$Table->setCellClass ($Group_Row_Count, 4, 'tbrowdisabled');
+			$Table->setCellClass ($Group_Row_Count, 4, 'tbrowred');
 		}
 
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(4, '60px');
-	$Table->setColWidth(5, '1px');
+	$Table->setColWidth(4, '1px');
+	$Table->setColWidth(5, '110px');
 	$Table->setColWidth(6, '110px');
-	$Table->setColWidth(7, '110px');
+	$Table->setColWidth(7, '1px');
 	$Table->setColWidth(8, '1px');
-	$Table->setColWidth(9, '1px');
-	$Table->setColWidth(10, '1px');
-	$Table->setColWidth(11, '1px');
+
 
 	$Table->setColAlign(1, 'center');
-	for (4 .. 11) {
+	for (4 .. 8) {
 		$Table->setColAlign($_, 'center');
 	}
 
@@ -1613,7 +1199,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/DSMS/sudoers-host-groups.cgi' method='post' >
+			<form action='/IP/host-groups.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1653,7 +1239,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/DSMS/sudoers-host-groups.cgi' method='post' >
+			<form action='/IP/host-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Group</span></td>
@@ -1665,7 +1251,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/DSMS/sudoers-host-groups.cgi' method='post' >
+			<form action='/IP/host-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Group</span></td>
@@ -1676,7 +1262,7 @@ print <<ENDHTML;
 						<select name='Edit_Group' style="width: 150px">
 ENDHTML
 
-						my $Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`
+						my $Group_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `groupname`
 						FROM `host_groups`
 						ORDER BY `groupname` ASC");
 						$Group_List_Query->execute( );

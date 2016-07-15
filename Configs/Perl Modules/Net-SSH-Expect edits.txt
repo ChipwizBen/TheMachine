@@ -1,0 +1,4 @@
+# locate Expect.pm
+# cd ..
+# cp Expect.pm Expect.pm-backup
+sed -i -e 's/unless (\$send)/unless defined ($send)/' Expect.pm

@@ -526,7 +526,7 @@ sub add_group {
 		?
 	)");
 	
-	$Audit_Log_Submission->execute("Command Groups", "Add", "$User_Name added $Group_Name_Add, set it $Active_Add and to $Expires_Date_Add. $Command_Alias_Count commands were attached$Commands_Attached. The system assigned it Command Group ID $Group_Insert_ID.", $User_Name);
+	$Audit_Log_Submission->execute("DSMS Command Groups", "Add", "$User_Name added $Group_Name_Add, set it $Active_Add and to $Expires_Date_Add. $Command_Alias_Count commands were attached$Commands_Attached. The system assigned it Command Group ID $Group_Insert_ID.", $User_Name);
 	# / Audit Log
 
 	return($Group_Insert_ID, $Command_Alias_Count);
@@ -995,7 +995,7 @@ sub edit_group {
 	if ($Rules_Revoked > 0) {
 		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified Command Group ID $Edit_Group, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 	}
-	$Audit_Log_Submission->execute("Command Groups", "Modify", "$User_Name modified Command Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $Command_Alias_Count new commands were attached$Commands_Attached.", $User_Name);
+	$Audit_Log_Submission->execute("DSMS Command Groups", "Modify", "$User_Name modified Command Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $Command_Alias_Count new commands were attached$Commands_Attached.", $User_Name);
 	# / Audit Log
 
 	return($Command_Alias_Count);
@@ -1128,7 +1128,7 @@ sub delete_group {
 		if ($Rules_Revoked > 0) {
 			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Command Group ID $Delete_Group_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 		}
-		$Audit_Log_Submission->execute("Command Groups", "Delete", "$User_Name deleted Command Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name, set $Active and $Expires. It had $Commands_Attached", $User_Name);
+		$Audit_Log_Submission->execute("DSMS Command Groups", "Delete", "$User_Name deleted Command Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name, set $Active and $Expires. It had $Commands_Attached", $User_Name);
 
 	}
 	# / Audit Log
@@ -1193,7 +1193,7 @@ sub delete_command {
 		if ($Rules_Revoked > 0) {
 			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Command ID $Delete_Command_ID from Command Group ID $Delete_Command_From_Group_ID, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 		}
-		$Audit_Log_Submission->execute("Command Groups", "Delete", "$User_Name removed $Command_Alias ($Command) [Command ID $Delete_Command_ID] from Command Group $Delete_Command_From_Group_Name [Command Group ID $Delete_Command_From_Group_ID].", $User_Name);
+		$Audit_Log_Submission->execute("DSMS Command Groups", "Delete", "$User_Name removed $Command_Alias ($Command) [Command ID $Delete_Command_ID] from Command Group $Delete_Command_From_Group_Name [Command Group ID $Delete_Command_From_Group_ID].", $User_Name);
 
 	}
 	# / Audit Log

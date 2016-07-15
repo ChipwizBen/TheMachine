@@ -128,6 +128,7 @@ print <<ENDHTML;
 				<ul>
 					<li><a href="/IP/host-types.cgi">Host Types</a></li>
 					<li><a href="/IP/hosts.cgi">Hosts</a></li>
+					<li><a href="/IP/host-groups.cgi">Host Groups</a></li>
 					<li><a href="/IP/ipv4-blocks.cgi">IPv4 Blocks</a></li>
 					<li><a href="/IP/ipv4-allocations.cgi">IPv4 Allocations</a></li>
 					<li><a href="/IP/ipv6-allocations.cgi">#IPv6 Allocations (todo)</a></li>
@@ -180,9 +181,9 @@ print <<ENDHTML;
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
 						<ul>
-							<li><a href="/DSMS/sudoers-host-groups.cgi">Host Groups</a></li>
-							<li><a href="/DSMS/sudoers-user-groups.cgi">User Groups</a></li>
-							<li><a href="/DSMS/sudoers-command-groups.cgi">Command Groups</a></li>
+							<li><a href="/DSMS/sudoers-host-groups.cgi">DSMS Host Groups</a></li>
+							<li><a href="/DSMS/sudoers-user-groups.cgi">DSMS User Groups</a></li>
+							<li><a href="/DSMS/sudoers-command-groups.cgi">DSMS Command Groups</a></li>
 						</ul>
 					</li>
 					<li><a href="/DSMS/sudoers-hosts.cgi">Hosts</a></li>

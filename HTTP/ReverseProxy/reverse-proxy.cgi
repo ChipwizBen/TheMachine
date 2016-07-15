@@ -844,7 +844,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">Custom Attributes:</td>
 		<td colspan="2" style="text-align: left;">
-			<textarea name='Custom_Attributes_Edit' placeholder='$Custom_Attributes'>$Custom_Attributes</textarea>
+			<textarea name='Custom_Attributes_Edit'>$Custom_Attributes</textarea>
 		</td>
 	</tr>
 </table>

@@ -37,6 +37,37 @@ sub System_Short_Name {
 
 } # sub System_Short_Name
 
+sub Verbose {
+
+	# Turns on verbose mode without having to directly trigger this on individual components
+	# Default is 0
+
+	my $Verbose = 1;
+	return $Verbose;
+
+} # sub Verbose
+
+sub Very_Verbose {
+
+	# Turns on very verbose mode without having to directly trigger this on individual components
+	# Default is 0 
+
+	my $Very_Verbose = 0;
+	return $Very_Verbose;
+
+} # sub Very_Verbose
+
+sub Paper_Trail {
+
+	# Turns on the paper trail. This will log all parameters INCLUDING PASSWORDS. Should ONLY be used for debugging.
+	# For extra safety, also requires verbose to be explicitly turned on.
+	# Default is 0 
+
+	my $Paper_Trail = 0;
+	return $Paper_Trail;
+
+} # sub Paper_Trail
+
 sub Header {
 
 	my $Header;
@@ -922,26 +953,29 @@ sub enc {
 
 	use MIME::Base64;
 	my $Query = $_[0];
+	my $Salt1 = Salt(10);
+	my $Salt2 = Salt(10);
 
-	my @Chars = split(" ", "5 6 7 8 9");
+	my @Chars = split(" ", "1");
 	srand;
 
 	my $Random_Value;
 	my $Enc_Length = 1;
 	my $Loop_Limit;
-	for (my $i=1; $i <= $Enc_Length ;$i++) {
-		$Random_Value = int(rand 5);
+	for (my $i=1; $i <= $Enc_Length; $i++) {
+		$Random_Value = int(rand 1);
 		$Loop_Limit .= $Chars[$Random_Value];
 	}
 
 	my $Loop=0;
 	while ($Loop != $Loop_Limit) {
 		$Loop++;
-		$Query = encode_base64($Query);
+		#$Query = encode_base64($Query);
+		$Query = encode_base64("$Salt1$Query$Salt2");
 		$Query =~ s/\n//g;
 	}
 
-	$Query = $Query . $Loop_Limit;
+	$Query =~ s/(.*)(...)$/$1T${Loop_Limit}m$2/g;
 	return $Query;
 
 } # sub enc
@@ -952,14 +986,16 @@ sub dec {
 	my $Query = $_[0];
 
 	my $Enc_Length = $Query;
-		$Enc_Length =~ s/.*([0-9*])$/$1/;
-		$Query =~ s/(.*)[0-9*]$/$1/;
+		$Enc_Length =~ s/.*T([0-9*])m...$/$1/;
+		$Query =~ s/(.*)T([0-9*])m(...)$/$1$3/;
 
-	for (my $i=1; $i <= $Enc_Length ;$i++) {
+	for (my $i=1; $i <= $Enc_Length; $i++) {
 		$Query =~ s/\n//g;
 		$Query = decode_base64($Query);
 	}
 
+	$Query =~ s/^.{10}//;
+	$Query =~ s/.{10}$//;
 	return $Query;
 
 } # sub dec
@@ -973,6 +1009,10 @@ sub Salt {
 
 	if (!$Salt_Length) {
 		$Salt_Length = 64;
+	}
+
+	if ($Salt_Length < 0) {
+		$Salt_Length = 4;
 	}
 
 	my @Chars = split(" ",
@@ -989,11 +1029,12 @@ sub Salt {
 	srand;
 
 	my $Random_Salt;
-	for (my $i=0; $i <= $Salt_Length ;$i++) {
+	my $Salt_Character_Count;
+	while ($Salt_Character_Count != $Salt_Length) {
 		$Random_Value = int(rand 89);
 		$Random_Salt .= $Chars[$Random_Value];
+		$Salt_Character_Count = length($Random_Salt);
 	}
-
 	return $Random_Salt;
 
 } # sub Salt

@@ -4,6 +4,7 @@ use strict;
 use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
+use Getopt::Long qw(:config no_ignore_case);
 
 my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
@@ -34,11 +35,11 @@ Options are:
 	${Blue}-k, --key\t\t${Green}Pass the key ID used to connect to the server
 	${Blue}-f, --failure\t\t${Green}Specify the on-failure behaviour (0 is continue, 1 is die)
 	${Blue}-c, --command-set\t${Green}The ID of the command set
-	${Blue}-H, --hosts\t\t${Green}A comma sperated list of host IDs (no spaces!) [e.g.: -H 302,5943,2140]
+	${Blue}-H, --hosts\t\t${Green}A space sperated list of host IDs [e.g.: -H 302 5943 2140]
 
 ${Green}Examples:
 	${Green}## Ha! Yeah right. You shouldn't even BE here! Oh go on then, just this once, but only because I like you.
-	${Blue}$0 -c 76 -H 294,5883,345${Clear}\n\n";
+	${Blue}$0 -c 76 -H 294 5883 345${Clear}\n\n";
 
 
 if (!@ARGV) {
@@ -46,7 +47,7 @@ if (!@ARGV) {
 	exit(0);
 }
 
-my @Hosts;
+my @Hosts_List;
 my $Command_Set;
 my $Trigger_Job;
 my $User_Trigger;
@@ -56,95 +57,33 @@ my $Captured_Key;
 my $Captured_Key_Lock;
 my $Captured_Key_Passphrase;
 my $On_Failure;
-foreach my $Parameter (@ARGV) {
-	if ($Parameter eq '-H' || $Parameter eq '--hosts') {
-		my @Discovered_Hosts = @ARGV;
-		while (my $Discovered_Host = shift @Discovered_Hosts) {
-			if ($Discovered_Host =~ /-H/ || $Discovered_Host =~ /--hosts/) {
-				$Discovered_Host = shift @Discovered_Hosts;
-				@Hosts = split(',', $Discovered_Host);
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-c' || $Parameter eq '--command-set') {
-		my @Command_Sets = @ARGV;
-		while ($Command_Set = shift @Command_Sets) {
-			if ($Command_Set =~ /-c/ || $Command_Set =~ /--command-set/) {
-				$Command_Set = shift @Command_Sets;
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-X') {
-		my @User_Triggers = @ARGV;
-		while ($User_Trigger = shift @User_Triggers) {
-			if ($User_Trigger =~ /-X/) {
-				$User_Trigger = shift @User_Triggers;
-				$User_Trigger =~ s/MagicTagSpace/ /g;
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-u' || $Parameter eq '--username') {
-		my @Captured_User_Names = @ARGV;
-		while ($Captured_User_Name = shift @Captured_User_Names) {
-			if ($Captured_User_Name =~ /-u/ || $Captured_User_Name =~ /--username/) {
-				$Captured_User_Name = shift @Captured_User_Names;
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-P' || $Parameter eq '--password') {
-		my @Captured_Passwords = @ARGV;
-		while ($Captured_Password = shift @Captured_Passwords) {
-			if ($Captured_Password =~ /-P/ || $Captured_Password =~ /--password/) {
-				$Captured_Password = shift @Captured_Passwords;
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-k' || $Parameter eq '--key') {
-		my @Captured_Keys = @ARGV;
-		while ($Captured_Key = shift @Captured_Keys) {
-			if ($Captured_Key =~ /-k/ || $Captured_Key =~ /--key/) {
-				$Captured_Key = shift @Captured_Keys;
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-L' || $Parameter eq '--lock') {
-		my @Captured_Key_Locks = @ARGV;
-		while ($Captured_Key_Lock = shift @Captured_Key_Locks) {
-			if ($Captured_Key_Lock =~ /-L/ || $Captured_Key_Lock =~ /--lock/) {
-				$Captured_Key_Lock = shift @Captured_Key_Locks;
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-K' || $Parameter eq '--passphrase') {
-		my @Captured_Key_Passphrases = @ARGV;
-		while ($Captured_Key_Passphrase = shift @Captured_Key_Passphrases) {
-			if ($Captured_Key_Passphrase =~ /-K/ || $Captured_Key_Passphrase =~ /--passphrase/) {
-				$Captured_Key_Passphrase = shift @Captured_Key_Passphrases;
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-f' || $Parameter eq '--failure') {
-		my @On_Failures = @ARGV;
-		while ($On_Failure = shift @On_Failures) {
-			if ($On_Failure =~ /-f/ || $On_Failure =~ /--failure/) {
-				$On_Failure = shift @On_Failures;
-				last;
-			}
-		}
-	}
-	if ($Parameter eq '-h' || $Parameter eq '--help') {
-		print $Help;
-		exit(0);
-	}
-}
+
+GetOptions(
+	'H:s{1,}' => \@Hosts_List, # Set as string due to possibility of space seperation
+	'hosts:s{1,}' => \@Hosts_List, # Set as string due to possibility of space seperation
+	'c:i' => \$Command_Set,
+	'command-set:i' => \$Command_Set,
+	'X:s' => \$User_Trigger,
+	'u:s' => \$Captured_User_Name,
+	'username:s' => \$Captured_User_Name,
+	'P:s' => \$Captured_Password,
+	'password:s' => \$Captured_Password,
+	'k:s' => \$Captured_Key,
+	'key:s' => \$Captured_Key,
+	'L:s' => \$Captured_Key_Lock,
+	'lock:s' => \$Captured_Key_Lock,
+	'K:s' => \$Captured_Key_Passphrase,
+	'passphrase:s' => \$Captured_Key_Passphrase,
+	'f:s' => \$On_Failure,
+	'failure:s' => \$On_Failure,
+	'h' => \$On_Failure,
+	'help' => \$On_Failure,	
+) or die("Option capture badness: $@\n");
+
+$User_Trigger =~ s/MagicTagSpace/ /g;
+if (!$User_Trigger) {$User_Trigger = 'System'}
+
+my @Hosts = split(/[\s,]+/,join(',' , @Hosts_List));
 
 if ($Command_Set && @Hosts) {
 
@@ -162,7 +101,7 @@ if ($Command_Set && @Hosts) {
 		)");
 
 		if (!$On_Failure) {$On_Failure = 0};
-		$Job_Submission->execute($Host, $Command_Set, $On_Failure, "4", "System");
+		$Job_Submission->execute($Host, $Command_Set, $On_Failure, "4", $User_Trigger);
 		my $Command_Insert_ID = $DB_DShell->{mysql_insertid};
 
 		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
@@ -175,7 +114,7 @@ if ($Command_Set && @Hosts) {
 			?, ?, ?, ?
 		)");
 
-		$Audit_Log_Submission->execute("D-Shell", "Receive", "The job scheduler received a job to run command set ID $Command_Set on host ID $Host.", "System");
+		$Audit_Log_Submission->execute("D-Shell", "Receive", "The job scheduler received a job to run command set ID $Command_Set on host ID $Host.", $User_Trigger);
 
 		if ($Command_Insert_ID) {
 			# Audit Log

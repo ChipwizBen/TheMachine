@@ -11,6 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
+my $DB_Management = DB_Management();
 my $DB_DShell = DB_DShell();
 my $DB_IP_Allocation = DB_IP_Allocation();
 my ($CGI, $Session, $Cookie) = CGI();
@@ -21,8 +22,12 @@ my $wc = wc();
 my $Run_Job = $CGI->param("Run_Job");
 my $Job_Log = $CGI->param("Job_Log");
 my $Trigger_Job = $CGI->param("Trigger_Job");
+my $On_Failure = $CGI->param("On_Failure");
 my $Captured_User_Name = $CGI->param("Captured_User_Name");
 my $Captured_Password = $CGI->param("Captured_Password");
+my $Captured_Key = $CGI->param("Captured_Key");
+my $Captured_Key_Lock = $CGI->param("Captured_Key_Lock");
+my $Captured_Key_Passphrase = $CGI->param("Captured_Key_Passphrase");
 
 my $Pause_Job = $CGI->param("Pause_Job");
 my $Stop_Job = $CGI->param("Stop_Job");
@@ -44,7 +49,7 @@ if ($Rows_Returned eq '') {
 }
 
 
-if ($Trigger_Job && $Captured_User_Name && $Captured_Password) {
+if ($Trigger_Job) {
 	if ($User_DShell_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -54,8 +59,14 @@ if ($Trigger_Job && $Captured_User_Name && $Captured_Password) {
 	}
 	else {
 		my $PID = &run_job;
-		my $Message_Green = "Job ID $Trigger_Job started as user $Captured_User_Name (PID: $PID).";
-		$Session->param('Message_Green', $Message_Green);
+		if ($PID eq 'Failed') {
+			my $Message_Red = "Job ID $Trigger_Job failed to start.";
+			$Session->param('Message_Red', $Message_Red);
+		}
+		else {
+			my $Message_Green = "Job ID $Trigger_Job started (PID: $PID).";
+			$Session->param('Message_Green', $Message_Green);
+		}
 		$Session->flush();
 		undef $Trigger_Job;
 		print $CGI->redirect(-url=>'/D-Shell/jobs.cgi');
@@ -136,39 +147,102 @@ else {
 
 sub html_run_job {
 
+	my $Select_Job = $DB_DShell->prepare("SELECT `on_failure`
+		FROM `jobs`
+		WHERE `id` = ?");
+	$Select_Job->execute($Run_Job);
+	my $On_Failure_Check = $Select_Job->fetchrow_array();
+
+	my ($On_Failure_Continue, $On_Failure_Kill);
+	if ($On_Failure_Check) {$On_Failure_Kill = 'checked';} else {$On_Failure_Continue = 'checked';}
+
 print <<ENDHTML;
 
-<div id="small-popup-box">
+<div id="wide-popup-box">
 <a href="/D-Shell/jobs.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Run Job ID $Run_Job</h3>
+<h3 align="center">Run Job ID <span style='color: #00FF00;'>$Run_Job</span></h3>
 
-<form action='/D-Shell/jobs.cgi' name='Job_Trigger' method='post' >
+<form action='/D-Shell/jobs.cgi' name='Run_Command' method='post' >
 
-<table align = "center">
+<table align="center">
 	<tr>
-		<td style="text-align: right;">SSH Username:</td>
-		<td><input type='text' name='Captured_User_Name' style="width:100%" placeholder="SSH User Name" required autofocus></td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">SSH Password:</td>
-		<td><input type='password' name='Captured_Password' style="width:100%" placeholder="SSH Password" required></td>
+		<td style="text-align: right;">On command failure:</td>
+		<td style="text-align: right;"><input type="radio" name="On_Failure" value="0" $On_Failure_Continue></td>
+		<td style="text-align: left; color: #00FF00;">Continue Job</td>
+		<td style="text-align: right;"><input type="radio" name="On_Failure" value="1" $On_Failure_Kill></td>
+		<td style="text-align: left; color: #FFC600;">Kill Job</td>
 	</tr>
 </table>
 
 <hr width="50%">
 
-<input type='hidden' name='Trigger_Job' value='$Run_Job'>
-
-<div style="text-align: center"><input type=submit name='Job_Trigger' value='Run Job'></div>
-
-</form>
+<table align="center">
+	<tr>
+		<td style="text-align: right;">SSH Username:</td>
+		<td colspan='4'><input type="text" name="Captured_User_Name" placeholder="SSH Username" style="width:100%"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">SSH Password:</td>
+		<td colspan='4'><input type="password" name="Captured_Password" placeholder="SSH Password" style="width:100%"></td>
+	</tr>
+	<tr>
+		<td colspan='5'>-- or --</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Key:</td>
+		<td colspan="3" style="text-align: left;">
+			<select name='Captured_Key' style="width: 300px">
 ENDHTML
 
-}
+### Keys
+				my $Key_List_Query = $DB_Management->prepare("SELECT `id`, `key_name`, `key_username`, `key_passphrase`
+				FROM `auth`
+				ORDER BY `key_name` ASC");
+				$Key_List_Query->execute( );
+
+				print "<option value='' selected>--Select a Key--</option>";
+
+				while ( my ($ID, $Key_Name, $Key_User, $Key_Passphrase) = my @Key_List_Query = $Key_List_Query->fetchrow_array() )
+				{
+					my $Key_Name_Character_Limited = substr( $Key_Name, 0, 40 );
+						if ($Key_Name_Character_Limited ne $Key_Name) {
+							$Key_Name_Character_Limited = $Key_Name_Character_Limited . '...';
+						}
+					print "<option value='$ID'>$Key_Name_Character_Limited [$Key_User]</option>";
+				}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Key Lock Phrase:</td>
+		<td colspan='4'><input type="password" name="Captured_Key_Lock" placeholder="DB Lock Phrase" style="width:100%"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Key Passphrase:</td>
+		<td colspan='4'><input type="password" name="Captured_Key_Passphrase" placeholder="Key Passphrase" style="width:100%"></td>
+	</tr>
+</table>
+
+<hr width="50%">
+
+<div style="text-align: center"><input type=submit name='Run_Command_Final' value='Run Job'></div>
+
+<input type='hidden' name='Trigger_Job' value='$Run_Job'>
+
+<br />
+
+</form>
+
+
+ENDHTML
+
+} # sub html_run_job
 
 sub pause_job {
 
@@ -259,24 +333,42 @@ sub run_job {
 		?, ?, ?, ?
 	)");
 
-	$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Name started Job ID $Trigger_Job with username $Captured_User_Name.", $User_Name);
+	$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Name started Job ID $Trigger_Job.", $User_Name);
 	# / Audit Log
 
 	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		`on_failure` = ?,
 		`status` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
-	$Update_Job->execute( '10', $User_Name, $Trigger_Job);
+	if (!$On_Failure) {$On_Failure = 0};
+	$Update_Job->execute($On_Failure, '10', $User_Name, $Trigger_Job);
 
 	$SIG{CHLD} = 'IGNORE';
 	my $PID = fork();
 	if (defined $PID && $PID == 0) {
-		my $Enc = enc($Captured_Password);
-		exec "./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Enc >> /tmp/output 2>&1 &";
-		exit(0);
+#		my $Password = enc($Captured_Password);
+#		exec "./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Password >> /tmp/output 2>&1 &";
+#		exit(0);
+
+		if ($Captured_Password) {
+			my $Password = enc($Captured_Password);
+			exec("./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Password");
+		}
+		elsif ($Captured_Key) {
+			$Captured_Key_Lock =~ s/\s//g;
+			my $Lock = enc($Captured_Key_Lock);
+			if ($Captured_Key_Passphrase) {
+				my $Passphrase = enc($Captured_Key_Passphrase);
+				exec("./d-shell.pl -j $Trigger_Job -k $Captured_Key -L $Lock -K $Passphrase");
+			}
+			else {
+				exec("./d-shell.pl -j $Trigger_Job -k $Captured_Key -L $Lock");
+			}
+		}
 	}
 
-	return $PID;
+	if ($PID) {return $PID;} else {return 'Failed'}
 
 } # sub run_job
 
@@ -332,7 +424,7 @@ sub html_job_log {
 		my $Task_Ended = $Entries[4];
 		my $Modified_By = $Entries[5];
 
-		if ($Exit_Code eq '0' || $Exit_Code eq undef) {
+		if ($Exit_Code == 0 || $Exit_Code eq undef) {
 			$Exit_Code = "<span style='color: #00FF00;'>$Exit_Code</span>"; 
 			$Output = "<span style='color: #00FF00;'>$Output</span>";
 		}
@@ -517,7 +609,7 @@ sub html_output {
 		);
 		$Select_Currently_Running_Command->execute($DBID);
 		my $Held_Running_Command = $Select_Currently_Running_Command->fetchrow_array();
-			$Held_Running_Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+			$Held_Running_Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Held_Running_Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 
 		### / Discover Currently Running Command
@@ -616,7 +708,13 @@ sub html_output {
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 15) {
-			$Running_Command = 'Failed to decrypt SSH key. Wrong unlock password?';
+			$Running_Command = 'Failed to decrypt SSH key. Wrong key unlock password?';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
+		elsif ($Status == 16) {
+			$Running_Command = 'You cannot specify both interactive and key credentials, pick one.';
 			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";

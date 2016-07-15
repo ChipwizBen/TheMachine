@@ -53,7 +53,7 @@ foreach my $Parameter (@ARGV) {
 				print "Continuing in... 2\r";
 				sleep 1;
 				print "Continuing in... 1\r";
-				sleep 1;	
+				sleep 1;
 			}
 			else {
 				print "Another build or distribution process is running. Use --override to continue anyway. Exiting...\n";

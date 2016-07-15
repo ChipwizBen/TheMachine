@@ -22,6 +22,8 @@ my $Add_Command = $CGI->param("Add_Command");
 		$Command_Add =~ s/<MagicTagNewLine>/\n/g;
 		$Command_Add =~ s/<MagicTagComment>/#/g;
 		$Command_Add =~ s/<MagicTagPlus>/\+/g;
+		$Command_Add =~ s/<MagicTagSingleQuote>/\'/g;
+		$Command_Add =~ s/<MagicTagSemiColon>/\;/g;
 	my $Command_Description_Add = $CGI->param("Description_Add");
 	my $Command_Owner_Add = $CGI->param("Owner_Add");
 	my $Add_Command_Dependency_Temp_New = $CGI->param("Add_Command_Dependency_Temp_New");
@@ -35,6 +37,8 @@ my $Edit_Command = $CGI->param("Edit_Command");
 		$Command_Edit =~ s/<MagicTagNewLine>/\n/g;
 		$Command_Edit =~ s/<MagicTagComment>/#/g;
 		$Command_Edit =~ s/<MagicTagPlus>/\+/g;
+		$Command_Edit =~ s/<MagicTagSingleQuote>/\'/g;
+		$Command_Edit =~ s/<MagicTagSemiColon>/\;/g;
 	my $Command_Description_Edit = $CGI->param("Description_Edit");
 	my $Command_Owner_Edit = $CGI->param("Owner_Edit");
 	my $Edit_Command_Dependency_Temp_New = $CGI->param("Edit_Command_Dependency_Temp_New");
@@ -52,8 +56,8 @@ my $Revision_History = $CGI->param("Revision_History");
 	my $Diff_Previous = $CGI->param("Diff_Previous");
 
 my $Run_Command = $CGI->param("Run_Command");
+	my $Add_Host_Type_Temp_New = $CGI->param("Add_Host_Type_Temp_New");
 	my $Add_Host_Group_Temp_New = $CGI->param("Add_Host_Group_Temp_New");
-	my $Add_Host_Group_Temp_Existing = $CGI->param("Add_Host_Group_Temp_Existing");
 	my $Add_Host_Temp_New = $CGI->param("Add_Host_Temp_New");
 	my $Add_Host_Temp_Existing = $CGI->param("Add_Host_Temp_Existing");
 	my $Delete_Host_Run_Entry_ID = $CGI->param("Delete_Host_Run_Entry_ID");
@@ -253,7 +257,7 @@ foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 
 	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`, `revision`
 		FROM `command_sets`
-		WHERE `id` = ? ");
+		WHERE `id` = ?");
 	$Command_Set_Query->execute($Command_Set_Dependency);
 		
 	while ( my ($Command_Set_Name, $Command_Set_Revision) = $Command_Set_Query->fetchrow_array() ) {
@@ -265,6 +269,8 @@ foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 			$Command_Add_Delete_Dependency_Link =~ s/\n/<MagicTagNewLine>/g;
 			$Command_Add_Delete_Dependency_Link =~ s/#/<MagicTagComment>/g;
 			$Command_Add_Delete_Dependency_Link =~ s/\+/<MagicTagPlus>/g;
+			$Command_Add_Delete_Dependency_Link =~ s/\'/<MagicTagSingleQuote>/g;
+			$Command_Add_Delete_Dependency_Link =~ s/\;/<MagicTagSemiColon>/g;
 			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited [Rev. $Command_Set_Revision]"
 				. " <a href='/D-Shell/command-sets.cgi?
 				Add_Command=1&
@@ -324,7 +330,7 @@ ENDHTML
 
 	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
 		FROM `command_sets`
-		ORDER BY `name`"
+		ORDER BY `name`, `revision` + 0 ASC"
 	);
 
 	$Select_Command_Sets->execute();
@@ -574,6 +580,8 @@ foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 			$Command_Edit_Delete_Dependency_Link =~ s/\n/<MagicTagNewLine>/g;
 			$Command_Edit_Delete_Dependency_Link =~ s/#/<MagicTagComment>/g;
 			$Command_Edit_Delete_Dependency_Link =~ s/\+/<MagicTagPlus>/g;
+			$Command_Edit_Delete_Dependency_Link =~ s/\'/<MagicTagSingleQuote>/g;
+			$Command_Edit_Delete_Dependency_Link =~ s/\;/<MagicTagSemiColon>/g;
 			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited [Rev. $Command_Set_Revision]"
 				. " <a href='/D-Shell/command-sets.cgi?
 				Edit_Command=$Edit_Command&
@@ -952,75 +960,142 @@ sub html_run_command {
 		FROM `command_sets`
 		WHERE `id` LIKE ?"
 	);
-
+	
 	$Select_Command->execute($Run_Command);
+	my $Command_Name = $Select_Command->fetchrow_array();
 
-	my $Command_Name;
-	while ( my @Select_Command = $Select_Command->fetchrow_array() ) {
-		$Command_Name = $Select_Command[0];
+	### Temp Selection Filters
+		# *_Temp_Existing are existing temporary allocations from the last refresh. This is basically a list of 'new' elements that have not yet been committed to the database.
+		# *_Temp_Existing_New are new temporary allocations from the last refresh. These are added to the *_Temp_Existing variable below to form a single list for each element.
+		# The list is a comma separated array, which is parsed when adding to the database.
+
+	## Hosts
+	if ($Add_Host_Temp_New) {
+		if ($Add_Host_Temp_Existing !~ m/^$Add_Host_Temp_New,/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New$/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New,/g) {
+			$Add_Host_Temp_Existing = $Add_Host_Temp_Existing . $Add_Host_Temp_New . ",";
+		}
 	}
 
-### Temp Selection Filters
-	# *_Temp_Existing are existing temporary allocations from the last refresh. This is basically a list of 'new' elements that have not yet been committed to the database.
-	# *_Temp_Existing_New are new temporary allocations from the last refresh. These are added to the *_Temp_Existing variable below to form a single list for each element.
-	# The list is a comma separated array, which is parsed when adding to the database.
-
-if ($Add_Host_Temp_New) {
-	if ($Add_Host_Temp_Existing !~ m/^$Add_Host_Temp_New,/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New$/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New,/g) {
-		$Add_Host_Temp_Existing = $Add_Host_Temp_Existing . $Add_Host_Temp_New . ",";
+	## Groups
+	if ($Add_Host_Group_Temp_New) {
+		my $Select_Links = $DB_IP_Allocation->prepare("SELECT `host`
+			FROM `lnk_host_groups_to_hosts`
+			WHERE `group` = ?"
+		);
+		$Select_Links->execute($Add_Host_Group_Temp_New);
+		while ( my @Select_Links = $Select_Links->fetchrow_array() )
+		{
+			my $Host_ID = $Select_Links[0];
+			if ($Add_Host_Temp_Existing !~ m/^$Host_ID,/g && $Add_Host_Temp_Existing !~ m/,$Host_ID/g && $Add_Host_Temp_Existing !~ m/,$Host_ID,/g) {
+				$Add_Host_Temp_Existing = $Add_Host_Temp_Existing . $Host_ID . ",";
+			}
+		}
 	}
-	if ($Add_Host_Temp_New eq 'ALL') {$Add_Host_Temp_Existing = 'ALL'}
-}
 
-if ($Delete_Host_Run_Entry_ID) {$Add_Host_Temp_Existing =~ s/$Delete_Host_Run_Entry_ID//;}
-$Add_Host_Temp_Existing =~ s/,,/,/g;
+	## Types
+	if ($Add_Host_Type_Temp_New) {
+		my $Select_Links = $DB_IP_Allocation->prepare("SELECT `id`
+			FROM `hosts`
+			WHERE `type` = ?"
+		);
+		$Select_Links->execute($Add_Host_Type_Temp_New);
+		while ( my @Select_Links = $Select_Links->fetchrow_array() )
+		{
+			my $Host_ID = $Select_Links[0];
+			if ($Add_Host_Temp_Existing !~ m/^$Host_ID,/g && $Add_Host_Temp_Existing !~ m/,$Host_ID/g && $Add_Host_Temp_Existing !~ m/,$Host_ID,/g) {
+				$Add_Host_Temp_Existing = $Add_Host_Temp_Existing . $Host_ID . ",";
+			}
+		}
+	}
 
-#Hosts
-
-my $Hosts;
-my @Hosts = split(',', $Add_Host_Temp_Existing);
-
-if ($Add_Host_Temp_Existing eq 'ALL') {
-	$Hosts = "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>ALL (Special)</td><td align='left' style='color: #00FF00'>ALL (Special)</td></tr>";
-}
-else {
+	
+	if ($Delete_Host_Run_Entry_ID) {$Add_Host_Temp_Existing =~ s/$Delete_Host_Run_Entry_ID//;}
+	$Add_Host_Temp_Existing =~ s/,,/,/g;
+	
+	#Hosts
+	
+	my $Hosts;
+	my @Hosts = split(',', $Add_Host_Temp_Existing);
+	
 	foreach my $Host (@Hosts) {
 	
-		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
+		### Group Query
+		my $Group_Link_Query = $DB_IP_Allocation->prepare("SELECT `group`
+			FROM `lnk_host_groups_to_hosts`
+			WHERE `host` = ?");
+		$Group_Link_Query->execute($Host);
+
+			my $Groups;
+			while ( my $Host_Group = $Group_Link_Query->fetchrow_array() ) {
+				my $Group_Query = $DB_IP_Allocation->prepare("SELECT `groupname`, `active`
+					FROM `host_groups`
+					WHERE `id` = ?");
+				$Group_Query->execute($Host_Group);
+				while ( my ($Group_Name, $Group_Active) = $Group_Query->fetchrow_array() ) {
+					my $Group_Name_Character_Limited = substr( $Group_Name, 0, 40 );
+					if ($Group_Name_Character_Limited ne $Group_Name) {
+						$Group_Name_Character_Limited = $Group_Name_Character_Limited . '...';
+					}
+					if ($Group_Active) {
+						$Groups = $Groups . "<span style='color: #00FF00'>$Group_Name_Character_Limited</span>, ";
+					}
+					else {
+						$Groups = $Groups . "<span style='color: #FF0000'>$Group_Name_Character_Limited</span>, ";
+					}
+				}
+			}
+			$Groups =~ s/,\s$//;
+
+		### Host Query
+		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
 			FROM `hosts`
-			WHERE `id` = ? ");
+			WHERE `id` = ?");
 		$Host_Query->execute($Host);
-			
-		while ( my $Host_Name = $Host_Query->fetchrow_array() ) {
+
+		while ( my ($Host_Name, $Host_Type) = $Host_Query->fetchrow_array() ) {
 			my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 				if ($Host_Name_Character_Limited ne $Host_Name) {
 					$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 				}
-				$Hosts = $Hosts . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Host_Name_Character_Limited"
-					. " <a href='/D-Shell/command-sets.cgi?Delete_Host_Run_Entry_ID=$Host&Add_Host_Temp_Existing=$Add_Host_Temp_Existing&Run_Command=$Run_Command' class='tooltip' text=\"Remove $Host_Name from list\"><span style='color: #FFC600'>[Remove]</span></a>"
-					. "</td></tr>";
+
+				my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+				FROM `host_types`
+				WHERE `id` LIKE ?");
+				$Select_Type->execute($Host_Type);
+				$Host_Type = $Select_Type->fetchrow_array();
+				$Hosts = $Hosts . 
+					"<tr>
+						<td align='left' style='color: #00FF00; padding-right: 15px;'>$Host_Name_Character_Limited</td>
+						<td align='left' style='color: #00FF00; padding-right: 15px;'>$Host_Type</td>
+						<td align='left' style='color: #00FF00; padding-right: 15px;'>$Groups</td>
+						<td align='left'> <a href='/D-Shell/command-sets.cgi?Delete_Host_Run_Entry_ID=$Host&Add_Host_Temp_Existing=$Add_Host_Temp_Existing&Run_Command=$Run_Command' class='tooltip' text=\"Remove $Host_Name from list\"><span style='color: #FFC600'>[Remove]</span></a></td>
+					</tr>";
+
+
 		}
 	}
-}
-
-my $Run_Now_Checked;
-my $Run_Now_Disabled;
-my $On_Failure_Continue;
-my $On_Failure_Kill;
-if ($Run_Toggle_Add eq 'on') {
-	$Run_Now_Checked = 'checked';
-	$Run_Now_Disabled = '';
-}
-else {
-	$Run_Now_Checked = '';
-	$Run_Now_Disabled = 'disabled';
-}
-if ($On_Failure_Add) {
-	$On_Failure_Kill = 'checked';
-}
-else {
-	$On_Failure_Continue = 'checked';
-}
+	
+	my $Run_Now_Checked;
+	my $Run_Now_Disabled;
+	my $On_Failure_Continue;
+	my $On_Failure_Kill;
+	if ($Run_Toggle_Add eq 'on') {
+		$Run_Now_Checked = 'checked';
+		$Run_Now_Disabled = '';
+	}
+	else {
+		$Run_Now_Checked = '';
+		$Run_Now_Disabled = 'disabled';
+	}
+	if ($On_Failure_Add) {
+		$On_Failure_Kill = 'checked';
+	}
+	elsif ($On_Failure_Add eq 0) {
+		$On_Failure_Continue = 'checked';
+	}
+	else {
+		$On_Failure_Kill = 'checked';
+	}
 
 print <<ENDHTML;
 
@@ -1038,6 +1113,9 @@ function Run_Job_Toggle() {
 	{
 		document.Run_Command.User_Name_Add.disabled=false;
 		document.Run_Command.Password_Add.disabled=false;
+		document.Run_Command.SSH_Key.disabled=false;
+		document.Run_Command.Key_Lock_Phrase.disabled=false;
+		document.Run_Command.Key_Passphrase.disabled=false;
 		document.Run_Command.User_Name_Add.value="$User_Name_Add";
 		document.Run_Command.Password_Add.value="$Password_Add";
 		document.Run_Command.Run_Command_Final.value="Run Job";
@@ -1048,6 +1126,9 @@ function Run_Job_Toggle() {
 		document.Run_Command.Password_Add.disabled=true;
 		document.Run_Command.User_Name_Add.value="$User_Name_Add";
 		document.Run_Command.Password_Add.value="$Password_Add";
+		document.Run_Command.SSH_Key.disabled=true;
+		document.Run_Command.Key_Lock_Phrase.disabled=true;
+		document.Run_Command.Key_Passphrase.disabled=true;
 		document.Run_Command.Run_Command_Final.value="Queue Job";
 	}
 }
@@ -1057,6 +1138,68 @@ function Run_Job_Toggle() {
 <form action='/D-Shell/command-sets.cgi' name='Run_Command' method='post' >
 
 <table align = "center">
+
+	<tr>
+		<td style="text-align: right;">Add Type:</td>
+		<td></td>
+		<td colspan="3" style="text-align: left;">
+			<select name='Add_Host_Type_Temp_New' onchange='this.form.submit()' style="width: 300px">
+ENDHTML
+
+### Host Types
+
+	my $Type_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `type`
+		FROM `host_types`
+		ORDER BY `type` ASC"
+	);
+	$Type_List_Query->execute( );
+
+	print "<option value='' selected>--Select a Type--</option>";
+
+	while ( (my $ID, my $Type_Name) = my @Type_List_Query = $Type_List_Query->fetchrow_array() )
+	{
+		my $Type_Name_Character_Limited = substr( $Type_Name, 0, 40 );
+			if ($Type_Name_Character_Limited ne $Type_Name) {
+				$Type_Name_Character_Limited = $Type_Name_Character_Limited . '...';
+			}
+		print "<option value='$ID'>$Type_Name_Character_Limited</option>";
+	}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Add Group:</td>
+		<td></td>
+		<td colspan="3" style="text-align: left;">
+			<select name='Add_Host_Group_Temp_New' onchange='this.form.submit()' style="width: 300px">
+ENDHTML
+
+### Host Groups
+
+	my $Group_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `groupname`
+		FROM `host_groups`
+		WHERE `active` = 1
+		ORDER BY `groupname` ASC"
+	);
+	$Group_List_Query->execute( );
+
+	print "<option value='' selected>--Select a Group--</option>";
+
+	while ( (my $ID, my $Group_Name) = my @Group_List_Query = $Group_List_Query->fetchrow_array() )
+	{
+		my $Group_Name_Character_Limited = substr( $Group_Name, 0, 40 );
+			if ($Group_Name_Character_Limited ne $Group_Name) {
+				$Group_Name_Character_Limited = $Group_Name_Character_Limited . '...';
+			}
+		print "<option value='$ID'>$Group_Name_Character_Limited</option>";
+	}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
 	<tr>
 		<td style="text-align: right;">Add Host:</td>
 		<td></td>
@@ -1093,6 +1236,8 @@ print <<ENDHTML;
 			<table align = "center">
 				<tr>
 					<td style="padding-right: 15px">Host Name</td>
+					<td style="padding-right: 15px">Host Type</td>
+					<td style="padding-right: 15px">Host Groups</td>
 				</tr>
 				$Hosts
 			</table>
@@ -1137,7 +1282,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">Key:</td>
 		<td colspan="3" style="text-align: left;">
-			<select name='SSH_Key' style="width: 300px">
+			<select name='SSH_Key' style="width: 300px" $Run_Now_Disabled>
 ENDHTML
 
 ### Keys
@@ -1163,11 +1308,11 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">Key Lock Phrase:</td>
-		<td colspan='4'><input type="password" name="Key_Lock_Phrase" placeholder="DB Lock Phrase" style="width:100%"></td>
+		<td colspan='4'><input type="password" name="Key_Lock_Phrase" placeholder="DB Lock Phrase" style="width:100%" $Run_Now_Disabled></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Key Passphrase:</td>
-		<td colspan='4'><input type="password" name="Key_Passphrase" placeholder="Key Passphrase" style="width:100%"></td>
+		<td colspan='4'><input type="password" name="Key_Passphrase" placeholder="Key Passphrase" style="width:100%" $Run_Now_Disabled></td>
 	</tr>
 </table>
 
@@ -1191,6 +1336,7 @@ sub run_command {
 
 	$Add_Host_Temp_Existing =~ s/^,//;
 	$Add_Host_Temp_Existing =~ s/,$//;
+	$Add_Host_Temp_Existing =~ s/,/ /;
 
 	# Audit Log
 	my $DB_Management = DB_Management();
@@ -1212,28 +1358,25 @@ sub run_command {
 	if ($Run_Toggle_Add) {
 		if ($Password_Add) {
 			my $Password = enc($Password_Add);
-			system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -u $User_Name_Add -P $Password -f $On_Failure_Add -X ${Push_User_Name}");			
+			system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -u $User_Name_Add -P $Password -f $On_Failure_Add -X ${Push_User_Name}");			
 		}
 		elsif ($SSH_Key) {
 			$Key_Lock_Phrase =~ s/\s//g;
 			my $Lock = enc($Key_Lock_Phrase);
 			if ($Key_Passphrase) {
 				my $Passphrase = enc($Key_Passphrase);
-				system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -k $SSH_Key -L $Lock -K $Passphrase -f $On_Failure_Add -X ${Push_User_Name}");
+				system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -k $SSH_Key -L $Lock -K $Passphrase -f $On_Failure_Add -X ${Push_User_Name}");
 			}
 			else {
-				system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -k $SSH_Key -L $Lock -f $On_Failure_Add -X ${Push_User_Name}");
+				system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -k $SSH_Key -L $Lock -f $On_Failure_Add -X ${Push_User_Name}");
 			}
-
 		}
-
-
 	}
 	else {
-		system("./job-receiver.pl -c $Run_Command -H $Add_Host_Temp_Existing -f $On_Failure_Add -X ${Push_User_Name}");
+		system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -f $On_Failure_Add -X ${Push_User_Name}");
 	}
 
-}
+} # sub run_command
 
 sub html_diff_revision {
 
