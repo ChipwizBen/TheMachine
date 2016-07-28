@@ -173,6 +173,10 @@ sub write_reverse_proxy {
 <VirtualHost *:443>
     ServerName               $Server_Name
     SSLProxyEngine           On
+    SSLProxyVerify           none
+    SSLProxyCheckPeerCN      off
+    SSLProxyCheckPeerName    off
+    SSLProxyCheckPeerExpire  off
     ProxyRequests            Off
     ProxyPreserveHost        On
     ProxyPass                $Source    $Destination

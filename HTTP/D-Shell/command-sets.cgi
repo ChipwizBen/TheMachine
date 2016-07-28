@@ -300,6 +300,73 @@ print <<ENDHTML;
 
 <table align = "center">
 	<tr>
+		<td style="text-align: right;">Dependencies:</td>
+		<td style="text-align: left;">
+			<select name='Add_Command_Dependency_Temp_New' onchange='this.form.submit()' style="width: 400px">
+ENDHTML
+
+	print "<option value='' selected>--Select a Command Set Dependency--</option>";
+
+	my $Select_Dependency_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
+		FROM `command_sets`
+		ORDER BY `name`"
+	);
+
+	$Select_Dependency_Command_Sets->execute();
+
+
+	while ( my ($Command_Set_ID, $Command_Set_Name, $Command_Set_Revision) = $Select_Dependency_Command_Sets->fetchrow_array() )
+	{
+		if ($Command_Set_ID != $Edit_Command) { 
+			my $Command_Set_Character_Limited = substr( $Command_Set_Name, 0, 60 );
+				if ($Command_Set_Character_Limited ne $Command_Set_Name) {
+					$Command_Set_Character_Limited = $Command_Set_Character_Limited . '...';
+				}
+			print "<option value='$Command_Set_ID'>$Command_Set_Character_Limited [Rev. $Command_Set_Revision]</option>";
+		}
+	}
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+ENDHTML
+
+if ($Command_Set_Dependencies) {
+print <<ENDHTML;
+	<tr>
+		<td></td>
+		<td>
+			<table>
+				<tr>
+					<td align='left'>Command Set Dependencies</td>
+				</tr>
+				$Command_Set_Dependencies
+			</table>
+		</td>
+	</tr>
+
+ENDHTML
+}
+else {
+print <<ENDHTML;
+	<tr>
+		<td></td>
+		<td>
+			<table>
+				<tr>
+					<td style="color: #FFC600; padding-right: 15px">No Dependencies Defined</td>
+				</tr>
+			</table>
+		<td>
+	</tr>
+ENDHTML
+}
+
+print <<ENDHTML;
+	<tr>
+		<td colspan=2><hr width="50%"></td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Name:</td>
 		<td colspan="2"><input type='text' name='Command_Name_Add' value='$Command_Name_Add' style="width:100%" maxlength='128' placeholder="Update Command" required autofocus></td>
 	</tr>
@@ -319,61 +386,8 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">Description:</td>
 		<td colspan="2"><input type='text' name='Description_Add' value='$Command_Description_Add' style="width:100%" maxlength='1024' placeholder="This command set does bla bla."></td>
-	<tr>
-	<tr>
-		<td style="text-align: right;">Dependencies:</td>
-		<td style="text-align: left;">
-			<select name='Add_Command_Dependency_Temp_New' onchange='this.form.submit()' style="width: 400px">
-ENDHTML
-
-	print "<option value='' selected>--Select a Command Set Dependency--</option>";
-
-	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
-		FROM `command_sets`
-		ORDER BY `name`, `revision` + 0 ASC"
-	);
-
-	$Select_Command_Sets->execute();
-
-
-	while ( my ($Command_Set_ID, $Command_Set_Name, $Command_Set_Revision) = $Select_Command_Sets->fetchrow_array() )
-	{
-
-		my $Command_Set_Character_Limited = substr( $Command_Set_Name, 0, 60 );
-			if ($Command_Set_Character_Limited ne $Command_Set_Name) {
-				$Command_Set_Character_Limited = $Command_Set_Character_Limited . '...';
-			}
-		print "<option value='$Command_Set_ID'>$Command_Set_Character_Limited [Rev. $Command_Set_Revision]</option>";
-
-	}
-print <<ENDHTML;
-			</select>
-		</td>
 	</tr>
-
 </table>
-
-<hr width="50%">
-
-ENDHTML
-
-if ($Command_Set_Dependencies) {
-print <<ENDHTML;
-			<table align = "center">
-				<tr>
-					<td style="padding-right: 15px">Command Set Dependencies</td>
-				</tr>
-				$Command_Set_Dependencies
-			</table>
-ENDHTML
-}
-else {
-	print "<span style='text-align: left; color: #FFC600;'>No Command Set Dependencies</span>";
-}
-
-print <<ENDHTML;
-
-<hr width="50%">
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 	<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
@@ -582,16 +596,11 @@ foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 			$Command_Edit_Delete_Dependency_Link =~ s/\+/<MagicTagPlus>/g;
 			$Command_Edit_Delete_Dependency_Link =~ s/\'/<MagicTagSingleQuote>/g;
 			$Command_Edit_Delete_Dependency_Link =~ s/\;/<MagicTagSemiColon>/g;
-			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Command_Set_Name_Character_Limited [Rev. $Command_Set_Revision]"
+			$Command_Set_Dependencies = $Command_Set_Dependencies . "<tr><td  align='left' style='color: #00FF00;'>$Command_Set_Name_Character_Limited [Rev. $Command_Set_Revision]"
 				. " <a href='/D-Shell/command-sets.cgi?
 				Edit_Command=$Edit_Command&
-				Command_Name_Edit=$Command_Name_Edit&
-				Owner_Edit=$Command_Owner_Edit&
-				Command_Edit=$Command_Edit_Delete_Dependency_Link&
-				Description_Edit=$Command_Description_Edit&
 				Edit_Command_Dependency_Temp_Existing=$Edit_Command_Dependency_Temp_Existing&
-				Delete_Command_Edit_Dependency_Entry_ID=$Command_Set_Dependency&
-				Edit_Command=1
+				Delete_Command_Edit_Dependency_Entry_ID=$Command_Set_Dependency
 				' class='tooltip' text=\"Remove $Command_Set_Name from list\"><span style='color: #FFC600'>[Remove]</span></a>"
 				. "</td></tr>";
 	}
@@ -626,27 +635,6 @@ print <<ENDHTML;
 
 <table align = "center">
 	<tr>
-		<td style="text-align: right;">Name:</td>
-		<td colspan="2"><input type='text' name='Command_Name_Edit' value='$Command_Name_Edit' style="width:100%" maxlength='128' placeholder="Update Command" required autofocus></td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Used By:</td>
-		<td style="text-align: left;">
-			<select name='Owner_Edit' style="width: 200px">
-				<option value='0' selected>Everybody</option>
-				<option value='$User_ID' selected>Only Me</option>
-			</select>
-		</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Command(s):</td>
-		<td colspan="2"><textarea name="Command_Edit" style="width: 800px; height: 150px" placeholder="Command Set" required="">$Command_Edit</textarea></td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Description:</td>
-		<td colspan="2"><input type='text' name='Description_Edit' value='$Command_Description_Edit' style="width:100%" maxlength='1024' placeholder="This command set does bla bla."></td>
-	<tr>
-	<tr>
 		<td style="text-align: right;">Dependencies:</td>
 		<td style="text-align: left;">
 			<select name='Edit_Command_Dependency_Temp_New' onchange='this.form.submit()' style="width: 400px">
@@ -676,28 +664,65 @@ print <<ENDHTML;
 			</select>
 		</td>
 	</tr>
-
-</table>
-
-<hr width="50%">
-
 ENDHTML
 
 if ($Command_Set_Dependencies) {
 print <<ENDHTML;
-			<table align = "center">
+	<tr>
+		<td></td>
+		<td>
+			<table>
 				<tr>
-					<td style="padding-right: 15px">Command Set Dependencies</td>
+					<td align='left'>Command Set Dependencies</td>
 				</tr>
 				$Command_Set_Dependencies
 			</table>
+		</td>
+	</tr>
+
 ENDHTML
 }
 else {
-	print "<span style='text-align: left; color: #FFC600;'>No Command Set Dependencies</span>";
+print <<ENDHTML;
+	<tr>
+		<td></td>
+		<td>
+			<table>
+				<tr>
+					<td style="color: #FFC600; padding-right: 15px">No Dependencies Defined</td>
+				</tr>
+			</table>
+		<td>
+	</tr>
+ENDHTML
 }
 
 print <<ENDHTML;
+	<tr>
+		<td colspan=2><hr width="50%"></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Name:</td>
+		<td colspan="2"><input type='text' name='Command_Name_Edit' value='$Command_Name_Edit' style="width:100%" maxlength='128' placeholder="Update Command" required autofocus></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Used By:</td>
+		<td style="text-align: left;">
+			<select name='Owner_Edit' style="width: 200px">
+				<option value='0' selected>Everybody</option>
+				<option value='$User_ID' selected>Only Me</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Command(s):</td>
+		<td colspan="2"><textarea name="Command_Edit" style="width: 800px; height: 150px" placeholder="Command Set" required="">$Command_Edit</textarea></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Description:</td>
+		<td colspan="2"><input type='text' name='Description_Edit' value='$Command_Description_Edit' style="width:100%" maxlength='1024' placeholder="This command set does bla bla."></td>
+	<tr>
+</table>
 
 <hr width="50%">
 

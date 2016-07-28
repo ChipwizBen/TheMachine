@@ -405,7 +405,7 @@ sub html_job_log {
 			$Command =~ s/>/&gt;/g;
 			$Command =~ s/  /&nbsp;&nbsp;/g;
 			$Command =~ s/\r/<br \/>/g;
-			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)\$\=\*\@\:;]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Exit_Code = $Entries[1];
@@ -609,7 +609,7 @@ sub html_output {
 		);
 		$Select_Currently_Running_Command->execute($DBID);
 		my $Held_Running_Command = $Select_Currently_Running_Command->fetchrow_array();
-			$Held_Running_Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+			$Held_Running_Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)\$\=\*\@\:;]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Held_Running_Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 
 		### / Discover Currently Running Command

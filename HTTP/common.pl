@@ -50,6 +50,7 @@ sub Verbose {
 sub Very_Verbose {
 
 	# Turns on very verbose mode without having to directly trigger this on individual components
+	# Very verbose means very verbose. You have been warned...
 	# Default is 0 
 
 	my $Very_Verbose = 0;
@@ -67,6 +68,15 @@ sub Paper_Trail {
 	return $Paper_Trail;
 
 } # sub Paper_Trail
+
+sub System_Log_File {
+
+	# This is the system log file. This is where some system log and paper trail entires go.
+
+	my $System_Log_File = '../Storage/System/System_Log';
+	return $System_Log_File;
+
+} # sub System_Log_File
 
 sub Header {
 
@@ -949,33 +959,58 @@ sub Random_Alpha_Numeric_Password {
 	
 } # sub Random_Alpha_Numeric_Password
 
+sub System_Logger {
+
+	# This is the system logging function.
+
+	use POSIX qw(strftime);
+	my $Time_Stamp = strftime "%Y-%m-%d %H:%M:%S", localtime;
+	my $Paper_Trail = &Paper_Trail;
+	my $System_Log_File = &System_Log_File;
+	my $Filename = (caller(0))[1];
+	my $Line = (caller(0))[2];
+	my $Subroutine = $_[0];
+	my $Log_Entry = $_[1];
+	
+	if ($Paper_Trail) {
+		open( SysLog, ">>$System_Log_File" ) or die "Can't open $System_Log_File";
+		print SysLog "$Time_Stamp - $Filename $Subroutine $Line\t$Log_Entry\n";
+		close SysLog;
+	}
+
+} # sub System_Logger
+
 sub enc {
 
 	use MIME::Base64;
 	my $Query = $_[0];
 	my $Salt1 = Salt(10);
 	my $Salt2 = Salt(10);
+	$Query = "$Salt1$Query$Salt2";
 
-	my @Chars = split(" ", "1");
+	my $Subroutine = (caller(0))[3];
+	&System_Logger($Subroutine, "Query=$Query Salt1=$Salt1 Salt2=$Salt2");
+
+	my @Chars = split(" ", "5 6 7 8 9");
 	srand;
 
 	my $Random_Value;
 	my $Enc_Length = 1;
 	my $Loop_Limit;
 	for (my $i=1; $i <= $Enc_Length; $i++) {
-		$Random_Value = int(rand 1);
+		$Random_Value = int(rand 5);
 		$Loop_Limit .= $Chars[$Random_Value];
 	}
 
 	my $Loop=0;
 	while ($Loop != $Loop_Limit) {
 		$Loop++;
-		#$Query = encode_base64($Query);
-		$Query = encode_base64("$Salt1$Query$Salt2");
+		$Query = encode_base64($Query);
 		$Query =~ s/\n//g;
 	}
 
 	$Query =~ s/(.*)(...)$/$1T${Loop_Limit}m$2/g;
+	&System_Logger($Subroutine, "Return=$Query");
 	return $Query;
 
 } # sub enc
@@ -985,17 +1020,26 @@ sub dec {
 	use MIME::Base64;
 	my $Query = $_[0];
 
+	my $Subroutine = (caller(0))[3];
+	&System_Logger($Subroutine, "Query1=$Query");
+
 	my $Enc_Length = $Query;
 		$Enc_Length =~ s/.*T([0-9*])m...$/$1/;
 		$Query =~ s/(.*)T([0-9*])m(...)$/$1$3/;
+	&System_Logger($Subroutine, "Enc_Length=$Enc_Length; Query2=$Query");
+
 
 	for (my $i=1; $i <= $Enc_Length; $i++) {
 		$Query =~ s/\n//g;
 		$Query = decode_base64($Query);
 	}
+	&System_Logger($Subroutine, "Query3=$Query");
+
 
 	$Query =~ s/^.{10}//;
 	$Query =~ s/.{10}$//;
+	&System_Logger($Subroutine, "Return=$Query");
+
 	return $Query;
 
 } # sub dec

@@ -19,11 +19,6 @@ my $Add_Group_Final = $CGI->param("Add_Group_Final");
 my $Add_Host_Temp_New = $CGI->param("Add_Host_Temp_New");
 my $Add_Host_Temp_Existing = $CGI->param("Add_Host_Temp_Existing");
 my $Group_Name_Add = $CGI->param("Group_Name_Add");
-	$Group_Name_Add =~ s/\W//g;
-my $Expires_Toggle_Add = $CGI->param("Expires_Toggle_Add");
-my $Expires_Date_Add = $CGI->param("Expires_Date_Add");
-	$Expires_Date_Add =~ s/\s//g;
-	$Expires_Date_Add =~ s/[^0-9\-]//g;
 my $Active_Add = $CGI->param("Active_Add");
 
 my $Edit_Group = $CGI->param("Edit_Group");
@@ -31,11 +26,6 @@ my $Edit_Group_Final = $CGI->param("Edit_Group_Final");
 my $Edit_Host_Temp_New = $CGI->param("Edit_Host_Temp_New");
 my $Edit_Host_Temp_Existing = $CGI->param("Edit_Host_Temp_Existing");
 my $Group_Name_Edit = $CGI->param("Group_Name_Edit");
-	$Group_Name_Edit =~ s/\W//g;
-my $Expires_Toggle_Edit = $CGI->param("Expires_Toggle_Edit");
-my $Expires_Date_Edit = $CGI->param("Expires_Date_Edit");
-	$Expires_Date_Edit =~ s/\s//g;
-	$Expires_Date_Edit =~ s/[^0-9\-]//g;
 my $Active_Edit = $CGI->param("Active_Edit");
 
 my $Delete_Group = $CGI->param("Delete_Group");
@@ -319,9 +309,6 @@ print <<ENDHTML;
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 <li>Group Names must be unique and contain only a-z, A-Z, 0-9 and _ characters.</li>
-<li>Groups with an expiry set are automatically removed from sudoers at 23:59:59
-(or the next sudoers refresh thereafter) on the day of expiry. Expired entries are functionally
-equivalent to inactive entries. The date entry format is YYYY-MM-DD.</li>
 <li>Active Groups are eligible for sudoers inclusion.</li>
 </ul>
 
@@ -360,22 +347,17 @@ sub add_group {
 	}
 	### / Existing Group_Name Check
 
-	if ($Expires_Toggle_Add ne 'on') {
-		$Expires_Date_Add = '0000-00-00';
-	}
-
 	my $Group_Insert = $DB_IP_Allocation->prepare("INSERT INTO `host_groups` (
 		`id`,
 		`groupname`,
-		`expires`,
 		`active`,
 		`modified_by`
 	)
 	VALUES (
-		NULL, ?, ?, ?, ?
+		NULL, ?, ?, ?
 	)");
 
-	$Group_Insert->execute($Group_Name_Add, $Expires_Date_Add, $Active_Add, $User_Name);
+	$Group_Insert->execute($Group_Name_Add, $Active_Add, $User_Name);
 
 	my $Group_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
 
@@ -403,12 +385,6 @@ sub add_group {
 	}
 
 	# Audit Log
-	if ($Expires_Date_Add eq '0000-00-00') {
-		$Expires_Date_Add = 'not expire';
-	}
-	else {
-		$Expires_Date_Add = "expire on " . $Expires_Date_Add;
-	}
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
@@ -450,7 +426,7 @@ sub add_group {
 		?
 	)");
 	
-	$Audit_Log_Submission->execute("Host Groups", "Add", "$User_Name added $Group_Name_Add, set it $Active_Add and to $Expires_Date_Add. $Host_Count hosts were attached$Hosts_Attached. The system assigned it Host Group ID $Group_Insert_ID.", $User_Name);
+	$Audit_Log_Submission->execute("Host Groups", "Add", "$User_Name added $Group_Name_Add and set it $Active_Add. $Host_Count hosts were attached$Hosts_Attached. The system assigned it Host Group ID $Group_Insert_ID.", $User_Name);
 	# / Audit Log
 
 	return($Group_Insert_ID, $Host_Count);
@@ -712,9 +688,6 @@ print <<ENDHTML;
 <li>Group Names must be unique and contain only a-z, A-Z, 0-9 and _ characters.</li>
 <li>You can only activate a modified command if you are an Approver.
 If you are not an Approver and you modify this entry, it will automatically be set to Inactive.</li>
-<li>Groups with an expiry set are automatically removed from sudoers at 23:59:59
-(or the next sudoers refresh thereafter) on the day of expiry. Expired entries are functionally
-equivalent to inactive entries. The date entry format is YYYY-MM-DD.</li>
 <li>Active Groups are eligible for sudoers inclusion.</li>
 </ul>
 
@@ -771,17 +744,12 @@ sub edit_group {
 
 	### / Revoke Rule Approval ###
 
-	if ($Expires_Toggle_Edit ne 'on') {
-		$Expires_Date_Edit = '0000-00-00';
-	}
-
 	my $Update_Group = $DB_IP_Allocation->prepare("UPDATE `host_groups` SET
 		`groupname` = ?,
-		`expires` = ?,
 		`active` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
-	$Update_Group->execute($Group_Name_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_Group);
+	$Update_Group->execute($Group_Name_Edit, $Active_Edit, $User_Name, $Edit_Group);
 
 	$Edit_Host_Temp_Existing =~ s/,$//;
 	my @Hosts = split(',', $Edit_Host_Temp_Existing);
@@ -801,18 +769,12 @@ sub edit_group {
 			?,
 			?
 		)");
-		
+
 		$Host_Insert->execute($Edit_Group, $Host);
 
 	}
 
 	# Audit Log
-	if ($Expires_Date_Edit eq '0000-00-00') {
-		$Expires_Date_Edit = 'does not expire';
-	}
-	else {
-		$Expires_Date_Edit = "expires on " . $Expires_Date_Edit;
-	}
 
 	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
 
@@ -855,7 +817,7 @@ sub edit_group {
 		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified Host Group ID $Edit_Group, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 	}
 
-	$Audit_Log_Submission->execute("Host Groups", "Modify", "$User_Name modified Host Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit, set $Active_Edit and $Expires_Date_Edit. $Host_Count new hosts were attached$Hosts_Attached.", $User_Name);
+	$Audit_Log_Submission->execute("Host Groups", "Modify", "$User_Name modified Host Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit and set $Active_Edit. $Host_Count new hosts were attached$Hosts_Attached.", $User_Name);
 	# / Audit Log
 
 	return($Host_Count);
@@ -937,53 +899,31 @@ sub delete_group {
 
 	$Select_Hosts->execute($Delete_Group_Confirm);
 
-	### Revoke Rule Approval ###
+	my ($Group_Name, $Active) = $Select_Hosts->fetchrow_array();
 
-	my $Update_Rule = $DB_IP_Allocation->prepare("UPDATE `rules`
-	INNER JOIN `lnk_rules_to_host_groups`
-	ON `rules`.`id` = `lnk_rules_to_host_groups`.`rule`
-	SET
-	`modified_by` = '$User_Name',
-	`approved` = '0',
-	`approved_by` = 'Approval Revoked by $User_Name when deleting Host Group ID $Delete_Group_Confirm'
-	WHERE `lnk_rules_to_host_groups`.`host_group` = ?");
+	if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
+	$Hosts_Attached =~ s/,\s$//;
 
-	my $Rules_Revoked = $Update_Rule->execute($Delete_Group_Confirm);
-
-	if ($Rules_Revoked eq '0E0') {$Rules_Revoked = 0}
-
-	### / Revoke Rule Approval ###
-
-	while ( my($Group_Name, $Active) = $Select_Hosts->fetchrow_array() )
-	{
-
-		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
-		$Hosts_Attached =~ s/,\s$//;
-
-		if ($Hosts_Attached) {
-			$Hosts_Attached = "the following hosts attached: " . $Hosts_Attached . ".";
-		}
-		else {
-			$Hosts_Attached = 'no hosts attached.';
-		}
-
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
-
-		if ($Rules_Revoked > 0) {
-			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Host Group ID $Delete_Group_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
-		}
-		$Audit_Log_Submission->execute("Host Groups", "Delete", "$User_Name deleted Host Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name and set $Active. It had $Hosts_Attached", $User_Name);
-
+	if ($Hosts_Attached) {
+		$Hosts_Attached = "the following hosts attached: " . $Hosts_Attached . ".";
 	}
+	else {
+		$Hosts_Attached = 'no hosts attached.';
+	}
+
+	my $DB_Management = DB_Management();
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+
+	$Audit_Log_Submission->execute("Host Groups", "Delete", "$User_Name deleted Host Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name and set $Active. It had $Hosts_Attached", $User_Name);
+
 	# / Audit Log
 
 	my $Delete_Group = $DB_IP_Allocation->prepare("DELETE from `host_groups`
@@ -1005,50 +945,28 @@ sub delete_group {
 
 sub delete_host {
 
-	### Revoke Rule Approval ###
-
-	my $Update_Rule = $DB_IP_Allocation->prepare("UPDATE `rules`
-	INNER JOIN `lnk_rules_to_host_groups`
-	ON `rules`.`id` = `lnk_rules_to_host_groups`.`rule`
-	SET
-	`modified_by` = '$User_Name',
-	`approved` = '0',
-	`approved_by` = 'Approval Revoked by $User_Name when modifying Host Group ID $Delete_Host_From_Group_ID'
-	WHERE `lnk_rules_to_host_groups`.`host_group` = ?");
-
-	my $Rules_Revoked = $Update_Rule->execute($Delete_Host_From_Group_ID);
-
-	if ($Rules_Revoked eq '0E0') {$Rules_Revoked = 0}
-
-	### / Revoke Rule Approval ###
-
 	# Audit Log
-	my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`, `ip`
+	my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
 		FROM `hosts`
 		WHERE `id` = ?");
 
 	$Select_Hosts->execute($Delete_Host_ID);
 
-	while (( my $Hostname, my $IP ) = $Select_Hosts->fetchrow_array() )
-	{
+	my $Hostname = $Select_Hosts->fetchrow_array();
 	
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+	my $DB_Management = DB_Management();
+	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
 
-		if ($Rules_Revoked > 0) {
-			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Host ID $Delete_Host_ID from Host Group ID $Delete_Host_From_Group_ID, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
-		}
-		$Audit_Log_Submission->execute("Host Groups", "Delete", "$User_Name removed $Hostname ($IP) [Host ID $Delete_Host_ID] from Host Group $Delete_Host_From_Group_Name [Host Group ID $Delete_Host_From_Group_ID].", $User_Name);
+	$Audit_Log_Submission->execute("Host Groups", "Delete", "$User_Name removed $Hostname [Host ID $Delete_Host_ID] from Host Group $Delete_Host_From_Group_Name [Host Group ID $Delete_Host_From_Group_ID].", $User_Name);
 
-	}
 	# / Audit Log
 
 	my $Delete_Host = $DB_IP_Allocation->prepare("DELETE from `lnk_host_groups_to_hosts`
@@ -1130,6 +1048,33 @@ sub html_output {
 			
 			my $Host_ID = $Select_Links[0];
 
+			### Group Query
+			my $Group_Link_Query = $DB_IP_Allocation->prepare("SELECT `group`
+				FROM `lnk_host_groups_to_hosts`
+				WHERE `host` = ?");
+			$Group_Link_Query->execute($Host_ID);
+	
+				my $Groups;
+				while ( my $Host_Group = $Group_Link_Query->fetchrow_array() ) {
+					my $Group_Query = $DB_IP_Allocation->prepare("SELECT `groupname`, `active`
+						FROM `host_groups`
+						WHERE `id` = ?");
+					$Group_Query->execute($Host_Group);
+					while ( my ($Group_Name, $Group_Active) = $Group_Query->fetchrow_array() ) {
+						my $Group_Name_Character_Limited = substr( $Group_Name, 0, 40 );
+						if ($Group_Name_Character_Limited ne $Group_Name) {
+							$Group_Name_Character_Limited = $Group_Name_Character_Limited . '...';
+						}
+						if ($Group_Active) {
+							$Groups = $Groups . $Group_Name_Character_Limited. ', ';
+						}
+						else {
+							$Groups = $Groups . $Group_Name_Character_Limited. ' [Inactive], ';
+						}
+					}
+				}
+				$Groups =~ s/,\s$//;
+
 			my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
 				FROM `hosts`
 				WHERE `id` = ?"
@@ -1149,12 +1094,13 @@ sub html_output {
 					WHERE `id` LIKE ?");
 					$Select_Type->execute($Type);
 					$Type = $Select_Type->fetchrow_array();
-					$Host = "<a href='/IP/hosts.cgi?ID_Filter=$Host_ID'><span style='color: #00FF00'>$Host (</span><span style='color: #B1B1B1'>$Type</span><span style='color: #00FF00'>)</span></a>";
+					$Host = "<a href='/IP/hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"Type: $Type\nGroup Membership:\n$Groups\"><span style='color: #00FF00'>$Host</span></a>";
 				}
 				else {
-					$Host = "<a href='/IP/hosts.cgi?ID_Filter=$Host_ID'><span style='color: #00FF00'>$Host</span></a>";
+					$Type = 'undefined';
+					$Host = "<a href='/IP/hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"Type: $Type\nGroup Membership:\n$Groups\"><span style='color: #00FF00'>$Host</span></a>";
 				}
-				$Hosts = $Hosts . $Host . "&nbsp;&nbsp;&nbsp;" . "<a href='/IP/host-groups.cgi?Delete_Host_ID=$Host_ID&Delete_Host_From_Group_ID=$DBID_Clean&Delete_Host_Name=$Host_Clean&Delete_Host_From_Group_Name=$Group_Name_Clean'><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
+				$Hosts = $Hosts . $Host . "&nbsp;&nbsp;&nbsp;" . "<a href='/IP/host-groups.cgi?Delete_Host_ID=$Host_ID&Delete_Host_From_Group_ID=$DBID_Clean&Delete_Host_Name=$Host_Clean&Delete_Host_From_Group_Name=$Group_Name_Clean' class='tooltip' text=\"Delete $Host_Clean from $Group_Name_Clean.\"><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
 
 			}
 		}

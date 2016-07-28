@@ -431,7 +431,7 @@ sub host_connection {
 	
 		$Attempts++;
 	
-		$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open|closed|filtered'`;
+		$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
 		sleep 1;
 	
 		if ($Attempts >= 10) {
@@ -464,7 +464,7 @@ sub host_connection {
 				log_file => $DShell_Transactional_File,
 				timeout => $Connection_Timeout,
 				exp_internal => $Very_Verbose,
-				exp_debug => 0,
+				exp_debug => $Very_Verbose,
 				raw_pty => 1,
 				restart_timeout_upon_receive => 1
 			);
@@ -492,7 +492,7 @@ sub host_connection {
 				log_file => $DShell_Transactional_File,
 				timeout => $Connection_Timeout,
 				exp_internal => $Very_Verbose,
-				exp_debug => 0,
+				exp_debug => $Very_Verbose,
 				raw_pty => 1,
 				restart_timeout_upon_receive => 1,
 				ssh_option => "-i $DShell_tmp_Location/tmp.$Discovered_Job_ID"
@@ -896,7 +896,6 @@ sub processor {
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending '${Yellow}$Send${Green}'${Clear}\n";
 			}
 			$Command_Output = "'$Send' sent.";
-			#if ($Send eq '') {$Send = "\n\0"};
 			$Connected_Host->send($Send);
 			$Exit_Code = 0;
 		}
@@ -929,10 +928,18 @@ sub processor {
 				$Connected_Host->send(' echo $PS1');
 			}
 
-			$Command =~ s/\*REBOOT/reboot/g;
+			$Command =~ s/\*REBOOT/shutdown -r 1/g;
 			$Connected_Host->send($Command);
 
+			my $Match;
 			if ($Reboot_Required) {
+			 	if ($Verbose == 1) {
+					$Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for a moment to watch for potential reboot...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for a moment to watch for potential reboot...${Clear}\n";
+				}
+				sleep 50;
+				eval { $Match = $Connected_Host->waitfor(".*Shutdown scheduled for.*", 10, '-re'); };
 				eval { $Command_Output = $Connected_Host->read_all(); }; $Connected_Host = &reboot_control($Host) if $@;
 			}
 			else {
@@ -944,21 +951,29 @@ sub processor {
 			$Connected_Host->send(' echo $PS1');
 			#eval { $Connected_Host->exec(' echo $PS1', 1); }; $Connected_Host = &reboot_control($Host) if $@;
 
-			my $Match;
 			if ($Reboot_Required) {
-				eval { $Match = $Connected_Host->waitfor($Predictable_Prompt, $Wait_Timeout, '-ex'); }; $Connected_Host = &reboot_control($Host) if $@;
-				eval { $Command_Output = $Command_Output . $Connected_Host->before(); }; $Connected_Host = &reboot_control($Host) if $@;
-				if (!$Match) {
+				if ($Match) {
 				 	if ($Verbose == 1) {
 						$Time_Stamp = strftime "%H:%M:%S", localtime;
-						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Lost the remote prompt. This was expected. Executing a controlled reboot... ${Clear}\n";
-						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Lost the remote prompt. This was expected. Executing a controlled reboot... ${Clear}\n";
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System is rebooting...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System is rebooting...${Clear}\n";
 					}
+					eval { $Command_Output = $Command_Output . $Connected_Host->before(); };
+					sleep 60;
 					$Connected_Host = &reboot_control($Host);
+				}
+				else {
+				 	if ($Verbose == 1) {
+						$Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System does not seem to be rebooting. Continuing...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System does not seem to be rebooting. Continuing...${Clear}\n";
+						eval { $Match = $Connected_Host->waitfor($Predictable_Prompt, $Wait_Timeout, '-ex'); }; &epic_failure('Wait (Reboot) Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@;
+						eval { $Command_Output = $Command_Output . $Connected_Host->before(); }; &epic_failure('PostPrompt (Reboot) Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@;
+					}
 				}
 			}
 			else {
-				eval { $Match = $Connected_Host->waitfor($Predictable_Prompt, $Wait_Timeout, '-ex'); };  &epic_failure('Wait Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@;
+				eval { $Match = $Connected_Host->waitfor($Predictable_Prompt, $Wait_Timeout, '-ex'); }; &epic_failure('Wait Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@;
 				eval { $Command_Output = $Command_Output . $Connected_Host->before(); }; &epic_failure('PostPrompt Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@;
 			}
 
@@ -1357,7 +1372,7 @@ sub reboot_control {
 			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempt ${Yellow}$Attempts${Green} at restarting SSH session... ${Clear}\n";
 			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempt ${Yellow}$Attempts${Green} at restarting SSH session... ${Clear}\n";
 		}
-		$SSH_Check=`$nmap $Reboot_Host -PN -p ssh | $grep -E 'open|closed|filtered'`;
+		$SSH_Check=`$nmap $Reboot_Host -PN -p ssh | $grep -E 'open'`;
 		sleep 1;
 	
 		if ($Attempts >= 1200) {
@@ -1389,7 +1404,7 @@ sub reboot_control {
 				log_file => $DShell_Transactional_File,
 				timeout => $Connection_Timeout,
 				exp_internal => $Very_Verbose,
-				exp_debug => 0,
+				exp_debug => $Very_Verbose,
 				raw_pty => 1,
 				restart_timeout_upon_receive => 1
 			);
@@ -1417,7 +1432,7 @@ sub reboot_control {
 				log_file => $DShell_Transactional_File,
 				timeout => $Connection_Timeout,
 				exp_internal => $Very_Verbose,
-				exp_debug => 0,
+				exp_debug => $Very_Verbose,
 				raw_pty => 1,
 				restart_timeout_upon_receive => 1,
 				ssh_option => "-i $DShell_tmp_Location/tmp.$Discovered_Job_ID"
