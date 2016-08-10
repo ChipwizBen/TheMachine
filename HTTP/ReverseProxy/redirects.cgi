@@ -17,6 +17,7 @@ my ($CGI, $Session, $Cookie) = CGI();
 my $Add_Redirect = $CGI->param("Add_Redirect");
 	my $Server_Name_Add = $CGI->param("Server_Name_Add");
 		$Server_Name_Add =~ s/\s//g;
+	my $Port_Add = $CGI->param("Port_Add");
 	my $Source_Add = $CGI->param("Source_Add");
 		$Source_Add =~ s/\s//g;
 	my $Destination_Add = $CGI->param("Destination_Add");
@@ -29,6 +30,7 @@ my $Add_Redirect = $CGI->param("Add_Redirect");
 my $Edit_Redirect = $CGI->param("Edit_Redirect");
 	my $Server_Name_Edit = $CGI->param("Server_Name_Edit");
 		$Server_Name_Edit =~ s/\s//g;
+	my $Port_Edit = $CGI->param("Port_Edit");
 	my $Source_Edit = $CGI->param("Source_Edit");
 		$Source_Edit =~ s/\s//g;
 	my $Destination_Edit = $CGI->param("Destination_Edit");
@@ -166,7 +168,7 @@ sub html_add_redirect {
 
 print <<ENDHTML;
 
-<div id="small-popup-box">
+<div id="wide-popup-box">
 <a href="/ReverseProxy/redirects.cgi">
 <div id="blockclosebutton">
 </div>
@@ -176,31 +178,35 @@ print <<ENDHTML;
 
 <form action='/ReverseProxy/redirects.cgi' name='Add_Redirect' method='post' >
 
-<table align = "center">
+<table align="center" width='90%'>
 	<tr>
 		<td style="text-align: right;">Server Name:</td>
-		<td colspan="2"><input type='text' name='Server_Name_Add' style="width:100%" maxlength='128' placeholder="FQDN" required autofocus></td>
+		<td><input type='text' name='Server_Name_Add' style="width:100%" maxlength='1024' placeholder="FQDN,Alias1,Alias2" required autofocus></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Port:</td>
+		<td align="left"><input type='text' name='Port_Add' style="width:50%" maxlength='5' placeholder="80" required></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Source:</td>
-		<td colspan="2"><input type='text' name='Source_Add' style="width:100%" placeholder="/mail" required></td>
+		<td><input type='text' name='Source_Add' style="width:100%" placeholder="/mail" required></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Destination:</td>
-		<td colspan="2"><input type='text' name='Destination_Add' style="width:100%" placeholder="http://mail.domain.com/" required></td>
+		<td><input type='text' name='Destination_Add' style="width:100%" placeholder="http://mail.domain.com/" required></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Transfer Log:</td>
-		<td colspan="2"><input type='text' name='Transfer_Log_Add' style="width:100%" placeholder="/var/log/domain-access.log"></td>
+		<td><input type='text' name='Transfer_Log_Add' style="width:100%" placeholder="/var/log/domain-access.log"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Error Log:</td>
-		<td colspan="2"><input type='text' name='Error_Log_Add' style="width:100%" placeholder="/var/log/domain-error.log"></td>
+		<td><input type='text' name='Error_Log_Add' style="width:100%" placeholder="/var/log/domain-error.log"></td>
 	</tr>
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-	<li>Server, Source and Destination must be defined.</li>
+	<li>Server, Source and Destination must be defined. You can defined aliases by comma seperating several server names.</li>
 </ul>
 
 <hr width="50%">
@@ -222,6 +228,7 @@ sub add_redirect {
 
 	my $Redirect_Insert = $DB_Reverse_Proxy->prepare("INSERT INTO `redirect` (
 		`server_name`,
+		`port`,
 		`redirect_source`,
 		`redirect_destination`,
 		`transfer_log`,
@@ -229,10 +236,10 @@ sub add_redirect {
 		`modified_by`
 	)
 	VALUES (
-		?, ?, ?, ?, ?, ?
+		?, ?, ?, ?, ?, ?, ?
 	)");
 
-	$Redirect_Insert->execute($Server_Name_Add, $Source_Add, $Destination_Add, $Transfer_Log_Add, $Error_Log_Add, $User_Name);
+	$Redirect_Insert->execute($Server_Name_Add, $Port_Add, $Source_Add, $Destination_Add, $Transfer_Log_Add, $Error_Log_Add, $User_Name);
 
 	my $Redirect_Insert_ID = $DB_Reverse_Proxy->{mysql_insertid};
 
@@ -248,7 +255,7 @@ sub add_redirect {
 		?, ?, ?, ?
 	)");
 	
-	$Audit_Log_Submission->execute("Redirect", "Add", "$User_Name added an entry from $Source_Add to $Destination_Add for $Server_Name_Add. The system assigned it Redirect ID $Redirect_Insert_ID.", $User_Name);
+	$Audit_Log_Submission->execute("Redirect", "Add", "$User_Name added an entry from $Source_Add to $Destination_Add for $Server_Name_Add on port $Port_Add. The system assigned it Redirect ID $Redirect_Insert_ID.", $User_Name);
 	# / Audit Log
 
 	return($Redirect_Insert_ID);
@@ -257,7 +264,7 @@ sub add_redirect {
 
 sub html_edit_redirect {
 
-	my $Select_Redirect = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `redirect_source`,
+	my $Select_Redirect = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `port`, `redirect_source`,
 		`redirect_destination`, `transfer_log`, `error_log`
 		FROM `redirect`
 		WHERE `id` = ?");
@@ -267,15 +274,16 @@ sub html_edit_redirect {
 	{
 
 		my $Server_Name = $Redirect_Values[0];
-		my $Source = $Redirect_Values[1];
-		my $Destination = $Redirect_Values[2];
-		my $Transfer_Log = $Redirect_Values[3];
-		my $Error_Log = $Redirect_Values[4];
+		my $Port = $Redirect_Values[1];
+		my $Source = $Redirect_Values[2];
+		my $Destination = $Redirect_Values[3];
+		my $Transfer_Log = $Redirect_Values[4];
+		my $Error_Log = $Redirect_Values[5];
 
 
 print <<ENDHTML;
 
-<div id="small-popup-box">
+<div id="wide-popup-box">
 <a href="/ReverseProxy/redirects.cgi">
 <div id="blockclosebutton">
 </div>
@@ -285,31 +293,35 @@ print <<ENDHTML;
 
 <form action='/ReverseProxy/redirects.cgi' name='Edit_Redirect' method='post' >
 
-<table align = "center">
+<table align="center" width='90%'>
 	<tr>
 		<td style="text-align: right;">Server Name:</td>
-		<td colspan="2"><input type='text' name='Server_Name_Edit' value='$Server_Name' style="width:100%" maxlength='128' placeholder="$Server_Name" required autofocus></td>
+		<td><input type='text' name='Server_Name_Edit' value='$Server_Name' style="width:100%" maxlength='1024' placeholder="$Server_Name" required autofocus></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Port:</td>
+		<td align="left"><input type='text' name='Port_Edit' value='$Port' style="width:50%" maxlength='5' placeholder="$Port" required></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Source:</td>
-		<td colspan="2"><input type='text' name='Source_Edit' value='$Source' style="width:100%" placeholder="$Source" required></td>
+		<td><input type='text' name='Source_Edit' value='$Source' style="width:100%" placeholder="$Source" required></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Destination:</td>
-		<td colspan="2"><input type='text' name='Destination_Edit' value='$Destination' style="width:100%" placeholder="$Destination" required></td>
+		<td><input type='text' name='Destination_Edit' value='$Destination' style="width:100%" placeholder="$Destination" required></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Transfer Log:</td>
-		<td colspan="2"><input type='text' name='Transfer_Log_Edit' value='$Transfer_Log' style="width:100%" placeholder="$Transfer_Log"></td>
+		<td><input type='text' name='Transfer_Log_Edit' value='$Transfer_Log' style="width:100%" placeholder="$Transfer_Log"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Error Log:</td>
-		<td colspan="2"><input type='text' name='Error_Log_Edit' value='$Error_Log' style="width:100%" placeholder="$Error_Log"></td>
+		<td><input type='text' name='Error_Log_Edit' value='$Error_Log' style="width:100%" placeholder="$Error_Log"></td>
 	</tr>
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-	<li>Server, Source and Destination must be defined.</li>
+	<li>Server, Source and Destination must be defined. You can defined aliases by comma seperating several server names.</li>
 </ul>
 
 <hr width="50%">
@@ -329,6 +341,7 @@ sub edit_redirect {
 
 	my $Update_Redirect = $DB_Reverse_Proxy->prepare("UPDATE `redirect` SET
 		`server_name` = ?,
+		`port` = ?,
 		`redirect_source` = ?,
 		`redirect_destination` = ?,
 		`transfer_log` = ?,
@@ -336,7 +349,7 @@ sub edit_redirect {
 		`modified_by` = ?
 		WHERE `id` = ?");
 		
-	$Update_Redirect->execute($Server_Name_Edit, $Source_Edit, $Destination_Edit, $Transfer_Log_Edit, $Error_Log_Edit,
+	$Update_Redirect->execute($Server_Name_Edit, $Port_Edit, $Source_Edit, $Destination_Edit, $Transfer_Log_Edit, $Error_Log_Edit,
 	$User_Name, $Edit_Redirect_Post);
 
 	# Audit Log
@@ -352,20 +365,20 @@ sub edit_redirect {
 	)");
 
 	$Audit_Log_Submission->execute("Redirect", "Modify", "$User_Name modified Redirect ID $Edit_Redirect_Post. 
-	It is now recorded as server $Server_Name_Edit, with a source of $Source_Edit and destination of $Destination_Edit.", $User_Name);
+	It is now recorded as server $Server_Name_Edit (port $Port_Edit), with a source of $Source_Edit and destination of $Destination_Edit.", $User_Name);
 	# / Audit Log
 
 } # sub edit_redirect
 
 sub html_delete_redirect {
 
-	my $Select_Redirect = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `redirect_source`, `redirect_destination`
+	my $Select_Redirect = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `port`, `redirect_source`, `redirect_destination`
 	FROM `redirect`
 	WHERE `id` = ?");
 
 	$Select_Redirect->execute($Delete_Redirect);
 	
-	while ( my ($Server_Name, $Redirect_Source, $Redirect_Destination) = $Select_Redirect->fetchrow_array() )
+	while ( my ($Server_Name, $Port, $Redirect_Source, $Redirect_Destination) = $Select_Redirect->fetchrow_array() )
 	{
 
 
@@ -383,7 +396,7 @@ print <<ENDHTML;
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Server:</td>
-		<td style="text-align: left; color: #00FF00;">$Server_Name</td>
+		<td style="text-align: left; color: #00FF00;">$Server_Name:$Port</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Source:</td>
@@ -465,11 +478,12 @@ sub html_output {
 		my $Total_Rows = $Select_Redirect_Count->rows();
 
 
-	my $Select_Reverse_Proxies = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `redirect_source`,
+	my $Select_Reverse_Proxies = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`,
 		`redirect_destination`, `transfer_log`, `error_log`, `last_modified`, `modified_by`
 		FROM `redirect`
 		WHERE `id` LIKE ?
 		OR `server_name` LIKE ?
+		OR `port` LIKE ?
 		OR `redirect_source` LIKE ?
 		OR `redirect_destination` LIKE ?
 		OR `transfer_log` LIKE ?
@@ -478,7 +492,7 @@ sub html_output {
 		LIMIT 0 , $Rows_Returned"
 	);
 
-	$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%", "%$Filter%",  
+	$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%",  
 		"%$Filter%", "%$Filter%", "%$Filter%");
 
 	my $Rows = $Select_Reverse_Proxies->rows();
@@ -494,20 +508,22 @@ sub html_output {
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Server_Name = $Select_Reverse_Proxies[1];
 			$Server_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Source = $Select_Reverse_Proxies[2];
+		my $Port = $Select_Reverse_Proxies[2];
+			$Port =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Source = $Select_Reverse_Proxies[3];
 			$Source =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Destination = $Select_Reverse_Proxies[3];
+		my $Destination = $Select_Reverse_Proxies[4];
 			$Destination =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Transfer_Log = $Select_Reverse_Proxies[4];
+		my $Transfer_Log = $Select_Reverse_Proxies[5];
 			$Transfer_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Error_Log = $Select_Reverse_Proxies[5];
+		my $Error_Log = $Select_Reverse_Proxies[6];
 			$Error_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Last_Modified = $Select_Reverse_Proxies[6];
-		my $Modified_By = $Select_Reverse_Proxies[7];
+		my $Last_Modified = $Select_Reverse_Proxies[7];
+		my $Modified_By = $Select_Reverse_Proxies[8];
 
 		$Table->addRow(
 			"$DBID",
-			"$Server_Name",
+			"$Server_Name:$Port",
 			"$Source",
 			"$Destination",
 			"$Transfer_Log",

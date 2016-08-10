@@ -264,7 +264,7 @@ function Enforce_SSL_Toggle(value) {
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Server Name:</td>
-		<td colspan="2"><input type='text' name='Server_Name_Add' style="width:100%" maxlength='128' placeholder="FQDN" required autofocus></td>
+		<td colspan="2"><input type='text' name='Server_Name_Add' style="width:100%" maxlength='1024' placeholder="FQDN,Alias1,Alias2" required autofocus></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Source:</td>
@@ -403,7 +403,7 @@ function Enforce_SSL_Toggle(value) {
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-	<li>Server, Source and Destination must be defined.</li>
+	<li>Server, Source and Destination must be defined. You can defined aliases by comma seperating several server names.</li>
 </ul>
 
 <hr width="50%">
@@ -610,7 +610,7 @@ function Enforce_SSL_Toggle(value) {
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Server Name:</td>
-		<td colspan="2"><input type='text' name='Server_Name_Edit' value='$Server_Name' style="width:100%" maxlength='128' placeholder="$Server_Name" required autofocus></td>
+		<td colspan="2"><input type='text' name='Server_Name_Edit' value='$Server_Name' style="width:100%" maxlength='1024' placeholder="$Server_Name" required autofocus></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Source:</td>
@@ -850,7 +850,7 @@ print <<ENDHTML;
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-	<li>Server, Source and Destination must be defined.</li>
+	<li>Server, Source and Destination must be defined. You can defined aliases by comma seperating several server names.</li>
 </ul>
 
 <hr width="50%">
@@ -1096,7 +1096,7 @@ sub html_view_reverse_proxy {
         RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
     </IfModule>
     <IfModule !mod_rewrite.c>
-        Redirect                 /       https://$Server_Name
+        Redirect             /    https://$Server_Name
     </IfModule>";
 			}	
 
@@ -1286,14 +1286,14 @@ sub html_output {
 		my $Source = $Select_Reverse_Proxies[2];
 			$Source =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Destination = $Select_Reverse_Proxies[3];
-			$Destination =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+			$Destination =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #FFFFFF'>$2<\/span>$3/gi;
 		my $Transfer_Log = $Select_Reverse_Proxies[4];
 			my $Transfer_Log_Clean = $Transfer_Log;
 			$Transfer_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 				if (!$Transfer_Log_Clean) {$Transfer_Log = "$Default_Transfer_Log <span style=\"color: #FF8A00\">[Default]</span>"}
 		my $Error_Log = $Select_Reverse_Proxies[5];
 			my $Error_Log_Clean = $Error_Log;
-			$Error_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+			$Error_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #FFFFFF'>$2<\/span>$3/gi;
 				if (!$Error_Log_Clean) {$Error_Log = "$Default_Error_Log <span style=\"color: #FF8A00\">[Default]</span>"}
 		my $SSL_Certificate_File = $Select_Reverse_Proxies[6];
 			my $SSL_Certificate_File_Clean = $SSL_Certificate_File;

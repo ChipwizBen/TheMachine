@@ -396,6 +396,7 @@ sub html_job_log {
 
 	$Select_Log_Entries->execute($Job_Log);
 
+	use charnames qw[ :full ];
 	my $Row_Count;
 	while ( my @Entries = $Select_Log_Entries->fetchrow_array() )
 	{
@@ -630,7 +631,7 @@ sub html_output {
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 2) {
-			$Running_Command = 'None, Processing Paused...';
+			$Running_Command = 'None, Processing Paused.';
 			$Status = 'Paused';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Resume_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
@@ -648,7 +649,7 @@ sub html_output {
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 5) {
-			$Running_Command = 'Job Failed! Connection timout, network or host resolution problems are the most likely causes. Try running it manually.';
+			$Running_Command = 'Job Failed! Connection timeout, network or host resolution problems are the most likely causes. Try running it manually.';
 			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
@@ -679,7 +680,7 @@ sub html_output {
 		}
 		elsif ($Status == 10) {
 			$Running_Command = $Held_Running_Command;
-			$Status = 'Starting...';
+			$Status = 'Starting';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
@@ -762,7 +763,7 @@ sub html_output {
 		if ($Status eq 'Job Complete') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowdarkgreen');}
 		if ($Status eq 'Running') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgreen');}
 		if ($Status eq 'Killed') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowred');}
-		if ($Status eq 'Starting...') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgreen');}
+		if ($Status eq 'Starting') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgreen');}
 		if ($Status eq 'Paused') {$Table->setCellClass ($Job_Row_Count, 6, 'tbroworange');}
 		if ($Status eq 'Pending') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgrey');}
 		if ($Status eq 'Error') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowred');}

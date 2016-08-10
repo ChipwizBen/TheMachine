@@ -105,7 +105,7 @@ sub DNS_Server {
 
 sub LDAP_Login {
 
-	# These are the connection paremeters for LDAP / Active Directory. If you disable this, the system will use internal authentication.
+	# These are the connection parameters for LDAP / Active Directory. If you disable this, the system will use internal authentication.
 
 	my $LDAP_Enabled = 'On'; # Set this to 'Off' to disable LDAP/AD authentication
 
@@ -263,7 +263,7 @@ sub DNS_Internal_Location {
 sub DNS_External_Location {
 
 	# This is the path that the system writes the temporary External DNS files to, before it is picked up by cron.
-	# If this server is the master DNS server, this path could be the path to the DNS config. 
+	# If this server is the master DNS server, this path could be the path to the DNS config.
 
 	my $DNS_External_Location = '/etc/bind/master';
 	return $DNS_External_Location;
@@ -375,7 +375,7 @@ sub DNS_Storage {
 
 	# This is the directory where replaced DNS files are stored. You do not need a trailing slash.
 
-	my $DNS_Storage = '/var/www/html/Storage/DNS';
+	my $DNS_Storage = '../Storage/DNS';
 	return $DNS_Storage;
 
 } # sub DNS_Storage
@@ -419,7 +419,7 @@ sub Reverse_Proxy_Location {
 	# This is the path that the system writes the temporary reverse proxy files to, before it is picked up by cron.
 	# If this server is the master reverse proxy server, this path could be the path to the reverse proxy config.
 
-	my $Reverse_Proxy_Location = '/tmp/reverse-proxy';
+	my $Reverse_Proxy_Location = '../Storage/tmp/ReverseProxy';
 	return $Reverse_Proxy_Location;
 
 } # sub Reverse_Proxy_Location
@@ -429,7 +429,7 @@ sub Proxy_Redirect_Location {
 	# This is the path that the system writes the temporary proxy redirect files to, before it is picked up by cron.
 	# If this server is the master reverse proxy server, this path could be the path to the proxy redirect config.
 
-	my $Proxy_Redirect_Location = '/tmp/proxy-redirect';
+	my $Proxy_Redirect_Location = '../Storage/tmp/ReverseProxy';
 	return $Proxy_Redirect_Location;
 
 } # sub Proxy_Redirect_Location
@@ -469,6 +469,15 @@ sub DShell_tmp_Location {
 	return $DShell_tmp_Location;
 
 } # sub DShell_tmp_Location
+
+sub DShell_WaitFor_Timeout {
+
+	# The default time that a *WAITFOR statement will wait before bailing out. Can be overridden manually by issuing *WAITFORnn, where nn is the timeout in seconds. nn can be any number.
+
+	my $DShell_WaitFor_Timeout = 900;
+	return $DShell_WaitFor_Timeout;
+
+} # sub DShell_WaitFor_Timeout
 
 sub DB_Management {
 
@@ -612,7 +621,7 @@ sub DB_DShell {
 
 sub Reverse_Proxy_Defaults {
 
-	# These are the default reverse proxy values for entires without custom parameters.
+	# These are the default reverse proxy values for entries without custom parameters.
 
 	my $Transfer_Log = '/var/log/apache/access.log';
 	my $Error_Log = '/var/log/apache/error.log';
@@ -626,7 +635,7 @@ sub Reverse_Proxy_Defaults {
 
 sub Redirect_Defaults {
 
-	# These are the default proxy redirect values for entires without custom parameters.
+	# These are the default proxy redirect values for entries without custom parameters.
 
 	my $Transfer_Log = '/var/log/apache/access.log';
 	my $Error_Log = '/var/log/apache/error.log';

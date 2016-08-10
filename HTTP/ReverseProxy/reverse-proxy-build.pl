@@ -116,6 +116,14 @@ sub write_reverse_proxy {
 		my $Last_Modified = $Proxy_Entry[13];
 		my $Modified_By = $Proxy_Entry[14];
 
+		my $ServerAliases;
+		my @ServerAliases = split(',', $Server_Name);
+		$Server_Name = shift @ServerAliases;
+		foreach my $Alias (@ServerAliases) {
+			$ServerAliases = $ServerAliases . "\n    ServerAlias			$Alias";
+		}
+		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
+
 		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
 		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
 
@@ -127,11 +135,11 @@ sub write_reverse_proxy {
 			my $CipherOrder;
 			my $CipherSuite;
 			if ($PFS && $RC4) {
-				$CipherOrder = 'SSLHonorCipherOrder on';
+				$CipherOrder = 'SSLHonorCipherOrder	on';
 				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS";
 			}
 			elsif ($PFS && !$RC4) {
-				$CipherOrder = 'SSLHonorCipherOrder on';
+				$CipherOrder = 'SSLHonorCipherOrder	on';
 				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4";
 			}
 			else {
@@ -141,15 +149,15 @@ sub write_reverse_proxy {
 
 			my $Enforce_SSL_Header;
 			if ($Enforce_SSL) {
-				$Enforce_SSL_Header = '
+				$Enforce_SSL_Header = "
     <IfModule mod_rewrite.c>
-        RewriteEngine On
-        RewriteCond %{HTTPS} off
-        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+        RewriteEngine	On
+        RewriteCond		%{HTTPS} off
+        RewriteRule		(.*)	https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
     </IfModule>
     <IfModule !mod_rewrite.c>
-        Redirect                 /       https://$Server_Name
-    </IfModule>';
+        Redirect		/	https://$Server_Name
+    </IfModule>";
 			}	
 			 
 
@@ -163,38 +171,38 @@ sub write_reverse_proxy {
 #Header always append X-Frame-Options SAMEORIGIN
 
 			print Reverse_Proxy_Config <<RP_EOF;
+## Reverse Proxy ID $ID, last modified $Last_Modified by $Modified_By
 <VirtualHost *:80>
-	ServerName               $Server_Name
+    $Server_Names
 	$Enforce_SSL_Header
-
 </VirtualHost>
 
 <IfModule mod_ssl.c>
 <VirtualHost *:443>
-    ServerName               $Server_Name
-    SSLProxyEngine           On
-    SSLProxyVerify           none
-    SSLProxyCheckPeerCN      off
-    SSLProxyCheckPeerName    off
-    SSLProxyCheckPeerExpire  off
-    ProxyRequests            Off
-    ProxyPreserveHost        On
-    ProxyPass                $Source    $Destination
-    ProxyPassReverse         $Source    $Destination
+    $Server_Names
+    SSLProxyEngine		On
+    SSLProxyVerify		none
+    SSLProxyCheckPeerCN		off
+    SSLProxyCheckPeerName	off
+    SSLProxyCheckPeerExpire	off
+    ProxyRequests		Off
+    ProxyPreserveHost		On
+    ProxyPass			$Source	$Destination
+    ProxyPassReverse		$Source	$Destination
 
-    SSLEngine                On
+    SSLEngine			On
     $HSTS_Header
-    SSLProtocol              ALL -SSLv2 -SSLv3
+    SSLProtocol			ALL -SSLv2 -SSLv3
     $CipherOrder
-    SSLCipherSuite           "$CipherSuite"
-    SSLInsecureRenegotiation Off
+    SSLCipherSuite		"$CipherSuite"
+    SSLInsecureRenegotiation	Off
 
-    SSLCertificateFile       $SSL_Certificate_File
-    SSLCertificateKeyFile    $SSL_Certificate_Key_File
-    SSLCACertificateFile     $SSL_CA_Certificate_File
+    SSLCertificateFile		$SSL_Certificate_File
+    SSLCertificateKeyFile	$SSL_Certificate_Key_File
+    SSLCACertificateFile	$SSL_CA_Certificate_File
 
-    TransferLog              $Transfer_Log
-    ErrorLog                 $Error_Log
+    TransferLog			$Transfer_Log
+    ErrorLog			$Error_Log
 </VirtualHost>
 </IfModule>
 
@@ -203,14 +211,14 @@ RP_EOF
 		else {
 			print Reverse_Proxy_Config <<RP_EOF;
 <VirtualHost *:80>
-    ServerName            $Server_Name
-    ProxyEngine           On
-    ProxyRequests         Off
-    ProxyPreserveHost     On
-    ProxyPass             $Source    $Destination
-    ProxyPassReverse      $Source    $Destination
-    TransferLog           $Transfer_Log
-    ErrorLog              $Error_Log
+    $Server_Names
+    ProxyEngine			On
+    ProxyRequests		Off
+    ProxyPreserveHost		On
+    ProxyPass			$Source	$Destination
+    ProxyPassReverse		$Source	$Destination
+    TransferLog			$Transfer_Log
+    ErrorLog			$Error_Log
 </VirtualHost>
 
 RP_EOF
@@ -242,7 +250,7 @@ sub write_redirect {
 	print Redirect_Config "### This file is for proxy redirect entries ###\n\n";
 
 
-	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `redirect_source`, `redirect_destination`, 
+	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`, `redirect_destination`, 
 	`transfer_log`, `error_log`, `last_modified`, `modified_by`
 	FROM `redirect`
 	WHERE `active` = '1'
@@ -253,23 +261,33 @@ sub write_redirect {
 	{
 		my $ID = $Proxy_Entry[0];
 		my $Server_Name = $Proxy_Entry[1];
-		my $Source = $Proxy_Entry[2];
-		my $Destination = $Proxy_Entry[3];
-		my $Transfer_Log = $Proxy_Entry[4];
-		my $Error_Log = $Proxy_Entry[5];
-		my $Last_Modified = $Proxy_Entry[6];
-		my $Modified_By = $Proxy_Entry[7];
+		my $Port = $Proxy_Entry[2];
+		my $Source = $Proxy_Entry[3];
+		my $Destination = $Proxy_Entry[4];
+		my $Transfer_Log = $Proxy_Entry[5];
+		my $Error_Log = $Proxy_Entry[6];
+		my $Last_Modified = $Proxy_Entry[7];
+		my $Modified_By = $Proxy_Entry[8];
 
 		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
 		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
 
+		my $ServerAliases;
+		my @ServerAliases = split(',', $Server_Name);
+		$Server_Name = shift @ServerAliases;
+		foreach my $Alias (@ServerAliases) {
+			$ServerAliases = $ServerAliases . "\n    ServerAlias			$Alias";
+		}
+		$Server_Name = "ServerName			$Server_Name";
+		my $Server_Names = $Server_Name . $ServerAliases;
 
 		print Redirect_Config <<RP_EOF;
-<VirtualHost $Server_Name:80>
-    ServerName               $Server_Name
-    Redirect                 $Source       $Destination
-    TransferLog              $Transfer_Log
-    ErrorLog                 $Error_Log
+## Redirect ID $ID, last modified $Last_Modified by $Modified_By
+<VirtualHost *:$Port>
+    $Server_Names
+    Redirect			$Source	$Destination
+    TransferLog			$Transfer_Log
+    ErrorLog			$Error_Log
 </VirtualHost>
 
 RP_EOF
@@ -277,6 +295,6 @@ RP_EOF
 
 print Redirect_Config "\n";
 close Redirect_Config;
-	
+
 } # sub write_redirect
 

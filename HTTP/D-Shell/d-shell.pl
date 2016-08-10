@@ -24,7 +24,7 @@ my $grep = sudo_grep();
 my $Override = 0;
 my $Ignore_Bad_Exit_Code = 0;
 my $No_Decode;
-my $Wait_Timeout = 900;
+my $Wait_Timeout = DShell_WaitFor_Timeout();
 my $Retry_Count = 0;
 my $Max_Retry_Count = 10;
 my $Connection_Timeout = 5;
