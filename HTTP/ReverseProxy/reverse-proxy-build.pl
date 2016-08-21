@@ -4,14 +4,17 @@ use strict;
 use POSIX qw(strftime);
 
 require '../common.pl';
-my $DB_Management = DB_Management();
-my $DB_Reverse_Proxy = DB_Reverse_Proxy();
-my $Reverse_Proxy_Location = Reverse_Proxy_Location();
-my $Proxy_Redirect_Location = Proxy_Redirect_Location();
-my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
 my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
+my $DB_Management = DB_Management();
+my $DB_Reverse_Proxy = DB_Reverse_Proxy();
+my $Reverse_Proxy_Location = Reverse_Proxy_Location();
+	unlink glob "$Reverse_Proxy_Location/*.conf";
+my $Proxy_Redirect_Location = Proxy_Redirect_Location();
+	unlink glob "$Proxy_Redirect_Location/*.conf";
+my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
+
 
 $| = 1;
 my $Override;
@@ -59,7 +62,9 @@ foreach my $Parameter (@ARGV) {
 # / Safety check for other running build processes
 
 &write_reverse_proxy;
+print "Reverse proxy configuration written to $Reverse_Proxy_Location/\n";
 &write_redirect;
+print "Redirect configuration written to $Proxy_Redirect_Location/\n";
 
 $DB_Management->do("UPDATE `lock` SET 
 `reverse-proxy-build` = '0',
@@ -75,24 +80,10 @@ sub write_reverse_proxy {
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
-	open( Reverse_Proxy_Config, ">$Reverse_Proxy_Location/httpd.$System_Short_Name-reverse-proxy.conf" ) or die "Can't open $Reverse_Proxy_Location/httpd.$System_Short_Name-reverse-proxy.conf";
-
-	print Reverse_Proxy_Config "#########################################################################\n";
-	print Reverse_Proxy_Config "## $System_Name\n";
-	print Reverse_Proxy_Config "## Version: $Version\n";
-	print Reverse_Proxy_Config "## AUTO GENERATED SCRIPT\n";
-	print Reverse_Proxy_Config "## Please do not edit by hand\n";
-	print Reverse_Proxy_Config "## This file is part of a wider system and is automatically overwritten often\n";
-	print Reverse_Proxy_Config "## View the changelog or README files for more information.\n";
-	print Reverse_Proxy_Config "#########################################################################\n";
-	print Reverse_Proxy_Config "\n\n";
-
-	print Reverse_Proxy_Config "### This file is for reverse proxy entries ###\n\n";
-
-
 	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
 	`transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_ca_certificate_file`,
-	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `last_modified`, `modified_by`
+	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
+	`permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
 	FROM `reverse_proxy`
 	WHERE `active` = '1'
 	ORDER BY `server_name` ASC");
@@ -113,19 +104,71 @@ sub write_reverse_proxy {
 		my $RC4 = $Proxy_Entry[10];
 		my $Enforce_SSL = $Proxy_Entry[11];
 		my $HSTS = $Proxy_Entry[12];
-		my $Last_Modified = $Proxy_Entry[13];
-		my $Modified_By = $Proxy_Entry[14];
+		my $Frame_Options = $Proxy_Entry[13];
+		my $XSS_Protection = $Proxy_Entry[14];
+		my $Content_Type_Options = $Proxy_Entry[15];
+		my $Content_Security_Policy = $Proxy_Entry[16];
+		my $Permitted_Cross_Domain_Policies = $Proxy_Entry[17];
+		my $Powered_By = $Proxy_Entry[18];
+		my $Custom_Attributes = $Proxy_Entry[19];
+			$Custom_Attributes =~ s/\n/\n    /g;
+		my $Last_Modified = $Proxy_Entry[20];
+		my $Modified_By = $Proxy_Entry[21];
 
 		my $ServerAliases;
 		my @ServerAliases = split(',', $Server_Name);
 		$Server_Name = shift @ServerAliases;
 		foreach my $Alias (@ServerAliases) {
-			$ServerAliases = $ServerAliases . "\n    ServerAlias			$Alias";
+			$ServerAliases = $ServerAliases . "	\n    ServerAlias			$Alias";
 		}
 		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
 
+		open( Reverse_Proxy_Config, ">$Reverse_Proxy_Location/rp-$Server_Name.conf" ) or die "Can't open $Reverse_Proxy_Location/rp-$Server_Name.conf";
+	
+		print Reverse_Proxy_Config "#########################################################################\n";
+		print Reverse_Proxy_Config "## $System_Name\n";
+		print Reverse_Proxy_Config "## Version: $Version\n";
+		print Reverse_Proxy_Config "## AUTO GENERATED SCRIPT\n";
+		print Reverse_Proxy_Config "## Please do not edit by hand\n";
+		print Reverse_Proxy_Config "## This file is part of a wider system and is automatically overwritten often\n";
+		print Reverse_Proxy_Config "## View the changelog or README files for more information.\n";
+		print Reverse_Proxy_Config "#########################################################################\n";
+		print Reverse_Proxy_Config "\n";
+		print Reverse_Proxy_Config "## Reverse Proxy ID $ID, last modified $Last_Modified by $Modified_By\n";		
+		print Reverse_Proxy_Config "\n";
+
 		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
 		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
+
+		my $Headers;
+		if ($Frame_Options == 1) {
+			$Frame_Options = 'Header always set		X-Frame-Options deny';
+			$Headers = $Headers . $Frame_Options . "\n    ";
+		}
+		elsif ($Frame_Options == 2) {
+			$Frame_Options = 'Header always set		X-Frame-Options sameorigin';
+			$Headers = $Headers . $Frame_Options . "\n    ";
+		}
+		if ($XSS_Protection) {
+			$XSS_Protection = 'Header always set		X-XSS-Protection "1; mode=block"';
+			$Headers = $Headers . $XSS_Protection . "\n    ";
+		}
+		if ($Content_Type_Options) {
+			$Content_Type_Options = 'Header always set		X-Content-Type-Options nosniff';
+			$Headers = $Headers . $Content_Type_Options . "\n    ";
+		}
+		if ($Content_Security_Policy) {
+			$Content_Security_Policy = 'Header always set		Content-Security-Policy "default-src \'self\'"';
+			$Headers = $Headers . $Content_Security_Policy . "\n    ";
+		}
+		if ($Permitted_Cross_Domain_Policies) {
+			$Permitted_Cross_Domain_Policies = 'Header always set		X-Permitted-Cross-Domain-Policies none';
+			$Headers = $Headers . $Permitted_Cross_Domain_Policies . "\n    ";
+		}
+		if ($Powered_By) {
+			$Powered_By = 'Header unset		X-Powered-By';
+			$Headers = $Headers . $Powered_By . "\n    ";
+		}
 
 		if ($SSL_Certificate_File && $SSL_Certificate_Key_File && $SSL_CA_Certificate_File) {
 			if (!$SSL_Certificate_File) {$SSL_Certificate_File = $Default_SSL_Certificate_File}
@@ -151,7 +194,7 @@ sub write_reverse_proxy {
 			if ($Enforce_SSL) {
 				$Enforce_SSL_Header = "
     <IfModule mod_rewrite.c>
-        RewriteEngine	On
+        RewriteEngine		On
         RewriteCond		%{HTTPS} off
         RewriteRule		(.*)	https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
     </IfModule>
@@ -165,13 +208,10 @@ sub write_reverse_proxy {
 
 			my $HSTS_Header;
 			if ($HSTS) {
-				$HSTS_Header = 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"';
+				$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000; includeSubDomains"';
 			}			
 
-#Header always append X-Frame-Options SAMEORIGIN
-
 			print Reverse_Proxy_Config <<RP_EOF;
-## Reverse Proxy ID $ID, last modified $Last_Modified by $Modified_By
 <VirtualHost *:80>
     $Server_Names
 	$Enforce_SSL_Header
@@ -180,6 +220,7 @@ sub write_reverse_proxy {
 <IfModule mod_ssl.c>
 <VirtualHost *:443>
     $Server_Names
+
     SSLProxyEngine		On
     SSLProxyVerify		none
     SSLProxyCheckPeerCN		off
@@ -192,6 +233,7 @@ sub write_reverse_proxy {
 
     SSLEngine			On
     $HSTS_Header
+    $Headers
     SSLProtocol			ALL -SSLv2 -SSLv3
     $CipherOrder
     SSLCipherSuite		"$CipherSuite"
@@ -203,9 +245,9 @@ sub write_reverse_proxy {
 
     TransferLog			$Transfer_Log
     ErrorLog			$Error_Log
+    $Custom_Attributes
 </VirtualHost>
 </IfModule>
-
 RP_EOF
 		}
 		else {
@@ -217,16 +259,17 @@ RP_EOF
     ProxyPreserveHost		On
     ProxyPass			$Source	$Destination
     ProxyPassReverse		$Source	$Destination
+    $Headers
     TransferLog			$Transfer_Log
     ErrorLog			$Error_Log
+    $Custom_Attributes
 </VirtualHost>
-
 RP_EOF
 		}
-	}
 
-print Reverse_Proxy_Config "\n";
-close Reverse_Proxy_Config;
+		print Reverse_Proxy_Config "\n";
+		close Reverse_Proxy_Config;
+	}
 
 } # sub write_reverse_proxy
 
@@ -234,21 +277,6 @@ sub write_redirect {
 
 	my ($Default_Transfer_Log,
 		$Default_Error_Log) = Redirect_Defaults();
-
-	open( Redirect_Config, ">$Proxy_Redirect_Location/httpd.$System_Short_Name-proxy-redirect.conf" ) or die "Can't open $Proxy_Redirect_Location/httpd.$System_Short_Name-proxy-redirect.conf";
-
-	print Redirect_Config "#########################################################################\n";
-	print Redirect_Config "## $System_Name\n";
-	print Redirect_Config "## Version: $Version\n";
-	print Redirect_Config "## AUTO GENERATED SCRIPT\n";
-	print Redirect_Config "## Please do not edit by hand\n";
-	print Redirect_Config "## This file is part of a wider system and is automatically overwritten often\n";
-	print Redirect_Config "## View the changelog or README files for more information.\n";
-	print Redirect_Config "#########################################################################\n";
-	print Redirect_Config "\n\n";
-
-	print Redirect_Config "### This file is for proxy redirect entries ###\n\n";
-
 
 	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`, `redirect_destination`, 
 	`transfer_log`, `error_log`, `last_modified`, `modified_by`
@@ -276,25 +304,35 @@ sub write_redirect {
 		my @ServerAliases = split(',', $Server_Name);
 		$Server_Name = shift @ServerAliases;
 		foreach my $Alias (@ServerAliases) {
-			$ServerAliases = $ServerAliases . "\n    ServerAlias			$Alias";
+			$ServerAliases = $ServerAliases . "	\n    ServerAlias			$Alias";
 		}
-		$Server_Name = "ServerName			$Server_Name";
-		my $Server_Names = $Server_Name . $ServerAliases;
+		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
+
+		open( Redirect_Config, ">$Proxy_Redirect_Location/rd-$Server_Name.conf" ) or die "Can't open $Proxy_Redirect_Location/rd-$Server_Name.conf";
+	
+		print Redirect_Config "#########################################################################\n";
+		print Redirect_Config "## $System_Name\n";
+		print Redirect_Config "## Version: $Version\n";
+		print Redirect_Config "## AUTO GENERATED SCRIPT\n";
+		print Redirect_Config "## Please do not edit by hand\n";
+		print Redirect_Config "## This file is part of a wider system and is automatically overwritten often\n";
+		print Redirect_Config "## View the changelog or README files for more information.\n";
+		print Redirect_Config "#########################################################################\n";
+		print Reverse_Proxy_Config "\n";
+		print Reverse_Proxy_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n";		
+		print Reverse_Proxy_Config "\n";
 
 		print Redirect_Config <<RP_EOF;
-## Redirect ID $ID, last modified $Last_Modified by $Modified_By
 <VirtualHost *:$Port>
     $Server_Names
     Redirect			$Source	$Destination
     TransferLog			$Transfer_Log
     ErrorLog			$Error_Log
 </VirtualHost>
-
 RP_EOF
+
+		print Redirect_Config "\n";
+		close Redirect_Config;
 	}
 
-print Redirect_Config "\n";
-close Redirect_Config;
-
 } # sub write_redirect
-

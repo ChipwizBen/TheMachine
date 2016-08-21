@@ -147,24 +147,28 @@ sub change_password {
 
 sub add_key {
 
-	my $New_Salt = Salt(64);
-	$Key_Lock =~ s/\s//g;
-	$Key_Lock = $Key_Lock . $New_Salt;
+	my $New_Salt;
+	while (length $Key_Lock < 256) {
+		my $Salt = Salt(1);
+		$New_Salt = $New_Salt . $Salt;
+		$Key_Lock =~ s/\s//g;
+		$Key_Lock = $Key_Lock . $Salt;
+	}
 
 	$Private_Key =~ s/\r//g;
 
 	use Crypt::CBC;
 
 	my $Cipher_One = Crypt::CBC->new(
-		-key=>$Key_Lock,
-		-cipher=>'DES',
-		-salt   => 1
+		-key	=> $Key_Lock,
+		-cipher	=> 'DES',
+		-salt	=> 1
 	);
 
 	my $Cipher_Two = Crypt::CBC->new(
-		-key    =>  $Key_Lock,
-		-cipher => 'Rijndael',
-		-salt   => 1
+		-key	=> $Key_Lock,
+		-cipher	=> 'Rijndael',
+		-salt	=> 1
 	);
 
 	my $Encrypted_Key = $Cipher_One->encrypt($Private_Key);

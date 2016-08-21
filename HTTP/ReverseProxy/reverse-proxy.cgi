@@ -1061,11 +1061,50 @@ sub html_view_reverse_proxy {
 		my $Permitted_Cross_Domain_Policies = $Proxy_Entry[16];
 		my $Powered_By = $Proxy_Entry[17];
 		my $Custom_Attributes = $Proxy_Entry[18];
+			$Custom_Attributes =~ s/\n/\n    /g;
 		my $Last_Modified = $Proxy_Entry[19];
 		my $Modified_By = $Proxy_Entry[20];
 
+		my $ServerAliases;
+		my @ServerAliases = split(',', $Server_Name);
+		$Server_Name = shift @ServerAliases;
+		foreach my $Alias (@ServerAliases) {
+			$ServerAliases = $ServerAliases . "\n    ServerAlias              $Alias";
+		}
+		my $Server_Names = "ServerName               " . $Server_Name . $ServerAliases;
+
 		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
 		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
+
+		my $Headers;
+		if ($Frame_Options == 1) {
+			$Frame_Options = 'Header always set        X-Frame-Options deny';
+			$Headers = $Headers . $Frame_Options . '\n    ';
+		}
+		elsif ($Frame_Options == 2) {
+			$Frame_Options = 'Header always set        X-Frame-Options sameorigin';
+			$Headers = $Headers . $Frame_Options . '\n    ';
+		}
+		if ($XSS_Protection) {
+			$XSS_Protection = 'Header always set        X-XSS-Protection "1; mode=block"';
+			$Headers = $Headers . $XSS_Protection . '\n    ';
+		}
+		if ($Content_Type_Options) {
+			$Content_Type_Options = 'Header always set        X-Content-Type-Options nosniff';
+			$Headers = $Headers . $Content_Type_Options . '\n    ';
+		}
+		if ($Content_Security_Policy) {
+			$Content_Security_Policy = 'Header always set        Content-Security-Policy "default-src \'self\'"';
+			$Headers = $Headers . $Content_Security_Policy . '\n    ';
+		}
+		if ($Permitted_Cross_Domain_Policies) {
+			$Permitted_Cross_Domain_Policies = 'Header always set        X-Permitted-Cross-Domain-Policies none';
+			$Headers = $Headers . $Permitted_Cross_Domain_Policies . '\n    ';
+		}
+		if ($Powered_By) {
+			$Powered_By = 'Header unset             X-Powered-By';
+			$Headers = $Headers . $Powered_By . '\n    ';
+		}
 
 		if ($SSL_Certificate_File && $SSL_Certificate_Key_File && $SSL_CA_Certificate_File) {
 			if (!$SSL_Certificate_File) {$SSL_Certificate_File = $Default_SSL_Certificate_File}
@@ -1091,9 +1130,9 @@ sub html_view_reverse_proxy {
 			if ($Enforce_SSL) {
 				$Enforce_SSL_Header = "
     <IfModule mod_rewrite.c>
-        RewriteEngine On
-        RewriteCond %{HTTPS} off
-        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+        RewriteEngine       On
+        RewriteCond         %{HTTPS}    off
+        RewriteRule         (.*)    https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
     </IfModule>
     <IfModule !mod_rewrite.c>
         Redirect             /    https://$Server_Name
@@ -1102,51 +1141,18 @@ sub html_view_reverse_proxy {
 
 			my $HSTS_Header;
 			if ($HSTS) {
-				$HSTS_Header = 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"';
-			}			
-
-		my $Headers;
-		if ($Frame_Options == 1) {
-			$Frame_Options = 'Header always set X-Frame-Options deny';
-			$Headers = $Headers . $Frame_Options . '\n    ';
-		}
-			elsif ($Frame_Options == 2) {
-				$Frame_Options = 'Header always set X-Frame-Options sameorigin';
-				$Headers = $Headers . $Frame_Options . '\n    ';
+				$HSTS_Header = 'Header always set        Strict-Transport-Security "max-age=31536000; includeSubDomains"';
 			}
-		if ($XSS_Protection) {
-			$XSS_Protection = 'Header always set X-XSS-Protection "1; mode=block"';
-			$Headers = $Headers . $XSS_Protection . '\n    ';
-		}
-		if ($Content_Type_Options) {
-			$Content_Type_Options = 'Header always set X-Content-Type-Options nosniff';
-			$Headers = $Headers . $Content_Type_Options . '\n    ';
-		}
-		if ($Content_Security_Policy) {
-			$Content_Security_Policy = 'Header always set Content-Security-Policy "default-src \'self\'"';
-			$Headers = $Headers . $Content_Security_Policy . '\n    ';
-		}
-		if ($Permitted_Cross_Domain_Policies) {
-			$Permitted_Cross_Domain_Policies = 'Header always set X-Permitted-Cross-Domain-Policies none';
-			$Headers = $Headers . $Permitted_Cross_Domain_Policies . '\n    ';
-		}
-		if ($Powered_By) {
-			$Powered_By = 'Header unset X-Powered-By';
-			$Headers = $Headers . $Powered_By . '\n    ';
-		}
 
 			$Reverse_Proxy_Entry = "
 <VirtualHost *:80>
-
-    ServerName               $Server_Name
+    $Server_Names
     $Enforce_SSL_Header
-
 </VirtualHost>
 
 <IfModule mod_ssl.c>
 <VirtualHost *:443>
-
-    ServerName               $Server_Name
+    $Server_Names
 
     SSLProxyEngine           On
     ProxyRequests            Off
@@ -1155,6 +1161,8 @@ sub html_view_reverse_proxy {
     ProxyPassReverse         $Source    $Destination
 
     SSLEngine                On
+    $HSTS_Header
+    $Headers
     SSLProtocol              ALL -SSLv2 -SSLv3
     $CipherOrder
     SSLCipherSuite           \"$CipherSuite\"
@@ -1166,9 +1174,6 @@ sub html_view_reverse_proxy {
 
     TransferLog              $Transfer_Log
     ErrorLog                 $Error_Log
-
-    $HSTS_Header
-    $Headers
     $Custom_Attributes
 </VirtualHost>
 </IfModule>
@@ -1177,16 +1182,16 @@ sub html_view_reverse_proxy {
 		else {
 			$Reverse_Proxy_Entry = "
 <VirtualHost *:80>
+    $Server_Names
 
-    ServerName            $Server_Name
-
-    ProxyEngine           On
-    ProxyRequests         Off
-    ProxyPreserveHost     On
-    ProxyPass             $Source    $Destination
-    ProxyPassReverse      $Source    $Destination
-    TransferLog           $Transfer_Log
-    ErrorLog              $Error_Log
+    ProxyEngine              On
+    ProxyRequests            Off
+    ProxyPreserveHost        On
+    ProxyPass                $Source    $Destination
+    ProxyPassReverse         $Source    $Destination
+    $Headers
+    TransferLog              $Transfer_Log
+    ErrorLog                 $Error_Log
     $Custom_Attributes
 </VirtualHost>
 
@@ -1208,7 +1213,7 @@ print <<ENDHTML;
 
 <h3 align="center">Config for Reverse Proxy ID $View_Reverse_Proxy</h3>
 
-<pre style='text-align: left; max-width:660px; padding-left:20px; white-space:pre-wrap; word-wrap:break-word;'><code>$Reverse_Proxy_Entry</code></pre>
+<pre style='text-align: left; padding-left:20px; white-space:pre-wrap; word-wrap:break-word;'><code>$Reverse_Proxy_Entry</code></pre>
 
 </div>
 
@@ -1264,7 +1269,7 @@ sub html_output {
 
 	my $Rows = $Select_Reverse_Proxies->rows();
 
-	$Table->addRow( "ID", "Server Name", "Source<br /><span style='color: #B6B600'>Destination</span>", 
+	$Table->addRow( "ID", "Server Name<br /><span style='color: #B6B600'>Server Alias</span>", "Source<br /><span style='color: #B6B600'>Destination</span>", 
 	"Transfer Log<br /><span style='color: #B6B600'>Error Log</span>", "SSL Files", "", "Header Flags", 
 	"Perfect Forward Secrecy", "Legacy RC4 Support", "Enforce SSL", "Custom Attributes", 
 	"Last Modified<br /><span style='color: #B6B600'>Modified By</span>", "View", "Edit", "Delete" );
@@ -1318,6 +1323,13 @@ sub html_output {
 		my $Last_Modified = $Select_Reverse_Proxies[20];
 		my $Modified_By = $Select_Reverse_Proxies[21];
 
+		my $ServerAliases;
+		my @ServerAliases = split(',', $Server_Name);
+		$Server_Name = shift @ServerAliases;
+		foreach my $Alias (@ServerAliases) {
+			$ServerAliases = $ServerAliases . "<br/>$Alias";
+		}
+
 		if ($PFS) {$PFS = 'On'} else {$PFS = 'Off'};
 		if ($RC4) {$RC4 = 'On'} else {$RC4 = 'Off'};
 		if ($Enforce_SSL) {$Enforce_SSL = 'Yes'} else {$Enforce_SSL = 'No'};
@@ -1336,7 +1348,7 @@ sub html_output {
 
 		$Table->addRow(
 			"$DBID",
-			"$Server_Name",
+			"$Server_Name<span style='color: #B6B600'>$ServerAliases</span>",
 			"$Source<br /><span style='color: #B6B600'>$Destination</span>",
 			"$Transfer_Log<br /><span style='color: #B6B600'>$Error_Log</span>",
 			"No SSL",

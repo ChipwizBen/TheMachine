@@ -1067,9 +1067,9 @@ my $CIDR;
 if ($Block_CIDR == 32 && $Parent) {$CIDR = $Parent_CIDR} else {$CIDR = $Block_CIDR}
 
 
-# Have to use Network::IPv4Addr to determine the network, as Net::IP is too strict to take arbitrary IP values
-use Network::IPv4Addr;
-my ($Network_Block, $Network_Block_Mask) = Network::IPv4Addr::ipv4_network( $Block_Prefix, $CIDR);
+# Have to use Net::IPv4Addr to determine the network, as Net::IP is too strict to take arbitrary IP values
+use Net::IPv4Addr;
+my ($Network_Block, $Network_Block_Mask) = Net::IPv4Addr::ipv4_network( $Block_Prefix, $CIDR);
 
 
 my $Block_Query = new Net::IP::XS ($Network_Block.'/'.$Network_Block_Mask) || die (Net::IP::XS::Error);

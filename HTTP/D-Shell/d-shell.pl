@@ -794,7 +794,7 @@ sub processor {
 				if ($Exit_Code) {
 					$Command_Output = "There was an error taking a snapshot. $Exit_Code";
 				}
-				sleep 300;
+				sleep 600;
 			}
 			elsif($Snapshot eq 'REMOVE') {
 				if ($Verbose == 1) {

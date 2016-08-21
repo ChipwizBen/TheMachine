@@ -461,7 +461,7 @@ sub delete_redirect {
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>10,
+		-cols=>11,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -497,7 +497,7 @@ sub html_output {
 
 	my $Rows = $Select_Reverse_Proxies->rows();
 
-	$Table->addRow( "ID", "Server Name", "Source", "Destination", "Transfer Log", "Error Log", "Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->addRow( "ID", "Server Name<br /><span style='color: #B6B600'>Server Alias</span>", "Port", "Source", "Destination", "Transfer Log", "Error Log", "Last Modified", "Modified By", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	while ( my @Select_Reverse_Proxies = $Select_Reverse_Proxies->fetchrow_array() )
@@ -521,9 +521,17 @@ sub html_output {
 		my $Last_Modified = $Select_Reverse_Proxies[7];
 		my $Modified_By = $Select_Reverse_Proxies[8];
 
+		my $ServerAliases;
+		my @ServerAliases = split(',', $Server_Name);
+		$Server_Name = shift @ServerAliases;
+		foreach my $Alias (@ServerAliases) {
+			$ServerAliases = $ServerAliases . "<br/>$Alias";
+		}
+
 		$Table->addRow(
 			"$DBID",
-			"$Server_Name:$Port",
+			"$Server_Name<span style='color: #B6B600'>$ServerAliases</span>",
+			"$Port",
 			"$Source",
 			"$Destination",
 			"$Transfer_Log",
@@ -538,13 +546,13 @@ sub html_output {
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(7, '110px');
 	$Table->setColWidth(8, '110px');
-	$Table->setColWidth(9, '1px');
+	$Table->setColWidth(9, '110px');
 	$Table->setColWidth(10, '1px');
+	$Table->setColWidth(11, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (7..10) {
+	for (8..11) {
 		$Table->setColAlign($_, 'center');
 	}
 

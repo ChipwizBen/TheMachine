@@ -1,4 +1,9 @@
+# For editing version 1.09
 # locate Expect.pm
-# cd ..
+
+# cd .. # It's the /Net/SSH/ one...
+
 # cp Expect.pm Expect.pm-backup
+
 sed -i -e 's/unless (\$send)/unless defined ($send)/' Expect.pm
+# sed -i -e 's/unless (\$send)/unless defined ($send)/' /usr/local/share/perl/5.22.1/Net/SSH/Expect.pm
