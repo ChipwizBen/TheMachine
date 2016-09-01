@@ -26,6 +26,7 @@ my $Key_Lock = $CGI->param("Key_Lock");
 my $Key_User_Name = $CGI->param("Key_User_Name");
 my $Key_Passphrase = $CGI->param("Key_Passphrase");
 my $Private_Key = $CGI->param("Private_Key");
+my $Default_Key = $CGI->param("Default_Key");
 my $Delete_Key = $CGI->param("Delete_Key");
 
 
@@ -37,6 +38,9 @@ elsif ($Key_Name && $Key_Lock && $Private_Key) {
 }
 elsif ($Delete_Key) {
 	&delete_key;
+}
+elsif ($Default_Key) {
+	&default_key;
 }
 
 require "header.cgi";
@@ -231,6 +235,51 @@ sub delete_key {
 	}
 
 } # delete_key
+
+sub default_key {
+
+	my $Select_Key = $DB_Management->prepare("SELECT `key_owner`
+	FROM `auth`
+	WHERE `id` = ?");
+
+	$Select_Key->execute($Default_Key);
+
+	my $User_Name_Extract = $Select_Key->fetchrow_array();
+
+	if ($User_Name_Extract eq '') {$User_Name_Extract = 'nobody'}
+	if ($User_Name_Extract ne $User_Name) {
+
+		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			`category`,
+			`method`,
+			`action`,
+			`username`
+		)
+		VALUES (
+			?, ?, ?, ?
+		)");
+	
+		$Audit_Log_Submission->execute("Account Management", "Modify", "$User_Name tried to default a key belonging to $User_Name_Extract. You've been rumbled.", 'System');
+
+		my $Message_Red="Nice try.";
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /account.cgi\n\n";
+		exit(0);
+	}
+	else {
+		my $Clear_Defaults = $DB_Management->prepare("UPDATE `auth` SET
+				`default` = 0
+				WHERE `key_owner` = ?");
+		$Clear_Defaults->execute($User_Name);
+	
+		my $Default = $DB_Management->prepare("UPDATE `auth` SET
+				`default` = 1
+				WHERE `id` = ?");
+		$Default->execute($Default_Key);
+	}
+
+} # default_key
 
 sub html_output {
 
@@ -443,7 +492,7 @@ sub html_output {
 	### Key Table
 
 	my $Key_Table = new HTML::Table(
-		-cols=>5,
+		-cols=>6,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -454,14 +503,14 @@ sub html_output {
 		-padding=>1
 	);
 
-	my $Select_Keys = $DB_Management->prepare("SELECT `id`, `key_name`, `key_username`, `key_passphrase`, `last_modified`
+	my $Select_Keys = $DB_Management->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`, `last_modified`
 		FROM `auth`
 		WHERE `key_owner` LIKE ?
 		ORDER BY `id` ASC");
 
 	$Select_Keys->execute($User_Name);
 
-	$Key_Table->addRow( "Name", "Username", "Passphrase", "Added", "Delete" );
+	$Key_Table->addRow( "Name", "Username", "Passphrase", "Added", "Default", "Delete" );
 	$Key_Table->setRowClass (1, 'tbrow1');
 
 	my $Key_Count=0;
@@ -470,16 +519,25 @@ sub html_output {
 		$Key_Count++;
 		my $Key_ID = $Keys[0];
 		my $Key_Name = $Keys[1];
-		my $Key_User_Name = $Keys[2];
-		my $Passphrase = $Keys[3];
+		my $Key_Default = $Keys[2];
+		my $Key_User_Name = $Keys[3];
+		my $Passphrase = $Keys[4];
 			if ($Passphrase) {$Passphrase = 'Set';}	else {$Passphrase = 'Not Set';}
-		my $Last_Modified = $Keys[4];
+		my $Last_Modified = $Keys[5];
+
+		if ($Key_Default) {
+			$Key_Default = "<img src=\"resources/imgs/green.png\" alt=\"Default Key\" >";
+		}
+		else {
+			$Key_Default = "<a href='account.cgi?Default_Key=$Key_ID'><img src=\"resources/imgs/grey.png\" alt=\"Make Key Default\" ></a>";
+		}
 
 		$Key_Table->addRow(
 			$Key_Name,
 			$Key_User_Name,
 			$Passphrase,
 			$Last_Modified,
+			$Key_Default,
 			"<a href='account.cgi?Delete_Key=$Key_ID'><img src=\"resources/imgs/delete.png\" alt=\"Delete Key\" ></a>");
 
 		if ($Passphrase eq 'Set') {
@@ -493,10 +551,12 @@ sub html_output {
 		$Key_Table->setColWidth(3, '20px');
 		$Key_Table->setColWidth(4, '110px');
 		$Key_Table->setColWidth(5, '1px');
+		$Key_Table->setColWidth(6, '1px');
 			
 		$Key_Table->setColAlign(3, 'center');
 		$Key_Table->setColAlign(4, 'center');
 		$Key_Table->setColAlign(5, 'center');
+		$Key_Table->setColAlign(6, 'center');
 
 	if ($Key_Count == 0) {$Key_Table = '<p align="center">You have no keys defined. Add some below.</p>'}
 

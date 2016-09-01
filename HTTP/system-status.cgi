@@ -133,6 +133,9 @@ my $cp = cp();
 my $ls = ls();
 my $sudo_grep = sudo_grep();
 my $head = head();
+my $nmap = nmap();
+my $ps = ps();
+my $wc = wc();
 my $Random_Alpha_Numeric_Password_8 = Random_Alpha_Numeric_Password(8);
 my $Random_Alpha_Numeric_Password_16 = Random_Alpha_Numeric_Password(16);
 my $Random_Alpha_Numeric_Password_32 = Random_Alpha_Numeric_Password(32);
@@ -232,6 +235,18 @@ print <<ENDHTML;
 		<tr>
 			<td style="text-align: right;">head Location</td>
 			<td style='color: #00FF00;'>$head</td>
+		</tr>
+		<tr>
+			<td style="text-align: right;">nmap Location</td>
+			<td style='color: #00FF00;'>$nmap</td>
+		</tr>
+		<tr>
+			<td style="text-align: right;">ps Location</td>
+			<td style='color: #00FF00;'>$ps</td>
+		</tr>
+		<tr>
+			<td style="text-align: right;">wc Location</td>
+			<td style='color: #00FF00;'>$wc</td>
 		</tr>
 		<tr>
 			<td>&nbsp;</td>

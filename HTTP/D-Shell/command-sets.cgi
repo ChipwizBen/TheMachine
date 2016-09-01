@@ -309,7 +309,7 @@ ENDHTML
 
 	my $Select_Dependency_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
 		FROM `command_sets`
-		ORDER BY `name`"
+		ORDER BY `name`, `revision`+0 ASC"
 	);
 
 	$Select_Dependency_Command_Sets->execute();
@@ -423,8 +423,9 @@ print <<ENDHTML;
 				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span></li>
 				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*WAITFOR60</span> <span style='color: #00FF00;'>Is this ok?</span></li>
 				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>y</span></li>
+			</ul>
 		</ul>
-</ul>
+	<li><span style='color: #FC64FF;'>*REBOOT</span> - Gracefully executes a controlled reboot of the remote system and continues processing when the system recovers.</li>
 
 <input type='hidden' name='Add_Command' value='1'>
 <input type='hidden' name='Add_Command_Dependency_Temp_Existing' value='$Add_Command_Dependency_Temp_Existing'>
@@ -644,7 +645,7 @@ ENDHTML
 
 	my $Select_Dependency_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
 		FROM `command_sets`
-		ORDER BY `name`"
+		ORDER BY `name`,`revision`+0 ASC"
 	);
 
 	$Select_Dependency_Command_Sets->execute();
@@ -760,8 +761,9 @@ print <<ENDHTML;
 				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span></li>
 				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*WAITFOR60</span> <span style='color: #00FF00;'>Is this ok?</span></li>
 				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>y</span></li>
+			</ul>
 		</ul>
-</ul>
+	<li><span style='color: #FC64FF;'>*REBOOT</span> - Gracefully executes a controlled reboot of the remote system and continues processing when the system recovers.</li>
 
 <input type='hidden' name='Edit_Command' value='$Edit_Command'>
 <input type='hidden' name='Edit_Command_Revision' value='$Command_Revision_Edit_Plus_One'>
@@ -1311,20 +1313,27 @@ print <<ENDHTML;
 ENDHTML
 
 ### Keys
-				my $Key_List_Query = $DB_Management->prepare("SELECT `id`, `key_name`, `key_username`, `key_passphrase`
+				my $Key_List_Query = $DB_Management->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`
 				FROM `auth`
-				ORDER BY `key_name` ASC");
-				$Key_List_Query->execute( );
+				WHERE `key_owner` LIKE ?
+				ORDER BY `id` ASC");
+				$Key_List_Query->execute($User_Name);
 
 				print "<option value='' selected>--Select a Key--</option>";
 
-				while ( my ($ID, $Key_Name, $Key_User, $Key_Passphrase) = my @Key_List_Query = $Key_List_Query->fetchrow_array() )
+				while ( my ($ID, $Key_Name, $Key_Default, $Key_User, $Key_Passphrase) = my @Key_List_Query = $Key_List_Query->fetchrow_array() )
 				{
 					my $Key_Name_Character_Limited = substr( $Key_Name, 0, 40 );
 						if ($Key_Name_Character_Limited ne $Key_Name) {
 							$Key_Name_Character_Limited = $Key_Name_Character_Limited . '...';
 						}
-					print "<option value='$ID'>$Key_Name_Character_Limited [$Key_User]</option>";
+						if ($Key_Default) {
+							print "<option value='$ID' selected>$Key_Name_Character_Limited [$Key_User]</option>";
+						}
+						else {
+							print "<option value='$ID'>$Key_Name_Character_Limited [$Key_User]</option>";
+						}
+					
 				}
 
 print <<ENDHTML;

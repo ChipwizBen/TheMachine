@@ -28,8 +28,6 @@ my $Help = "
 ${Green}$System_Short_Name version $Version
 
 Options are:
-	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug)
-	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes thread data
 	${Blue}-t, --threads\t\t${Green}Sets the number of threads to use for connecting to nodes. By default the number of threads matches the number of nodes. Setting it more than this is a BAD idea (for load).
 	${Blue}-H, --hosts\t\t${Green}A list of hosts to snapshot, comma seperated (no spaces!) [e.g.: -H host01,host02,host03]
 	${Blue}-i, --host-ids\t\t${Green}A list of host IDs to snapshot, comma seperated (no spaces!) [e.g.: -H 4587,155,2341]
@@ -37,6 +35,8 @@ Options are:
 	${Blue}-s, --snapshot\t\t${Green}Takes a snapshot of the listed hosts
 	${Blue}-r, --remove\t\t${Green}Removes snapshots for listed hosts that were created by $System_Short_Name
 	${Blue}-e, --erase\t\t${Green}Removes ALL snapshots for listed hosts
+	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug)
+	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes thread data
 
 ${Green}Examples:
 	${Green}## Snapshot server01

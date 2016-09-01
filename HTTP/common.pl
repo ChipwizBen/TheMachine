@@ -959,13 +959,15 @@ sub Random_Alpha_Numeric_Password {
 	srand;
 
 	my $Random_Password;
-	for (my $i=0; $i <= $Password_Length ;$i++) {
-		$Random_Value = int(rand 62);
+	my $Random_Character_Count;
+	while ($Random_Character_Count != $Password_Length) {
+		$Random_Value = int(rand 89);
 		$Random_Password .= $Chars[$Random_Value];
+		$Random_Character_Count = length($Random_Password);
 	}
 
 	return $Random_Password;
-	
+
 } # sub Random_Alpha_Numeric_Password
 
 sub System_Logger {

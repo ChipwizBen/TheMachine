@@ -199,20 +199,27 @@ print <<ENDHTML;
 ENDHTML
 
 ### Keys
-				my $Key_List_Query = $DB_Management->prepare("SELECT `id`, `key_name`, `key_username`, `key_passphrase`
+				my $Key_List_Query = $DB_Management->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`
 				FROM `auth`
-				ORDER BY `key_name` ASC");
-				$Key_List_Query->execute( );
+				WHERE `key_owner` LIKE ?
+				ORDER BY `id` ASC");
+				$Key_List_Query->execute($User_Name);
 
 				print "<option value='' selected>--Select a Key--</option>";
 
-				while ( my ($ID, $Key_Name, $Key_User, $Key_Passphrase) = my @Key_List_Query = $Key_List_Query->fetchrow_array() )
+				while ( my ($ID, $Key_Name, $Key_Default, $Key_User, $Key_Passphrase) = my @Key_List_Query = $Key_List_Query->fetchrow_array() )
 				{
 					my $Key_Name_Character_Limited = substr( $Key_Name, 0, 40 );
 						if ($Key_Name_Character_Limited ne $Key_Name) {
 							$Key_Name_Character_Limited = $Key_Name_Character_Limited . '...';
 						}
-					print "<option value='$ID'>$Key_Name_Character_Limited [$Key_User]</option>";
+					
+						if ($Key_Default) {
+							print "<option value='$ID' selected>$Key_Name_Character_Limited [$Key_User]</option>";
+						}
+						else {
+							print "<option value='$ID'>$Key_Name_Character_Limited [$Key_User]</option>";
+						}
 				}
 
 print <<ENDHTML;

@@ -22,7 +22,6 @@ my $DB_IP_Allocation = DB_IP_Allocation();
 my $nmap = nmap();
 my $grep = sudo_grep();
 my $Override = 0;
-my $Ignore_Bad_Exit_Code = 0;
 my $No_Decode;
 my $Wait_Timeout = DShell_WaitFor_Timeout();
 my $Retry_Count = 0;
@@ -94,8 +93,6 @@ GetOptions(
 	'V' => \$Very_Verbose,
 	'very-verbose' => \$Very_Verbose,
 	'override' => \$Override,
-	'i' => \$Ignore_Bad_Exit_Code,
-	'ignore' => \$Ignore_Bad_Exit_Code,
 	'D' => \$No_Decode,
 	'no-dec' => \$No_Decode,
 	'j=i' => \$Discovered_Job_ID,
@@ -124,7 +121,6 @@ if ($Verbose) {print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";}
 if ($Very_Verbose) {$Verbose = 1; print "${Red}## ${Green}Very Verbose is on (PID: $$).${Clear}\n";};
 if ($No_Decode) {print "${Red}## ${Green}Decode is off.${Clear}\n";}
 if ($Override) {print "${Red}## ${Pink}Override is on.${Clear}\n";}
-if ($Ignore_Bad_Exit_Code) {print "${Red}## ${Pink}Ignoring bad exit statues!${Clear}\n";}
 if ($Paper_Trail) {
 	print "${Red}## ! ## Paper Trail is ON! 5 seconds to cancel ${Pink}(CTRL + C):${Clear}\n";
 	print "${Pink}Logging all parameters (including credentials) in... 5${Clear}\r";
@@ -248,7 +244,7 @@ if (!$Dependent_Command_Set_ID && $Discovered_Job_ID) {
 	my $Job_Processor = &processor($Host_ID, $Command_Set_ID);
 	
 }
-elsif (!$Discovered_Job_ID && $Dependent_Command_Set_ID) {
+elsif ($Dependent_Command_Set_ID && !$Discovered_Job_ID) {
 	print "\n${Green}Starting dependent Command Set ID ${Blue}$Dependent_Command_Set_ID${Green}...${Clear}\n";
 		print LOG "\n${Green}Starting dependent Command Set ID ${Blue}$Dependent_Command_Set_ID${Green}...${Clear}\n";
 	print "${Red}## ${Green}Discovered Host ID ${Blue}$Dependent_Host_ID${Green} and Command Set ID ${Blue}$Dependent_Command_Set_ID${Green} (Dependency Chain ID ${Blue}$Dependency_Chain_ID${Green}, PID: $$).${Clear}\n";
@@ -300,7 +296,7 @@ sub job_discovery {
 			exit(0);
 		}
 	}
-	if ($Status == 1) {
+	if ($Status == 1 || $Status == 10) {
 		if ($Override) {
 			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running. Override is enabled, so we're running a second copy!${Clear}\n";
 			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running. Override is enabled, so we're running a second copy!${Clear}\n";
@@ -325,7 +321,7 @@ sub job_discovery {
 			WHERE `id` = ?");
 		$Update_Job->execute('1', $User_Name, $Parent_ID);
 	}
-	if ($Status == 4 || $Status == 10) {
+	if ($Status == 4) {
 		print "${Green}Job ID ${Blue}$Job_ID${Green} is pending. Starting job...${Clear}\n";
 		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} is pending. Starting job...${Clear}\n";
 		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET

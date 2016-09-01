@@ -30,12 +30,12 @@ ${Green}$System_Short_Name version $Version
 Hello there, intrepid random file executer! If you're reading this, you're probably lost. This file is only useful as part of the wider system, so you're going to struggle without all the bits. But here are the options anyway for you to break stuff, you crazy fool:
 
 Options are:
+	${Blue}-c, --command-set\t${Green}The ID of the command set
+	${Blue}-H, --hosts\t\t${Green}A space seperated list of host IDs [e.g.: -H 302 5943 2140]
 	${Blue}-u, --username\t\t${Green}Username for the remote host(s). Will also trigger the job.
 	${Blue}-P, --password\t\t${Green}Password for the remote host(s)
 	${Blue}-k, --key\t\t${Green}Pass the key ID used to connect to the server
 	${Blue}-f, --failure\t\t${Green}Specify the on-failure behaviour (0 is continue, 1 is die)
-	${Blue}-c, --command-set\t${Green}The ID of the command set
-	${Blue}-H, --hosts\t\t${Green}A space sperated list of host IDs [e.g.: -H 302 5943 2140]
 
 ${Green}Examples:
 	${Green}## Ha! Yeah right. You shouldn't even BE here! Oh go on then, just this once, but only because I like you.
@@ -76,8 +76,6 @@ GetOptions(
 	'passphrase:s' => \$Captured_Key_Passphrase,
 	'f:s' => \$On_Failure,
 	'failure:s' => \$On_Failure,
-	'h' => \$On_Failure,
-	'help' => \$On_Failure,	
 ) or die("Option capture badness: $@\n");
 
 $User_Trigger =~ s/MagicTagSpace/ /g;
