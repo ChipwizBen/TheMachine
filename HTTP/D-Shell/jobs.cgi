@@ -351,6 +351,19 @@ sub run_job {
 	if (!$On_Failure) {$On_Failure = 0};
 	$Update_Job->execute($On_Failure, '10', $User_Name, $Trigger_Job);
 
+		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+			`job_id`,
+			`command`,
+			`output`,
+			`task_started`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, NOW(), ?
+		)");
+	
+		$Update_Job_Status->execute($Trigger_Job, "### Job resumed.\n", '', $User_Name);
+
 	$SIG{CHLD} = 'IGNORE';
 	my $PID = fork();
 	if (defined $PID && $PID == 0) {
@@ -494,7 +507,7 @@ ENDHTML
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>10,
+		-cols=>11,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -522,7 +535,7 @@ sub html_output {
 	my $Rows = $Select_Jobs->rows();
 
 	$Table->addRow( "ID", "Host", "Execution Sets", "Currently Running Command", "On Failure", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
-	$Table->setRowClass (1, 'tbrow1');
+	$Table->setRowClass(1, 'tbrow1');
 
 	my $Job_Row_Count=1;
 
@@ -629,7 +642,6 @@ sub html_output {
 			$Status = 'Job Complete';
 			$Control_Button = '<img src="/resources/imgs/confirm.png" alt="Job Complete" >';
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
-			$Table->setCellClass ($Job_Row_Count, 9, 'tbrowdarkgreen');
 		}
 		elsif ($Status == 1) {
 			$Running_Command = $Held_Running_Command;
