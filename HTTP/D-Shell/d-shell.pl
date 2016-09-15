@@ -982,8 +982,8 @@ sub processor {
 				eval { $Command_Output = $Command_Output . $Connected_Host->before(); }; &epic_failure('PostPrompt Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@;
 			}
 
-			$Command_Output =~ s/\n\e.*//g; # Clears newlines, escapes (ESC)
-			$Command_Output =~ s/\e.*//g;
+			$Command_Output =~ s/\n\e//g; # Clears newlines, escapes (ESC)
+			$Command_Output =~ s/\e.*?\[K//g; # Strips escapes (mostly escapes for colours)
 			$Command_Output =~ s/^\Q$Command\E//; # Escaping any potential regex in $Command
 			$Command_Output =~ s/.*\r//g;
 			$Command_Output =~ s/\Q$Predictable_Prompt\E//g;
