@@ -7,7 +7,7 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -19,7 +19,7 @@
 -- Current Database: `Management`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `Management` /*!40100 DEFAULT CHARACTER SET utf8 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `Management` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
 
 USE `Management`;
 
@@ -29,7 +29,7 @@ USE `Management`;
 
 DROP TABLE IF EXISTS `access_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `access_log` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `ip` varchar(15) NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE `access_log` (
   `username` varchar(128) DEFAULT NULL,
   `time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=861 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=861 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -54,7 +54,7 @@ CREATE TABLE `access_log` (
 
 DROP TABLE IF EXISTS `audit_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `audit_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `category` varchar(255) NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE `audit_log` (
   `username` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=114 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=114 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,7 +73,7 @@ CREATE TABLE `audit_log` (
 
 DROP TABLE IF EXISTS `credentials`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `credentials` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `username` varchar(128) NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE `credentials` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_UNIQUE` (`email`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -102,7 +102,7 @@ CREATE TABLE `credentials` (
 
 DROP TABLE IF EXISTS `distribution`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `distribution` (
   `host_id` int(11) NOT NULL,
   `sftp_port` int(5) NOT NULL DEFAULT '22',
@@ -118,7 +118,7 @@ CREATE TABLE `distribution` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`host_id`),
   UNIQUE KEY `host_id_UNIQUE` (`host_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -127,7 +127,7 @@ CREATE TABLE `distribution` (
 
 DROP TABLE IF EXISTS `lock`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lock` (
   `sudoers-build` int(1) NOT NULL DEFAULT '0',
   `sudoers-distribution` int(1) NOT NULL DEFAULT '0',
@@ -136,14 +136,14 @@ CREATE TABLE `lock` (
   `last-distribution-started` datetime NOT NULL,
   `last-distribution-finished` datetime NOT NULL,
   PRIMARY KEY (`sudoers-build`,`sudoers-distribution`,`last-build-started`,`last-build-finished`,`last-distribution-started`,`last-distribution-finished`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Current Database: `Sudoers`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `Sudoers` /*!40100 DEFAULT CHARACTER SET utf8 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `Sudoers` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
 
 USE `Sudoers`;
 
@@ -153,7 +153,7 @@ USE `Sudoers`;
 
 DROP TABLE IF EXISTS `command_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `command_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupname` varchar(128) NOT NULL,
@@ -164,7 +164,7 @@ CREATE TABLE `command_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -173,7 +173,7 @@ CREATE TABLE `command_groups` (
 
 DROP TABLE IF EXISTS `commands`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `commands` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `command_alias` varchar(128) NOT NULL,
@@ -186,7 +186,7 @@ CREATE TABLE `commands` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `command_alias_UNIQUE` (`command_alias`),
   UNIQUE KEY `command_UNIQUE` (`command`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -195,7 +195,7 @@ CREATE TABLE `commands` (
 
 DROP TABLE IF EXISTS `host_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `host_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupname` varchar(128) NOT NULL,
@@ -206,7 +206,7 @@ CREATE TABLE `host_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -215,7 +215,7 @@ CREATE TABLE `host_groups` (
 
 DROP TABLE IF EXISTS `hosts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hosts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `hostname` varchar(128) NOT NULL,
@@ -227,7 +227,7 @@ CREATE TABLE `hosts` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `hostname_UNIQUE` (`hostname`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -236,14 +236,14 @@ CREATE TABLE `hosts` (
 
 DROP TABLE IF EXISTS `lnk_command_groups_to_commands`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_command_groups_to_commands` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `group` int(11) NOT NULL,
   `command` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -252,14 +252,14 @@ CREATE TABLE `lnk_command_groups_to_commands` (
 
 DROP TABLE IF EXISTS `lnk_host_groups_to_hosts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_host_groups_to_hosts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `group` int(11) NOT NULL,
   `host` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -268,14 +268,14 @@ CREATE TABLE `lnk_host_groups_to_hosts` (
 
 DROP TABLE IF EXISTS `lnk_rules_to_command_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_rules_to_command_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rule` int(11) NOT NULL,
   `command_group` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -284,14 +284,14 @@ CREATE TABLE `lnk_rules_to_command_groups` (
 
 DROP TABLE IF EXISTS `lnk_rules_to_commands`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_rules_to_commands` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rule` int(11) NOT NULL,
   `command` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -300,14 +300,14 @@ CREATE TABLE `lnk_rules_to_commands` (
 
 DROP TABLE IF EXISTS `lnk_rules_to_host_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_rules_to_host_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rule` int(11) NOT NULL,
   `host_group` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -316,14 +316,14 @@ CREATE TABLE `lnk_rules_to_host_groups` (
 
 DROP TABLE IF EXISTS `lnk_rules_to_hosts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_rules_to_hosts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rule` int(11) NOT NULL,
   `host` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -332,14 +332,14 @@ CREATE TABLE `lnk_rules_to_hosts` (
 
 DROP TABLE IF EXISTS `lnk_rules_to_user_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_rules_to_user_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rule` int(11) NOT NULL,
   `user_group` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -348,14 +348,14 @@ CREATE TABLE `lnk_rules_to_user_groups` (
 
 DROP TABLE IF EXISTS `lnk_rules_to_users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_rules_to_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rule` int(11) NOT NULL,
   `user` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -364,14 +364,14 @@ CREATE TABLE `lnk_rules_to_users` (
 
 DROP TABLE IF EXISTS `lnk_user_groups_to_users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_user_groups_to_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `group` int(11) NOT NULL,
   `user` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -380,7 +380,7 @@ CREATE TABLE `lnk_user_groups_to_users` (
 
 DROP TABLE IF EXISTS `notes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `notes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type_id` int(2) NOT NULL DEFAULT '0',
@@ -390,7 +390,7 @@ CREATE TABLE `notes` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -399,7 +399,7 @@ CREATE TABLE `notes` (
 
 DROP TABLE IF EXISTS `rules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rules` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
@@ -417,7 +417,7 @@ CREATE TABLE `rules` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -426,7 +426,7 @@ CREATE TABLE `rules` (
 
 DROP TABLE IF EXISTS `user_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupname` varchar(128) NOT NULL,
@@ -438,7 +438,7 @@ CREATE TABLE `user_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -447,7 +447,7 @@ CREATE TABLE `user_groups` (
 
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(128) NOT NULL,
@@ -458,14 +458,14 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Current Database: `Nagios`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `Nagios` /*!40100 DEFAULT CHARACTER SET utf8 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `Nagios` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
 
 USE `Nagios`;
 
@@ -475,7 +475,7 @@ USE `Nagios`;
 
 DROP TABLE IF EXISTS `nagios_command`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_command` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `command_name` varchar(255) NOT NULL,
@@ -488,7 +488,7 @@ CREATE TABLE `nagios_command` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`command_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=243 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=243 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -497,7 +497,7 @@ CREATE TABLE `nagios_command` (
 
 DROP TABLE IF EXISTS `nagios_contact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_contact` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `contact_name` varchar(255) NOT NULL,
@@ -537,7 +537,7 @@ CREATE TABLE `nagios_contact` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`contact_name`,`config_id`),
   UNIQUE KEY `contact_name_UNIQUE` (`contact_name`)
-) ENGINE=MyISAM AUTO_INCREMENT=133 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=133 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -546,7 +546,7 @@ CREATE TABLE `nagios_contact` (
 
 DROP TABLE IF EXISTS `nagios_contactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_contactgroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `contactgroup_name` varchar(255) NOT NULL,
@@ -561,7 +561,7 @@ CREATE TABLE `nagios_contactgroup` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`contactgroup_name`,`config_id`),
   UNIQUE KEY `contactgroup_name_UNIQUE` (`contactgroup_name`)
-) ENGINE=MyISAM AUTO_INCREMENT=84 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=84 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -570,7 +570,7 @@ CREATE TABLE `nagios_contactgroup` (
 
 DROP TABLE IF EXISTS `nagios_contacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_contacttemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
@@ -607,7 +607,7 @@ CREATE TABLE `nagios_contacttemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -616,7 +616,7 @@ CREATE TABLE `nagios_contacttemplate` (
 
 DROP TABLE IF EXISTS `nagios_domain`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_domain` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain` varchar(255) NOT NULL,
@@ -643,7 +643,7 @@ CREATE TABLE `nagios_domain` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `domain` (`domain`)
-) ENGINE=MyISAM AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -652,7 +652,7 @@ CREATE TABLE `nagios_domain` (
 
 DROP TABLE IF EXISTS `nagios_host`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_host` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` varchar(255) NOT NULL,
@@ -714,7 +714,7 @@ CREATE TABLE `nagios_host` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`config_id`),
   UNIQUE KEY `host_name_UNIQUE` (`host_name`)
-) ENGINE=MyISAM AUTO_INCREMENT=1326 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=1326 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -723,7 +723,7 @@ CREATE TABLE `nagios_host` (
 
 DROP TABLE IF EXISTS `nagios_hostdependency`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_hostdependency` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
@@ -741,7 +741,7 @@ CREATE TABLE `nagios_hostdependency` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -750,7 +750,7 @@ CREATE TABLE `nagios_hostdependency` (
 
 DROP TABLE IF EXISTS `nagios_hostescalation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_hostescalation` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
@@ -769,7 +769,7 @@ CREATE TABLE `nagios_hostescalation` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -778,7 +778,7 @@ CREATE TABLE `nagios_hostescalation` (
 
 DROP TABLE IF EXISTS `nagios_hostextinfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_hostextinfo` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` int(11) DEFAULT NULL,
@@ -798,7 +798,7 @@ CREATE TABLE `nagios_hostextinfo` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=161 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=161 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -807,7 +807,7 @@ CREATE TABLE `nagios_hostextinfo` (
 
 DROP TABLE IF EXISTS `nagios_hostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_hostgroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `hostgroup_name` varchar(255) NOT NULL,
@@ -824,7 +824,7 @@ CREATE TABLE `nagios_hostgroup` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`hostgroup_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=109 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -833,7 +833,7 @@ CREATE TABLE `nagios_hostgroup` (
 
 DROP TABLE IF EXISTS `nagios_hosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_hosttemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
@@ -891,7 +891,7 @@ CREATE TABLE `nagios_hosttemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=71 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -900,7 +900,7 @@ CREATE TABLE `nagios_hosttemplate` (
 
 DROP TABLE IF EXISTS `nagios_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `key1` varchar(200) NOT NULL,
@@ -910,7 +910,7 @@ CREATE TABLE `nagios_info` (
   `infotext` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `keypair` (`key1`,`key2`,`version`,`language`)
-) ENGINE=MyISAM AUTO_INCREMENT=223 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=223 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -919,12 +919,12 @@ CREATE TABLE `nagios_info` (
 
 DROP TABLE IF EXISTS `nagios_lnkContactToCommandHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContactToCommandHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -933,12 +933,12 @@ CREATE TABLE `nagios_lnkContactToCommandHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkContactToCommandService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContactToCommandService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -947,12 +947,12 @@ CREATE TABLE `nagios_lnkContactToCommandService` (
 
 DROP TABLE IF EXISTS `nagios_lnkContactToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContactToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -961,14 +961,14 @@ CREATE TABLE `nagios_lnkContactToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkContactToContacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContactToContacttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -977,12 +977,12 @@ CREATE TABLE `nagios_lnkContactToContacttemplate` (
 
 DROP TABLE IF EXISTS `nagios_lnkContactToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContactToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -991,12 +991,12 @@ CREATE TABLE `nagios_lnkContactToVariabledefinition` (
 
 DROP TABLE IF EXISTS `nagios_lnkContactgroupToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContactgroupToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1005,12 +1005,12 @@ CREATE TABLE `nagios_lnkContactgroupToContact` (
 
 DROP TABLE IF EXISTS `nagios_lnkContactgroupToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContactgroupToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1019,12 +1019,12 @@ CREATE TABLE `nagios_lnkContactgroupToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkContacttemplateToCommandHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContacttemplateToCommandHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1033,12 +1033,12 @@ CREATE TABLE `nagios_lnkContacttemplateToCommandHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkContacttemplateToCommandService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContacttemplateToCommandService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1047,12 +1047,12 @@ CREATE TABLE `nagios_lnkContacttemplateToCommandService` (
 
 DROP TABLE IF EXISTS `nagios_lnkContacttemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContacttemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1061,14 +1061,14 @@ CREATE TABLE `nagios_lnkContacttemplateToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkContacttemplateToContacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContacttemplateToContacttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1077,12 +1077,12 @@ CREATE TABLE `nagios_lnkContacttemplateToContacttemplate` (
 
 DROP TABLE IF EXISTS `nagios_lnkContacttemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkContacttemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1091,12 +1091,12 @@ CREATE TABLE `nagios_lnkContacttemplateToVariabledefinition` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1105,12 +1105,12 @@ CREATE TABLE `nagios_lnkHostToContact` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1119,12 +1119,12 @@ CREATE TABLE `nagios_lnkHostToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1133,12 +1133,12 @@ CREATE TABLE `nagios_lnkHostToHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1147,14 +1147,14 @@ CREATE TABLE `nagios_lnkHostToHostgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostToHosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostToHosttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1163,12 +1163,12 @@ CREATE TABLE `nagios_lnkHostToHosttemplate` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1177,12 +1177,12 @@ CREATE TABLE `nagios_lnkHostToVariabledefinition` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHost_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostdependencyToHost_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1191,12 +1191,12 @@ CREATE TABLE `nagios_lnkHostdependencyToHost_DH` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHost_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostdependencyToHost_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1205,12 +1205,12 @@ CREATE TABLE `nagios_lnkHostdependencyToHost_H` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHostgroup_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostdependencyToHostgroup_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1219,12 +1219,12 @@ CREATE TABLE `nagios_lnkHostdependencyToHostgroup_DH` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHostgroup_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostdependencyToHostgroup_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1233,12 +1233,12 @@ CREATE TABLE `nagios_lnkHostdependencyToHostgroup_H` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostescalationToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostescalationToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1247,12 +1247,12 @@ CREATE TABLE `nagios_lnkHostescalationToContact` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostescalationToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostescalationToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1261,12 +1261,12 @@ CREATE TABLE `nagios_lnkHostescalationToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostescalationToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostescalationToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1275,12 +1275,12 @@ CREATE TABLE `nagios_lnkHostescalationToHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostescalationToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostescalationToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1289,12 +1289,12 @@ CREATE TABLE `nagios_lnkHostescalationToHostgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostgroupToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostgroupToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1303,12 +1303,12 @@ CREATE TABLE `nagios_lnkHostgroupToHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkHostgroupToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHostgroupToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1317,12 +1317,12 @@ CREATE TABLE `nagios_lnkHostgroupToHostgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkHosttemplateToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHosttemplateToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1331,12 +1331,12 @@ CREATE TABLE `nagios_lnkHosttemplateToContact` (
 
 DROP TABLE IF EXISTS `nagios_lnkHosttemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHosttemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1345,12 +1345,12 @@ CREATE TABLE `nagios_lnkHosttemplateToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkHosttemplateToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHosttemplateToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1359,12 +1359,12 @@ CREATE TABLE `nagios_lnkHosttemplateToHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkHosttemplateToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHosttemplateToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1373,14 +1373,14 @@ CREATE TABLE `nagios_lnkHosttemplateToHostgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkHosttemplateToHosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHosttemplateToHosttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1389,12 +1389,12 @@ CREATE TABLE `nagios_lnkHosttemplateToHosttemplate` (
 
 DROP TABLE IF EXISTS `nagios_lnkHosttemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkHosttemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1403,12 +1403,12 @@ CREATE TABLE `nagios_lnkHosttemplateToVariabledefinition` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1417,12 +1417,12 @@ CREATE TABLE `nagios_lnkServiceToContact` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1431,12 +1431,12 @@ CREATE TABLE `nagios_lnkServiceToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1445,12 +1445,12 @@ CREATE TABLE `nagios_lnkServiceToHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1459,12 +1459,12 @@ CREATE TABLE `nagios_lnkServiceToHostgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1473,14 +1473,14 @@ CREATE TABLE `nagios_lnkServiceToServicegroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceToServicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceToServicetemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1489,12 +1489,12 @@ CREATE TABLE `nagios_lnkServiceToServicetemplate` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1503,12 +1503,12 @@ CREATE TABLE `nagios_lnkServiceToVariabledefinition` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHost_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicedependencyToHost_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1517,12 +1517,12 @@ CREATE TABLE `nagios_lnkServicedependencyToHost_DH` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHost_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicedependencyToHost_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1531,12 +1531,12 @@ CREATE TABLE `nagios_lnkServicedependencyToHost_H` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHostgroup_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicedependencyToHostgroup_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1545,12 +1545,12 @@ CREATE TABLE `nagios_lnkServicedependencyToHostgroup_DH` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHostgroup_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicedependencyToHostgroup_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1559,12 +1559,12 @@ CREATE TABLE `nagios_lnkServicedependencyToHostgroup_H` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicedependencyToService_DS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicedependencyToService_DS` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1573,12 +1573,12 @@ CREATE TABLE `nagios_lnkServicedependencyToService_DS` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicedependencyToService_S`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicedependencyToService_S` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1587,12 +1587,12 @@ CREATE TABLE `nagios_lnkServicedependencyToService_S` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceescalationToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceescalationToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1601,12 +1601,12 @@ CREATE TABLE `nagios_lnkServiceescalationToContact` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceescalationToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceescalationToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1615,12 +1615,12 @@ CREATE TABLE `nagios_lnkServiceescalationToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceescalationToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceescalationToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1629,12 +1629,12 @@ CREATE TABLE `nagios_lnkServiceescalationToHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceescalationToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceescalationToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1643,12 +1643,12 @@ CREATE TABLE `nagios_lnkServiceescalationToHostgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServiceescalationToService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServiceescalationToService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1657,14 +1657,14 @@ CREATE TABLE `nagios_lnkServiceescalationToService` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicegroupToService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicegroupToService` (
   `idMaster` int(11) NOT NULL,
   `idSlaveH` int(11) NOT NULL,
   `idSlaveHG` int(11) NOT NULL,
   `idSlaveS` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlaveH`,`idSlaveHG`,`idSlaveS`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1673,12 +1673,12 @@ CREATE TABLE `nagios_lnkServicegroupToService` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicegroupToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicegroupToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1687,12 +1687,12 @@ CREATE TABLE `nagios_lnkServicegroupToServicegroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicetemplateToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicetemplateToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1701,12 +1701,12 @@ CREATE TABLE `nagios_lnkServicetemplateToContact` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicetemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicetemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1715,12 +1715,12 @@ CREATE TABLE `nagios_lnkServicetemplateToContactgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicetemplateToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicetemplateToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1729,12 +1729,12 @@ CREATE TABLE `nagios_lnkServicetemplateToHost` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicetemplateToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicetemplateToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1743,12 +1743,12 @@ CREATE TABLE `nagios_lnkServicetemplateToHostgroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicetemplateToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicetemplateToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1757,14 +1757,14 @@ CREATE TABLE `nagios_lnkServicetemplateToServicegroup` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicetemplateToServicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicetemplateToServicetemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1773,12 +1773,12 @@ CREATE TABLE `nagios_lnkServicetemplateToServicetemplate` (
 
 DROP TABLE IF EXISTS `nagios_lnkServicetemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkServicetemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1787,12 +1787,12 @@ CREATE TABLE `nagios_lnkServicetemplateToVariabledefinition` (
 
 DROP TABLE IF EXISTS `nagios_lnkTimeperiodToTimeperiod`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_lnkTimeperiodToTimeperiod` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1801,16 +1801,16 @@ CREATE TABLE `nagios_lnkTimeperiodToTimeperiod` (
 
 DROP TABLE IF EXISTS `nagios_logbook`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_logbook` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `user` varchar(255) NOT NULL,
   `ipadress` varchar(255) NOT NULL,
   `domain` varchar(255) NOT NULL,
-  `entry` tinytext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `entry` tinytext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=91 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1819,7 +1819,7 @@ CREATE TABLE `nagios_logbook` (
 
 DROP TABLE IF EXISTS `nagios_mainmenu`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_mainmenu` (
   `id` tinyint(4) NOT NULL AUTO_INCREMENT,
   `order_id` tinyint(4) NOT NULL DEFAULT '0',
@@ -1827,7 +1827,7 @@ CREATE TABLE `nagios_mainmenu` (
   `item` varchar(20) NOT NULL DEFAULT '',
   `link` varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1836,7 +1836,7 @@ CREATE TABLE `nagios_mainmenu` (
 
 DROP TABLE IF EXISTS `nagios_service`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_service` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL DEFAULT 'Obsolete Field',
@@ -1895,7 +1895,7 @@ CREATE TABLE `nagios_service` (
   `access_rights` varchar(8) DEFAULT NULL,
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=639 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=639 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1904,7 +1904,7 @@ CREATE TABLE `nagios_service` (
 
 DROP TABLE IF EXISTS `nagios_servicedependency`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_servicedependency` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
@@ -1924,7 +1924,7 @@ CREATE TABLE `nagios_servicedependency` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1933,7 +1933,7 @@ CREATE TABLE `nagios_servicedependency` (
 
 DROP TABLE IF EXISTS `nagios_serviceescalation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_serviceescalation` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
@@ -1953,7 +1953,7 @@ CREATE TABLE `nagios_serviceescalation` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1962,7 +1962,7 @@ CREATE TABLE `nagios_serviceescalation` (
 
 DROP TABLE IF EXISTS `nagios_serviceextinfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_serviceextinfo` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` int(11) DEFAULT NULL,
@@ -1979,7 +1979,7 @@ CREATE TABLE `nagios_serviceextinfo` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`service_description`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1988,7 +1988,7 @@ CREATE TABLE `nagios_serviceextinfo` (
 
 DROP TABLE IF EXISTS `nagios_servicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_servicegroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `servicegroup_name` varchar(255) NOT NULL,
@@ -2005,7 +2005,7 @@ CREATE TABLE `nagios_servicegroup` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`servicegroup_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2014,7 +2014,7 @@ CREATE TABLE `nagios_servicegroup` (
 
 DROP TABLE IF EXISTS `nagios_servicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_servicetemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
@@ -2073,7 +2073,7 @@ CREATE TABLE `nagios_servicetemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=184 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=184 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2082,7 +2082,7 @@ CREATE TABLE `nagios_servicetemplate` (
 
 DROP TABLE IF EXISTS `nagios_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_settings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `category` varchar(20) NOT NULL,
@@ -2090,7 +2090,7 @@ CREATE TABLE `nagios_settings` (
   `value` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2099,7 +2099,7 @@ CREATE TABLE `nagios_settings` (
 
 DROP TABLE IF EXISTS `nagios_submenu`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_submenu` (
   `id` tinyint(4) NOT NULL AUTO_INCREMENT,
   `id_main` tinyint(4) NOT NULL DEFAULT '0',
@@ -2108,7 +2108,7 @@ CREATE TABLE `nagios_submenu` (
   `link` varchar(50) NOT NULL DEFAULT '',
   `access_rights` varchar(8) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2117,7 +2117,7 @@ CREATE TABLE `nagios_submenu` (
 
 DROP TABLE IF EXISTS `nagios_timedefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_timedefinition` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tipId` int(10) unsigned NOT NULL,
@@ -2125,7 +2125,7 @@ CREATE TABLE `nagios_timedefinition` (
   `range` text NOT NULL,
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=119 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=119 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2134,7 +2134,7 @@ CREATE TABLE `nagios_timedefinition` (
 
 DROP TABLE IF EXISTS `nagios_timeperiod`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_timeperiod` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `timeperiod_name` varchar(255) NOT NULL DEFAULT '',
@@ -2148,7 +2148,7 @@ CREATE TABLE `nagios_timeperiod` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `timeperiod_name` (`timeperiod_name`,`config_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 PACK_KEYS=0;
+) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 PACK_KEYS=0;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2157,7 +2157,7 @@ CREATE TABLE `nagios_timeperiod` (
 
 DROP TABLE IF EXISTS `nagios_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
@@ -2172,7 +2172,7 @@ CREATE TABLE `nagios_user` (
   `locale` varchar(6) DEFAULT 'en_EN',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2181,21 +2181,21 @@ CREATE TABLE `nagios_user` (
 
 DROP TABLE IF EXISTS `nagios_variabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nagios_variabledefinition` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `value` varchar(255) NOT NULL,
   `last_modified` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Current Database: `IP_Allocation`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `IP_Allocation` /*!40100 DEFAULT CHARACTER SET utf8 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `IP_Allocation` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
 
 USE `IP_Allocation`;
 
@@ -2205,7 +2205,7 @@ USE `IP_Allocation`;
 
 DROP TABLE IF EXISTS `hosts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hosts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `hostname` varchar(128) NOT NULL,
@@ -2213,7 +2213,7 @@ CREATE TABLE `hosts` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `hostname_UNIQUE` (`hostname`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2222,7 +2222,7 @@ CREATE TABLE `hosts` (
 
 DROP TABLE IF EXISTS `ipv4_address_blocks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ipv4_address_blocks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ip_block_name` varchar(45) NOT NULL,
@@ -2237,7 +2237,7 @@ CREATE TABLE `ipv4_address_blocks` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2246,7 +2246,7 @@ CREATE TABLE `ipv4_address_blocks` (
 
 DROP TABLE IF EXISTS `ipv4_allocations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ipv4_allocations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `network_block` varchar(45) NOT NULL,
@@ -2254,7 +2254,7 @@ CREATE TABLE `ipv4_allocations` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2263,13 +2263,13 @@ CREATE TABLE `ipv4_allocations` (
 
 DROP TABLE IF EXISTS `lnk_hosts_to_ipv4_allocations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `lnk_hosts_to_ipv4_allocations` (
   `id` int(11) NOT NULL,
   `host` int(11) NOT NULL,
   `ip` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

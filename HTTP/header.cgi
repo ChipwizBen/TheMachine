@@ -78,11 +78,10 @@ sub html_header {
 my $CSS_Config;
 if (-f $CSS_Config) {$CSS_Config = 'format.css';} else {$CSS_Config = '../format.css';}
 
-print $CGI->header(-cookie=>$Cookie);
+print $CGI->header(-cookie=>$Cookie, -charset=> 'utf-8');
 
 print <<ENDHTML;
 <!DOCTYPE html>
-<html>
 <head>
 	<title>$System_Name</title>
 	<link rel="stylesheet" type="text/css" href="$CSS_Config" media= "screen" title ="$System_Name CSS"/>

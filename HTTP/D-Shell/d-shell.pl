@@ -280,10 +280,19 @@ sub job_discovery {
 		print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} was not found.${Clear}\n";
 		exit(0);
 	}
-	if ($Status == 0) {
+	if ($Status == 10) {
+		print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} was caught starting (Status $Status). Setting this to running.${Clear}\n";
+		print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} was caught starting (Status $Status). Setting this to running.${Clear}\n";
+		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute('1', $User_Name, $Parent_ID);
+	}
+	elsif ($Status == 0) {
 		if ($Override) {
-			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed. Override is enabled, so we're running it again!${Clear}\n";
-			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed. Override is enabled, so we're running it again!${Clear}\n";
+			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed (Status $Status). Override is enabled, so we're running it again!${Clear}\n";
+			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed (Status $Status). Override is enabled, so we're running it again!${Clear}\n";
 			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 				`status` = ?,
 				`modified_by` = ?
@@ -291,15 +300,15 @@ sub job_discovery {
 			$Update_Job->execute('1', $User_Name, $Parent_ID);
 		}
 		else {
-			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed. Override is NOT enabled, so we won't run it again! Exiting...${Clear}\n";
-			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed. Override is NOT enabled, so we won't run it again! Exiting...${Clear}\n";
+			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed (Status $Status). Override is NOT enabled, so we won't run it again! Exiting...${Clear}\n";
+			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed (Status $Status). Override is NOT enabled, so we won't run it again! Exiting...${Clear}\n";
 			exit(0);
 		}
 	}
-	if ($Status == 1 || $Status == 10) {
+	elsif ($Status == 1 || $Status == 10) {
 		if ($Override) {
-			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running. Override is enabled, so we're running a second copy!${Clear}\n";
-			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running. Override is enabled, so we're running a second copy!${Clear}\n";
+			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running (Status $Status). Override is enabled, so we're running a second copy!${Clear}\n";
+			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running (Status $Status). Override is enabled, so we're running a second copy!${Clear}\n";
 			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 				`status` = ?,
 				`modified_by` = ?
@@ -307,32 +316,32 @@ sub job_discovery {
 			$Update_Job->execute('1', $User_Name, $Parent_ID);
 		}
 		else {
-			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running. Override is NOT enabled, so we won't run a second copy! Exiting...${Clear}\n";
-			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running. Override is NOT enabled, so we won't run a second copy! Exiting...${Clear}\n";
+			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running (Status $Status). Override is NOT enabled, so we won't run a second copy! Exiting...${Clear}\n";
+			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running (Status $Status). Override is NOT enabled, so we won't run a second copy! Exiting...${Clear}\n";
 			exit(0);
 		}
 	}
-	if ($Status == 2) {
-		print "${Green}Job ID ${Blue}$Job_ID${Green} is paused. Continuing job from the last ran command...${Clear}\n";
-		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} is paused. Continuing job from the last ran command...${Clear}\n";
+	elsif ($Status == 2) {
+		print "${Green}Job ID ${Blue}$Job_ID${Green} is paused (Status $Status). Continuing job from the last ran command...${Clear}\n";
+		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} is paused (Status $Status). Continuing job from the last ran command...${Clear}\n";
 		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job->execute('1', $User_Name, $Parent_ID);
 	}
-	if ($Status == 4) {
-		print "${Green}Job ID ${Blue}$Job_ID${Green} is pending. Starting job...${Clear}\n";
-		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} is pending. Starting job...${Clear}\n";
+	elsif ($Status == 4) {
+		print "${Green}Job ID ${Blue}$Job_ID${Green} is pending (Status $Status). Starting job...${Clear}\n";
+		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} is pending (Status $Status). Starting job...${Clear}\n";
 		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job->execute('1', $User_Name, $Parent_ID);
 	}
-	if ($Status == 3 || $Status == 5 || $Status == 6 || $Status == 7 || $Status == 8 || $Status == 9 || $Status == 11) {
-		print "${Green}Job ID ${Blue}$Job_ID${Green} was stopped. Restarting job...${Clear}\n";
-		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} was stopped. Restarting job...${Clear}\n";
+	else {
+		print "${Green}Job ID ${Blue}$Job_ID${Green} was stopped (Status $Status). Restarting job...${Clear}\n";
+		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} was stopped (Status $Status). Restarting job...${Clear}\n";
 		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?

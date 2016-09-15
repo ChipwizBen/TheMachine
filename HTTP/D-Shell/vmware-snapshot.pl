@@ -9,6 +9,7 @@ my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
+my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
 my $DB_DShell = DB_DShell();
@@ -25,15 +26,16 @@ my $Blue = "\e[1;34;10m";
 my $Clear = "\e[0m";
 
 my $Help = "
-${Green}$System_Short_Name version $Version
+${Green}$System_Name version $Version
 
 Options are:
-	${Blue}-t, --threads\t\t${Green}Sets the number of threads to use for connecting to nodes. By default the number of threads matches the number of nodes. Setting it more than this is a BAD idea (for load).
+	${Blue}-t, --threads\t\t${Green}Sets the number of threads to use for connecting to nodes. By default the number of 
+				threads matches the number of nodes. Setting it more than this is a BAD idea (for load).
 	${Blue}-H, --hosts\t\t${Green}A list of hosts to snapshot, comma seperated (no spaces!) [e.g.: -H host01,host02,host03]
 	${Blue}-i, --host-ids\t\t${Green}A list of host IDs to snapshot, comma seperated (no spaces!) [e.g.: -H 4587,155,2341]
-	${Blue}-c, --count\t\t${Green}Counts the snapshots belonging to the VM, including those done by $System_Short_Name
+	${Blue}-c, --count\t\t${Green}Counts the snapshots belonging to the VM, including those done by $System_Name
 	${Blue}-s, --snapshot\t\t${Green}Takes a snapshot of the listed hosts
-	${Blue}-r, --remove\t\t${Green}Removes snapshots for listed hosts that were created by $System_Short_Name
+	${Blue}-r, --remove\t\t${Green}Removes snapshots for listed hosts that were created by $System_Name
 	${Blue}-e, --erase\t\t${Green}Removes ALL snapshots for listed hosts
 	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug)
 	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes thread data
@@ -149,7 +151,7 @@ foreach my $Parameter (@ARGV) {
 	if ($Parameter eq '-r' || $Parameter eq '--remove') {
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Snapshots will be removed for listed hosts that were created by $System_Short_Name${Clear}\n";
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Snapshots will be removed for listed hosts that were created by $System_Name${Clear}\n";
 		}
 		$Remove = 1;
 	}
@@ -416,10 +418,10 @@ sub remove_snapshots {
 my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 
 	if (@Host_IDs) {
-		print "Removing $System_Short_Name snapshots for $Host on node $Node\n";
+		print "Removing $System_Name snapshots for $Host on node $Node\n";
 	}
 	else {
-		print "${Green}Removing $System_Short_Name snapshots for ${Yellow}$Host${Green} on node ${Blue}$Node${Clear}\n";
+		print "${Green}Removing $System_Name snapshots for ${Yellow}$Host${Green} on node ${Blue}$Node${Clear}\n";
 	}
 	my $Count_Our_Snapshots = "vim-cmd vmsvc/snapshot.get $Node_VM_ID | grep -A1 $System_Short_Name | grep Id | wc -l";
 		my $Our_Snapshot_Count = $SSH->exec($Count_Our_Snapshots, $Command_Timeout);
@@ -439,18 +441,18 @@ my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 	
 			if ($Verbose && $Our_Snapshot) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
-				system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot ID $Our_Snapshot for ${Yellow}$Host on node ${Blue}$Node${Clear}\n' >> $Log_File");
-				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot ID $Our_Snapshot for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+				system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Name snapshot ID $Our_Snapshot for ${Yellow}$Host on node ${Blue}$Node${Clear}\n' >> $Log_File");
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Name snapshot ID $Our_Snapshot for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
 				system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}$Remove_Snapshot_Command ${Green}for host ${Yellow}$Host ${Green}on node ${Blue}$Node${Green}${Clear}\n' >> $Log_File");
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Pink}$Remove_Snapshot_Command ${Green}for host ${Yellow}$Host ${Green}on node ${Blue}$Node${Green}${Clear}\n";
 			}
 			if ($Our_Snapshot) {
 				$SSH->exec($Remove_Snapshot_Command, $Command_Timeout);
 				if (@Host_IDs) {
-					print "Removing $System_Short_Name snapshot ID $Our_Snapshot for $Host on node $Node\n";
+					print "Removing $System_Name snapshot ID $Our_Snapshot for $Host on node $Node\n";
 				}
 				else {
-					print "${Green}Removing $System_Short_Name snapshot ID $Our_Snapshot for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+					print "${Green}Removing $System_Name snapshot ID $Our_Snapshot for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
 				}
 			}
 			my $EC = $SSH->exec('echo $?', $Command_Timeout);
@@ -476,8 +478,8 @@ my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 	else {
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
-			system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Could not find any snapshots created by $System_Short_Name that we could remove for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n' >> $Log_File");
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Could not find any snapshots created by $System_Short_Name that we could remove for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
+			system("echo '${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Could not find any snapshots created by $System_Name that we could remove for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n' >> $Log_File");
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Could not find any snapshots created by $System_Name that we could remove for ${Yellow}$Host ${Green}on node ${Blue}$Node${Clear}\n";
 		}
 	}
 
@@ -529,7 +531,7 @@ my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 
 	my $Time_Date_Stamp = strftime "%H:%M:%S %d/%m/%Y", localtime;
 	my $Snapshot_Name = "$System_Short_Name: $Host (VMID: $Node_VM_ID)";
-	my $Snapshot_Description = "Snapshot taken of $Host by $System_Short_Name on node $Node at $Time_Date_Stamp.";
+	my $Snapshot_Description = "Snapshot taken of $Host by $System_Name on node $Node at $Time_Date_Stamp.";
 	my $Include_Memory = 1;
 	my $Snapshot_Command = "vim-cmd vmsvc/snapshot.create $Node_VM_ID '$Snapshot_Name' '$Snapshot_Description' $Include_Memory 0";
 
@@ -627,12 +629,12 @@ my ($Host, $Node, $Node_VM_ID, $SSH, $Command_Timeout, $Log_File) = @_;
 			undef $Is_Snapshotting;
 		}
 
-	system("echo '${Yellow}$Host ${Green}has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Short_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n' >> $Log_File");
+	system("echo '${Yellow}$Host ${Green}has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n' >> $Log_File");
 	if (@Host_IDs) {
-		print "$Host (VMID $Node_VM_ID) has $Snapshot_Count snapshots, $Our_Snapshot_Count of which were created by $System_Short_Name, on node $Node $Is_Snapshotting\n";
+		print "$Host (VMID $Node_VM_ID) has $Snapshot_Count snapshots, $Our_Snapshot_Count of which were created by $System_Name, on node $Node $Is_Snapshotting\n";
 	}
 	else {
-		print "${Yellow}$Host ${Green}(VMID $Node_VM_ID) has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Short_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n";
+		print "${Yellow}$Host ${Green}(VMID $Node_VM_ID) has ${Pink}$Snapshot_Count ${Green}snapshots, ${Pink}$Our_Snapshot_Count ${Green}of which were created by $System_Name, on node ${Blue}$Node ${Green}$Is_Snapshotting${Clear}\n";
 	}
 
 } # sub count_snapshot

@@ -123,7 +123,7 @@ sub write_reverse_proxy {
 		}
 		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
 
-		open( Reverse_Proxy_Config, ">$Reverse_Proxy_Location/rp-$Server_Name.conf" ) or die "Can't open $Reverse_Proxy_Location/rp-$Server_Name.conf";
+		open( Reverse_Proxy_Config, ">$Reverse_Proxy_Location/httpd.rp-$Server_Name.conf" ) or die "Can't open $Reverse_Proxy_Location/rp-$Server_Name.conf";
 	
 		print Reverse_Proxy_Config "#########################################################################\n";
 		print Reverse_Proxy_Config "## $System_Name\n";
@@ -222,10 +222,10 @@ sub write_reverse_proxy {
     $Server_Names
 
     SSLProxyEngine		On
-    SSLProxyVerify		none
-    SSLProxyCheckPeerCN		off
-    SSLProxyCheckPeerName	off
-    SSLProxyCheckPeerExpire	off
+    #SSLProxyVerify		none
+    #SSLProxyCheckPeerCN		off
+    #SSLProxyCheckPeerName	off
+    #SSLProxyCheckPeerExpire	off
     ProxyRequests		Off
     ProxyPreserveHost		On
     ProxyPass			$Source	$Destination
@@ -308,7 +308,7 @@ sub write_redirect {
 		}
 		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
 
-		open( Redirect_Config, ">$Proxy_Redirect_Location/rd-$Server_Name.conf" ) or die "Can't open $Proxy_Redirect_Location/rd-$Server_Name.conf";
+		open( Redirect_Config, ">$Proxy_Redirect_Location/httpd.rd-$Port-$Server_Name.conf" ) or die "Can't open $Proxy_Redirect_Location/rd-$Server_Name.conf";
 	
 		print Redirect_Config "#########################################################################\n";
 		print Redirect_Config "## $System_Name\n";
@@ -318,9 +318,9 @@ sub write_redirect {
 		print Redirect_Config "## This file is part of a wider system and is automatically overwritten often\n";
 		print Redirect_Config "## View the changelog or README files for more information.\n";
 		print Redirect_Config "#########################################################################\n";
-		print Reverse_Proxy_Config "\n";
-		print Reverse_Proxy_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n";		
-		print Reverse_Proxy_Config "\n";
+		print Redirect_Config "\n";
+		print Redirect_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n";		
+		print Redirect_Config "\n";
 
 		print Redirect_Config <<RP_EOF;
 <VirtualHost *:$Port>

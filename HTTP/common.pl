@@ -493,7 +493,8 @@ sub DB_Management {
 
 	my $DB_Management = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
-		$Password)
+		$Password,
+		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
 	return $DB_Management;
 
@@ -513,7 +514,8 @@ sub DB_Sudoers {
 
 	my $DB_Sudoers = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
-		$Password)
+		$Password,
+		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
 	return $DB_Sudoers;
 
@@ -533,7 +535,8 @@ sub DB_IP_Allocation {
 
 	my $DB_IP_Allocation = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
-		$Password)
+		$Password,
+		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
 	return $DB_IP_Allocation;
 
@@ -553,7 +556,8 @@ sub DB_Icinga {
 
 	my $DB_Icinga = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
-		$Password)
+		$Password,
+		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
 	return $DB_Icinga;
 
@@ -573,7 +577,8 @@ sub DB_DNS {
 
 	my $DB_DNS = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
-		$Password)
+		$Password,
+		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
 	return $DB_DNS;
 
@@ -593,7 +598,8 @@ sub DB_Reverse_Proxy {
 
 	my $DB_Reverse_Proxy = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
-		$Password)
+		$Password,
+		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
 	return $DB_Reverse_Proxy;
 
@@ -613,7 +619,8 @@ sub DB_DShell {
 
 	my $DB_Reverse_Proxy = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
-		$Password)
+		$Password,
+		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
 	return $DB_Reverse_Proxy;
 
