@@ -2,6 +2,7 @@
 
 use strict;
 use POSIX qw(strftime);
+use Tie::File;
 
 require '../common.pl';
 my $System_Name = System_Name();
@@ -14,16 +15,21 @@ my $Reverse_Proxy_Location = Reverse_Proxy_Location();
 my $Proxy_Redirect_Location = Proxy_Redirect_Location();
 	unlink glob "$Proxy_Redirect_Location/*.conf";
 my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
-
+my $Date_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
 
 $| = 1;
 my $Override;
+my $Verbose;
 
 foreach my $Parameter (@ARGV) {
 	if ($Parameter eq '--override') {$Override = 1}
 	if ($Parameter eq '-h' || $Parameter eq '--help') {
 		print "\nOptions are:\n\t--override\tOverrides any database lock\n\n";
 		exit(0);
+	}
+	if ($Parameter eq '-v' || $Parameter eq '--verbose') {
+		print "Verbose mode on\n\n";
+		$Verbose = 1;
 	}
 }
 
@@ -123,12 +129,33 @@ sub write_reverse_proxy {
 		}
 		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
 
-		open( Reverse_Proxy_Config, ">$Reverse_Proxy_Location/httpd.rp-$Server_Name.conf" ) or die "Can't open $Reverse_Proxy_Location/rp-$Server_Name.conf";
-	
+		my $Config_File = "$Reverse_Proxy_Location/httpd.rp-$Server_Name.conf";
+
+		if ($Verbose) {print "\nRP-SN: $Server_Name\n    RPID: $ID\n    Config: $Config_File\n"}
+
+		if (-f $Config_File) {
+			tie my @File_Lines, 'Tie::File', $Config_File;
+			my $Last_Written_Time = $File_Lines[3];
+				$Last_Written_Time =~ s/^##\sWritten:\s//;
+				
+				if ($Verbose) {print "    Found existing config, appending.\n"}
+			
+			if ($Last_Written_Time eq $Date_Time) {
+				open( Reverse_Proxy_Config, ">>$Config_File" ) or die "Can't open $Config_File";
+			}
+			else {
+				open( Reverse_Proxy_Config, ">$Config_File" ) or die "Can't open $Config_File";
+			}
+		}
+		else {
+			open( Reverse_Proxy_Config, ">$Config_File" ) or die "Can't open $Config_File";
+		}
+
 		print Reverse_Proxy_Config "#########################################################################\n";
 		print Reverse_Proxy_Config "## $System_Name\n";
 		print Reverse_Proxy_Config "## Version: $Version\n";
-		print Reverse_Proxy_Config "## AUTO GENERATED SCRIPT\n";
+		print Reverse_Proxy_Config "## Written: $Date_Time\n";
+		print Reverse_Proxy_Config "## AUTO GENERATED FILE\n";
 		print Reverse_Proxy_Config "## Please do not edit by hand\n";
 		print Reverse_Proxy_Config "## This file is part of a wider system and is automatically overwritten often\n";
 		print Reverse_Proxy_Config "## View the changelog or README files for more information.\n";
@@ -285,17 +312,17 @@ sub write_redirect {
 	ORDER BY `server_name` ASC");
 	$Record_Query->execute();
 
-	while ( my @Proxy_Entry = $Record_Query->fetchrow_array() )
+	while ( my @Redirect_Entry = $Record_Query->fetchrow_array() )
 	{
-		my $ID = $Proxy_Entry[0];
-		my $Server_Name = $Proxy_Entry[1];
-		my $Port = $Proxy_Entry[2];
-		my $Source = $Proxy_Entry[3];
-		my $Destination = $Proxy_Entry[4];
-		my $Transfer_Log = $Proxy_Entry[5];
-		my $Error_Log = $Proxy_Entry[6];
-		my $Last_Modified = $Proxy_Entry[7];
-		my $Modified_By = $Proxy_Entry[8];
+		my $ID = $Redirect_Entry[0];
+		my $Server_Name = $Redirect_Entry[1];
+		my $Port = $Redirect_Entry[2];
+		my $Source = $Redirect_Entry[3];
+		my $Destination = $Redirect_Entry[4];
+		my $Transfer_Log = $Redirect_Entry[5];
+		my $Error_Log = $Redirect_Entry[6];
+		my $Last_Modified = $Redirect_Entry[7];
+		my $Modified_By = $Redirect_Entry[8];
 
 		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
 		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
@@ -308,30 +335,57 @@ sub write_redirect {
 		}
 		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
 
-		open( Redirect_Config, ">$Proxy_Redirect_Location/httpd.rd-$Port-$Server_Name.conf" ) or die "Can't open $Proxy_Redirect_Location/rd-$Server_Name.conf";
-	
-		print Redirect_Config "#########################################################################\n";
-		print Redirect_Config "## $System_Name\n";
-		print Redirect_Config "## Version: $Version\n";
-		print Redirect_Config "## AUTO GENERATED SCRIPT\n";
-		print Redirect_Config "## Please do not edit by hand\n";
-		print Redirect_Config "## This file is part of a wider system and is automatically overwritten often\n";
-		print Redirect_Config "## View the changelog or README files for more information.\n";
-		print Redirect_Config "#########################################################################\n";
-		print Redirect_Config "\n";
-		print Redirect_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n";		
-		print Redirect_Config "\n";
+		my $Config_File = "$Proxy_Redirect_Location/httpd.rd-$Port-$Server_Name.conf";
+		
+		if ($Verbose) {print "\nRD-SN: $Server_Name\n    RDID: $ID\n    Config: $Config_File\n"}
+		
+		if (-f $Config_File) {
+			tie my @File_Lines, 'Tie::File', $Config_File;
+			my $Last_Written_Time = $File_Lines[3];
+				$Last_Written_Time =~ s/^##\sWritten:\s//;
 
-		print Redirect_Config <<RP_EOF;
-<VirtualHost *:$Port>
-    $Server_Names
-    Redirect			$Source	$Destination
-    TransferLog			$Transfer_Log
-    ErrorLog			$Error_Log
-</VirtualHost>
-RP_EOF
+				if ($Verbose) {print "    Found existing config, appending.\n"}
 
-		print Redirect_Config "\n";
+			if ($Last_Written_Time eq $Date_Time) {
+				open(Redirect_Config_Read,"$Config_File") || die "Can't open $Config_File (read)\n"; 
+				my @Config_File_Lines = <Redirect_Config_Read>;
+				close(Redirect_Config_Read);
+
+				open( Redirect_Config, ">$Config_File" ) or die "Can't open $Config_File (write)";
+				foreach my $Line (@Config_File_Lines) {
+					print Redirect_Config $Line;
+				    if ($Line =~ /^## Redirect ID/) {
+				        print Redirect_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n\n";
+				    }
+				    if ($Line =~ /^\s\s\s\sRedirect/) {
+				        print Redirect_Config "    Redirect			$Source	$Destination\n";
+				    }
+				}
+			}
+		}
+		else {
+			open( Redirect_Config, ">$Config_File" ) or die "Can't open $Config_File";
+			print Redirect_Config "#########################################################################\n";
+			print Redirect_Config "## $System_Name\n";
+			print Redirect_Config "## Version: $Version\n";
+			print Redirect_Config "## Written: $Date_Time\n";
+			print Redirect_Config "## AUTO GENERATED FILE\n";
+			print Redirect_Config "## Please do not edit by hand\n";
+			print Redirect_Config "## This file is part of a wider system and is automatically overwritten often\n";
+			print Redirect_Config "## View the changelog or README files for more information.\n";
+			print Redirect_Config "#########################################################################\n";
+			print Redirect_Config "\n";
+			print Redirect_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By";
+			print Redirect_Config "\n";
+			print Redirect_Config "<VirtualHost *:$Port>\n";
+			print Redirect_Config "    $Server_Names\n";
+			print Redirect_Config "    Redirect			$Source	$Destination\n";
+			print Redirect_Config "    TransferLog			$Transfer_Log\n";
+			print Redirect_Config "    ErrorLog			$Error_Log\n";
+			print Redirect_Config "</VirtualHost>\n";
+			print Redirect_Config "\n";
+		}
+		
 		close Redirect_Config;
 	}
 
