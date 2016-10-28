@@ -6,7 +6,7 @@ use DBI;
 
 require 'common.pl';
 
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 
 my $CGI = CGI->new;
 print "Content-Type: text/html\n\n";
@@ -31,13 +31,13 @@ sub duplicate_check {
 
 	### Existing Host and IP Check
 
-	my $Existing_Host_Name_Check = $DB_Sudoers->prepare("SELECT `id`, `ip`
+	my $Existing_Host_Name_Check = $DB_Connection->prepare("SELECT `id`, `ip`
 		FROM `hosts`
 		WHERE `hostname` = ?");
 		$Existing_Host_Name_Check->execute($Host_Name_Add);
 		my $Existing_Hosts = $Existing_Host_Name_Check->rows();
 
-	my $Existing_IP_Check = $DB_Sudoers->prepare("SELECT `id`, `hostname`
+	my $Existing_IP_Check = $DB_Connection->prepare("SELECT `id`, `hostname`
 		FROM `hosts`
 		WHERE `ip` = ?");
 		$Existing_IP_Check->execute($IP_Add);
@@ -55,7 +55,7 @@ sub duplicate_check {
 } # duplicate_check
 
 sub add_host {
-	my $Host_Insert = $DB_Sudoers->prepare("INSERT INTO `hosts` (
+	my $Host_Insert = $DB_Connection->prepare("INSERT INTO `hosts` (
 		`hostname`,
 		`ip`,
 		`expires`,
@@ -68,10 +68,10 @@ sub add_host {
 
 	$Host_Insert->execute($Host_Name_Add, $IP_Add, '0000-00-00', '1', $User_Name);
 
-	my $Host_Insert_ID = $DB_Sudoers->{mysql_insertid};
+	my $Host_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Adding to sudoers distribution database with defaults
-	my $DB_Management = DB_Management();
+	my $DB_Connection = DB_Connection();
 
 	my ($Distribution_Default_SFTP_Port,
 		$Distribution_Default_User,
@@ -79,7 +79,7 @@ sub add_host {
 		$Distribution_Default_Timeout,
 		$Distribution_Default_Remote_Sudoers) = DSMS_Distribution_Defaults();
 
-		my $Distribution_Insert = $DB_Management->prepare("INSERT INTO `distribution` (
+		my $Distribution_Insert = $DB_Connection->prepare("INSERT INTO `distribution` (
 			`host_id`,
 			`sftp_port`,
 			`user`,
@@ -101,7 +101,7 @@ sub add_host {
 
 	# Audit Log
 
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,

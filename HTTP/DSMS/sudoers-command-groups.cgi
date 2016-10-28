@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Group = $CGI->param("Add_Group");
@@ -227,7 +227,7 @@ my @Commands = split(',', $Add_Command_Temp_Existing);
 
 foreach my $Command_Alias (@Commands) {
 
-	my $Command_Alias_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
+	my $Command_Alias_Query = $DB_Connection->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 		FROM `commands`
 		WHERE `id` = ? ");
 	$Command_Alias_Query->execute($Command_Alias);
@@ -307,7 +307,7 @@ function Expire_Toggle() {
 			<select name='Add_Command_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-				my $Command_Alias_List_Query = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
+				my $Command_Alias_List_Query = $DB_Connection->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
 				FROM `commands`
 				ORDER BY `command_alias` ASC");
 				$Command_Alias_List_Query->execute( );
@@ -412,7 +412,7 @@ ENDHTML
 sub add_group {
 
 	### Existing Group_Name Check
-	my $Existing_Group_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_Group_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `command_groups`
 		WHERE `groupname` = ?");
 		$Existing_Group_Name_Check->execute($Group_Name_Add);
@@ -436,7 +436,7 @@ sub add_group {
 		$Expires_Date_Add = '0000-00-00';
 	}
 
-	my $Group_Insert = $DB_Sudoers->prepare("INSERT INTO `command_groups` (
+	my $Group_Insert = $DB_Connection->prepare("INSERT INTO `command_groups` (
 		`id`,
 		`groupname`,
 		`expires`,
@@ -453,7 +453,7 @@ sub add_group {
 
 	$Group_Insert->execute($Group_Name_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
-	my $Group_Insert_ID = $DB_Sudoers->{mysql_insertid};
+	my $Group_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	$Add_Command_Temp_Existing =~ s/,$//;
 	my @Commands = split(',', $Add_Command_Temp_Existing);
@@ -463,7 +463,7 @@ sub add_group {
 
 		$Command_Alias_Count++;
 
-		my $Command_Alias_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_command_groups_to_commands` (
+		my $Command_Alias_Insert = $DB_Connection->prepare("INSERT INTO `lnk_command_groups_to_commands` (
 			`id`,
 			`group`,
 			`command`
@@ -491,7 +491,7 @@ sub add_group {
 	my $Commands_Attached;
 	foreach my $Command (@Commands) {
 
-		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`
+		my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`
 			FROM `commands`
 			WHERE `id` = ?"
 		);
@@ -512,8 +512,8 @@ sub add_group {
 		$Commands_Attached = '';
 	}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -538,7 +538,7 @@ sub html_edit_group {
 ### Currently Attached Commands Retrieval and Conversion
 
 my $Commands;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
+my $Select_Links = $DB_Connection->prepare("SELECT `command`
 	FROM `lnk_command_groups_to_commands`
 	WHERE `group` = ? "
 );
@@ -548,7 +548,7 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $Command_Alias_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
+	my $Command_Alias_Query = $DB_Connection->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 		FROM `commands`
 		WHERE `id` = ? ");
 	$Command_Alias_Query->execute($Link);
@@ -597,7 +597,7 @@ if ($Edit_Command_Temp_New) {
 	$Edit_Command_Temp_Existing !~ m/,$Edit_Command_Temp_New,/g) {
 		
 		### Check to see if new link is already attached to this group
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_command_groups_to_commands`
 			WHERE `command` = ?
 			AND `group` = ? "
@@ -617,7 +617,7 @@ my @Commands = split(',', $Edit_Command_Temp_Existing);
 
 foreach my $Command_Alias (@Commands) {
 
-	my $Command_Alias_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
+	my $Command_Alias_Query = $DB_Connection->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 		FROM `commands`
 		WHERE `id` = ? ");
 	$Command_Alias_Query->execute($Command_Alias);
@@ -660,7 +660,7 @@ foreach my $Command_Alias (@Commands) {
 ### Group Details Retrieval
 
 if (!$Group_Name_Edit) {
-	my $Select_Group_Details = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
+	my $Select_Group_Details = $DB_Connection->prepare("SELECT `groupname`, `expires`, `active`
 		FROM `command_groups`
 		WHERE `id` = ? "
 	);
@@ -726,7 +726,7 @@ function Expire_Toggle() {
 			<select name='Edit_Command_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-				my $Command_Alias_List_Query = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
+				my $Command_Alias_List_Query = $DB_Connection->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
 				FROM `commands`
 				ORDER BY `command_alias` ASC");
 				$Command_Alias_List_Query->execute( );
@@ -874,7 +874,7 @@ ENDHTML
 sub edit_group {
 
 	### Existing Group_Name Check
-	my $Existing_Group_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_Group_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `command_groups`
 		WHERE `groupname` = ?
 		AND `id` != ?");
@@ -899,7 +899,7 @@ sub edit_group {
 		$Expires_Date_Edit = '0000-00-00';
 	}
 
-	my $Update_Group = $DB_Sudoers->prepare("UPDATE `command_groups` SET
+	my $Update_Group = $DB_Connection->prepare("UPDATE `command_groups` SET
 		`groupname` = ?,
 		`expires` = ?,
 		`active` = ?,
@@ -915,7 +915,7 @@ sub edit_group {
 
 		$Command_Alias_Count++;
 
-		my $Command_Alias_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_command_groups_to_commands` (
+		my $Command_Alias_Insert = $DB_Connection->prepare("INSERT INTO `lnk_command_groups_to_commands` (
 			`id`,
 			`group`,
 			`command`
@@ -932,7 +932,7 @@ sub edit_group {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_command_groups`
 	ON `rules`.`id` = `lnk_rules_to_command_groups`.`rule`
 	SET
@@ -960,7 +960,7 @@ sub edit_group {
 	my $Commands_Attached;
 	foreach my $Command (@Commands) {
 
-		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`
+		my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`
 			FROM `commands`
 			WHERE `id` = ?"
 		);
@@ -981,8 +981,8 @@ sub edit_group {
 		$Commands_Attached = '';
 	}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -1004,7 +1004,7 @@ sub edit_group {
 
 sub html_delete_group {
 
-	my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname`
+	my $Select_Group = $DB_Connection->prepare("SELECT `groupname`
 	FROM `command_groups`
 	WHERE `id` = ?");
 
@@ -1050,7 +1050,7 @@ sub delete_group {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_command_groups`
 	ON `rules`.`id` = `lnk_rules_to_command_groups`.`rule`
 	SET
@@ -1066,7 +1066,7 @@ sub delete_group {
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
+	my $Select_Links = $DB_Connection->prepare("SELECT `command`
 		FROM `lnk_command_groups_to_commands`
 		WHERE `group` = ?"
 	);
@@ -1076,7 +1076,7 @@ sub delete_group {
 	while (( my $Command_ID ) = $Select_Links->fetchrow_array() )
 	{
 
-		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`
+		my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`
 			FROM `commands`
 			WHERE `id` = ?"
 		);
@@ -1088,7 +1088,7 @@ sub delete_group {
 		}
 	}
 
-	my $Select_Commands = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
+	my $Select_Commands = $DB_Connection->prepare("SELECT `groupname`, `expires`, `active`
 		FROM `command_groups`
 		WHERE `id` = ?");
 
@@ -1114,8 +1114,8 @@ sub delete_group {
 			$Commands_Attached = 'no commands attached.';
 		}
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1133,17 +1133,17 @@ sub delete_group {
 	}
 	# / Audit Log
 
-	my $Delete_Group = $DB_Sudoers->prepare("DELETE from `command_groups`
+	my $Delete_Group = $DB_Connection->prepare("DELETE from `command_groups`
 		WHERE `id` = ?");
 	
 	$Delete_Group->execute($Delete_Group_Confirm);
 
- 	my $Delete_Command_Link = $DB_Sudoers->prepare("DELETE from `lnk_command_groups_to_commands`
+ 	my $Delete_Command_Link = $DB_Connection->prepare("DELETE from `lnk_command_groups_to_commands`
 		WHERE `group` = ?");
 	
 	$Delete_Command_Link->execute($Delete_Group_Confirm);
 
- 	my $Delete_Rule_Links = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_command_groups`
+ 	my $Delete_Rule_Links = $DB_Connection->prepare("DELETE from `lnk_rules_to_command_groups`
 		WHERE `command_group` = ?");
 	
 	$Delete_Rule_Links->execute($Delete_Group_Confirm);
@@ -1154,7 +1154,7 @@ sub delete_command {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_command_groups`
 	ON `rules`.`id` = `lnk_rules_to_command_groups`.`rule`
 	SET
@@ -1170,7 +1170,7 @@ sub delete_command {
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`
+	my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`, `command`
 		FROM `commands`
 		WHERE `id` = ?");
 
@@ -1179,8 +1179,8 @@ sub delete_command {
 	while (( my $Command_Alias, my $Command ) = $Select_Commands->fetchrow_array() )
 	{
 	
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1198,7 +1198,7 @@ sub delete_command {
 	}
 	# / Audit Log
 
-	my $Delete_Command = $DB_Sudoers->prepare("DELETE from `lnk_command_groups_to_commands`
+	my $Delete_Command = $DB_Connection->prepare("DELETE from `lnk_command_groups_to_commands`
 		WHERE `group` = ?
 		AND `command` = ?");
 
@@ -1227,7 +1227,7 @@ sub html_show_links {
 
 	### Commands
 
-	my $Select_Command_Links = $DB_Sudoers->prepare("SELECT `command`
+	my $Select_Command_Links = $DB_Connection->prepare("SELECT `command`
 		FROM `lnk_command_groups_to_commands`
 		WHERE `group` = ?"
 	);
@@ -1238,7 +1238,7 @@ sub html_show_links {
 		
 		my $Command_Alias_ID = $Select_Command_Links[0];
 
-		my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `active`
+		my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`, `command`, `active`
 			FROM `commands`
 			WHERE `id` = ?"
 		);
@@ -1267,7 +1267,7 @@ sub html_show_links {
 
 	### Rules
 
-	my $Select_Rule_Links = $DB_Sudoers->prepare("SELECT `rule`
+	my $Select_Rule_Links = $DB_Connection->prepare("SELECT `rule`
 		FROM `lnk_rules_to_command_groups`
 		WHERE `command_group` = ?"
 	);
@@ -1278,7 +1278,7 @@ sub html_show_links {
 		
 		my $Rule_ID = $Select_Links[0];
 
-		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
+		my $Select_Rules = $DB_Connection->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`
 			WHERE `id` = ?"
 		);
@@ -1345,7 +1345,7 @@ sub html_notes {
 
 	### Discover Group Name
 	my $Group_Name;
-	my $Select_Group_Name = $DB_Sudoers->prepare("SELECT `groupname`
+	my $Select_Group_Name = $DB_Connection->prepare("SELECT `groupname`
 	FROM `command_groups`
 	WHERE `id` = ?");
 
@@ -1354,7 +1354,7 @@ sub html_notes {
 	### / Discover Group Name
 
 	### Discover Note Count
-	my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+	my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 		FROM `notes`
 		WHERE `type_id` = '06'
 		AND `item_id` = ?"
@@ -1363,7 +1363,7 @@ sub html_notes {
 	my $Note_Count = $Select_Note_Count->fetchrow_array();
 	### / Discover Note Count
 
-	my $Select_Notes = $DB_Sudoers->prepare("SELECT `note`, `last_modified`, `modified_by`
+	my $Select_Notes = $DB_Connection->prepare("SELECT `note`, `last_modified`, `modified_by`
 	FROM `notes`
 	WHERE `type_id` = '06'
 	AND `item_id` = ?
@@ -1432,7 +1432,7 @@ ENDHTML
 
 sub add_note {
 
-	my $Note_Submission = $DB_Sudoers->prepare("INSERT INTO `notes` (
+	my $Note_Submission = $DB_Connection->prepare("INSERT INTO `notes` (
 		`type_id`,
 		`item_id`,
 		`note`,
@@ -1460,12 +1460,12 @@ sub html_output {
 	);
 
 
-	my $Select_Group_Count = $DB_Sudoers->prepare("SELECT `id` FROM `command_groups`");
+	my $Select_Group_Count = $DB_Connection->prepare("SELECT `id` FROM `command_groups`");
 		$Select_Group_Count->execute( );
 		my $Total_Rows = $Select_Group_Count->rows();
 
 
-	my $Select_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`, `last_modified`, `modified_by`
+	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `expires`, `active`, `last_modified`, `modified_by`
 		FROM `command_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
@@ -1511,7 +1511,7 @@ sub html_output {
 
 		### Discover Note Count
 
-		my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+		my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 			FROM `notes`
 			WHERE `type_id` = '06'
 			AND `item_id` = ?"
@@ -1521,7 +1521,7 @@ sub html_output {
 
 		### / Discover Note Count
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
+		my $Select_Links = $DB_Connection->prepare("SELECT `command`
 			FROM `lnk_command_groups_to_commands`
 			WHERE `group` = ?"
 		);
@@ -1532,7 +1532,7 @@ sub html_output {
 			
 			my $Command_Alias_ID = $Select_Links[0];
 
-			my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
+			my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 				FROM `commands`
 				WHERE `id` = ?"
 			);
@@ -1698,7 +1698,7 @@ print <<ENDHTML;
 						<select name='Edit_Group' style="width: 150px">
 ENDHTML
 
-						my $Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`
+						my $Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`
 						FROM `command_groups`
 						ORDER BY `groupname` ASC");
 						$Group_List_Query->execute( );

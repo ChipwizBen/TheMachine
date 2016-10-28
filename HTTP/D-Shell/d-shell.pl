@@ -14,11 +14,9 @@ my $Verbose = Verbose();
 my $Very_Verbose = Very_Verbose();
 my $Paper_Trail = Paper_Trail();
 my $Version = Version();
-my $DB_Management = DB_Management();
-my $DB_DShell = DB_DShell();
+my $DB_Connection = DB_Connection();
 my $DShell_Job_Log_Location = DShell_Job_Log_Location();
 my $DShell_tmp_Location = DShell_tmp_Location();
-my $DB_IP_Allocation = DB_IP_Allocation();
 my $nmap = nmap();
 my $grep = sudo_grep();
 my $Override = 0;
@@ -163,7 +161,7 @@ if (!$Discovered_Job_ID && !$Dependent_Command_Set_ID ) {
 
 if (!$Captured_User_Name && !$Captured_Key) {
 	print "${Red}## User Name not caught. Exiting... (PID: $$).${Clear}\n";
-	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -176,7 +174,7 @@ else {
 
 if ($Captured_User_Name && $Captured_Key) {
 	print "${Red}## You cannot specify both interactive and key credentials, pick one. Exiting... (PID: $$).${Clear}\n";
-	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -267,7 +265,7 @@ sub job_discovery {
 
 	my $Job_ID = $_[0];
 
-	my $Select_Job = $DB_DShell->prepare("SELECT `host_id`, `command_set_id`, `status`
+	my $Select_Job = $DB_Connection->prepare("SELECT `host_id`, `command_set_id`, `status`
 		FROM `jobs`
 		WHERE `id` = ?
 	");
@@ -283,7 +281,7 @@ sub job_discovery {
 	if ($Status == 10) {
 		print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} was caught starting (Status $Status). Setting this to running.${Clear}\n";
 		print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} was caught starting (Status $Status). Setting this to running.${Clear}\n";
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
@@ -293,7 +291,7 @@ sub job_discovery {
 		if ($Override) {
 			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed (Status $Status). Override is enabled, so we're running it again!${Clear}\n";
 			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed (Status $Status). Override is enabled, so we're running it again!${Clear}\n";
-			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 				`status` = ?,
 				`modified_by` = ?
 				WHERE `id` = ?");
@@ -309,7 +307,7 @@ sub job_discovery {
 		if ($Override) {
 			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running (Status $Status). Override is enabled, so we're running a second copy!${Clear}\n";
 			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running (Status $Status). Override is enabled, so we're running a second copy!${Clear}\n";
-			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 				`status` = ?,
 				`modified_by` = ?
 				WHERE `id` = ?");
@@ -324,7 +322,7 @@ sub job_discovery {
 	elsif ($Status == 2) {
 		print "${Green}Job ID ${Blue}$Job_ID${Green} is paused (Status $Status). Continuing job from the last ran command...${Clear}\n";
 		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} is paused (Status $Status). Continuing job from the last ran command...${Clear}\n";
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
@@ -333,7 +331,7 @@ sub job_discovery {
 	elsif ($Status == 4) {
 		print "${Green}Job ID ${Blue}$Job_ID${Green} is pending (Status $Status). Starting job...${Clear}\n";
 		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} is pending (Status $Status). Starting job...${Clear}\n";
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
@@ -342,7 +340,7 @@ sub job_discovery {
 	else {
 		print "${Green}Job ID ${Blue}$Job_ID${Green} was stopped (Status $Status). Restarting job...${Clear}\n";
 		print LOG "${Green}Job ID ${Blue}$Job_ID${Green} was stopped (Status $Status). Restarting job...${Clear}\n";
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
@@ -358,7 +356,7 @@ sub host_discovery {
 
 	my $Host_ID = $_[0];
 
-	my $Select_Host = $DB_IP_Allocation->prepare("SELECT `hostname`
+	my $Select_Host = $DB_Connection->prepare("SELECT `hostname`
 		FROM `hosts`
 		WHERE `id` = ?
 	");
@@ -372,12 +370,13 @@ sub host_discovery {
 sub host_connection {
 
 	my $Host = $_[0];
+	my $Host_ID = $_[1];
 	my $SSH;
 
 	my $Private_Key;
 	if ($Captured_Key) {
 
-		my $Select_Keys = $DB_Management->prepare("SELECT `key_name`, `salt`, `key`, `key_username`
+		my $Select_Keys = $DB_Connection->prepare("SELECT `key_name`, `salt`, `key`, `key_username`
 			FROM `auth`
 			WHERE `id` = ?");
 
@@ -433,16 +432,16 @@ sub host_connection {
 	my $SSH_Check;
 	my $Attempts;
 	while ($SSH_Check !~ /open/) {
-	
+
 		$Attempts++;
-	
+
 		$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
 		sleep 1;
 	
 		if ($Attempts >= 10) {
 			print "Unresolved host, no route to host or SSH not responding. Terminating the job.\n";
 			print LOG "Unresolved host, no route to host or SSH not responding. Terminating the job.\n";
-			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
@@ -452,6 +451,14 @@ sub host_connection {
 		}
 
 	}
+
+	# Fingerprint check/discovery
+	my $Find_Fingerprint = $DB_Connection->prepare("SELECT `fingerprint`
+		FROM `host_attributes`
+		WHERE `host_id` = ?");
+	$Find_Fingerprint->execute($Host_ID);
+	my $Previously_Recorded_Fingerprint = $Find_Fingerprint->fetchrow_array();
+
 
 	my $Hello;
 	while (1) {
@@ -465,7 +472,6 @@ sub host_connection {
 			$SSH = Net::SSH::Expect->new (
 				host => $Host,
 				user => $User_Name,
-				password=> $User_Password,
 				log_file => $DShell_Transactional_File,
 				timeout => $Connection_Timeout,
 				exp_internal => $Very_Verbose,
@@ -473,16 +479,87 @@ sub host_connection {
 				raw_pty => 1,
 				restart_timeout_upon_receive => 1
 			);
-			eval { $SSH->login(); }; &epic_failure('Login (Password)', $@) if $@;
 
-			my $Fingerprint = $SSH->waitfor("Are you sure you want to continue connecting", $Connection_Timeout, '-re');
-			if ($Fingerprint) {
+			#eval {$SSH->login();}; &epic_failure('Login (Password)', $@) if $@; # Disabled login as it circumvents fingerprint verification, which is bad
+			eval {$SSH->run_ssh();}; &epic_failure('Login (Password)', $@) if $@;
+
+			# Fingerprint
+			my $Line = $SSH->read_line();
+			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+
+			if ($Fingerprint_Prompt) {
+
+				my $Discovered_Fingerprint = $SSH->match();
+				$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
 				if ($Verbose == 1) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint prompt, accepting${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint prompt, accepting${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 				}
-				$SSH->send('yes');
+				
+				# Fingerprint validity check
+				if (!$Previously_Recorded_Fingerprint) {
+
+					if ($Verbose == 1) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+					}
+					my $Update_Fingerprint = $DB_Connection->prepare("INSERT INTO `host_attributes` (
+						`host_id`,
+						`fingerprint`
+					)
+					VALUES (
+						?, ?
+					)ON DUPLICATE KEY UPDATE `fingerprint` = ?");
+					$Update_Fingerprint->execute($Host_ID, $Discovered_Fingerprint, $Discovered_Fingerprint);
+					$SSH->send('yes');
+
+				}
+				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
+
+					if ($Verbose == 1) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+					}
+					$SSH->send('yes');
+
+				}
+				else {
+
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+
+					my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+					$Update_Job->execute('17', $User_Name, $Parent_ID);
+					exit(17);
+				}
+
+			}
+			else {
+				print "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+				print LOG "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+			}
+
+			# Login (password)
+			$Line = $SSH->read_line();
+			my $Password_Prompt = $SSH->waitfor(".*password.*", $Connection_Timeout, '-re');
+			if ($Password_Prompt) {
+				if ($Verbose == 1) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
+				}
+				$SSH->send("$User_Password");
+			}
+			else {
+				print "${Red}Password prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+				print LOG "${Red}Password prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
 			}
 		}
 		else {
@@ -504,15 +581,68 @@ sub host_connection {
 			);
 			eval { $SSH->run_ssh(); }; &epic_failure('Login (Key)', $@) if $@;
 
-			my $Fingerprint = $SSH->waitfor("Are you sure you want to continue connecting", $Connection_Timeout, '-re');
-			if ($Fingerprint) {
+			# Fingerprint
+			my $Line = $SSH->read_line();
+			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+
+			if ($Fingerprint_Prompt) {
+
+				my $Discovered_Fingerprint = $SSH->match();
+				$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
 				if ($Verbose == 1) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint prompt, accepting${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint prompt, accepting${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 				}
-				$SSH->send('yes');
+				
+				# Fingerprint validity check
+				if (!$Previously_Recorded_Fingerprint) {
+					if ($Verbose == 1) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+					}
+					my $Update_Fingerprint = $DB_Connection->prepare("INSERT INTO `host_attributes` (
+						`host_id`,
+						`fingerprint`
+					)
+					VALUES (
+						?, ?
+					)ON DUPLICATE KEY UPDATE `fingerprint` = ?");
+					$Update_Fingerprint->execute($Host_ID, $Discovered_Fingerprint, $Discovered_Fingerprint);
+					$SSH->send('yes');
+				}
+				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
+
+					if ($Verbose == 1) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+					}
+					$SSH->send('yes');
+
+				}
+				else {
+
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+
+					my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+					$Update_Job->execute('17', $User_Name, $Parent_ID);
+					unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+					exit(17);
+				}
+
 			}
+			else {
+				print "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+				print LOG "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+			}
+
 			my $Key_Passphase_Trap = $SSH->waitfor("Enter passphrase for key", $Connection_Timeout, '-re');
 			if ($Key_Passphase_Trap) {
 				if ($Verbose == 1) {
@@ -533,13 +663,13 @@ sub host_connection {
 
 		my $Test_Command = 'id';
 		$Hello = $SSH->exec($Test_Command, $Connection_Timeout);
-	
+
 		last if $Hello =~ m/uid/;
 		last if $Retry_Count >= $Max_Retry_Count;
 		if ($Hello =~ m/Permission denied/) {
 			print "Supplied credentials failed. Terminating the job.\n";
 			print LOG "Supplied credentials failed. Terminating the job.\n";
-			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
@@ -547,7 +677,7 @@ sub host_connection {
 			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
 			exit(1);
 		}
-	
+
 		my $Connection_Timeout_Plus = $Connection_Timeout;
 		$Retry_Count++;
 		$Connection_Timeout_Plus += 5;
@@ -564,7 +694,7 @@ sub host_connection {
 	if ($Retry_Count >= $Max_Retry_Count) {
 		print "Couldn't connect to $Host after $Retry_Count attempts. Terminating the job.\n";
 		print LOG "Couldn't connect to $Host after $Retry_Count attempts. Terminating the job.\n";
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -587,7 +717,7 @@ sub processor {
 	my ($Host_ID, $Process_Command_Set_ID) = @_;
 
 	## Discover dependencies
-	my $Discover_Dependencies = $DB_DShell->prepare("SELECT `dependent_command_set_id`
+	my $Discover_Dependencies = $DB_Connection->prepare("SELECT `dependent_command_set_id`
 		FROM `command_set_dependency`
 		WHERE `command_set_id` = ?
 		ORDER BY `order` ASC
@@ -651,10 +781,10 @@ sub processor {
 		}
 	}
 
-	my $Connected_Host = &host_connection($Host);
+	my $Connected_Host = &host_connection($Host, $Host_ID);
 
 	## Discover Commands
-	my $Select_Commands = $DB_DShell->prepare("SELECT `name`, `command`
+	my $Select_Commands = $DB_Connection->prepare("SELECT `name`, `command`
 		FROM `command_sets`
 		WHERE `id` = ?
 	");
@@ -662,7 +792,7 @@ sub processor {
 	my ($Command_Name, $Commands) = $Select_Commands->fetchrow_array();
 
 	if ($Top_Level_Job) {
-		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`output`,
@@ -678,7 +808,7 @@ sub processor {
 		print LOG "Job started at $Start_Time.\n";
 	}
 	else {
-		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`output`,
@@ -704,7 +834,7 @@ sub processor {
 
 		my $Job_Paused;
 		while ($Job_Paused ne 'No') {
-			my $Query_Control_Status = $DB_DShell->prepare("SELECT `status`, `modified_by`
+			my $Query_Control_Status = $DB_Connection->prepare("SELECT `status`, `modified_by`
 				FROM `jobs`
 				WHERE `id` = ?
 			");
@@ -712,9 +842,13 @@ sub processor {
 
 			my ($Query_Status, $Query_Modified_By) = $Query_Control_Status->fetchrow_array();
 			if ($Query_Status == 2) {
-				print "${Green}Job paused by $Query_Modified_By.${Clear}\n";
-				print LOG "${Green}Job paused by $Query_Modified_By.${Clear}\n";
+				if ($Job_Paused ne 'Yes') {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Green}Job paused by $Query_Modified_By at $Time_Stamp.${Clear}\n";
+					print LOG "${Green}Job paused by $Query_Modified_By at $Time_Stamp.${Clear}\n";
+				}
 				$Job_Paused = 'Yes';
+				sleep 2;
 			}
 			else {
 				$Job_Paused = 'No';
@@ -732,7 +866,7 @@ sub processor {
 
 		my $Time_Stamp = strftime "%H:%M:%S", localtime;
 	
-		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`output`,
@@ -744,7 +878,7 @@ sub processor {
 		)");
 	
 		$Update_Job_Status->execute($Parent_ID, $Command, 'Currently Running...', $User_Name);
-		my $Job_Status_Update_ID = $DB_DShell->{mysql_insertid};		
+		my $Job_Status_Update_ID = $DB_Connection->{mysql_insertid};		
 	
 #		while ( defined (my $Line = $SSH->read_all()) ) {
 #			Do nothing! Clearing the input stream for the next command
@@ -874,12 +1008,12 @@ sub processor {
 				}
 
 			if ($Exit_Code != 0) {
-				my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 					`status` = ?,
 					`modified_by` = ?
 					WHERE `id` = ?");
 				$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
-				my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+				my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 					`exit_code` = ?,
 					`output` = ?,
 					`task_ended` = NOW(),
@@ -943,9 +1077,10 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for a moment to watch for potential reboot...${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for a moment to watch for potential reboot...${Clear}\n";
 				}
-				sleep 50;
-				eval { $Match = $Connected_Host->waitfor(".*Shutdown scheduled for.*", 10, '-re'); };
-				eval { $Command_Output = $Connected_Host->read_all(); }; $Connected_Host = &reboot_control($Host) if $@;
+				sleep 10;
+				eval { $Match = $Connected_Host->waitfor(".*The system is going .*", 5, '-re'); };
+				if (!$Match) {eval { $Match = $Connected_Host->waitfor(".*Shutdown scheduled for .*", 5, '-re'); };}
+				eval { $Command_Output = $Connected_Host->read_all(); }; $Connected_Host = &reboot_control($Host, $Host_ID) if $@;
 			}
 			else {
 				eval { $Command_Output = $Connected_Host->read_all(); }; &epic_failure('PrePrompt Command Output', $@, $Command_Output, $Job_Status_Update_ID) if $@;
@@ -954,7 +1089,7 @@ sub processor {
 			$Connected_Host->send(' Command_Exit=`echo $?`');
 			$Connected_Host->send(" $Set_Predictable_Prompt");
 			$Connected_Host->send(' echo $PS1');
-			#eval { $Connected_Host->exec(' echo $PS1', 1); }; $Connected_Host = &reboot_control($Host) if $@;
+			#eval { $Connected_Host->exec(' echo $PS1', 1); }; $Connected_Host = &reboot_control($Host, $Host_ID) if $@;
 
 			if ($Reboot_Required) {
 				if ($Match) {
@@ -963,9 +1098,22 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System is rebooting...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System is rebooting...${Clear}\n";
 					}
+
+					my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
+						`job_id`,
+						`command`,
+						`task_started`,
+						`modified_by`
+					)
+					VALUES (
+						?, ?, NOW(), ?
+					)");
+				
+					$Update_Job_Status->execute($Parent_ID, 'System is rebooting...', $User_Name);
+
 					eval { $Command_Output = $Command_Output . $Connected_Host->before(); };
-					sleep 60;
-					$Connected_Host = &reboot_control($Host);
+					sleep 120;
+					$Connected_Host = &reboot_control($Host, $Host_ID);
 				}
 				else {
 				 	if ($Verbose == 1) {
@@ -1001,7 +1149,7 @@ sub processor {
 				print LOG "${Red}Prompt '$Predictable_Prompt' lost while waiting $Wait_Timeout seconds for ${Yellow}$Command${Clear}\n";
 				$Command_Output = "Prompt lost. Command Timeout? Output was:\n\n$Command_Output\n\n Full job log at $DShell_Job_Log_File.";
 				$Exit_Code = 12;
-				$Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+				$Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 					`exit_code` = ?,
 					`output` = ?,
 					`task_ended` = NOW(),
@@ -1009,7 +1157,7 @@ sub processor {
 					WHERE `id` = ?");
 				$Command_Output =~ s/$Predictable_Prompt//g;
 				$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
-				my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+				my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 					`job_id`,
 					`command`,
 					`output`,
@@ -1020,7 +1168,7 @@ sub processor {
 					?, ?, ?, NOW(), ?
 				)");
 				$Update_Job_Status->execute($Parent_ID, "### Lost the remote prompt. Command timeout, perhaps?", '', $User_Name);
-				my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 					`status` = ?,
 					`modified_by` = ?
 					WHERE `id` = ?");
@@ -1039,7 +1187,7 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## Exit code for ${Yellow}$Command${Red}: ${Blue}$Exit_Code${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## Exit code for ${Yellow}$Command${Red}: ${Blue}$Exit_Code${Clear}\n";
 					}
-					my $Select_Failure_Action = $DB_DShell->prepare("SELECT `on_failure`
+					my $Select_Failure_Action = $DB_Connection->prepare("SELECT `on_failure`
 						FROM `jobs`
 						WHERE `id` = ?
 					");
@@ -1047,7 +1195,7 @@ sub processor {
 					my ($On_Failure) = $Select_Failure_Action->fetchrow_array();
 	
 					if ($On_Failure) {
-						$Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+						$Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 							`exit_code` = ?,
 							`output` = ?,
 							`task_ended` = NOW(),
@@ -1055,7 +1203,7 @@ sub processor {
 							WHERE `id` = ?");
 						$Command_Output =~ s/$Predictable_Prompt//g;
 						$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
-						my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+						my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 							`job_id`,
 							`command`,
 							`output`,
@@ -1066,7 +1214,7 @@ sub processor {
 							?, ?, ?, NOW(), ?
 						)");
 						$Update_Job_Status->execute($Parent_ID, "### Last action failed. On failure set to kill. Killing job.", '', $User_Name);
-						my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+						my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 							`status` = ?,
 							`modified_by` = ?
 							WHERE `id` = ?");
@@ -1084,7 +1232,7 @@ sub processor {
 		}
 
 		$Command_Output =~ s/$Predictable_Prompt//g;
-		$Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+		$Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 			`exit_code` = ?,
 			`output` = ?,
 			`task_ended` = NOW(),
@@ -1096,12 +1244,12 @@ sub processor {
 	$Connected_Host->close();
 
 	if ($Top_Level_Job) {
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job->execute('0', $User_Name, $Parent_ID);
-		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`output`,
@@ -1117,7 +1265,7 @@ sub processor {
 		print LOG "Job completed at $End_Time.\n";
 	}
 	else {
-		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`output`,
@@ -1142,13 +1290,13 @@ sub epic_failure {
 	if ($Command_Output =~ /closed by remote host/) {
 		$Exit_Code = 12;
 
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 
-		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+		my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 			`exit_code` = ?,
 			`output` = ?,
 			`task_ended` = NOW(),
@@ -1156,7 +1304,7 @@ sub epic_failure {
 			WHERE `id` = ?");
 		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
 
-		$Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		$Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`exit_code`,
@@ -1173,13 +1321,13 @@ sub epic_failure {
 	}
 	elsif ($Error =~ /SSHProcessError/) {
 		$Exit_Code = 12;
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 
-		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+		my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 			`exit_code` = ?,
 			`output` = ?,
 			`task_ended` = NOW(),
@@ -1187,7 +1335,7 @@ sub epic_failure {
 			WHERE `id` = ?");
 		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
 
-		$Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		$Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`exit_code`,
@@ -1204,13 +1352,13 @@ sub epic_failure {
 	}
 	elsif ($Error =~ /SSHConnectionAborted/) {
 		$Exit_Code = 12;
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 
-		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+		my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 			`exit_code` = ?,
 			`output` = ?,
 			`task_ended` = NOW(),
@@ -1218,7 +1366,7 @@ sub epic_failure {
 			WHERE `id` = ?");
 		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
 
-		$Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		$Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`exit_code`,
@@ -1235,13 +1383,13 @@ sub epic_failure {
 	}
 	elsif ($Error =~ /Ciphertext/) {
 		$Exit_Code = 15;
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 
-		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+		my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 			`exit_code` = ?,
 			`output` = ?,
 			`task_ended` = NOW(),
@@ -1249,7 +1397,7 @@ sub epic_failure {
 			WHERE `id` = ?");
 		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
 
-		$Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		$Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`exit_code`,
@@ -1266,13 +1414,13 @@ sub epic_failure {
 	}
 	else {
 		$Exit_Code = 99;
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 
-		my $Update_Job_Status = $DB_DShell->prepare("UPDATE `job_status` SET
+		my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 			`exit_code` = ?,
 			`output` = ?,
 			`task_ended` = NOW(),
@@ -1280,7 +1428,7 @@ sub epic_failure {
 			WHERE `id` = ?");
 		$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
 
-		$Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		$Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`exit_code`,
@@ -1303,6 +1451,7 @@ sub epic_failure {
 sub reboot_control {
 
 	my $Reboot_Host = $_[0];
+	my $Host_ID = $_[1];
 	my $SSH;
 
 	if ($Verbose) {
@@ -1314,7 +1463,7 @@ sub reboot_control {
 	my $Private_Key;
 	if ($Captured_Key) {
 
-		my $Select_Keys = $DB_Management->prepare("SELECT `key_name`, `salt`, `key`, `key_username`
+		my $Select_Keys = $DB_Connection->prepare("SELECT `key_name`, `salt`, `key`, `key_username`
 			FROM `auth`
 			WHERE `id` = ?");
 
@@ -1383,15 +1532,22 @@ sub reboot_control {
 		if ($Attempts >= 1200) {
 			print "Host did not recover after a reboot. Terminating the job.\n";
 			print LOG "Host did not recover after a reboot. Terminating the job.\n";
-			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
 			$Update_Job->execute('14', $User_Name, $Parent_ID);
 			exit(1);
 		}
-	
+
 	}
+
+	# Fingerprint check/discovery
+	my $Find_Fingerprint = $DB_Connection->prepare("SELECT `fingerprint`
+		FROM `host_attributes`
+		WHERE `host_id` = ?");
+	$Find_Fingerprint->execute($Host_ID);
+	my $Previously_Recorded_Fingerprint = $Find_Fingerprint->fetchrow_array();
 
 	my $Hello;
 	while (1) {
@@ -1413,17 +1569,87 @@ sub reboot_control {
 				raw_pty => 1,
 				restart_timeout_upon_receive => 1
 			);
-			eval { $SSH->login(); }; &epic_failure('Reboot Login (Password)', $@) if $@;
+			#eval { $SSH->login(); }; &epic_failure('Reboot Login (Password)', $@) if $@; # Disabled login as it circumvents fingerprint verification, which is bad
+			eval { $SSH->run_ssh(); }; &epic_failure('Reboot Login (Password)', $@) if $@;
 
-			my $Fingerprint = $SSH->waitfor("Are you sure you want to continue connecting", '5', '-re');
-			if ($Fingerprint) {
+			# Fingerprint
+			my $Line = $SSH->read_line();
+			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+
+			if ($Fingerprint_Prompt) {
+
+				my $Discovered_Fingerprint = $SSH->match();
+				$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
 				if ($Verbose == 1) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint prompt, accepting${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint prompt, accepting${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 				}
-				$SSH->send('yes');
+				
+				# Fingerprint validity check
+				if (!$Previously_Recorded_Fingerprint) {
+					if ($Verbose == 1) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+					}
+					my $Update_Fingerprint = $DB_Connection->prepare("INSERT INTO `host_attributes` (
+						`host_id`,
+						`fingerprint`
+					)
+					VALUES (
+						?, ?
+					)ON DUPLICATE KEY UPDATE `fingerprint` = ?");
+					$Update_Fingerprint->execute($Host_ID, $Discovered_Fingerprint, $Discovered_Fingerprint);
+					$SSH->send('yes');
+				}
+				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
+
+					if ($Verbose == 1) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+					}
+					$SSH->send('yes');
+
+				}
+				else {
+
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+
+					my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+					$Update_Job->execute('17', $User_Name, $Parent_ID);
+					unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+					exit(17);
+				}
+
 			}
+			else {
+				print "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+				print LOG "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+			}
+
+			# Login (password)
+			$Line = $SSH->read_line();
+			my $Password_Prompt = $SSH->waitfor(".*password.*", $Connection_Timeout, '-re');
+			if ($Password_Prompt) {
+				if ($Verbose == 1) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
+				}
+				$SSH->send("$User_Password");
+			}
+			else {
+				print "${Red}Password prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+				print LOG "${Red}Password prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+			}
+
 		}
 		else {
 			if ($Verbose == 1) {
@@ -1444,15 +1670,68 @@ sub reboot_control {
 			);
 			eval { $SSH->run_ssh(); }; &epic_failure('Reboot Login (Key)', $@) if $@;
 
-			my $Fingerprint = $SSH->waitfor("Are you sure you want to continue connecting", '5', '-re');
-			if ($Fingerprint) {
+			# Fingerprint
+			my $Line = $SSH->read_line();
+			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+
+			if ($Fingerprint_Prompt) {
+
+				my $Discovered_Fingerprint = $SSH->match();
+				$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
 				if ($Verbose == 1) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint prompt, accepting${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint prompt, accepting${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 				}
-				$SSH->send('yes');
+				
+				# Fingerprint validity check
+				if (!$Previously_Recorded_Fingerprint) {
+					if ($Verbose == 1) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+					}
+					my $Update_Fingerprint = $DB_Connection->prepare("INSERT INTO `host_attributes` (
+						`host_id`,
+						`fingerprint`
+					)
+					VALUES (
+						?, ?
+					)ON DUPLICATE KEY UPDATE `fingerprint` = ?");
+					$Update_Fingerprint->execute($Host_ID, $Discovered_Fingerprint, $Discovered_Fingerprint);
+					$SSH->send('yes');
+				}
+				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
+
+					if ($Verbose == 1) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+					}
+					$SSH->send('yes');
+
+				}
+				else {
+
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+
+					my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+					$Update_Job->execute('17', $User_Name, $Parent_ID);
+					unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+					exit(17);
+				}
+
 			}
+			else {
+				print "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+				print LOG "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
+			}
+
 			my $Key_Passphase_Trap = $SSH->waitfor("Enter passphrase for key", $Wait_Timeout, '-re');
 			if ($Key_Passphase_Trap) {
 				if ($Verbose == 1) {
@@ -1480,7 +1759,7 @@ sub reboot_control {
 		if ($Hello =~ m/Permission denied/) {
 			print "Supplied credentials failed. Terminating the job.\n";
 			print LOG "Supplied credentials failed. Terminating the job.\n";
-			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
 			WHERE `id` = ?");
@@ -1505,7 +1784,7 @@ sub reboot_control {
 	if ($Retry_Count >= $Max_Retry_Count) {
 		print "Couldn't connect to $Reboot_Host after $Retry_Count attempts. Terminating the job.\n";
 		print LOG "Couldn't connect to $Reboot_Host after $Retry_Count attempts. Terminating the job.\n";
-		my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -1516,7 +1795,7 @@ sub reboot_control {
 
 	$SSH->timeout(1);
 
-	my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+	my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 		`job_id`,
 		`command`,
 		`output`,

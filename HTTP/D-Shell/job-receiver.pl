@@ -12,9 +12,7 @@ require $Common_Config;
 
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
-my $DB_Management = DB_Management();
-my $DB_DShell = DB_DShell();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 
 $| = 1;
 my $Green = "\e[0;32;10m";
@@ -87,7 +85,7 @@ if ($Command_Set && @Hosts) {
 
 	foreach my $Host (@Hosts) {
 
-		my $Job_Submission = $DB_DShell->prepare("INSERT INTO `jobs` (
+		my $Job_Submission = $DB_Connection->prepare("INSERT INTO `jobs` (
 		`host_id`,
 		`command_set_id`,
 		`on_failure`,
@@ -100,9 +98,9 @@ if ($Command_Set && @Hosts) {
 
 		if (!$On_Failure) {$On_Failure = 0};
 		$Job_Submission->execute($Host, $Command_Set, $On_Failure, "4", $User_Trigger);
-		my $Command_Insert_ID = $DB_DShell->{mysql_insertid};
+		my $Command_Insert_ID = $DB_Connection->{mysql_insertid};
 
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -116,8 +114,8 @@ if ($Command_Set && @Hosts) {
 
 		if ($Command_Insert_ID) {
 			# Audit Log
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -130,7 +128,7 @@ if ($Command_Set && @Hosts) {
 			$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Trigger started Job ID $Command_Insert_ID.", $User_Trigger);
 			# / Audit Log
 
-			my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 				`status` = ?,
 				`modified_by` = ?
 				WHERE `id` = ?");
@@ -139,7 +137,7 @@ if ($Command_Set && @Hosts) {
 			$SIG{CHLD} = 'IGNORE';
 			my $PID = fork();
 			if (defined $PID && $PID == 0) {
-				my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+				my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 					`category`,
 					`method`,
 					`action`,

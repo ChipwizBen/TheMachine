@@ -3,7 +3,7 @@
 use strict;
 
 require 'common.pl';
-my $DB_Management = DB_Management();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 print $CGI->redirect("/login.cgi");

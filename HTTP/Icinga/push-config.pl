@@ -6,7 +6,7 @@ use POSIX qw(strftime);
 my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
-my $DB_Icinga = DB_Icinga();
+my $DB_Connection = DB_Connection();
 
 my $Date_Time = strftime "%Y-%m-%d %H:%M:%S", localtime;
 my $Config_Path = '/etc/icinga2/conf.d'; # No trailing slash
@@ -28,7 +28,7 @@ sub write_time_periods {
 	my $Icinga_Config_File = "$Config_Path/timeperiods.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Time = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`, `last_modified`, `modified_by`
+	my $Select_Time = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`, `last_modified`, `modified_by`
 	FROM `nagios_timeperiod`
 	WHERE `active` = '1'");
 	
@@ -54,7 +54,7 @@ sub write_time_periods {
 		my $Last_Modified_Extract = $DB_Time[3];
 		my $Modified_By_Extract = $DB_Time[4];
 
-		my $Select_Definitions = $DB_Icinga->prepare("SELECT `definition`, `range`
+		my $Select_Definitions = $DB_Connection->prepare("SELECT `definition`, `range`
 		FROM `nagios_timedefinition`
 		WHERE `tipId` LIKE ?");
 		
@@ -116,7 +116,7 @@ sub write_host_groups {
 	my $Icinga_Config_File = "$Config_Path/hostgroups.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Group = $DB_Icinga->prepare("SELECT `id`, `hostgroup_name`, `alias`, `last_modified`, `modified_by`
+	my $Select_Group = $DB_Connection->prepare("SELECT `id`, `hostgroup_name`, `alias`, `last_modified`, `modified_by`
 	FROM `nagios_hostgroup`
 	WHERE `active` = '1'
 	ORDER BY `hostgroup_name` ASC");
@@ -145,7 +145,7 @@ sub write_host_groups {
 		my $Last_Modified_Extract = $DB_Group[3];
 		my $Modified_By_Extract = $DB_Group[4];
 
-		my $Select_Members = $DB_Icinga->prepare("SELECT `idMaster`
+		my $Select_Members = $DB_Connection->prepare("SELECT `idMaster`
 		FROM `nagios_lnkHostToHostgroup`
 		WHERE `idSlave` = ?");
 		$Select_Members->execute($ID_Extract);
@@ -155,7 +155,7 @@ sub write_host_groups {
 		{
 			my $idMaster = $DB_Members[0];
 			
-			my $Select_Member_Names = $DB_Icinga->prepare("SELECT `host_name`, `active`
+			my $Select_Member_Names = $DB_Connection->prepare("SELECT `host_name`, `active`
 			FROM `nagios_host`
 			WHERE `id` = ?");
 			$Select_Member_Names->execute($idMaster);
@@ -189,7 +189,7 @@ sub write_service_groups {
 	my $Icinga_Config_File = "$Config_Path/servicegroups.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Group = $DB_Icinga->prepare("SELECT `id`, `servicegroup_name`, `alias`, `last_modified`, `modified_by`
+	my $Select_Group = $DB_Connection->prepare("SELECT `id`, `servicegroup_name`, `alias`, `last_modified`, `modified_by`
 	FROM `nagios_servicegroup`
 	WHERE `active` = '1'
 	ORDER BY `servicegroup_name` ASC");
@@ -236,7 +236,7 @@ sub write_contact_groups {
 	my $Icinga_Config_File = "$Config_Path/contactgroups.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Group = $DB_Icinga->prepare("SELECT `id`, `contactgroup_name`, `alias`, `last_modified`, `modified_by`
+	my $Select_Group = $DB_Connection->prepare("SELECT `id`, `contactgroup_name`, `alias`, `last_modified`, `modified_by`
 	FROM `nagios_contactgroup`
 	WHERE `active` = '1'
 	ORDER BY `contactgroup_name` ASC");
@@ -264,7 +264,7 @@ sub write_contact_groups {
 		my $Last_Modified_Extract = $DB_Group[3];
 		my $Modified_By_Extract = $DB_Group[4];
 
-		my $Select_Members = $DB_Icinga->prepare("SELECT `idMaster`
+		my $Select_Members = $DB_Connection->prepare("SELECT `idMaster`
 		FROM `nagios_lnkContactToContactgroup`
 		WHERE `idSlave` = ?");
 		$Select_Members->execute($ID_Extract);
@@ -274,7 +274,7 @@ sub write_contact_groups {
 		{
 			my $idMaster = $DB_Members[0];
 			
-			my $Select_Member_Names = $DB_Icinga->prepare("SELECT `contact_name`
+			my $Select_Member_Names = $DB_Connection->prepare("SELECT `contact_name`
 			FROM `nagios_contact`
 			WHERE `id` = ?");
 			$Select_Member_Names->execute($idMaster);
@@ -308,7 +308,7 @@ sub write_host_templates {
 	my $Icinga_Config_File = "$Config_Path/hosttemplates.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Host_Template = $DB_Icinga->prepare("SELECT `id`, `template_name`, `active_checks_enabled`, `check_freshness`, 
+	my $Select_Host_Template = $DB_Connection->prepare("SELECT `id`, `template_name`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`,
 	`check_interval`, `notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`,
 	`obsess_over_host`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`,
@@ -362,7 +362,7 @@ sub write_host_templates {
 		## Host Parent Resolution
 
 		my $Host_Parents;
-		my $Select_Host_Template_Parent_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_Parent_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHosttemplateToHost`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Template_Parent_Link->execute($ID_Extract);
@@ -372,7 +372,7 @@ sub write_host_templates {
 
 				my $Host_Link = $DB_Parent_Link[0];
 
-				my $Select_Host_Template = $DB_Icinga->prepare("SELECT `host_name`
+				my $Select_Host_Template = $DB_Connection->prepare("SELECT `host_name`
 				FROM `nagios_host`
 				WHERE `id` = ?");
 				$Select_Host_Template->execute($Host_Link);
@@ -391,7 +391,7 @@ sub write_host_templates {
 		## Host Template Resolution
 
 		my $Host_Templates;
-		my $Select_Host_Template_Template_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHosttemplateToHosttemplate`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Template_Template_Link->execute($ID_Extract);
@@ -401,7 +401,7 @@ sub write_host_templates {
 
 				my $Host_Link = $DB_Template_Link[0];
 
-				my $Select_Host_Template = $DB_Icinga->prepare("SELECT `template_name`
+				my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`
 				FROM `nagios_hosttemplate`
 				WHERE `id` = ?");
 				$Select_Host_Template->execute($Host_Link);
@@ -420,7 +420,7 @@ sub write_host_templates {
 		## Host Contact Group Resolution
 
 		my $Host_Contact_Groups;
-		my $Select_Host_Template_Contact_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHosttemplateToContactgroup`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Template_Contact_Group_Link->execute($ID_Extract);
@@ -430,7 +430,7 @@ sub write_host_templates {
 
 				my $Host_Link = $DB_Contact_Group_Link[0];
 
-				my $Select_Host_Template = $DB_Icinga->prepare("SELECT `contactgroup_name`
+				my $Select_Host_Template = $DB_Connection->prepare("SELECT `contactgroup_name`
 				FROM `nagios_contactgroup`
 				WHERE `id` = ?");
 				$Select_Host_Template->execute($Host_Link);
@@ -456,7 +456,7 @@ sub write_host_templates {
 		my $Check_Period_Extract_Template;
 		my $Notification_Period_Extract_Template;
 		my $Check_Command_Extract_Template;
-		my $Select_Host_Template_Template_ID = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHosttemplateToHosttemplate`
 		WHERE `idMaster` = ?");
 		$Select_Host_Template_Template_ID->execute($ID_Extract);
@@ -466,7 +466,7 @@ sub write_host_templates {
 
 			$Host_Template_ID = $DB_Host_Template_Template_ID[0];
 
-			my $Select_Host_Template_Template = $DB_Icinga->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+			my $Select_Host_Template_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
 			`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`, `check_interval`,
 			`notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`, `obsess_over_host`,
 			`passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`, `retain_status_information`,
@@ -532,7 +532,7 @@ sub write_host_templates {
 			$Check_Period = $Check_Period_Extract_Template;
 		}
 
-		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Check_Period->execute($Check_Period);
@@ -557,7 +557,7 @@ sub write_host_templates {
 			$Notification_Period = $Notification_Period_Extract_Template;
 		}
 
-		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Notification_Period->execute($Notification_Period);
@@ -587,7 +587,7 @@ sub write_host_templates {
 			$Check_Command_Where_Remaining =~ s/^\d*(.*)/$1/g;
 
 		my $Check_Command;
-		my $Select_Check_Command = $DB_Icinga->prepare("SELECT `command_name`
+		my $Select_Check_Command = $DB_Connection->prepare("SELECT `command_name`
 		FROM `nagios_command`
 		WHERE `id` = '$Check_Command_Where_ID_Extract'");
 		$Select_Check_Command->execute();
@@ -699,7 +699,7 @@ sub write_service_templates {
 	my $Icinga_Config_File = "$Config_Path/servicetemplates.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Service = $DB_Icinga->prepare("SELECT `id`, `template_name`, `active_checks_enabled`, `check_freshness`, 
+	my $Select_Service = $DB_Connection->prepare("SELECT `id`, `template_name`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `is_volatile`, `max_check_attempts`,
 	`check_interval`, `notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`,
 	`obsess_over_service`, `parallelize_check`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`,
@@ -760,7 +760,7 @@ sub write_service_templates {
 		my $Check_Period_Extract_Templates_Template;
 		my $Notification_Period_Extract_Templates_Template;
 		my $Check_Command_Extract_Templates_Template;
-		my $Select_Service_Templates_Template_ID = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Templates_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServicetemplateToServicetemplate`
 		WHERE `idMaster` = ?");
 		$Select_Service_Templates_Template_ID->execute($Template_ID_Extract);
@@ -770,7 +770,7 @@ sub write_service_templates {
 
 			$Service_Templates_Template_ID = $DB_Service_Templates_Template_ID[0];
 
-			my $Select_Service_Templates_Template = $DB_Icinga->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+			my $Select_Service_Templates_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
 			`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `is_volatile`, `max_check_attempts`, `check_interval`,
 			`notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`, `obsess_over_service`,
 			`parallelize_check`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`, `retain_status_information`,
@@ -870,7 +870,7 @@ sub write_service_templates {
 	
 			# Host Name Collection
 			my $Host_Names;
-			my $Select_Host_Name_Link = $DB_Icinga->prepare("SELECT `idSlave`
+			my $Select_Host_Name_Link = $DB_Connection->prepare("SELECT `idSlave`
 			FROM `nagios_lnkServicetemplateToHost`
 			WHERE `idMaster` = ?");
 			$Select_Host_Name_Link->execute($Template_ID_Extract);
@@ -880,7 +880,7 @@ sub write_service_templates {
 	
 				my $Host_ID = $DB_Host_Link[0];
 	
-				my $Select_Host_Name = $DB_Icinga->prepare("SELECT `host_name`
+				my $Select_Host_Name = $DB_Connection->prepare("SELECT `host_name`
 				FROM `nagios_host`
 				WHERE `id` = '$Host_ID'
 				AND `active` = '1'");
@@ -897,7 +897,7 @@ sub write_service_templates {
 	
 			# Host Group Collection
 				my $Host_Group_Names;
-				my $Select_Host_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+				my $Select_Host_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 				FROM `nagios_lnkServicetemplateToHostgroup`
 				WHERE `idMaster` = ?");
 				$Select_Host_Group_Link->execute($Template_ID_Extract);
@@ -907,7 +907,7 @@ sub write_service_templates {
 		
 					my $Host_ID = $DB_Host_Link[0];
 		
-					my $Select_Host_Group_Name = $DB_Icinga->prepare("SELECT `hostgroup_name`
+					my $Select_Host_Group_Name = $DB_Connection->prepare("SELECT `hostgroup_name`
 					FROM `nagios_hostgroup`
 					WHERE `id` = '$Host_ID'
 					AND `active` = '1'");
@@ -924,7 +924,7 @@ sub write_service_templates {
 	
 			# Contact Link Collection
 			my $Contacts;
-			my $Select_Contact_Name_Link = $DB_Icinga->prepare("SELECT `idSlave`
+			my $Select_Contact_Name_Link = $DB_Connection->prepare("SELECT `idSlave`
 			FROM `nagios_lnkServicetemplateToContact`
 			WHERE `idMaster` = ?");
 			$Select_Contact_Name_Link->execute($Template_ID_Extract);
@@ -934,7 +934,7 @@ sub write_service_templates {
 	
 				my $Contact_ID = $DB_Contact_Link[0];
 	
-				my $Select_Contact_Name = $DB_Icinga->prepare("SELECT `contact_name`
+				my $Select_Contact_Name = $DB_Connection->prepare("SELECT `contact_name`
 				FROM `nagios_contact`
 				WHERE `id` = '$Contact_ID'
 				AND `active` = '1'");
@@ -951,7 +951,7 @@ sub write_service_templates {
 	
 			# Contact Group Link Collection
 			my $Contact_Groups;
-			my $Select_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+			my $Select_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 			FROM `nagios_lnkServicetemplateToContactgroup`
 			WHERE `idMaster` = ?");
 			$Select_Group_Link->execute($Template_ID_Extract);
@@ -961,7 +961,7 @@ sub write_service_templates {
 	
 				my $Contact_ID = $DB_Contact_Link[0];
 	
-				my $Select_Group = $DB_Icinga->prepare("SELECT `contactgroup_name`
+				my $Select_Group = $DB_Connection->prepare("SELECT `contactgroup_name`
 				FROM `nagios_contactgroup`
 				WHERE `id` = '$Contact_ID'
 				AND `active` = '1'");
@@ -978,7 +978,7 @@ sub write_service_templates {
 	
 		## Check Period Link Collection
 
-		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Check_Period->execute($Check_Period_Extract);
@@ -992,7 +992,7 @@ sub write_service_templates {
 
 		## Notification Period Link Collection
 
-		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Notification_Period->execute($Notification_Period_Extract);
@@ -1013,7 +1013,7 @@ sub write_service_templates {
 			my $Check_Command_Extract_Remaining = $Check_Command_Extract;
 				$Check_Command_Extract_Remaining =~ s/^\d*(.*)/$1/g;
 			my $Check_Command;
-			my $Select_Check_Command = $DB_Icinga->prepare("SELECT `command_name`
+			my $Select_Check_Command = $DB_Connection->prepare("SELECT `command_name`
 			FROM `nagios_command`
 			WHERE `id` = '$Check_Command_Extract_ID_Extract'");
 			$Select_Check_Command->execute();
@@ -1138,7 +1138,7 @@ sub write_contacts {
 	my $Icinga_Config_File = "$Config_Path/contacts.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Contact = $DB_Icinga->prepare("SELECT `id`, `contact_name`, `alias`, `host_notification_period`,
+	my $Select_Contact = $DB_Connection->prepare("SELECT `id`, `contact_name`, `alias`, `host_notification_period`,
 	`service_notification_period`, `host_notification_options`, `service_notification_options`, `email`,
 	`last_modified`, `modified_by`
 	FROM `nagios_contact`
@@ -1174,7 +1174,7 @@ sub write_contacts {
 		my $Last_Modified_Extract = $DB_Contact[8];
 		my $Modified_By_Extract = $DB_Contact[9];
 
-		my $Select_Host_Time_Periods = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Host_Time_Periods = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Host_Time_Periods->execute($Host_Notification_Period_Extract);
@@ -1185,7 +1185,7 @@ sub write_contacts {
 				$Host_Notification_Period_Conversion = $DB_Host_Period[0];
 			}
 
-		my $Select_Service_Time_Periods = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Service_Time_Periods = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Service_Time_Periods->execute($Service_Notification_Period_Extract);
@@ -1197,7 +1197,7 @@ sub write_contacts {
 			}
 
 		### Command Conversion
-		my $Select_Host_Command_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Command_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkContactToCommandHost`
 		WHERE `idMaster` = ?");
 		$Select_Host_Command_Link->execute($ID_Extract);
@@ -1207,7 +1207,7 @@ sub write_contacts {
 			{
 				my $Host_Notification_Command_ID = $DB_Host_Command_Link[0];
 
-				my $Select_Host_Command_Name = $DB_Icinga->prepare("SELECT `command_name`
+				my $Select_Host_Command_Name = $DB_Connection->prepare("SELECT `command_name`
 				FROM `nagios_command`
 				WHERE `id` = ?");
 				$Select_Host_Command_Name->execute($Host_Notification_Command_ID);
@@ -1218,7 +1218,7 @@ sub write_contacts {
 				}
 			}
 
-		my $Select_Service_Command_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Command_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkContactToCommandService`
 		WHERE `idMaster` = ?");
 		$Select_Service_Command_Link->execute($ID_Extract);
@@ -1228,7 +1228,7 @@ sub write_contacts {
 			{
 				my $Service_Notification_Command_ID = $DB_Service_Command_Link[0];
 
-				my $Select_Service_Command_Name = $DB_Icinga->prepare("SELECT `command_name`
+				my $Select_Service_Command_Name = $DB_Connection->prepare("SELECT `command_name`
 				FROM `nagios_command`
 				WHERE `id` = '$Service_Notification_Command_ID'");
 				$Select_Service_Command_Name->execute();
@@ -1269,7 +1269,7 @@ sub write_hosts {
 	my $Icinga_Config_File = "$Config_Path/hosts.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Host = $DB_Icinga->prepare("SELECT `id`, `host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, 
+	my $Select_Host = $DB_Connection->prepare("SELECT `id`, `host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`,
 	`check_interval`, `notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`,
 	`obsess_over_host`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`,
@@ -1325,7 +1325,7 @@ sub write_hosts {
 		## Host Parent Resolution
 
 		my $Host_Parents;
-		my $Select_Host_Parent_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Parent_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHost`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Parent_Link->execute($ID_Extract);
@@ -1335,7 +1335,7 @@ sub write_hosts {
 
 				my $Host_Link = $DB_Parent_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `host_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
 				FROM `nagios_host`
 				WHERE `id` = ?");
 				$Select_Host->execute($Host_Link);
@@ -1354,7 +1354,7 @@ sub write_hosts {
 		## Host Template Resolution
 
 		my $Host_Templates;
-		my $Select_Host_Template_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHosttemplate`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Template_Link->execute($ID_Extract);
@@ -1364,7 +1364,7 @@ sub write_hosts {
 
 				my $Host_Link = $DB_Template_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `template_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `template_name`
 				FROM `nagios_hosttemplate`
 				WHERE `id` = ?");
 				$Select_Host->execute($Host_Link);
@@ -1383,7 +1383,7 @@ sub write_hosts {
 		## Host Contact Group Resolution
 
 		my $Host_Contact_Groups;
-		my $Select_Host_Contact_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToContactgroup`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Contact_Group_Link->execute($ID_Extract);
@@ -1393,7 +1393,7 @@ sub write_hosts {
 
 				my $Host_Link = $DB_Contact_Group_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `contactgroup_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `contactgroup_name`
 				FROM `nagios_contactgroup`
 				WHERE `id` = ?");
 				$Select_Host->execute($Host_Link);
@@ -1416,7 +1416,7 @@ sub write_hosts {
 		my $Last_Modified_Extract_Template;
 		my $Notes_Extract_Template;
 		my $Modified_By_Extract_Template;
-		my $Select_Host_Template_ID = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHosttemplate`
 		WHERE `idMaster` = ?");
 		$Select_Host_Template_ID->execute($ID_Extract);
@@ -1426,7 +1426,7 @@ sub write_hosts {
 
 			$Host_Template_ID = $DB_Host_Template_ID[0];
 
-			my $Select_Host_Template = $DB_Icinga->prepare("SELECT `template_name`, `notes`, `last_modified`, `modified_by`
+			my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`, `notes`, `last_modified`, `modified_by`
 			FROM `nagios_hosttemplate`
 			WHERE `id` = ?");
 			$Select_Host_Template->execute($Host_Template_ID);
@@ -1446,7 +1446,7 @@ sub write_hosts {
 		## Check Period Link Collection
 
 
-		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Check_Period->execute($Check_Period_Extract);
@@ -1460,7 +1460,7 @@ sub write_hosts {
 
 		## Notification Period Link Collection
 
-		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Notification_Period->execute($Notification_Period_Extract);
@@ -1481,7 +1481,7 @@ sub write_hosts {
 		my $Check_Command_Where_Remaining = $Check_Command_Extract;
 			$Check_Command_Where_Remaining =~ s/^\d*(.*)/$1/g;
 
-		my $Select_Check_Command = $DB_Icinga->prepare("SELECT `command_name`
+		my $Select_Check_Command = $DB_Connection->prepare("SELECT `command_name`
 		FROM `nagios_command`
 		WHERE `id` = ?");
 		$Select_Check_Command->execute($Check_Command_Where_ID_Extract);
@@ -1593,7 +1593,7 @@ sub write_services {
 	my $Icinga_Config_File = "$Config_Path/services.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Service = $DB_Icinga->prepare("SELECT `id`, `service_description`, `active_checks_enabled`, `check_freshness`, 
+	my $Select_Service = $DB_Connection->prepare("SELECT `id`, `service_description`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `is_volatile`, `max_check_attempts`,
 	`check_interval`, `notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`,
 	`obsess_over_service`, `parallelize_check`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`,
@@ -1648,7 +1648,7 @@ sub write_services {
 
 		## Host Name Collection
 		my $Host_Names;
-		my $Select_Host_Name_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Name_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToHost`
 		WHERE `idMaster` = ?");
 		$Select_Host_Name_Link->execute($Service_ID_Extract);
@@ -1658,7 +1658,7 @@ sub write_services {
 
 			my $Host_ID = $DB_Host_Link[0];
 
-			my $Select_Host_Name = $DB_Icinga->prepare("SELECT `host_name`
+			my $Select_Host_Name = $DB_Connection->prepare("SELECT `host_name`
 			FROM `nagios_host`
 			WHERE `id` = '$Host_ID'
 			AND `active` = '1'");
@@ -1675,7 +1675,7 @@ sub write_services {
 
 		## Service Group Collection
 			my $Service_Group_Names;
-			my $Select_Service_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+			my $Select_Service_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 			FROM `nagios_lnkServiceToServicegroup`
 			WHERE `idMaster` = ?");
 			$Select_Service_Group_Link->execute($Service_ID_Extract);
@@ -1685,7 +1685,7 @@ sub write_services {
 	
 				my $Service_ID = $DB_Service_Link[0];
 	
-				my $Select_Service_Group_Name = $DB_Icinga->prepare("SELECT `servicegroup_name`
+				my $Select_Service_Group_Name = $DB_Connection->prepare("SELECT `servicegroup_name`
 				FROM `nagios_servicegroup`
 				WHERE `id` = '$Service_ID'
 				AND `active` = '1'");
@@ -1701,7 +1701,7 @@ sub write_services {
 
 		## Contact Link Collection
 		my $Contacts;
-		my $Select_Contact_Name_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Contact_Name_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToContact`
 		WHERE `idMaster` = ?");
 		$Select_Contact_Name_Link->execute($Service_ID_Extract);
@@ -1711,7 +1711,7 @@ sub write_services {
 
 			my $Contact_ID = $DB_Contact_Link[0];
 
-			my $Select_Contact_Name = $DB_Icinga->prepare("SELECT `contact_name`
+			my $Select_Contact_Name = $DB_Connection->prepare("SELECT `contact_name`
 			FROM `nagios_contact`
 			WHERE `id` = '$Contact_ID'
 			AND `active` = '1'");
@@ -1728,7 +1728,7 @@ sub write_services {
 
 		## Contact Group Link Collection
 		my $Contact_Groups;
-		my $Select_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToContactgroup`
 		WHERE `idMaster` = ?");
 		$Select_Group_Link->execute($Service_ID_Extract);
@@ -1738,7 +1738,7 @@ sub write_services {
 
 			my $Contact_ID = $DB_Contact_Link[0];
 
-			my $Select_Group = $DB_Icinga->prepare("SELECT `contactgroup_name`
+			my $Select_Group = $DB_Connection->prepare("SELECT `contactgroup_name`
 			FROM `nagios_contactgroup`
 			WHERE `id` = '$Contact_ID'
 			AND `active` = '1'");
@@ -1760,7 +1760,7 @@ sub write_services {
 		my $Service_Description_Extract_Template;
 		my $Last_Modified_Extract_Template;
 		my $Modified_By_Extract_Template;
-		my $Select_Service_Template_ID = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToServicetemplate`
 		WHERE `idMaster` = ?");
 		$Select_Service_Template_ID->execute($Service_ID_Extract);
@@ -1770,7 +1770,7 @@ sub write_services {
 
 			$Service_Template_ID = $DB_Service_Template_ID[0];
 
-			my $Select_Service_Template = $DB_Icinga->prepare("SELECT `template_name`, `last_modified`, `modified_by`
+			my $Select_Service_Template = $DB_Connection->prepare("SELECT `template_name`, `last_modified`, `modified_by`
 			FROM `nagios_servicetemplate`
 			WHERE `id` = ?");
 			$Select_Service_Template->execute($Service_Template_ID);
@@ -1787,7 +1787,7 @@ sub write_services {
 		## Check Period Link Collection
 
 
-		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Check_Period->execute($Check_Period_Extract);
@@ -1802,7 +1802,7 @@ sub write_services {
 		## Notification Period Link Collection
 
 
-		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Notification_Period->execute($Notification_Period_Extract);
@@ -1822,7 +1822,7 @@ sub write_services {
 		my $Check_Command_Where_Remaining = $Check_Command_Extract;
 			$Check_Command_Where_Remaining =~ s/^\d*(.*)/$1/g;
 
-		my $Select_Check_Command = $DB_Icinga->prepare("SELECT `command_name`
+		my $Select_Check_Command = $DB_Connection->prepare("SELECT `command_name`
 		FROM `nagios_command`
 		WHERE `id` = ?");
 		$Select_Check_Command->execute($Check_Command_Where_ID_Extract);
@@ -1947,7 +1947,7 @@ sub write_commands {
 	my $Icinga_Config_File = "$Config_Path/commands.conf";
 	open( FILE, ">$Icinga_Config_File" ) or die "Can't open $Icinga_Config_File";
 
-	my $Select_Command = $DB_Icinga->prepare("SELECT `id`, `command_name`, `command_line`, `last_modified`, `modified_by`
+	my $Select_Command = $DB_Connection->prepare("SELECT `id`, `command_name`, `command_line`, `last_modified`, `modified_by`
 	FROM `nagios_command`
 	WHERE `active` = '1'");
 

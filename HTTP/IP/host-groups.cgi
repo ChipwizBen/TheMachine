@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Group = $CGI->param("Add_Group");
@@ -19,6 +19,10 @@ my $Add_Group_Final = $CGI->param("Add_Group_Final");
 my $Add_Host_Temp_New = $CGI->param("Add_Host_Temp_New");
 my $Add_Host_Temp_Existing = $CGI->param("Add_Host_Temp_Existing");
 my $Group_Name_Add = $CGI->param("Group_Name_Add");
+my $Expires_Toggle_Add = $CGI->param("Expires_Toggle_Add");
+my $Expires_Date_Add = $CGI->param("Expires_Date_Add");
+	$Expires_Date_Add =~ s/\s//g;
+	$Expires_Date_Add =~ s/[^0-9\-]//g;
 my $Active_Add = $CGI->param("Active_Add");
 
 my $Edit_Group = $CGI->param("Edit_Group");
@@ -26,6 +30,10 @@ my $Edit_Group_Final = $CGI->param("Edit_Group_Final");
 my $Edit_Host_Temp_New = $CGI->param("Edit_Host_Temp_New");
 my $Edit_Host_Temp_Existing = $CGI->param("Edit_Host_Temp_Existing");
 my $Group_Name_Edit = $CGI->param("Group_Name_Edit");
+my $Expires_Toggle_Edit = $CGI->param("Expires_Toggle_Edit");
+my $Expires_Date_Edit = $CGI->param("Expires_Date_Edit");
+	$Expires_Date_Edit =~ s/\s//g;
+	$Expires_Date_Edit =~ s/[^0-9\-]//g;
 my $Active_Edit = $CGI->param("Active_Edit");
 
 my $Delete_Group = $CGI->param("Delete_Group");
@@ -176,6 +184,8 @@ else {
 
 sub html_add_group {
 
+my $Date = strftime "%Y-%m-%d", localtime;
+
 if ($Add_Host_Temp_New) {
 	if ($Add_Host_Temp_Existing !~ m/^$Add_Host_Temp_New,/g &&
 	$Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New$/g &&
@@ -189,7 +199,7 @@ my @Hosts = split(',', $Add_Host_Temp_Existing);
 
 foreach my $Host (@Hosts) {
 
-	my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
+	my $Host_Query = $DB_Connection->prepare("SELECT `hostname`, `type`
 		FROM `hosts`
 		WHERE `id` = ? ");
 	$Host_Query->execute($Host);
@@ -202,7 +212,7 @@ foreach my $Host (@Hosts) {
 				$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 			}
 			if ($Type) {
-				my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+				my $Select_Type = $DB_Connection->prepare("SELECT `type`
 				FROM `host_types`
 				WHERE `id` LIKE ?");
 				$Select_Type->execute($Type);
@@ -226,6 +236,20 @@ print <<ENDHTML;
 
 <h3 align="center">Add New Group</h3>
 
+<SCRIPT LANGUAGE="JavaScript"><!--
+function Expire_Toggle() {
+	if(document.Add_Group.Expires_Toggle_Add.checked)
+	{
+		document.Add_Group.Expires_Date_Add.disabled=false;
+	}
+	else
+	{
+		document.Add_Group.Expires_Date_Add.disabled=true;
+	}
+}
+//-->
+</SCRIPT>
+
 <form action='/IP/host-groups.cgi' name='Add_Group' method='post' >
 
 <table align = "center">
@@ -241,7 +265,7 @@ print <<ENDHTML;
 			<select name='Add_Host_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-				my $Host_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`, `type`
+				my $Host_List_Query = $DB_Connection->prepare("SELECT `id`, `hostname`, `type`
 				FROM `hosts`
 				ORDER BY `hostname` ASC");
 				$Host_List_Query->execute( );
@@ -256,7 +280,7 @@ ENDHTML
 							$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 						}
 					if ($Host_Type) {
-						my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+						my $Select_Type = $DB_Connection->prepare("SELECT `type`
 						FROM `host_types`
 						WHERE `id` LIKE ?");
 						$Select_Type->execute($Host_Type);
@@ -299,6 +323,11 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
+		<td style="text-align: right;">Expires:</td>
+		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Add"></td>
+		<td colspan="2"><input type="text" name="Expires_Date_Add" style="width:100%" value="$Date" placeholder="YYYY-MM-DD" disabled></td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Active:</td>
 		<td></td>
 		<td style="text-align: left;"><input type="radio" name="Active_Add" value="1" checked>Yes</td>
@@ -327,7 +356,7 @@ ENDHTML
 sub add_group {
 
 	### Existing Group_Name Check
-	my $Existing_Group_Name_Check = $DB_IP_Allocation->prepare("SELECT `id`
+	my $Existing_Group_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `host_groups`
 		WHERE `groupname` = ?");
 		$Existing_Group_Name_Check->execute($Group_Name_Add);
@@ -347,19 +376,24 @@ sub add_group {
 	}
 	### / Existing Group_Name Check
 
-	my $Group_Insert = $DB_IP_Allocation->prepare("INSERT INTO `host_groups` (
+	if ($Expires_Toggle_Add ne 'on') {
+		$Expires_Date_Add = '0000-00-00';
+	}
+
+	my $Group_Insert = $DB_Connection->prepare("INSERT INTO `host_groups` (
 		`id`,
 		`groupname`,
+		`expires`,
 		`active`,
 		`modified_by`
 	)
 	VALUES (
-		NULL, ?, ?, ?
+		NULL, ?, ?, ?, ?
 	)");
 
-	$Group_Insert->execute($Group_Name_Add, $Active_Add, $User_Name);
+	$Group_Insert->execute($Group_Name_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
-	my $Group_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
+	my $Group_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	$Add_Host_Temp_Existing =~ s/,$//;
 	my @Hosts = split(',', $Add_Host_Temp_Existing);
@@ -369,7 +403,7 @@ sub add_group {
 
 		$Host_Count++;
 
-		my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_host_groups_to_hosts` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_host_groups_to_hosts` (
 			`id`,
 			`group`,
 			`host`
@@ -388,10 +422,17 @@ sub add_group {
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
+	if ($Expires_Date_Add eq '0000-00-00') {
+		$Expires_Date_Add = 'not expire';
+	}
+	else {
+		$Expires_Date_Add = "expire on " . $Expires_Date_Add;
+	}
+
 	my $Hosts_Attached;
 	foreach my $Host (@Hosts) {
 
-		my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
+		my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` = ?"
 		);
@@ -412,8 +453,8 @@ sub add_group {
 		$Hosts_Attached = '';
 	}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -426,7 +467,7 @@ sub add_group {
 		?
 	)");
 	
-	$Audit_Log_Submission->execute("Host Groups", "Add", "$User_Name added $Group_Name_Add and set it $Active_Add. $Host_Count hosts were attached$Hosts_Attached. The system assigned it Host Group ID $Group_Insert_ID.", $User_Name);
+	$Audit_Log_Submission->execute("Host Groups", "Add", "$User_Name added $Group_Name_Add and set it $Active_Add and to $Expires_Date_Add. $Host_Count hosts were attached$Hosts_Attached. The system assigned it Host Group ID $Group_Insert_ID.", $User_Name);
 	# / Audit Log
 
 	return($Group_Insert_ID, $Host_Count);
@@ -438,7 +479,7 @@ sub html_edit_group {
 ### Currently Attached Hosts Retrieval and Conversion
 
 my $Hosts;
-my $Select_Links = $DB_IP_Allocation->prepare("SELECT `host`
+my $Select_Links = $DB_Connection->prepare("SELECT `host`
 	FROM `lnk_host_groups_to_hosts`
 	WHERE `group` = ?"
 );
@@ -448,7 +489,7 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
+	my $Host_Query = $DB_Connection->prepare("SELECT `hostname`, `type`
 		FROM `hosts`
 		WHERE `id` = ? ");
 	$Host_Query->execute($Link);
@@ -461,7 +502,7 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 				$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 			}
 		if ($Type) {
-			my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+			my $Select_Type = $DB_Connection->prepare("SELECT `type`
 			FROM `host_types`
 			WHERE `id` LIKE ?");
 			$Select_Type->execute($Type);
@@ -485,7 +526,7 @@ if ($Edit_Host_Temp_New) {
 	$Edit_Host_Temp_Existing !~ m/,$Edit_Host_Temp_New,/g) {
 		
 		### Check to see if new link is already attached to this group
-		my $Select_Links = $DB_IP_Allocation->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_host_groups_to_hosts`
 			WHERE `host` = ?
 			AND `group` = ? "
@@ -505,7 +546,7 @@ my @Hosts = split(',', $Edit_Host_Temp_Existing);
 
 foreach my $Host (@Hosts) {
 
-	my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
+	my $Host_Query = $DB_Connection->prepare("SELECT `hostname`, `type`
 		FROM `hosts`
 		WHERE `id` = ? ");
 	$Host_Query->execute($Host);
@@ -519,7 +560,7 @@ foreach my $Host (@Hosts) {
 			}
 
 		if ($Type) {
-			my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+			my $Select_Type = $DB_Connection->prepare("SELECT `type`
 			FROM `host_types`
 			WHERE `id` LIKE ?");
 			$Select_Type->execute($Type);
@@ -538,7 +579,7 @@ foreach my $Host (@Hosts) {
 ### Group Details Retrieval
 
 if (!$Group_Name_Edit) {
-	my $Select_Group_Details = $DB_IP_Allocation->prepare("SELECT `groupname`, `active`
+	my $Select_Group_Details = $DB_Connection->prepare("SELECT `groupname`, `expires`, `active`
 		FROM `host_groups`
 		WHERE `id` = ? "
 	);
@@ -547,8 +588,22 @@ if (!$Group_Name_Edit) {
 	while ( my @Select_Details = $Select_Group_Details->fetchrow_array() )
 	{
 		$Group_Name_Edit = $Select_Details[0];
-		$Active_Edit = $Select_Details[1];
+		$Expires_Date_Edit = $Select_Details[1];
+		$Active_Edit = $Select_Details[2];
 	}
+
+}
+
+my $Expires_Checked;
+my $Expires_Disabled;
+if ($Expires_Date_Edit eq '0000-00-00') {
+	$Expires_Checked = '';
+	$Expires_Disabled = 'disabled';
+	$Expires_Date_Edit = strftime "%Y-%m-%d", localtime;
+}
+else {
+	$Expires_Checked = 'checked';
+	$Expires_Disabled = '';
 }
 
 ### / Group Details Retrieval
@@ -561,6 +616,20 @@ print <<ENDHTML;
 </a>
 
 <h3 align="center">Edit Group</h3>
+
+<SCRIPT LANGUAGE="JavaScript"><!--
+function Expire_Toggle() {
+	if(document.Edit_Group.Expires_Toggle_Edit.checked)
+	{
+		document.Edit_Group.Expires_Date_Edit.disabled=false;
+	}
+	else
+	{
+		document.Edit_Group.Expires_Date_Edit.disabled=true;
+	}
+}
+//-->
+</SCRIPT>
 
 <form action='/IP/host-groups.cgi' name='Edit_Group' method='post' >
 
@@ -577,7 +646,7 @@ print <<ENDHTML;
 			<select name='Edit_Host_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-				my $Host_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`, `type`
+				my $Host_List_Query = $DB_Connection->prepare("SELECT `id`, `hostname`, `type`
 				FROM `hosts`
 				ORDER BY `hostname` ASC");
 				$Host_List_Query->execute( );
@@ -593,7 +662,7 @@ ENDHTML
 						}
 
 					if ($Type) {
-						my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+						my $Select_Type = $DB_Connection->prepare("SELECT `type`
 						FROM `host_types`
 						WHERE `id` LIKE ?");
 						$Select_Type->execute($Type);
@@ -661,6 +730,11 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
+		<td style="text-align: right;">Expires:</td>
+		<td><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Edit" $Expires_Checked></td>
+		<td colspan="2"><input type="text" name="Expires_Date_Edit" style="width:100%" value="$Expires_Date_Edit" placeholder="$Expires_Date_Edit" $Expires_Disabled></td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Active:</td>
 		<td></td>
 ENDHTML
@@ -706,7 +780,7 @@ ENDHTML
 sub edit_group {
 
 	### Existing Group_Name Check
-	my $Existing_Group_Name_Check = $DB_IP_Allocation->prepare("SELECT `id`
+	my $Existing_Group_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `host_groups`
 		WHERE `groupname` = ?
 		AND `id` != ?");
@@ -727,9 +801,13 @@ sub edit_group {
 	}
 	### / Existing Group_Name Check
 
+	if ($Expires_Toggle_Edit ne 'on') {
+		$Expires_Date_Edit = '0000-00-00';
+	}
+
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_IP_Allocation->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_host_groups`
 	ON `rules`.`id` = `lnk_rules_to_host_groups`.`rule`
 	SET
@@ -744,12 +822,13 @@ sub edit_group {
 
 	### / Revoke Rule Approval ###
 
-	my $Update_Group = $DB_IP_Allocation->prepare("UPDATE `host_groups` SET
+	my $Update_Group = $DB_Connection->prepare("UPDATE `host_groups` SET
 		`groupname` = ?,
+		`expires` = ?,
 		`active` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
-	$Update_Group->execute($Group_Name_Edit, $Active_Edit, $User_Name, $Edit_Group);
+	$Update_Group->execute($Group_Name_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_Group);
 
 	$Edit_Host_Temp_Existing =~ s/,$//;
 	my @Hosts = split(',', $Edit_Host_Temp_Existing);
@@ -759,7 +838,7 @@ sub edit_group {
 
 		$Host_Count++;
 
-		my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_host_groups_to_hosts` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_host_groups_to_hosts` (
 			`id`,
 			`group`,
 			`host`
@@ -776,12 +855,19 @@ sub edit_group {
 
 	# Audit Log
 
+	if ($Expires_Date_Edit eq '0000-00-00') {
+		$Expires_Date_Edit = 'does not expire';
+	}
+	else {
+		$Expires_Date_Edit = "expires on " . $Expires_Date_Edit;
+	}
+
 	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
 
 	my $Hosts_Attached;
 	foreach my $Host (@Hosts) {
 
-		my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
+		my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` = ?"
 		);
@@ -802,8 +888,8 @@ sub edit_group {
 		$Hosts_Attached = '';
 	}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -817,7 +903,7 @@ sub edit_group {
 		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified Host Group ID $Edit_Group, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
 	}
 
-	$Audit_Log_Submission->execute("Host Groups", "Modify", "$User_Name modified Host Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit and set $Active_Edit. $Host_Count new hosts were attached$Hosts_Attached.", $User_Name);
+	$Audit_Log_Submission->execute("Host Groups", "Modify", "$User_Name modified Host Group ID $Edit_Group. The new entry is recorded as $Group_Name_Edit and set $Active_Edit and $Expires_Date_Edit. $Host_Count new hosts were attached$Hosts_Attached.", $User_Name);
 	# / Audit Log
 
 	return($Host_Count);
@@ -826,7 +912,7 @@ sub edit_group {
 
 sub html_delete_group {
 
-	my $Select_Group = $DB_IP_Allocation->prepare("SELECT `groupname`
+	my $Select_Group = $DB_Connection->prepare("SELECT `groupname`
 	FROM `host_groups`
 	WHERE `id` = ?");
 
@@ -871,7 +957,7 @@ ENDHTML
 sub delete_group {
 
 	# Audit Log
-	my $Select_Links = $DB_IP_Allocation->prepare("SELECT `host`
+	my $Select_Links = $DB_Connection->prepare("SELECT `host`
 		FROM `lnk_host_groups_to_hosts`
 		WHERE `group` = ?"
 	);
@@ -881,7 +967,7 @@ sub delete_group {
 	while (( my $Host_ID ) = $Select_Links->fetchrow_array() )
 	{
 
-		my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
+		my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` = ?"
 		);
@@ -893,7 +979,7 @@ sub delete_group {
 		}
 	}
 
-	my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `groupname`, `active`
+	my $Select_Hosts = $DB_Connection->prepare("SELECT `groupname`, `active`
 		FROM `host_groups`
 		WHERE `id` = ?");
 
@@ -911,8 +997,8 @@ sub delete_group {
 		$Hosts_Attached = 'no hosts attached.';
 	}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -926,17 +1012,17 @@ sub delete_group {
 
 	# / Audit Log
 
-	my $Delete_Group = $DB_IP_Allocation->prepare("DELETE from `host_groups`
+	my $Delete_Group = $DB_Connection->prepare("DELETE from `host_groups`
 		WHERE `id` = ?");
 	
 	$Delete_Group->execute($Delete_Group_Confirm);
 
- 	my $Delete_Host_Links = $DB_IP_Allocation->prepare("DELETE from `lnk_host_groups_to_hosts`
+ 	my $Delete_Host_Links = $DB_Connection->prepare("DELETE from `lnk_host_groups_to_hosts`
 		WHERE `group` = ?");
 	
 	$Delete_Host_Links->execute($Delete_Group_Confirm);
 
- 	my $Delete_Rule_Links = $DB_IP_Allocation->prepare("DELETE from `lnk_rules_to_host_groups`
+ 	my $Delete_Rule_Links = $DB_Connection->prepare("DELETE from `lnk_rules_to_host_groups`
 		WHERE `host_group` = ?");
 	
 	$Delete_Rule_Links->execute($Delete_Group_Confirm);
@@ -946,7 +1032,7 @@ sub delete_group {
 sub delete_host {
 
 	# Audit Log
-	my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
+	my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`
 		FROM `hosts`
 		WHERE `id` = ?");
 
@@ -954,8 +1040,8 @@ sub delete_host {
 
 	my $Hostname = $Select_Hosts->fetchrow_array();
 	
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -969,7 +1055,7 @@ sub delete_host {
 
 	# / Audit Log
 
-	my $Delete_Host = $DB_IP_Allocation->prepare("DELETE from `lnk_host_groups_to_hosts`
+	my $Delete_Host = $DB_Connection->prepare("DELETE from `lnk_host_groups_to_hosts`
 		WHERE `group` = ?
 		AND `host` = ?");
 
@@ -992,29 +1078,30 @@ sub html_output {
 	);
 
 
-	my $Select_Group_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `host_groups`");
+	my $Select_Group_Count = $DB_Connection->prepare("SELECT `id` FROM `host_groups`");
 		$Select_Group_Count->execute( );
 		my $Total_Rows = $Select_Group_Count->rows();
 
 
-	my $Select_Groups = $DB_IP_Allocation->prepare("SELECT `id`, `groupname`, `active`, `last_modified`, `modified_by`
+	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `expires`, `active`, `last_modified`, `modified_by`
 		FROM `host_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
+		OR `expires` LIKE ?
 		ORDER BY `groupname` ASC
 		LIMIT 0 , $Rows_Returned"
 	);
 
 	if ($ID_Filter) {
-		$Select_Groups->execute($ID_Filter, '');
+		$Select_Groups->execute($ID_Filter, '', '');
 	}
 	else {
-		$Select_Groups->execute("%$Filter%", "%$Filter%");
+		$Select_Groups->execute("%$Filter%", "%$Filter%", "%$Filter%");
 	}
 	
 	my $Rows = $Select_Groups->rows();
 
-	$Table->addRow( "ID", "Group Name", "Connected Hosts", "Active", "Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->addRow( "ID", "Group Name", "Connected Hosts", "Expires", "Active", "Last Modified", "Modified By", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Group_Row_Count=1;
@@ -1032,12 +1119,24 @@ sub html_output {
 		my $Group_Name = $Select_Groups[1];
 		my $Group_Name_Clean = $Group_Name;
 			$Group_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = $Select_Groups[2];
+		my $Expires = $Select_Groups[2];
+			my $Expires_Clean = $Expires;
+			$Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Active = $Select_Groups[3];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = $Select_Groups[3];
-		my $Modified_By = $Select_Groups[4];
+		my $Last_Modified = $Select_Groups[4];
+		my $Modified_By = $Select_Groups[5];
 
-		my $Select_Links = $DB_IP_Allocation->prepare("SELECT `host`
+		my $Expires_Epoch;
+		my $Today_Epoch = time;
+		if ($Expires_Clean =~ /^0000-00-00$/) {
+			$Expires = 'Never';
+		}
+		else {
+			$Expires_Epoch = str2time("$Expires_Clean"."T23:59:59");
+		}
+
+		my $Select_Links = $DB_Connection->prepare("SELECT `host`
 			FROM `lnk_host_groups_to_hosts`
 			WHERE `group` = ?"
 		);
@@ -1049,14 +1148,14 @@ sub html_output {
 			my $Host_ID = $Select_Links[0];
 
 			### Group Query
-			my $Group_Link_Query = $DB_IP_Allocation->prepare("SELECT `group`
+			my $Group_Link_Query = $DB_Connection->prepare("SELECT `group`
 				FROM `lnk_host_groups_to_hosts`
 				WHERE `host` = ?");
 			$Group_Link_Query->execute($Host_ID);
 	
 				my $Groups;
 				while ( my $Host_Group = $Group_Link_Query->fetchrow_array() ) {
-					my $Group_Query = $DB_IP_Allocation->prepare("SELECT `groupname`, `active`
+					my $Group_Query = $DB_Connection->prepare("SELECT `groupname`, `active`
 						FROM `host_groups`
 						WHERE `id` = ?");
 					$Group_Query->execute($Host_Group);
@@ -1075,7 +1174,7 @@ sub html_output {
 				}
 				$Groups =~ s/,\s$//;
 
-			my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
+			my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`, `type`
 				FROM `hosts`
 				WHERE `id` = ?"
 			);
@@ -1089,7 +1188,7 @@ sub html_output {
 				my $Type = $Select_Hosts[1];
 
 				if ($Type){
-					my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+					my $Select_Type = $DB_Connection->prepare("SELECT `type`
 					FROM `host_types`
 					WHERE `id` LIKE ?");
 					$Select_Type->execute($Type);
@@ -1109,6 +1208,7 @@ sub html_output {
 			"$DBID",
 			"$Group_Name",
 			"$Hosts",
+			"$Expires",
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
@@ -1118,24 +1218,29 @@ sub html_output {
 
 
 		if ($Active eq 'Yes') {
-			$Table->setCellClass ($Group_Row_Count, 4, 'tbrowgreen');
+			$Table->setCellClass ($Group_Row_Count, 5, 'tbrowgreen');
 		}
 		else {
-			$Table->setCellClass ($Group_Row_Count, 4, 'tbrowred');
+			$Table->setCellClass ($Group_Row_Count, 5, 'tbrowred');
+		}
+
+		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
+			$Table->setCellClass ($Group_Row_Count, 4, 'tbrowdisabled');
 		}
 
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(4, '1px');
-	$Table->setColWidth(5, '110px');
+	$Table->setColWidth(4, '60px');
+	$Table->setColWidth(5, '1px');
 	$Table->setColWidth(6, '110px');
-	$Table->setColWidth(7, '1px');
+	$Table->setColWidth(7, '110px');
 	$Table->setColWidth(8, '1px');
+	$Table->setColWidth(9, '1px');
 
 
 	$Table->setColAlign(1, 'center');
-	for (4 .. 8) {
+	for (4 .. 9) {
 		$Table->setColAlign($_, 'center');
 	}
 
@@ -1208,7 +1313,7 @@ print <<ENDHTML;
 						<select name='Edit_Group' style="width: 150px">
 ENDHTML
 
-						my $Group_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `groupname`
+						my $Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`
 						FROM `host_groups`
 						ORDER BY `groupname` ASC");
 						$Group_List_Query->execute( );

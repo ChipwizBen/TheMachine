@@ -241,6 +241,24 @@ sub Sudoers_Group_ID {
 
 } # sub Sudoers_Group_ID
 
+sub Distribution_Log_Location {
+
+	# This is the log location for the distribution system. You do not need a trailing slash.
+
+	my $Distribution_Log_Location = '../Storage/System/Log';
+	return $Distribution_Log_Location;
+
+} # sub Distribution_Log_Location
+
+sub Distribution_tmp_Location {
+
+	# This is the directory where temporary files are are stored. You do not need a trailing slash.
+
+	my $Distribution_tmp_Location = '../Storage/System/tmp';
+	return $Distribution_tmp_Location;
+
+} # sub Distribution_tmp_Location
+
 sub DNS_Zone_Master_File {
 
 	# This is the zone master file use for defining zones.
@@ -474,157 +492,31 @@ sub DShell_WaitFor_Timeout {
 
 	# The default time that a *WAITFOR statement will wait before bailing out. Can be overridden manually by issuing *WAITFORnn, where nn is the timeout in seconds. nn can be any number.
 
-	my $DShell_WaitFor_Timeout = 900;
+	my $DShell_WaitFor_Timeout = 1800; # 30 minutes
 	return $DShell_WaitFor_Timeout;
 
 } # sub DShell_WaitFor_Timeout
 
-sub DB_Management {
+sub DB_Connection {
 
-	# This is your management database's connection information. This could be the same database as the database in the DB_Sudoers because the two schemas have different table names to facilitate a combination. However, the management data (System Accounts, Access Log, Audit Log, etc) contain sensitive information that normal users should not be allowed access to. This access control should also be applicable to database administrators, which is why this data is stored in a separate database by default to simplify access control.
-
-	use DBI;
-
-	my $Host = 'localhost';
-	my $Port = '3306';
-	my $DB = 'Management';
-	my $User = 'Management';
-	my $Password = '<Password>';
-
-	my $DB_Management = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
-		$User,
-		$Password,
-		{mysql_enable_utf8 => 1})
-		or die "Can't connect to database: $DBI::errstr\n";
-	return $DB_Management;
-
-} # sub DB_Management
-
-sub DB_Sudoers {
-
-	#  This is your Sudoers database's connection information. This is where your sudoers data is stored.
+	# This is your database's connection information.
 
 	use DBI;
 
 	my $Host = 'localhost';
 	my $Port = '3306';
-	my $DB = 'Sudoers';
-	my $User = 'Sudoers';
+	my $DB = 'TheMachine';
+	my $User = 'TheMachine';
 	my $Password = '<Password>';
 
-	my $DB_Sudoers = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
+	my $DB_Connection = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
 		$Password,
 		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
-	return $DB_Sudoers;
+	return $DB_Connection;
 
-} # sub DB_Sudoers
-
-sub DB_IP_Allocation {
-
-	#  This is your IP Allocation database's connection information.
-
-	use DBI;
-
-	my $Host = 'localhost';
-	my $Port = '3306';
-	my $DB = 'IP_Allocation';
-	my $User = 'Sudoers';
-	my $Password = '<Password>';
-
-	my $DB_IP_Allocation = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
-		$User,
-		$Password,
-		{mysql_enable_utf8 => 1})
-		or die "Can't connect to database: $DBI::errstr\n";
-	return $DB_IP_Allocation;
-
-} # sub DB_IP_Allocation
-
-sub DB_Icinga {
-
-	#  This is your Icinga database's connection information. This is where your Icinga data is stored.
-
-	use DBI;
-
-	my $Host = 'localhost';
-	my $Port = '3306';
-	my $DB = 'Nagios';
-	my $User = 'Sudoers';
-	my $Password = '<Password>';
-
-	my $DB_Icinga = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
-		$User,
-		$Password,
-		{mysql_enable_utf8 => 1})
-		or die "Can't connect to database: $DBI::errstr\n";
-	return $DB_Icinga;
-
-} # sub DB_Icinga
-
-sub DB_DNS {
-
-	#  This is your DNS database's connection information. This is where your sudoers data is stored.
-
-	use DBI;
-
-	my $Host = 'localhost';
-	my $Port = '3306';
-	my $DB = 'DNS';
-	my $User = 'Sudoers';
-	my $Password = '<Password>';
-
-	my $DB_DNS = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
-		$User,
-		$Password,
-		{mysql_enable_utf8 => 1})
-		or die "Can't connect to database: $DBI::errstr\n";
-	return $DB_DNS;
-
-} # sub DB_DNS
-
-sub DB_Reverse_Proxy {
-
-	#  This is your Reverse Proxy database's connection information. This is where your sudoers data is stored.
-
-	use DBI;
-
-	my $Host = 'localhost';
-	my $Port = '3306';
-	my $DB = 'Reverse_Proxy';
-	my $User = 'Sudoers';
-	my $Password = '<Password>';
-
-	my $DB_Reverse_Proxy = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
-		$User,
-		$Password,
-		{mysql_enable_utf8 => 1})
-		or die "Can't connect to database: $DBI::errstr\n";
-	return $DB_Reverse_Proxy;
-
-} # sub DB_Reverse_Proxy
-
-sub DB_DShell {
-
-	#  This is your D-Shell database's connection information. This is where your sudoers data is stored.
-
-	use DBI;
-
-	my $Host = 'localhost';
-	my $Port = '3306';
-	my $DB = 'DShell';
-	my $User = 'Sudoers';
-	my $Password = '<Password>';
-
-	my $DB_Reverse_Proxy = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
-		$User,
-		$Password,
-		{mysql_enable_utf8 => 1})
-		or die "Can't connect to database: $DBI::errstr\n";
-	return $DB_Reverse_Proxy;
-
-} # sub DB_DShell
+} # sub DB_Connection
 
 sub Reverse_Proxy_Defaults {
 
@@ -774,12 +666,12 @@ sub CGI {
 	my $CGI = new CGI;
 		my $Session;
 		if ($Session_In_Database =~ /Yes/) {
-			my $DB_Management = DB_Management();
+			my $DB_Connection = DB_Connection();
 			$Session = new CGI::Session('driver:MySQL', $CGI, {
 				TableName=>'cgi_sessions',
 				IdColName=>'id',
 				DataColName=>'session_data',
-				Handle=>$DB_Management,
+				Handle=>$DB_Connection,
 				secure  =>  1
 			});
 			$Session->flush();

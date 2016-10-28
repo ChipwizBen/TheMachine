@@ -10,9 +10,7 @@ require $Common_Config;
 my $System_Name = System_Name();
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Management = DB_Management();
-my $DB_DShell = DB_DShell();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Command = $CGI->param("Add_Command");
@@ -255,7 +253,7 @@ my @Command_Set_Dependencies = split(',', $Add_Command_Dependency_Temp_Existing)
 
 foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 
-	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`, `revision`
+	my $Command_Set_Query = $DB_Connection->prepare("SELECT `name`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?");
 	$Command_Set_Query->execute($Command_Set_Dependency);
@@ -307,7 +305,7 @@ ENDHTML
 
 	print "<option value='' selected>--Select a Command Set Dependency--</option>";
 
-	my $Select_Dependency_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
+	my $Select_Dependency_Command_Sets = $DB_Connection->prepare("SELECT `id`, `name`, `revision`
 		FROM `command_sets`
 		ORDER BY `name`, `revision`+0 ASC"
 	);
@@ -441,7 +439,7 @@ ENDHTML
 
 sub add_command {
 
-	my $Command_Insert = $DB_DShell->prepare("INSERT INTO `command_sets` (
+	my $Command_Insert = $DB_Connection->prepare("INSERT INTO `command_sets` (
 		`name`,
 		`command`,
 		`description`,
@@ -454,11 +452,11 @@ sub add_command {
 
 	$Command_Insert->execute($Command_Name_Add, $Command_Add, $Command_Description_Add, $Command_Owner_Add, $User_Name);
 
-	my $Command_Insert_ID = $DB_DShell->{mysql_insertid};
+	my $Command_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log (Command Set)
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -478,7 +476,7 @@ sub add_command {
 
 	foreach my $Dependency (@Dependencies) {
 
-		my $Dependency_Insert = $DB_DShell->prepare("INSERT INTO `command_set_dependency` (
+		my $Dependency_Insert = $DB_Connection->prepare("INSERT INTO `command_set_dependency` (
 			`id`,
 			`command_set_id`,
 			`dependent_command_set_id`,
@@ -494,12 +492,12 @@ sub add_command {
 		$Dependency_Insert->execute($Command_Insert_ID, $Dependency, '0');
 
 		# Audit Log (Dependency)
-		my $Select_Command_Set = $DB_DShell->prepare("SELECT `name` FROM `command_sets` WHERE `id` = ?");
+		my $Select_Command_Set = $DB_Connection->prepare("SELECT `name` FROM `command_sets` WHERE `id` = ?");
 		$Select_Command_Set->execute($Dependency);
 		while ( (my $Name) = $Select_Command_Set->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -525,7 +523,7 @@ sub html_edit_command {
 
 	## Existing Command Set Details
 
-	my $Select_Command_Sets = $DB_DShell->prepare("SELECT `name`, `command`, `description`, `owner_id`, `revision`
+	my $Select_Command_Sets = $DB_Connection->prepare("SELECT `name`, `command`, `description`, `owner_id`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?"
 	);
@@ -545,7 +543,7 @@ sub html_edit_command {
 
 	## Existing Command Set Dependencies
 
-	my $Select_Command_Set_Dependencies = $DB_DShell->prepare("SELECT `dependent_command_set_id`
+	my $Select_Command_Set_Dependencies = $DB_Connection->prepare("SELECT `dependent_command_set_id`
 		FROM `command_set_dependency`
 		WHERE `command_set_id` = ?"
 	);
@@ -581,7 +579,7 @@ my @Command_Set_Dependencies = split(',', $Edit_Command_Dependency_Temp_Existing
 
 foreach my $Command_Set_Dependency (@Command_Set_Dependencies) {
 
-	my $Command_Set_Query = $DB_DShell->prepare("SELECT `name`, `revision`
+	my $Command_Set_Query = $DB_Connection->prepare("SELECT `name`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ? ");
 	$Command_Set_Query->execute($Command_Set_Dependency);
@@ -643,7 +641,7 @@ ENDHTML
 
 	print "<option value='' selected>--Select a Command Set Dependency--</option>";
 
-	my $Select_Dependency_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `revision`
+	my $Select_Dependency_Command_Sets = $DB_Connection->prepare("SELECT `id`, `name`, `revision`
 		FROM `command_sets`
 		ORDER BY `name`,`revision`+0 ASC"
 	);
@@ -780,7 +778,7 @@ ENDHTML
 
 sub edit_command {
 
-	my $Update_Command = $DB_DShell->prepare("INSERT INTO `command_sets` (
+	my $Update_Command = $DB_Connection->prepare("INSERT INTO `command_sets` (
 		`name`,
 		`command`,
 		`description`,
@@ -794,11 +792,11 @@ sub edit_command {
 	)");
 
 	$Update_Command->execute($Command_Name_Edit, $Command_Edit, $Command_Description_Edit, $Command_Owner_Edit, $Edit_Command_Revision, $Edit_Command, $User_Name);
-	my $Command_Insert_ID = $DB_DShell->{mysql_insertid};
+	my $Command_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log (Command Set)
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -817,14 +815,14 @@ sub edit_command {
 	my @Dependencies = split(',', $Edit_Command_Dependency_Temp_Existing);
 
 
-	my $Clear_Old_Dependency_Links = $DB_DShell->prepare("DELETE from `command_set_dependency`
+	my $Clear_Old_Dependency_Links = $DB_Connection->prepare("DELETE from `command_set_dependency`
 		WHERE `command_set_id` = ?");
 	
 	$Clear_Old_Dependency_Links->execute($Command_Insert_ID);
 
 	foreach my $Dependency (@Dependencies) {
 
-		my $Dependency_Insert = $DB_DShell->prepare("INSERT INTO `command_set_dependency` (
+		my $Dependency_Insert = $DB_Connection->prepare("INSERT INTO `command_set_dependency` (
 			`id`,
 			`command_set_id`,
 			`dependent_command_set_id`,
@@ -840,12 +838,12 @@ sub edit_command {
 		$Dependency_Insert->execute($Command_Insert_ID, $Dependency, '0');
 
 		# Audit Log (Dependency)
-		my $Select_Command_Set = $DB_DShell->prepare("SELECT `name` FROM `command_sets` WHERE `id` = ?");
+		my $Select_Command_Set = $DB_Connection->prepare("SELECT `name` FROM `command_sets` WHERE `id` = ?");
 		$Select_Command_Set->execute($Dependency);
 		while ( (my $Name) = $Select_Command_Set->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -867,7 +865,7 @@ sub edit_command {
 
 sub html_delete_command {
 
-	my $Select_Command = $DB_DShell->prepare("SELECT `name`, `revision`
+	my $Select_Command = $DB_Connection->prepare("SELECT `name`, `revision`
 	FROM `command_sets`
 	WHERE `id` = ?");
 
@@ -912,7 +910,7 @@ ENDHTML
 sub delete_command {
 
 	# Dependency check
-	my $Dependency_Check = $DB_DShell->prepare("SELECT `command_set_id`
+	my $Dependency_Check = $DB_Connection->prepare("SELECT `command_set_id`
 		FROM `command_set_dependency`
 		WHERE `dependent_command_set_id` = ?"
 	);
@@ -923,7 +921,7 @@ sub delete_command {
 		my $Dependencies;
 		while (my $Dependency = $Dependency_Check->fetchrow_array() )
 		{
-			my $Dependency_Discovery = $DB_DShell->prepare("SELECT `name`, `revision`
+			my $Dependency_Discovery = $DB_Connection->prepare("SELECT `name`, `revision`
 				FROM `command_sets`
 				WHERE `id` = ?"
 			);
@@ -944,7 +942,7 @@ sub delete_command {
 	}
 
 	# Audit Log
-	my $Select_Commands = $DB_DShell->prepare("SELECT `name`, `revision`
+	my $Select_Commands = $DB_Connection->prepare("SELECT `name`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?");
 
@@ -953,8 +951,8 @@ sub delete_command {
 	while ( my ( $Command_Name, $Command_Revision ) = $Select_Commands->fetchrow_array() )
 	{
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -969,12 +967,12 @@ sub delete_command {
 	}
 	# / Audit Log
 
-	my $Delete_Command = $DB_DShell->prepare("DELETE from `command_sets`
+	my $Delete_Command = $DB_Connection->prepare("DELETE from `command_sets`
 		WHERE `id` = ?");
 	
 	$Delete_Command->execute($Delete_Command_Confirm);
 
-	my $Delete_Dependency_Links = $DB_DShell->prepare("DELETE from `command_set_dependency`
+	my $Delete_Dependency_Links = $DB_Connection->prepare("DELETE from `command_set_dependency`
 		WHERE `command_set_id` = ?");
 	
 	$Delete_Dependency_Links->execute($Delete_Command_Confirm);
@@ -983,7 +981,7 @@ sub delete_command {
 
 sub html_run_command {
 
-	my $Select_Command = $DB_DShell->prepare("SELECT `name`
+	my $Select_Command = $DB_Connection->prepare("SELECT `name`
 		FROM `command_sets`
 		WHERE `id` LIKE ?"
 	);
@@ -1005,7 +1003,7 @@ sub html_run_command {
 
 	## Groups
 	if ($Add_Host_Group_Temp_New) {
-		my $Select_Links = $DB_IP_Allocation->prepare("SELECT `host`
+		my $Select_Links = $DB_Connection->prepare("SELECT `host`
 			FROM `lnk_host_groups_to_hosts`
 			WHERE `group` = ?"
 		);
@@ -1021,7 +1019,7 @@ sub html_run_command {
 
 	## Types
 	if ($Add_Host_Type_Temp_New) {
-		my $Select_Links = $DB_IP_Allocation->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `hosts`
 			WHERE `type` = ?"
 		);
@@ -1047,14 +1045,14 @@ sub html_run_command {
 	foreach my $Host (@Hosts) {
 	
 		### Group Query
-		my $Group_Link_Query = $DB_IP_Allocation->prepare("SELECT `group`
+		my $Group_Link_Query = $DB_Connection->prepare("SELECT `group`
 			FROM `lnk_host_groups_to_hosts`
 			WHERE `host` = ?");
 		$Group_Link_Query->execute($Host);
 
 			my $Groups;
 			while ( my $Host_Group = $Group_Link_Query->fetchrow_array() ) {
-				my $Group_Query = $DB_IP_Allocation->prepare("SELECT `groupname`, `active`
+				my $Group_Query = $DB_Connection->prepare("SELECT `groupname`, `active`
 					FROM `host_groups`
 					WHERE `id` = ?");
 				$Group_Query->execute($Host_Group);
@@ -1074,7 +1072,7 @@ sub html_run_command {
 			$Groups =~ s/,\s$//;
 
 		### Host Query
-		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
+		my $Host_Query = $DB_Connection->prepare("SELECT `hostname`, `type`
 			FROM `hosts`
 			WHERE `id` = ?");
 		$Host_Query->execute($Host);
@@ -1085,7 +1083,7 @@ sub html_run_command {
 					$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 				}
 
-				my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+				my $Select_Type = $DB_Connection->prepare("SELECT `type`
 				FROM `host_types`
 				WHERE `id` LIKE ?");
 				$Select_Type->execute($Host_Type);
@@ -1175,7 +1173,7 @@ ENDHTML
 
 ### Host Types
 
-	my $Type_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `type`
+	my $Type_List_Query = $DB_Connection->prepare("SELECT `id`, `type`
 		FROM `host_types`
 		ORDER BY `type` ASC"
 	);
@@ -1205,7 +1203,7 @@ ENDHTML
 
 ### Host Groups
 
-	my $Group_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `groupname`
+	my $Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`
 		FROM `host_groups`
 		WHERE `active` = 1
 		ORDER BY `groupname` ASC"
@@ -1235,7 +1233,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Hosts
-				my $Host_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`
+				my $Host_List_Query = $DB_Connection->prepare("SELECT `id`, `hostname`
 				FROM `hosts`
 				ORDER BY `hostname` ASC");
 				$Host_List_Query->execute( );
@@ -1313,7 +1311,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Keys
-				my $Key_List_Query = $DB_Management->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`
+				my $Key_List_Query = $DB_Connection->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`
 				FROM `auth`
 				WHERE `key_owner` LIKE ?
 				ORDER BY `id` ASC");
@@ -1373,8 +1371,8 @@ sub run_command {
 	$Add_Host_Temp_Existing =~ s/,/ /;
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -1416,7 +1414,7 @@ sub html_diff_revision {
 
 	use Text::Diff;
 
-	my $Select_First_Diff = $DB_DShell->prepare("SELECT `name`, `command`
+	my $Select_First_Diff = $DB_Connection->prepare("SELECT `name`, `command`
 		FROM `command_sets`
 		WHERE `id` = ?"
 	);
@@ -1430,7 +1428,7 @@ sub html_diff_revision {
 			$Diff_One_Command = $Diff_One[1];
 	}
 
-	my $Select_Second_Diff = $DB_DShell->prepare("SELECT `name`, `command`
+	my $Select_Second_Diff = $DB_Connection->prepare("SELECT `name`, `command`
 		FROM `command_sets`
 		WHERE `id` = ?"
 	);
@@ -1506,7 +1504,7 @@ sub html_revision_history {
 
 	my $Revision = $Revision_History;
 	while ($Revision ne 'Last') {
-		my $Select_Command = $DB_DShell->prepare("SELECT `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
+		my $Select_Command = $DB_Connection->prepare("SELECT `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
 			FROM `command_sets`
 			WHERE `id` LIKE ?"
 		);
@@ -1537,7 +1535,7 @@ sub html_revision_history {
 				$Command_Owner = 'System';
 			}
 			else {
-				my $Discover_Owner = $DB_Management->prepare("SELECT `username`
+				my $Discover_Owner = $DB_Connection->prepare("SELECT `username`
 					FROM `credentials`
 					WHERE `id` = ?"
 				);
@@ -1609,21 +1607,21 @@ sub html_output {
 	);
 
 
-	my $Select_Command_Count = $DB_DShell->prepare("SELECT `id` FROM `command_sets`");
+	my $Select_Command_Count = $DB_Connection->prepare("SELECT `id` FROM `command_sets`");
 		$Select_Command_Count->execute( );
 		my $Total_Rows = $Select_Command_Count->rows();
 
 
 	my $Select_Command_Sets;
 	if ($ID_Filter) {
-		$Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
+		$Select_Command_Sets = $DB_Connection->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
 			FROM `command_sets`
 			WHERE `id` = ?"
 		);
 		$Select_Command_Sets->execute($ID_Filter);
 	}
 	else {
-		$Select_Command_Sets = $DB_DShell->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
+		$Select_Command_Sets = $DB_Connection->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
 			FROM `command_sets`
 			WHERE `id` = ?
 			OR `name` LIKE ?
@@ -1671,7 +1669,7 @@ sub html_output {
 
 		## Latest revision filter
 		if (!$ID_Filter) {
-			my $Select_Child = $DB_DShell->prepare("SELECT `id` FROM `command_sets` WHERE `revision_parent` = ?");
+			my $Select_Child = $DB_Connection->prepare("SELECT `id` FROM `command_sets` WHERE `revision_parent` = ?");
 			$Select_Child->execute($DBID);
 			my $Children = $Select_Child->rows();
 			if ($Children > 0) {
@@ -1682,7 +1680,7 @@ sub html_output {
 
 		## Gather dependency data
 		my $Command_Set_Dependencies;
-		my $Select_Command_Set_Dependencies = $DB_DShell->prepare("SELECT `dependent_command_set_id`
+		my $Select_Command_Set_Dependencies = $DB_Connection->prepare("SELECT `dependent_command_set_id`
 			FROM `command_set_dependency`
 			WHERE `command_set_id` = ?
 			ORDER BY `order` ASC"
@@ -1693,7 +1691,7 @@ sub html_output {
 		{
 			my $Dependent_Command_Set_ID = $Dependencies[0];
 
-			my $Select_Dependency_Name = $DB_DShell->prepare("SELECT `name`, `description`, `revision`
+			my $Select_Dependency_Name = $DB_Connection->prepare("SELECT `name`, `description`, `revision`
 				FROM `command_sets`
 				WHERE `id` = ?"
 			);
@@ -1715,7 +1713,7 @@ sub html_output {
 			$Command_Owner = 'System';
 		}
 		else {
-			my $Discover_Owner = $DB_Management->prepare("SELECT `username`
+			my $Discover_Owner = $DB_Connection->prepare("SELECT `username`
 				FROM `credentials`
 				WHERE `id` = ?"
 			);
@@ -1826,7 +1824,7 @@ print <<ENDHTML;
 						<select name='Edit_Command' style="width: 150px">
 ENDHTML
 
-						my $Command_List_Query = $DB_DShell->prepare("SELECT `id`, `name`
+						my $Command_List_Query = $DB_Connection->prepare("SELECT `id`, `name`
 						FROM `command_sets`
 						ORDER BY `name` ASC");
 						$Command_List_Query->execute( );

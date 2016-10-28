@@ -9,13 +9,13 @@ my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 
 &quick_loop;
 
 sub quick_loop {
 
-	my $Select_Block = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block`
+	my $Select_Block = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block`
 	FROM `ipv4_blocks`");
 	
 	$Select_Block->execute();
@@ -57,7 +57,7 @@ sub quick_loop {
 
 			$IP_Allocation = new Net::IP::XS ($IP) or die(print Net::IP::XS::Error);
 
-				my $Select_IP = $DB_IP_Allocation->prepare("SELECT `ip_block`
+				my $Select_IP = $DB_Connection->prepare("SELECT `ip_block`
 					FROM `ipv4_allocations`
 					WHERE `ip_block` = '$IP'");
 
@@ -104,7 +104,7 @@ sub quick_loop {
 			
 					print "Percent Used: $Used_Blocks%\n\n";
 			
-					my $Update_Percentages = $DB_IP_Allocation->prepare("UPDATE `ipv4_blocks` SET 
+					my $Update_Percentages = $DB_Connection->prepare("UPDATE `ipv4_blocks` SET 
 						`percent_used` =  ?
 						WHERE  `id` = ?");
 					$Update_Percentages->execute($Used_Blocks, $ID);

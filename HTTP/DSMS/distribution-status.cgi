@@ -9,8 +9,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Management = DB_Management();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 my ($Distribution_Default_SFTP_Port,
 	$Distribution_Default_User,
@@ -47,6 +46,8 @@ if (!$User_Name) {
 }
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
+my $Filter = $CGI->param("Filter");
+my $ID_Filter = $CGI->param("ID_Filter");
 
 if ($Rows_Returned eq '') {
 	$Rows_Returned='100';
@@ -92,37 +93,40 @@ else {
 
 sub html_edit_host_parameters {
 
-	my $Select_Parameters = $DB_Management->prepare("SELECT `sftp_port`, `user`, `key_path`, `timeout`, `remote_sudoers_path`
+	my $Select_Host = $DB_Connection->prepare("SELECT `hostname`, `expires`, `active`
+	FROM `hosts`
+	WHERE `id` = ?");
+	$Select_Host->execute($Edit_Host_Parameters);
+
+	my ($Host_Name, $Expires, $Active);
+	while ( my @DB_Host = $Select_Host->fetchrow_array() )
+	{
+
+		$Host_Name = $DB_Host[0];
+		$Expires = $DB_Host[1];
+			if ($Expires eq '0000-00-00') {
+				$Expires = 'Never';
+			}
+		$Active = $DB_Host[2];
+	}
+	my $Select_Parameters = $DB_Connection->prepare("SELECT `sftp_port`, `user`, `key_path`, `timeout`, `remote_sudoers_path`
 		FROM `distribution`
 		WHERE `host_id` = ?");
 
 	$Select_Parameters->execute($Edit_Host_Parameters);
 
-	while ( my @DB_Parameters = $Select_Parameters->fetchrow_array() )
-	{
+	my @DB_Parameters = $Select_Parameters->fetchrow_array();
 
-		my $SFTP_Port = $DB_Parameters[0];
-		my $User = $DB_Parameters[1];
-		my $Key_Path = $DB_Parameters[2];
-		my $Timeout = $DB_Parameters[3];
-		my $Remote_Sudoers_Path = $DB_Parameters[4];
-
-		my $Select_Host = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
-		FROM `hosts`
-		WHERE `id` = ?");
-		$Select_Host->execute($Edit_Host_Parameters);
-	
-		while ( my @DB_Host = $Select_Host->fetchrow_array() )
-		{
-	
-			my $Host_Name = $DB_Host[0];
-			my $IP = $DB_Host[1];
-			my $Expires = $DB_Host[2];
-				if ($Expires eq '0000-00-00') {
-					$Expires = 'Never';
-				}
-			my $Active = $DB_Host[3];
-
+	my $SFTP_Port = $DB_Parameters[0];
+		if (!$SFTP_Port) {$SFTP_Port = $Distribution_Default_SFTP_Port}
+	my $User = $DB_Parameters[1];
+		if (!$User) {$User = $Distribution_Default_User}
+	my $Key_Path = $DB_Parameters[2];
+		if (!$Key_Path) {$Key_Path = $Distribution_Default_Key_Path}
+	my $Timeout = $DB_Parameters[3];
+		if (!$Timeout) {$Timeout = $Distribution_Default_Timeout}
+	my $Remote_Sudoers_Path = $DB_Parameters[4];
+		if (!$Remote_Sudoers_Path) {$Remote_Sudoers_Path = $Distribution_Default_Remote_Sudoers}
 
 print <<ENDHTML;
 <div id="wide-popup-box">
@@ -143,7 +147,7 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">IP:</td>
-		<td style="text-align: left; color: #00FF00;">$IP</td>
+		<td style="text-align: left; color: #00FF00;"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Expires:</td>
@@ -153,7 +157,7 @@ print <<ENDHTML;
 		<td style="text-align: right;">Active:</td>
 ENDHTML
 
-if ($Active == 1) {
+if ($Active) {
 print <<ENDHTML;
 		<td style="text-align: left; color: #00FF00;">Yes</td>
 ENDHTML
@@ -190,7 +194,7 @@ print <<ENDHTML;
 
 
 <input type='hidden' name='Host_Name_Edit' value='$Host_Name'>
-<input type='hidden' name='IP_Edit' value='$IP'>
+<input type='hidden' name='IP_Edit' value=''>
 <input type='hidden' name='Edit_Host_Parameters_Post' value='$Edit_Host_Parameters'>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
@@ -208,26 +212,53 @@ If the Remote Server uses chroot, make the Remote Sudoers Path is relative to th
 </form>
 
 ENDHTML
-		}
-	}
+
 } # sub html_edit_host_parameters
 
 sub edit_host_parameters {
 
-	my $Update_Parameters = $DB_Management->prepare("UPDATE `distribution` SET
-		`sftp_port` = ?,
-		`user` = ?,
-		`key_path` = ?,
-		`timeout` = ?,
-		`remote_sudoers_path` = ?,
-		`last_modified` = NOW(),
-		`modified_by` = ?
-		WHERE `host_id` = ?");
-		
-	$Update_Parameters->execute($SFTP_Port_Edit, $User_Edit, $Key_Path_Edit, $Timeout_Edit, $Remote_Sudoers_Path_Edit, $User_Name, $Edit_Host_Parameters_Post);
+		my $Update_Parameters = $DB_Connection->prepare("INSERT INTO `distribution` (
+			`host_id`,
+			`sftp_port`,
+			`user`,
+			`key_path`,
+			`timeout`,
+			`remote_sudoers_path`,
+			`last_modified`,
+			`modified_by`
+		)
+		VALUES (
+			?, ?, ?, ?, ?, ?, NOW(), ?
+		)
+		ON DUPLICATE KEY UPDATE
+			`sftp_port` = ?,
+			`user` = ?,
+			`key_path` = ?,
+			`timeout` = ?,
+			`remote_sudoers_path` = ?,
+			`last_modified` = NOW(),
+			`modified_by` = ?");
+
+	$Update_Parameters->execute(
+		# Ins
+		$Edit_Host_Parameters_Post,
+		$SFTP_Port_Edit,
+		$User_Edit,
+		$Key_Path_Edit,
+		$Timeout_Edit,
+		$Remote_Sudoers_Path_Edit,
+		$User_Name,
+		# Dupe
+		$SFTP_Port_Edit,
+		$User_Edit,
+		$Key_Path_Edit,
+		$Timeout_Edit,
+		$Remote_Sudoers_Path_Edit,
+		$User_Name
+	);
 
 	# Audit Log
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -247,7 +278,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /distribution-status.cgi/) {
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -272,31 +303,68 @@ sub html_output {
 		-padding=>1
 	);
 
-	$Table->addRow( "Host ID", "Host (IP)", "SFTP Port", "User", "Key Path", "Timeout", "Remote Sudoers Path", "Status Message", "Status", "Status Received", "Last Successful Transfer", "Last Successful Deployment", "Last Modified", "Modified By", "Edit" );
+	$Table->addRow( "Host ID", "Host", "SFTP Port", "User", "Key Path", "Timeout", "Remote Sudoers Path", "Status Message", "Status", "Status Received", "Last Successful Transfer", "Last Successful Deployment", "Last Modified", "Modified By", "Edit" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Host_Count = $DB_Sudoers->prepare("SELECT `id` FROM `hosts`");
-		$Select_Host_Count->execute( );
-		my $Total_Rows = $Select_Host_Count->rows();
+	my $Select_Host_Total = $DB_Connection->prepare("SELECT COUNT(`host_id`)
+		FROM  `host_attributes`
+		WHERE `dsms` = 1
+	");
+	$Select_Host_Total->execute();
+	my $Total_Rows = $Select_Host_Total->fetchrow_array();
 
-	my $Select_Parameters = $DB_Management->prepare("SELECT `host_id`, `sftp_port`, `user`, `key_path`, `timeout`, `remote_sudoers_path`, `status`, `last_updated`, `last_successful_transfer`, `last_checkin`, `last_modified`, `modified_by`
-		FROM `distribution`
-		ORDER BY `last_updated` DESC
-		LIMIT 0 , $Rows_Returned");
+	my $Select_Hosts = $DB_Connection->prepare("
+	SELECT `id`, `hostname`, `active`, `sftp_port`, `user`, `key_path`, `timeout`, `remote_sudoers_path`, 
+	`status`, `last_updated`, `last_successful_transfer`, `last_checkin`, `distribution`.`last_modified`, `distribution`.`modified_by`
+		FROM `hosts`
+		LEFT OUTER JOIN `host_attributes`
+			ON `hosts`.`id`=`host_attributes`.`host_id`
+		LEFT OUTER JOIN `distribution`
+			ON `hosts`.`id`=`distribution`.`host_id`
+			WHERE (`id` LIKE ?
+			OR `hostname` LIKE ?
+			OR `sftp_port` LIKE ?
+			OR `user` LIKE ?
+			OR `key_path` LIKE ?
+			OR `timeout` LIKE ?
+			OR `remote_sudoers_path` LIKE ?
+			OR `distribution`.`last_modified` LIKE ?
+			OR `distribution`.`modified_by` LIKE ?)
+			AND `host_attributes`.`dsms` = 1
+		ORDER BY `hosts`.`hostname` ASC
+		LIMIT 0 , $Rows_Returned"
+	);
 
-	$Select_Parameters->execute();
-	my $Rows = $Select_Parameters->rows();
+	if ($ID_Filter) {
+		$Select_Hosts->execute($ID_Filter, '', '', '', '', '', '', '', '');
+	}
+	else {
+		$Select_Hosts->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
+		"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+	}
 
-	while ( my @Select_Parameters = $Select_Parameters->fetchrow_array() )
+	my $Rows = $Select_Hosts->rows();
+
+	while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 	{
 
-		my $Host_ID = $Select_Parameters[0];
-		my $SFTP_Port = $Select_Parameters[1];
-		my $User = $Select_Parameters[2];
-		my $Key_Path = $Select_Parameters[3];
-		my $Timeout = $Select_Parameters[4];
-		my $Remote_Sudoers = $Select_Parameters[5];
-		my $Status_Message = $Select_Parameters[6];
+		my $Host_ID = $Select_Hosts[0];
+			$Host_ID =~ s/(.*)($ID_Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+			$Host_ID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Host_Name = $Select_Hosts[1];
+			$Host_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Active = $Select_Hosts[2];
+		my $SFTP_Port = $Select_Hosts[3];
+			$SFTP_Port =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $User = $Select_Hosts[4];
+			$User =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Key_Path = $Select_Hosts[5];
+			$Key_Path =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Timeout = $Select_Hosts[6];
+			$Timeout =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Remote_Sudoers = $Select_Hosts[7];
+			$Remote_Sudoers =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Status_Message = $Select_Hosts[8];
 			my $Status_Light;
 			if ($Status_Message =~ /^OK/) {$Status_Light = 'OK'} else {$Status_Light = 'Error'}
 			$Status_Message =~ s/\n/<br \/>/g;
@@ -305,72 +373,63 @@ sub html_output {
 			$Status_Message =~ s/(.*)Failed:/<span style='color: #FF0000'>$1Failed: <\/span>/g;
 			$Status_Message =~ s/Hints:(.*)/<span style='color: #FFC600'>Hints:<\/span><span style='color: #BDBDBD'>$1<\/span>/g;
 			$Status_Message =~ s/\s(\d\))/<span style='color: #FFC600'>$1<\/span>/gm;
-		my $Last_Updated = $Select_Parameters[7];
+		my $Last_Updated = $Select_Hosts[9];
 			if ($Last_Updated eq '0000-00-00 00:00:00') {$Last_Updated = 'Never';}
-		my $Last_Successful_Transfer = $Select_Parameters[8];
+		my $Last_Successful_Transfer = $Select_Hosts[10];
 			if ($Last_Successful_Transfer eq '0000-00-00 00:00:00') {$Last_Successful_Transfer = 'Never';}
-		my $Last_Successful_Checkin = $Select_Parameters[9];
+		my $Last_Successful_Checkin = $Select_Hosts[11];
 			if ($Last_Successful_Checkin eq '0000-00-00 00:00:00') {$Last_Successful_Checkin = 'Unknown';}
-		my $Last_Modified = $Select_Parameters[10];
-			if ($Last_Modified eq '0000-00-00 00:00:00') {$Last_Modified = 'Never';}
-		my $Modified_By = $Select_Parameters[11];
+		my $Last_Modified = $Select_Hosts[12];
+			if ($Last_Modified eq "0000-00-00 00:00:00") {$Last_Modified = "Never";}
+			$Last_Modified =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Modified_By = $Select_Hosts[13];
+			$Modified_By =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 
-
-		my $Select_Host = $DB_Sudoers->prepare("SELECT `hostname`, `ip`
-			FROM `hosts`
-			WHERE `id` = ?
-		");
-		$Select_Host->execute($Host_ID);
-
-		while ( my ($Host_Name, $IP) = $Select_Host->fetchrow_array() )
-		{
-
-			$Table->addRow(
-				$Host_ID,
-				"<a href='sudoers-hosts.cgi?ID_Filter=$Host_ID'>$Host_Name ($IP)</a>",
-				$SFTP_Port,
-				$User,
-				$Key_Path,
-				$Timeout,
-				$Remote_Sudoers,
-				$Status_Message,
-				$Status_Light,
-				$Last_Updated,
-				$Last_Successful_Transfer,
-				$Last_Successful_Checkin,
-				$Last_Modified,
-				$Modified_By,
-				"<a href='distribution-status.cgi?Edit_Host_Parameters=$Host_ID'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host Parameters $Host_ID\" ></a>"
-			);
-		
-			if ($Status_Light eq 'OK') {
-				$Table->setCellClass (-1, 9, 'tbrowgreen');
-			}
-			else {
-				$Table->setCellClass (-1, 9, 'tbrowred');
-			}
+		$Table->addRow(
+			$Host_ID,
+			"<a href=\"sudoers-hosts.cgi?ID_Filter=$Host_ID\">$Host_Name</a>",
+			$SFTP_Port,
+			$User,
+			$Key_Path,
+			$Timeout,
+			$Remote_Sudoers,
+			$Status_Message,
+			$Status_Light,
+			$Last_Updated,
+			$Last_Successful_Transfer,
+			$Last_Successful_Checkin,
+			$Last_Modified,
+			$Modified_By,
+			"<a href=\"distribution-status.cgi?Edit_Host_Parameters=$Host_ID\"><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host Parameters $Host_ID\" ></a>"
+		);
 	
-			$Table->setColWidth(1, '1px');
-			$Table->setColWidth(10, '110px');
-			$Table->setColWidth(11, '110px');
-			$Table->setColWidth(12, '110px');
-			$Table->setColWidth(13, '110px');
-			$Table->setColWidth(14, '110px');
-			$Table->setColWidth(15, '1px');
-	
-			$Table->setColAlign(1, 'center');
-			$Table->setColAlign(3, 'center');
-			$Table->setColAlign(6, 'center');
-			$Table->setColAlign(9, 'center');
-			$Table->setColAlign(10, 'center');
-			$Table->setColAlign(11, 'center');
-			$Table->setColAlign(12, 'center');
-			$Table->setColAlign(13, 'center');
-			$Table->setColAlign(14, 'center');
-			$Table->setColAlign(15, 'center');
+		if ($Status_Light eq 'OK') {
+			$Table->setCellClass (-1, 9, 'tbrowgreen');
 		}
-	}
+		else {
+			$Table->setCellClass (-1, 9, 'tbrowred');
+		}
 
+		$Table->setColWidth(1, '1px');
+		$Table->setColWidth(10, '110px');
+		$Table->setColWidth(11, '110px');
+		$Table->setColWidth(12, '110px');
+		$Table->setColWidth(13, '110px');
+		$Table->setColWidth(14, '110px');
+		$Table->setColWidth(15, '1px');
+
+		$Table->setColAlign(1, 'center');
+		$Table->setColAlign(3, 'center');
+		$Table->setColAlign(6, 'center');
+		$Table->setColAlign(9, 'center');
+		$Table->setColAlign(10, 'center');
+		$Table->setColAlign(11, 'center');
+		$Table->setColAlign(12, 'center');
+		$Table->setColAlign(13, 'center');
+		$Table->setColAlign(14, 'center');
+		$Table->setColAlign(15, 'center');
+
+	}
 	my $MD5_Checksum = `$md5sum $Sudoers_Location | $cut -d ' ' -f 1`;
 		$MD5_Checksum = "Current sudoers MD5 checksum: " . "<span style='color: #00FF00;'>$MD5_Checksum</span>";
 
@@ -417,7 +476,7 @@ print <<ENDHTML;
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: left;">Returned Rows:</td>
+					<td style="text-align: right;">Returned Rows:</td>
 					<td colspan="2" style="text-align: left;">
 						<select name='Rows_Returned' onchange='this.form.submit()' style="width: 150px">
 ENDHTML
@@ -432,6 +491,14 @@ if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709
 
 print <<ENDHTML;
 						</select>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">
+						Filter:
+					</td>
+					<td colspan="2" style="text-align: left;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Hosts" placeholder="Search">
 					</td>
 				</tr>
 			</form>
@@ -449,8 +516,12 @@ print <<ENDHTML;
 						<select name='Edit_Host_Parameters' style="width: 150px">
 ENDHTML
 
-						my $Host_List_Query = $DB_Sudoers->prepare("SELECT `id`, `hostname`
-						FROM `hosts`
+						my $Host_List_Query = $DB_Connection->prepare("
+						SELECT `id`, `hostname`
+							FROM `hosts`
+							LEFT OUTER JOIN `host_attributes`
+								ON `hosts`.`id`=`host_attributes`.`host_id`
+							WHERE `dsms` = 1
 						ORDER BY `hostname` ASC");
 						$Host_List_Query->execute( );
 						

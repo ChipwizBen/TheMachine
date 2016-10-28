@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_User = $CGI->param("Add_User");
@@ -254,7 +254,7 @@ ENDHTML
 sub add_user {
 
 	### Existing User_Name Check
-	my $Existing_User_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_User_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `users`
 		WHERE `username` = ?");
 		$Existing_User_Name_Check->execute($User_Name_Add);
@@ -278,7 +278,7 @@ sub add_user {
 		$Expires_Date_Add = '0000-00-00';
 	}
 
-	my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `users` (
+	my $User_Insert = $DB_Connection->prepare("INSERT INTO `users` (
 		`id`,
 		`username`,
 		`expires`,
@@ -295,7 +295,7 @@ sub add_user {
 
 	$User_Insert->execute($User_Name_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
-	my $User_Insert_ID = $DB_Sudoers->{mysql_insertid};
+	my $User_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
 	if ($Expires_Date_Add eq '0000-00-00') {
@@ -307,8 +307,8 @@ sub add_user {
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -330,7 +330,7 @@ sub add_user {
 
 sub html_edit_user {
 
-	my $Select_User = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+	my $Select_User = $DB_Connection->prepare("SELECT `username`, `expires`, `active`
 	FROM `users`
 	WHERE `id` = ?");
 	$Select_User->execute($Edit_User);
@@ -435,7 +435,7 @@ ENDHTML
 sub edit_user {
 
 	### Existing User_Name Check
-	my $Existing_User_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_User_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `users`
 		WHERE `username` = ?
 		AND `id` != ?");
@@ -458,7 +458,7 @@ sub edit_user {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_users`
 	ON `rules`.`id` = `lnk_rules_to_users`.`rule`
 	SET
@@ -477,7 +477,7 @@ sub edit_user {
 		$Expires_Date_Edit = '0000-00-00';
 	}
 
-	my $Update_User = $DB_Sudoers->prepare("UPDATE `users` SET
+	my $Update_User = $DB_Connection->prepare("UPDATE `users` SET
 		`username` = ?,
 		`expires` = ?,
 		`active` = ?,
@@ -496,8 +496,8 @@ sub edit_user {
 
 	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -517,7 +517,7 @@ sub edit_user {
 
 sub html_delete_user {
 
-	my $Select_User = $DB_Sudoers->prepare("SELECT `username`
+	my $Select_User = $DB_Connection->prepare("SELECT `username`
 	FROM `users`
 	WHERE `id` = ?");
 
@@ -564,7 +564,7 @@ sub delete_user {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_users`
 	ON `rules`.`id` = `lnk_rules_to_users`.`rule`
 	SET
@@ -580,7 +580,7 @@ sub delete_user {
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Users = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+	my $Select_Users = $DB_Connection->prepare("SELECT `username`, `expires`, `active`
 		FROM `users`
 		WHERE `id` = ?");
 
@@ -598,8 +598,8 @@ sub delete_user {
 	
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 	
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -618,17 +618,17 @@ sub delete_user {
 	}
 	# / Audit Log
 
-	my $Delete_User = $DB_Sudoers->prepare("DELETE from `users`
+	my $Delete_User = $DB_Connection->prepare("DELETE from `users`
 		WHERE `id` = ?");
 	
 	$Delete_User->execute($Delete_User_Confirm);
 
-	my $Delete_User_From_Groups = $DB_Sudoers->prepare("DELETE from `lnk_user_groups_to_users`
+	my $Delete_User_From_Groups = $DB_Connection->prepare("DELETE from `lnk_user_groups_to_users`
 			WHERE `user` = ?");
 		
 	$Delete_User_From_Groups->execute($Delete_User_Confirm);
 
-	my $Delete_User_From_Rules = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_users`
+	my $Delete_User_From_Rules = $DB_Connection->prepare("DELETE from `lnk_rules_to_users`
 			WHERE `user` = ?");
 		
 	$Delete_User_From_Rules->execute($Delete_User_Confirm);
@@ -656,7 +656,7 @@ sub html_show_links {
 
 	### User Groups
 
-	my $Select_Group_Links = $DB_Sudoers->prepare("SELECT `group`
+	my $Select_Group_Links = $DB_Connection->prepare("SELECT `group`
 		FROM `lnk_user_groups_to_users`
 		WHERE `user` = ?"
 	);
@@ -667,7 +667,7 @@ sub html_show_links {
 		
 		my $Group_ID = $Select_Links[0];
 
-		my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`, `active`
+		my $Select_Groups = $DB_Connection->prepare("SELECT `groupname`, `active`
 			FROM `user_groups`
 			WHERE `id` = ?"
 		);
@@ -695,7 +695,7 @@ sub html_show_links {
 
 	### Rules
 
-	my $Select_Rule_Links = $DB_Sudoers->prepare("SELECT `rule`
+	my $Select_Rule_Links = $DB_Connection->prepare("SELECT `rule`
 		FROM `lnk_rules_to_users`
 		WHERE `user` = ?"
 	);
@@ -706,7 +706,7 @@ sub html_show_links {
 		
 		my $Rule_ID = $Select_Links[0];
 
-		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
+		my $Select_Rules = $DB_Connection->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`
 			WHERE `id` = ?"
 		);
@@ -773,7 +773,7 @@ sub html_notes {
 
 	### Discover Sudo User Name
 	my $Sudo_User_Name;
-	my $Select_Sudo_User_Name = $DB_Sudoers->prepare("SELECT `username`
+	my $Select_Sudo_User_Name = $DB_Connection->prepare("SELECT `username`
 	FROM `users`
 	WHERE `id` = ?");
 
@@ -782,7 +782,7 @@ sub html_notes {
 	### / Discover Sudo User Name
 
 	### Discover Note Count
-	my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+	my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 		FROM `notes`
 		WHERE `type_id` = '03'
 		AND `item_id` = ?"
@@ -791,7 +791,7 @@ sub html_notes {
 	my $Note_Count = $Select_Note_Count->fetchrow_array();
 	### / Discover Note Count
 
-	my $Select_Notes = $DB_Sudoers->prepare("SELECT `note`, `last_modified`, `modified_by`
+	my $Select_Notes = $DB_Connection->prepare("SELECT `note`, `last_modified`, `modified_by`
 	FROM `notes`
 	WHERE `type_id` = '03'
 	AND `item_id` = ?
@@ -860,7 +860,7 @@ ENDHTML
 
 sub add_note {
 
-	my $Note_Submission = $DB_Sudoers->prepare("INSERT INTO `notes` (
+	my $Note_Submission = $DB_Connection->prepare("INSERT INTO `notes` (
 		`type_id`,
 		`item_id`,
 		`note`,
@@ -887,12 +887,12 @@ sub html_output {
 		-padding=>1
 	);
 
-	my $Select_User_Count = $DB_Sudoers->prepare("SELECT `id` FROM `users`");
+	my $Select_User_Count = $DB_Connection->prepare("SELECT `id` FROM `users`");
 		$Select_User_Count->execute( );
 		my $Total_Rows = $Select_User_Count->rows();
 
 
-	my $Select_Users = $DB_Sudoers->prepare("SELECT `id`, `username`, `expires`, `active`, `last_modified`, `modified_by`
+	my $Select_Users = $DB_Connection->prepare("SELECT `id`, `username`, `expires`, `active`, `last_modified`, `modified_by`
 		FROM `users`
 			WHERE `id` LIKE ?
 			OR `username` LIKE ?
@@ -937,7 +937,7 @@ sub html_output {
 
 		### Discover Note Count
 
-		my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+		my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 			FROM `notes`
 			WHERE `type_id` = '03'
 			AND `item_id` = ?"
@@ -1063,7 +1063,7 @@ print <<ENDHTML;
 						<select name='Edit_User' style="width: 150px">
 ENDHTML
 
-						my $User_List_Query = $DB_Sudoers->prepare("SELECT `id`, `username`
+						my $User_List_Query = $DB_Connection->prepare("SELECT `id`, `username`
 						FROM `users`
 						ORDER BY `username` ASC");
 						$User_List_Query->execute( );

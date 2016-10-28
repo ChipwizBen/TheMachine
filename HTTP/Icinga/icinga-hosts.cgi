@@ -9,7 +9,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Icinga = DB_Icinga();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Host = $CGI->param("Add_Host");
@@ -189,7 +189,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Templates = $DB_Icinga->prepare("SELECT `id`, `template_name`
+							my $Select_Templates = $DB_Connection->prepare("SELECT `id`, `template_name`
 							FROM `nagios_hosttemplate`
 							WHERE `active` = '1'
 							ORDER BY `template_name` ASC");
@@ -225,7 +225,7 @@ print <<ENDHTML;
 							<option value='0'>-- No Parent --</option>
 ENDHTML
 		
-							my $Select_Hosts = $DB_Icinga->prepare("SELECT `id`, `host_name`
+							my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `host_name`
 							FROM `nagios_host`
 							WHERE `active` = '1'
 							ORDER BY `host_name` ASC");
@@ -249,7 +249,7 @@ print <<ENDHTML;
 							<option value='0'>-- Inherit Host Group --</option>
 ENDHTML
 
-							my $Select_Host_Groups = $DB_Icinga->prepare("SELECT `id`, `hostgroup_name`
+							my $Select_Host_Groups = $DB_Connection->prepare("SELECT `id`, `hostgroup_name`
 							FROM `nagios_hostgroup`
 							WHERE `active` = '1'
 							ORDER BY `hostgroup_name` ASC");
@@ -274,7 +274,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Check_Period = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Check_Period = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
@@ -300,7 +300,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Notification_Period = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
@@ -326,7 +326,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Contacts = $DB_Icinga->prepare("SELECT `id`, `contact_name`, `alias`
+							my $Select_Contacts = $DB_Connection->prepare("SELECT `id`, `contact_name`, `alias`
 							FROM `nagios_contact`
 							WHERE `active` = '1'
 							ORDER BY `contact_name` ASC");
@@ -352,7 +352,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Contact_Groups = $DB_Icinga->prepare("SELECT `id`, `contactgroup_name`, `alias`
+							my $Select_Contact_Groups = $DB_Connection->prepare("SELECT `id`, `contactgroup_name`, `alias`
 							FROM `nagios_contactgroup`
 							WHERE `active` = '1'
 							ORDER BY `contactgroup_name` ASC");
@@ -401,7 +401,7 @@ print <<ENDHTML;
 ENDHTML
 			
 			
-						my $Select_Check_Commands = $DB_Icinga->prepare("SELECT `id`, `command_name`
+						my $Select_Check_Commands = $DB_Connection->prepare("SELECT `id`, `command_name`
 						FROM `nagios_command`
 						ORDER BY `command_name` ASC");
 						$Select_Check_Commands->execute();
@@ -540,7 +540,7 @@ ENDHTML
 
 sub add_host {
 
-	my $Select_Host = $DB_Icinga->prepare("SELECT `host_name`
+	my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
 	FROM `nagios_host`
 	WHERE `host_name` = ?");
 	$Select_Host->execute($Host_Name_Add);
@@ -571,7 +571,7 @@ sub add_host {
 	$Notification_Options_Add =~ s/,$//g;
 	if ($Notification_Add_Inherit eq 2) {$Notification_Options_Add = undef};
 
-	my $Host_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_host` (
+	my $Host_Insert = $DB_Connection->prepare("INSERT INTO `nagios_host` (
 		`host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, `check_period`, `event_handler_enabled`,
 		`flap_detection_enabled`, `check_command`, `max_check_attempts`, `check_interval`, `notification_interval`, `notification_options`,
 		`notification_period`, `notifications_enabled`, `obsess_over_host`, `passive_checks_enabled`, `process_perf_data`,
@@ -589,12 +589,12 @@ sub add_host {
 	$Notification_Period_Add, $Notifications_Add, $Obsess_Over_Host_Add, $Passive_Checks_Add, $Process_Performance_Data_Add,
 	$Retain_NonStatus_Information_Add, $Retain_Status_Information_Add, $Retry_Check_Interval_Add, $Active_Add, $User_Name);
 
-	my $Host_Insert_ID = $DB_Icinga->{mysql_insertid};
+	my $Host_Insert_ID = $DB_Connection->{mysql_insertid};
 
 
 	if ($Template_Add) {
 
-		my $Template_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkHostToHosttemplate` (
+		my $Template_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkHostToHosttemplate` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -607,7 +607,7 @@ sub add_host {
 
 	if ($Contact_Add) {
 
-		my $Contact_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkHostToContact` (
+		my $Contact_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkHostToContact` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -620,7 +620,7 @@ sub add_host {
 
 	if ($Contact_Group_Add) {
 
-		my $Contact_Group_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkHostToContactgroup` (
+		my $Contact_Group_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkHostToContactgroup` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -633,7 +633,7 @@ sub add_host {
 
 	if ($Host_Group_Add) {
 
-		my $Contact_Group_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkHostToHostgroup` (
+		my $Contact_Group_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkHostToHostgroup` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -646,7 +646,7 @@ sub add_host {
 
 	if ($Parent_Add) {
 
-		my $Parent_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkHostToHost` (
+		my $Parent_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkHostToHost` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -661,7 +661,7 @@ sub add_host {
 
 sub html_edit_host {
 
-	my $Select_Host = $DB_Icinga->prepare("SELECT `host_name`, `alias`, `active`
+	my $Select_Host = $DB_Connection->prepare("SELECT `host_name`, `alias`, `active`
 	FROM `nagios_host`
 	WHERE `id` = '$Edit_Host'");
 	$Select_Host->execute( );
@@ -729,7 +729,7 @@ ENDHTML
 
 sub edit_host {
 
-	my $Host_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `alias`
+	my $Host_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
 	FROM `nagios_host`
 	WHERE `host_name` = '$Host_Edit'
 	AND `id` != ?");
@@ -754,7 +754,7 @@ sub edit_host {
 	}
 	else {
 
-		my $Host_Update = $DB_Icinga->prepare("UPDATE `nagios_host` SET
+		my $Host_Update = $DB_Connection->prepare("UPDATE `nagios_host` SET
 			`host_name` = ?,
 			`alias` = ?,
 			`active` = ?,
@@ -770,7 +770,7 @@ sub edit_host {
 
 sub html_delete_host {
 
-	my $Select_Host = $DB_Icinga->prepare("SELECT `host_name`, `alias`
+	my $Select_Host = $DB_Connection->prepare("SELECT `host_name`, `alias`
 	FROM `nagios_host`
 	WHERE `id` = ?");
 	$Select_Host->execute($Delete_Host);
@@ -820,23 +820,23 @@ ENDHTML
 
 sub delete_host {
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_host`
+	my $Delete = $DB_Connection->prepare("DELETE from `nagios_host`
 				WHERE `id` = ?");
 	$Delete->execute($Host_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToHosttemplate`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkHostToHosttemplate`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Host_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToContact`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkHostToContact`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Host_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToContactgroup`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkHostToContactgroup`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Host_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkHostToHostgroup`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkHostToHostgroup`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Host_Delete_Post);
 
@@ -844,7 +844,7 @@ sub delete_host {
 
 sub html_display_config {
 
-	my $Select_Host = $DB_Icinga->prepare("SELECT `host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, 
+	my $Select_Host = $DB_Connection->prepare("SELECT `host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`,
 	`check_interval`, `notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`,
 	`obsess_over_host`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`,
@@ -886,7 +886,7 @@ sub html_display_config {
 		## Host Parent Resolution
 
 		my $Host_Parents;
-		my $Select_Host_Parent_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Parent_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHost`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Parent_Link->execute($Display_Config);
@@ -896,7 +896,7 @@ sub html_display_config {
 
 				my $Host_Link = $DB_Parent_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `host_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
 				FROM `nagios_host`
 				WHERE `id` = ?");
 				$Select_Host->execute($Host_Link);
@@ -915,7 +915,7 @@ sub html_display_config {
 		## Host Template Resolution
 
 		my $Host_Templates;
-		my $Select_Host_Template_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHosttemplate`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Template_Link->execute($Display_Config);
@@ -925,7 +925,7 @@ sub html_display_config {
 
 				my $Host_Link = $DB_Template_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `template_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `template_name`
 				FROM `nagios_hosttemplate`
 				WHERE `id` = ?");
 				$Select_Host->execute($Host_Link);
@@ -944,7 +944,7 @@ sub html_display_config {
 		## Host Contact Group Resolution
 
 		my $Host_Contact_Groups;
-		my $Select_Host_Contact_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToContactgroup`
 		WHERE (`idMaster` = ?)");
 		$Select_Host_Contact_Group_Link->execute($Display_Config);
@@ -954,7 +954,7 @@ sub html_display_config {
 
 				my $Host_Link = $DB_Contact_Group_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `contactgroup_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `contactgroup_name`
 				FROM `nagios_contactgroup`
 				WHERE `id` = ?");
 				$Select_Host->execute($Host_Link);
@@ -979,7 +979,7 @@ sub html_display_config {
 		my $Check_Period_Extract_Template;
 		my $Notification_Period_Extract_Template;
 		my $Check_Command_Extract_Template;
-		my $Select_Host_Template_ID = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHosttemplate`
 		WHERE `idMaster` = ?");
 		$Select_Host_Template_ID->execute($Display_Config);
@@ -989,7 +989,7 @@ sub html_display_config {
 
 			$Host_Template_ID = $DB_Host_Template_ID[0];
 
-			my $Select_Host_Template = $DB_Icinga->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+			my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
 			`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`, `check_interval`,
 			`notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`, `obsess_over_host`,
 			`passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`, `retain_status_information`,
@@ -1054,7 +1054,7 @@ sub html_display_config {
 		my $Notification_Period_Extract_Templates_Template;
 		my $Check_Command_Extract_Templates_Template;
 		
-		my $Select_Host_Templates_Template_ID = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Templates_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHosttemplateToHosttemplate`
 		WHERE `idMaster` = ?");
 		$Select_Host_Templates_Template_ID->execute($Host_Template_ID);
@@ -1064,7 +1064,7 @@ sub html_display_config {
 
 			$Host_Templates_Template_ID = $DB_Host_Templates_Template_ID[0];
 
-			my $Select_Host_Templates_Template = $DB_Icinga->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+			my $Select_Host_Templates_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
 			`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`, `check_interval`,
 			`notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`, `obsess_over_host`,
 			`passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`, `retain_status_information`,
@@ -1163,7 +1163,7 @@ sub html_display_config {
 			$Check_Period = $Check_Period_Extract_Templates_Template;
 		}
 
-		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Check_Period->execute($Check_Period);
@@ -1200,7 +1200,7 @@ sub html_display_config {
 			$Notification_Period = $Notification_Period_Extract_Templates_Template;
 		}
 
-		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Notification_Period->execute($Notification_Period);
@@ -1240,7 +1240,7 @@ sub html_display_config {
 			$Check_Command_Where_Remaining =~ s/^\d*(.*)/$1/g;
 
 		my $Check_Command;
-		my $Select_Check_Command = $DB_Icinga->prepare("SELECT `command_name`
+		my $Select_Check_Command = $DB_Connection->prepare("SELECT `command_name`
 		FROM `nagios_command`
 		WHERE `id` = '$Check_Command_Where_ID_Extract'");
 		$Select_Check_Command->execute();
@@ -1483,7 +1483,7 @@ ENDHTML
 
 sub html_display_notes {
 
-	my $Select_Notes = $DB_Icinga->prepare("SELECT `host_name`, `alias`, `address`, `notes`
+	my $Select_Notes = $DB_Connection->prepare("SELECT `host_name`, `alias`, `address`, `notes`
 	FROM `nagios_host`
 	WHERE `id` = ?");
 	$Select_Notes->execute($Host_Notes);
@@ -1546,7 +1546,7 @@ ENDHTML
 
 sub update_notes {
 
-		my $Host_Update = $DB_Icinga->prepare("UPDATE `nagios_host` SET
+		my $Host_Update = $DB_Connection->prepare("UPDATE `nagios_host` SET
 			`notes` = ?,
 			`last_modified` = NOW(),
 			`modified_by` = '$User_Name'
@@ -1576,11 +1576,11 @@ sub html_output {
 	"Last Modified", "Modified By", "Host Notes", "View Config", "Edit (todo)", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Hosts_Count = $DB_Icinga->prepare("SELECT `id` FROM `nagios_host`");
+	my $Select_Hosts_Count = $DB_Connection->prepare("SELECT `id` FROM `nagios_host`");
 		$Select_Hosts_Count->execute( );
 		my $Total_Rows = $Select_Hosts_Count->rows();
 
-	my $Select_Hosts = $DB_Icinga->prepare("SELECT `id`, `host_name`, `alias`, `address`, `active`, `last_modified`, `modified_by`
+	my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `host_name`, `alias`, `address`, `active`, `last_modified`, `modified_by`
 	FROM `nagios_host`
 	WHERE (`id` LIKE '%$Filter%'
 	OR `host_name` LIKE '%$Filter%'
@@ -1618,7 +1618,7 @@ sub html_output {
 		## Host to Host Group
 
 		my $Host_Groups;
-		my $Select_Host_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHostgroup`
 		WHERE (`idMaster` = '$ID_Extract')");
 		$Select_Host_Group_Link->execute();
@@ -1628,7 +1628,7 @@ sub html_output {
 
 				my $Host_Link = $DB_Group_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `hostgroup_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `hostgroup_name`
 				FROM `nagios_hostgroup`
 				WHERE `id` = '$Host_Link'");
 				$Select_Host->execute();
@@ -1647,7 +1647,7 @@ sub html_output {
 		## Host Parent Resolution
 
 		my $Host_Parents;
-		my $Select_Host_Parent_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Parent_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHost`
 		WHERE (`idMaster` = '$ID_Extract')");
 		$Select_Host_Parent_Link->execute();
@@ -1657,7 +1657,7 @@ sub html_output {
 
 				my $Host_Link = $DB_Parent_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `host_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
 				FROM `nagios_host`
 				WHERE `id` = '$Host_Link'");
 				$Select_Host->execute();
@@ -1676,7 +1676,7 @@ sub html_output {
 		## Host Children Resolution
 
 		my $Host_Children;
-		my $Select_Host_Child_Link = $DB_Icinga->prepare("SELECT `idMaster`
+		my $Select_Host_Child_Link = $DB_Connection->prepare("SELECT `idMaster`
 		FROM `nagios_lnkHostToHost`
 		WHERE (`idSlave` = '$ID_Extract')");
 		$Select_Host_Child_Link->execute();
@@ -1686,7 +1686,7 @@ sub html_output {
 
 				my $Host_Link = $DB_Child_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `host_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
 				FROM `nagios_host`
 				WHERE `id` = '$Host_Link'");
 				$Select_Host->execute();
@@ -1705,7 +1705,7 @@ sub html_output {
 		## Host Template Resolution
 
 		my $Host_Templates;
-		my $Select_Host_Template_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToHosttemplate`
 		WHERE (`idMaster` = '$ID_Extract')");
 		$Select_Host_Template_Link->execute();
@@ -1715,7 +1715,7 @@ sub html_output {
 
 				my $Host_Link = $DB_Template_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `template_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `template_name`
 				FROM `nagios_hosttemplate`
 				WHERE `id` = '$Host_Link'");
 				$Select_Host->execute();
@@ -1734,7 +1734,7 @@ sub html_output {
 		## Host Contact Group Resolution
 
 		my $Host_Contact_Groups;
-		my $Select_Host_Contact_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkHostToContactgroup`
 		WHERE (`idMaster` = '$ID_Extract')");
 		$Select_Host_Contact_Group_Link->execute();
@@ -1744,7 +1744,7 @@ sub html_output {
 
 				my $Host_Link = $DB_Contact_Group_Link[0];
 
-				my $Select_Host = $DB_Icinga->prepare("SELECT `contactgroup_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `contactgroup_name`
 				FROM `nagios_contactgroup`
 				WHERE `id` = '$Host_Link'");
 				$Select_Host->execute();
@@ -1861,7 +1861,7 @@ print <<ENDHTML;
 						<select name='Edit_Host' style="width: 150px">
 ENDHTML
 
-						my $Host_List_Query = $DB_Icinga->prepare("SELECT `id`, `host_name`
+						my $Host_List_Query = $DB_Connection->prepare("SELECT `id`, `host_name`
 						FROM `nagios_host`
 						ORDER BY `host_name` ASC");
 						$Host_List_Query->execute( );

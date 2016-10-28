@@ -11,7 +11,7 @@ require $Common_Config;
 my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
-my $DB_Management = DB_Management();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 my $Server_Hostname = Server_Hostname();
 
@@ -33,14 +33,14 @@ my $Message_Red = $Session->param("Message_Red");
 
 sub access_post {
 
-	$DB_Management->do("UPDATE `credentials` SET `last_active` = NOW() WHERE `username` = '$User_Name'");
+	$DB_Connection->do("UPDATE `credentials` SET `last_active` = NOW() WHERE `username` = '$User_Name'");
 	
 	my $Access_Time = strftime "%Y-%m-%d %H:%M:%S", localtime;
 	my $HTTPS=$ENV{HTTPS};
 		if (!$HTTPS) {$HTTPS='off';}
 	
 	
-	$DB_Management->do("INSERT INTO `access_log` (
+	$DB_Connection->do("INSERT INTO `access_log` (
 		`id`,
 		`ip`,
 		`hostname`,
@@ -180,12 +180,12 @@ print <<ENDHTML;
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
 						<ul>
-							<li><a href="/DSMS/sudoers-host-groups.cgi">DSMS Host Groups</a></li>
+							<li><a href="/IP/host-groups.cgi">Global Host Groups</a></li>
 							<li><a href="/DSMS/sudoers-user-groups.cgi">DSMS User Groups</a></li>
 							<li><a href="/DSMS/sudoers-command-groups.cgi">DSMS Command Groups</a></li>
 						</ul>
 					</li>
-					<li><a href="/DSMS/sudoers-hosts.cgi">Hosts</a></li>
+					<li><a href="/DSMS/sudoers-hosts.cgi">Sudo Hosts</a></li>
 					<li><a href="/DSMS/sudoers-users.cgi">Sudo Users</a></li>
 					<li><a href="/DSMS/sudoers-commands.cgi">Commands</a></li>
 					<li><a href="/DSMS/sudoers-rules.cgi">Rules</a></li>

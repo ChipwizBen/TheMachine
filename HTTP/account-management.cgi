@@ -5,7 +5,7 @@ use Digest::SHA qw(sha512_hex);
 use HTML::Table;
 
 require 'common.pl';
-my $DB_Management = DB_Management();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_User = $CGI->param("Add_User");
@@ -280,7 +280,7 @@ sub add_user {
 	### / Reserved User Name Check ###
 
 	### Existing User_Name Check ###
-	my $Existing_User_Name_Check = $DB_Management->prepare("SELECT `id`, `email`
+	my $Existing_User_Name_Check = $DB_Connection->prepare("SELECT `id`, `email`
 		FROM `credentials`
 		WHERE `username` = ?");
 		$Existing_User_Name_Check->execute($User_Name_Add);
@@ -303,7 +303,7 @@ sub add_user {
 	### / Existing User_Name Check ###
 
 	### Existing Email Check ###
-	my $Existing_Email_Check = $DB_Management->prepare("SELECT `id`, `username`
+	my $Existing_Email_Check = $DB_Connection->prepare("SELECT `id`, `username`
 		FROM `credentials`
 		WHERE `email` = ?");
 		$Existing_Email_Check->execute($Email_Add);
@@ -373,7 +373,7 @@ sub add_user {
 	$Password_Add = $Password_Add . $Salt;
 	$Password_Add = sha512_hex($Password_Add);
 
-	my $User_Insert = $DB_Management->prepare("INSERT INTO `credentials` (
+	my $User_Insert = $DB_Connection->prepare("INSERT INTO `credentials` (
 		`id`,
 		`username`,
 		`password`,
@@ -436,9 +436,9 @@ sub add_user {
 	if ($Requires_Approval_Add == 1) {$Requires_Approval_Add = "$User_Name_Add"."'s "."Rules require approval"} else {$Requires_Approval_Add = "$User_Name_Add"."'s "."Rules do not require approval"}
 	if ($Lockout_Add == 1) {$Lockout_Add = "$User_Name_Add is locked out"} else {$Lockout_Add = "$User_Name_Add is not locked out"}
 
-	my $Account_Insert_ID = $DB_Management->{mysql_insertid};
+	my $Account_Insert_ID = $DB_Connection->{mysql_insertid};
 
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -456,7 +456,7 @@ sub add_user {
 
 sub html_edit_user {
 
-	my $Select_User = $DB_Management->prepare("SELECT `username`, `admin`, `ip_admin`, `icinga_admin`, `dshell_admin`, `dns_admin`,
+	my $Select_User = $DB_Connection->prepare("SELECT `username`, `admin`, `ip_admin`, `icinga_admin`, `dshell_admin`, `dns_admin`,
 	`reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, `lockout`, `last_modified`, `modified_by`, `email`
 	FROM `credentials`
 	WHERE `id` = ?");
@@ -833,7 +833,7 @@ sub edit_user {
 	### / Reserved User Name Check ###
 
 	### Existing User_Name Check ###
-	my $Existing_User_Name_Check = $DB_Management->prepare("SELECT `id`, `email`
+	my $Existing_User_Name_Check = $DB_Connection->prepare("SELECT `id`, `email`
 		FROM `credentials`
 		WHERE `username` = ?
 		AND `id` != ?");
@@ -857,7 +857,7 @@ sub edit_user {
 	### / Existing User_Name Check ###
 
 	### Existing Email Check ###
-	my $Existing_Email_Check = $DB_Management->prepare("SELECT `id`, `username`
+	my $Existing_Email_Check = $DB_Connection->prepare("SELECT `id`, `username`
 		FROM `credentials`
 		WHERE `email` = ?
 		AND `id` != ?");
@@ -944,7 +944,7 @@ sub edit_user {
 		$Password_Edit = $Password_Edit . $Salt;
 		$Password_Edit = sha512_hex($Password_Edit);
 
-		my $Update_Credentials = $DB_Management->prepare("UPDATE `credentials` SET
+		my $Update_Credentials = $DB_Connection->prepare("UPDATE `credentials` SET
 			`username` = ?,
 			`password` = ?,
 			`salt` = ?,
@@ -989,7 +989,7 @@ sub edit_user {
 		if ($Requires_Approval_Edit == 1) {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules require approval"} else {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules do not require approval"}
 		if ($Lockout_Edit == 1) {$Lockout_Edit = "$User_Name_Edit is locked out"} else {$Lockout_Edit = "$User_Name_Edit is not locked out"}
 
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1006,7 +1006,7 @@ sub edit_user {
 	}
 	else {
 
-		my $Update_Credentials = $DB_Management->prepare("UPDATE `credentials` SET
+		my $Update_Credentials = $DB_Connection->prepare("UPDATE `credentials` SET
 			`username` = ?,
 			`email` = ?,
 			`admin` = ?,
@@ -1049,7 +1049,7 @@ sub edit_user {
 		if ($Requires_Approval_Edit == 1) {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules require approval"} else {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules do not require approval"}
 		if ($Lockout_Edit == 1) {$Lockout_Edit = "$User_Name_Edit is locked out"} else {$Lockout_Edit = "$User_Name_Edit is not locked out"}
 
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1069,7 +1069,7 @@ sub edit_user {
 
 sub html_delete_user {
 
-	my $Select_User = $DB_Management->prepare("SELECT `username`, `last_active`, `email`
+	my $Select_User = $DB_Connection->prepare("SELECT `username`, `last_active`, `email`
 	FROM `credentials`
 	WHERE `id` = ?");
 
@@ -1129,7 +1129,7 @@ ENDHTML
 sub delete_user {
 
 	# Audit Log
-	my $Select_User = $DB_Management->prepare("SELECT `username`, `email`, `last_login`, `last_active`,  `admin`, `approver`, `requires_approval`, `lockout`
+	my $Select_User = $DB_Connection->prepare("SELECT `username`, `email`, `last_login`, `last_active`,  `admin`, `approver`, `requires_approval`, `lockout`
 	FROM `credentials`
 	WHERE `id` = ?");
 
@@ -1152,7 +1152,7 @@ sub delete_user {
 		if ($Requires_Approval_Extract) {$Requires_Approval_Extract = "$User_Name_Extract"."'s "."Rules required approval"} else {$Requires_Approval_Extract = "$User_Name_Extract"."'s "."Rules did not require approval"}
 		if ($Lockout_Extract) {$Lockout_Extract = "$User_Name_Extract was locked out"} else {$Lockout_Extract = "$User_Name_Extract was not locked out"}
 
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1166,7 +1166,7 @@ sub delete_user {
 	}
 	#/ Audit Log
 
-	my $Delete_User = $DB_Management->prepare("DELETE from `credentials`
+	my $Delete_User = $DB_Connection->prepare("DELETE from `credentials`
 		WHERE `id` = ?");
 	
 	$Delete_User->execute($Delete_User_Confirm);
@@ -1178,7 +1178,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /account-management.cgi/) {
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1210,7 +1210,7 @@ $Table->addRow ( "User Name", "Email Address", "Last Login", "Last Active", "Sys
 	"Modified By", "Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
 
-my $Select_Users = $DB_Management->prepare("SELECT `id`, `username`, `email`, `last_login`, `last_active`,  `admin`, 
+my $Select_Users = $DB_Connection->prepare("SELECT `id`, `username`, `email`, `last_login`, `last_active`,  `admin`, 
 `ip_admin`, `icinga_admin`, `dshell_admin`, `dns_admin`, `reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, 
 `lockout`, `last_modified`, `modified_by`
 FROM `credentials`
@@ -1376,7 +1376,7 @@ print <<ENDHTML;
 						<select name='Edit_User' style="width: 150px">
 ENDHTML
 
-						my $User_List_Query = $DB_Management->prepare("SELECT `id`, `username`
+						my $User_List_Query = $DB_Connection->prepare("SELECT `id`, `username`
 						FROM `credentials`
 						ORDER BY `username` ASC");
 						$User_List_Query->execute( );

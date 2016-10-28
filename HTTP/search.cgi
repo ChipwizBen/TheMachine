@@ -7,7 +7,7 @@ my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 my $Header = Header();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $User_Name = $Session->param("User_Name");
@@ -75,7 +75,7 @@ ENDHTML
 
 ### Host Groups
 
-	my $Search_Host_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`
+	my $Search_Host_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `expires`, `active`
 		FROM `host_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
@@ -115,7 +115,7 @@ while ( my @Search = $Search_Host_Groups->fetchrow_array() ) {
 
 ### User Groups
 
-	my $Search_User_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `active`
+	my $Search_User_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `active`
 		FROM `user_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
@@ -157,7 +157,7 @@ while ( my @Search = $Search_User_Groups->fetchrow_array() ) {
 
 ### Command Groups
 
-	my $Search_Command_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `active`
+	my $Search_Command_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `expires`, `active`
 		FROM `command_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
@@ -197,7 +197,7 @@ while ( my @Search = $Search_Command_Groups->fetchrow_array() ) {
 
 ### Hosts
 
-	my $Search_Hosts = $DB_Sudoers->prepare("SELECT `id`, `hostname`, `ip`, `expires`, `active`
+	my $Search_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`, `ip`, `expires`, `active`
 		FROM `hosts`
 		WHERE `id` LIKE ?
 		OR `hostname` LIKE ?
@@ -240,7 +240,7 @@ while ( my @Search = $Search_Hosts->fetchrow_array() ) {
 
 ### Users
 
-	my $Search_Users = $DB_Sudoers->prepare("SELECT `id`, `username`, `expires`, `active`
+	my $Search_Users = $DB_Connection->prepare("SELECT `id`, `username`, `expires`, `active`
 		FROM `users`
 		WHERE `id` LIKE ?
 		OR `username` LIKE ?
@@ -280,7 +280,7 @@ while ( my @Search = $Search_Users->fetchrow_array() ) {
 
 ### Commands
 
-	my $Search_Commands = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
+	my $Search_Commands = $DB_Connection->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`
 		FROM `commands`
 		WHERE `id` LIKE ?
 		OR `command_alias` LIKE ?
@@ -323,7 +323,7 @@ while ( my @Search = $Search_Commands->fetchrow_array() ) {
 
 ### Rules
 
-	my $Search_Rules = $DB_Sudoers->prepare("SELECT `id`, `name`, `expires`, `active`, `approved`
+	my $Search_Rules = $DB_Connection->prepare("SELECT `id`, `name`, `expires`, `active`, `approved`
 		FROM `rules`
 		WHERE `name` LIKE ?
 	");

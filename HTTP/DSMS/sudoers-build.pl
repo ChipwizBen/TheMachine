@@ -4,8 +4,7 @@ use strict;
 use POSIX qw(strftime);
 
 require '../common.pl';
-my $DB_Management = DB_Management();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my $Sudoers_Location = Sudoers_Location();
 my $Sudoers_Storage = Sudoers_Storage();
 my $System_Name = System_Name();
@@ -21,6 +20,7 @@ my $Owner = Sudoers_Owner_ID();
 my $Group = Sudoers_Group_ID();
 
 my $Date = strftime "%Y-%m-%d", localtime;
+my $Date_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
 
 $| = 1;
 my $Override;
@@ -35,7 +35,7 @@ foreach my $Parameter (@ARGV) {
 
 # Safety check for other running build processes
 
-	my $Select_Locks = $DB_Management->prepare("SELECT `sudoers-build`, `sudoers-distribution` FROM `lock`");
+	my $Select_Locks = $DB_Connection->prepare("SELECT `sudoers-build`, `sudoers-distribution` FROM `lock`");
 	$Select_Locks->execute();
 
 	my ($Sudoers_Build_Lock, $Sudoers_Distribution_Lock) = $Select_Locks->fetchrow_array();
@@ -60,7 +60,7 @@ foreach my $Parameter (@ARGV) {
 			}
 		}
 		else {
-			$DB_Management->do("UPDATE `lock` SET
+			$DB_Connection->do("UPDATE `lock` SET
 				`sudoers-build` = '1',
 				`last-sudoers-build-started` = NOW()");
 		}
@@ -69,7 +69,7 @@ foreach my $Parameter (@ARGV) {
 
 # Safety check for unapproved Rules
 
-	my $Select_Rules = $DB_Sudoers->prepare("SELECT `id`
+	my $Select_Rules = $DB_Connection->prepare("SELECT `id`
 		FROM `rules`
 		WHERE `active` = '1'
 		AND `approved` = '0'"
@@ -79,7 +79,7 @@ foreach my $Parameter (@ARGV) {
 	my $Rows = $Select_Rules->rows();
 
 	if ($Rows > 0) {
-		$DB_Management->do("UPDATE `lock` SET 
+		$DB_Connection->do("UPDATE `lock` SET 
 		`sudoers-build` = '3',
 		`last-sudoers-build-finished` = NOW()");
 		print "You have Rules pending approval. Please either approve or delete unapproved Rules before continuing. Exiting...\n";
@@ -99,7 +99,7 @@ my $Sudoers_Check = `$visudo -c -f $Sudoers_Location`;
 
 if ($Sudoers_Check =~ m/$Sudoers_Location:\sparsed\sOK/) {
 	$Sudoers_Check = "Sudoers check passed!\n";
-	$DB_Management->do("UPDATE `lock` SET 
+	$DB_Connection->do("UPDATE `lock` SET 
 	`sudoers-build` = '0',
 	`last-sudoers-build-finished` = NOW()");
 	&record_audit('PASSED');
@@ -108,7 +108,7 @@ if ($Sudoers_Check =~ m/$Sudoers_Location:\sparsed\sOK/) {
 }
 else {
 	$Sudoers_Check = "Sudoers check failed, no changes made. Latest working sudoers file restored.\n";
-	$DB_Management->do("UPDATE `lock` SET 
+	$DB_Connection->do("UPDATE `lock` SET 
 	`sudoers-build` = '2',
 	`last-sudoers-build-finished` = NOW()");
 	&record_audit('FAILED');
@@ -123,13 +123,13 @@ sub write_environmentals {
 	print FILE "#########################################################################\n";
 	print FILE "## $System_Name\n";
 	print FILE "## Version: $Version\n";
+	#print FILE "## Written: $Date_Time\n"; ### Breaks MD5
 	print FILE "## AUTO GENERATED SCRIPT\n";
 	print FILE "## Please do not edit by hand\n";
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "#########################################################################\n";
 	print FILE "\n\n";
-
 
 	print FILE "### Environmental Defaults Section Begins ###\n\n";
 
@@ -157,7 +157,7 @@ sub write_host_groups {
 
 	print FILE "\n### Host Group Section Begins ###\n\n";
 
-	my $Select_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `last_modified`, `modified_by`
+	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `expires`, `last_modified`, `modified_by`
 		FROM `host_groups`
 		WHERE `active` = '1'
 		AND (`expires` >= '$Date'
@@ -182,10 +182,8 @@ sub write_host_groups {
 				$Expires = "expires on " . $Expires;
 			}
 
-		print FILE "## $Host_Group_Name (ID: $DBID), $Expires, last modified $Last_Modified by $Modified_By\n";
-
 		my $Hosts;
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `host`
+		my $Select_Links = $DB_Connection->prepare("SELECT `host`
 			FROM `lnk_host_groups_to_hosts`
 			WHERE `group` = ?"
 		);
@@ -196,40 +194,71 @@ sub write_host_groups {
 			
 			my $Host_ID = $Select_Links[0];
 
-			my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`, `ip`
-				FROM `hosts`
-				WHERE `id` = ?
-				AND `active` = '1'
-				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
-			);
-			$Select_Hosts->execute($Host_ID);
+			my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `dhcp`, `dsms`
+			FROM `host_attributes`
+			WHERE `host_id` = ?");
+			$Select_Host_Attributes->execute($Host_ID);
 
-			while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
-			{
+			my ($DHCP_Extract, $DSMS_Extract) = $Select_Host_Attributes->fetchrow_array();
 
-				my $Host = $Select_Hosts[0];
-				my $IP = $Select_Hosts[1];
+			if ($DSMS_Extract) {
+				my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`
+					FROM `hosts`
+					WHERE `id` = ?
+					AND `active` = '1'
+					AND (`expires` >= '$Date'
+						OR `expires` = '0000-00-00')"
+				);
+				$Select_Hosts->execute($Host_ID);
+	
+				while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
+				{
+	
+					my $Host = $Select_Hosts[0];
+					my $Blocks;
 
-				if ($IP eq 'DHCP') {
-					$Hosts = $Hosts . "$Host, ";
+					if (!$DHCP_Extract) {
+						## Block discovery
+						my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
+							FROM `lnk_hosts_to_ipv4_allocations`
+							WHERE `host` = ?");
+						$Select_Block_Links->execute($Host_ID);
+			
+						while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
+						
+							my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+								FROM `ipv4_allocations`
+								WHERE `id` = ?");
+							$Select_Blocks->execute($Block_ID);
+						
+							while (my $Block = $Select_Blocks->fetchrow_array() ) {
+						
+								my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
+									FROM `lnk_hosts_to_ipv4_allocations`
+									WHERE `ip` = ?");
+								$Count_Block_Allocations->execute($Block_ID);
+						
+								$Blocks = $Block . ", " . $Blocks;
+							}
+						}
+						## / Block discovery
+					}
+	
+					if (!$Blocks) {
+						$Hosts = $Hosts . "$Host, ";
+					}
+					else {
+						$Hosts = $Hosts . "$Host, $Blocks";
+					}
 				}
-				else {
-					$Hosts = $Hosts . "$Host, $IP, ";
-				}
-
-			}
+			} # if DSMS
 		}
 
 		$Host_Group_Name = uc($Host_Group_Name); # Turn to uppercase so that sudo can read it correctly
 		$Hosts =~ s/,\s$//; # Remove trailing comma
 		if ($Hosts) {
+			print FILE "## $Host_Group_Name (ID: $DBID), $Expires, last modified $Last_Modified by $Modified_By\n";
 			print FILE "Host_Alias	HOST_GROUP_$Host_Group_Name = $Hosts\n\n";
-		}
-		else {
-			print FILE "#######\n";
-			print FILE "####### $Host_Group_Name (ID: $DBID) was not included because it does not have any attached Hosts. #######\n";
-			print FILE "#######\n\n";
 		}
 	}
 
@@ -245,7 +274,7 @@ sub write_user_groups {
 
 	print FILE "\n### User Group Section Begins ###\n\n";
 
-	my $Select_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `last_modified`, `modified_by`
+	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `last_modified`, `modified_by`
 		FROM `user_groups`
 		WHERE `active` = '1'
 		AND (`expires` >= '$Date'
@@ -274,7 +303,7 @@ sub write_user_groups {
 		print FILE "## $User_Group_Name (ID: $DBID), $Expires, last modified $Last_Modified by $Modified_By\n";
 
 		my $Users;
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+		my $Select_Links = $DB_Connection->prepare("SELECT `user`
 			FROM `lnk_user_groups_to_users`
 			WHERE `group` = ?"
 		);
@@ -285,7 +314,7 @@ sub write_user_groups {
 			
 			my $User_ID = $Select_Links[0];
 
-			my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+			my $Select_Users = $DB_Connection->prepare("SELECT `username`
 				FROM `users`
 				WHERE `id` = ?
 				AND `active` = '1'
@@ -330,7 +359,7 @@ sub write_command_groups {
 
 	print FILE "\n### Command Group Section Begins ###\n\n";
 
-	my $Select_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `expires`, `last_modified`, `modified_by`
+	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `expires`, `last_modified`, `modified_by`
 		FROM `command_groups`
 		WHERE `active` = '1'
 		AND (`expires` >= '$Date'
@@ -358,7 +387,7 @@ sub write_command_groups {
 		print FILE "## $Command_Group_Name (ID: $DBID), $Expires, last modified $Last_Modified by $Modified_By\n";
 
 		my $Commands;
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `command`
+		my $Select_Links = $DB_Connection->prepare("SELECT `command`
 			FROM `lnk_command_groups_to_commands`
 			WHERE `group` = ?"
 		);
@@ -369,7 +398,7 @@ sub write_command_groups {
 			
 			my $Command_ID = $Select_Links[0];
 
-			my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`
+			my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`
 				FROM `commands`
 				WHERE `id` = ?
 				AND `active` = '1'
@@ -412,7 +441,7 @@ sub write_commands {
 
 	print FILE "\n### Command Section Begins ###\n\n";
 
-	my $Select_Commands = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `last_modified`, `modified_by`
+	my $Select_Commands = $DB_Connection->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `last_modified`, `modified_by`
 		FROM `commands`
 		WHERE `active` = '1'
 		AND (`expires` >= '$Date'
@@ -458,49 +487,57 @@ sub create_host_rule_groups {
 
 	my $Rule_ID = $_[0];
 	my $Group_to_Return;
-	
-		### Host Groups
-		my $Select_Host_Group_Links = $DB_Sudoers->prepare("SELECT `host_group`
-			FROM `lnk_rules_to_host_groups`
-			WHERE `rule` = ?"
-		);
-		$Select_Host_Group_Links->execute($Rule_ID);
 
-		while ( my @Select_Links = $Select_Host_Group_Links->fetchrow_array() )
-		{
-			
-			my $Group_ID = $Select_Links[0];
+	### Host Groups
+	my $Select_Host_Group_Links = $DB_Connection->prepare("SELECT `host_group`
+		FROM `lnk_rules_to_host_groups`
+		WHERE `rule` = ?"
+	);
+	$Select_Host_Group_Links->execute($Rule_ID);
 
-			my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`
-				FROM `host_groups`
-				WHERE `id` = ?
-				AND `active` = '1'
-				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
-			);
-			$Select_Groups->execute($Group_ID);
-
-			while ( my @Select_Group_Array = $Select_Groups->fetchrow_array() )
-			{
-				my $Host_Group_Name = $Select_Group_Array[0];
-				$Host_Group_Name = uc($Host_Group_Name); # Turn to uppercase so that sudo can read it correctly
-				$Group_to_Return = $Group_to_Return . 'HOST_GROUP_' . $Host_Group_Name . ', ';
-			}
-		}
+	while ( my @Select_Links = $Select_Host_Group_Links->fetchrow_array() )
+	{
 		
-		### Hosts
-		my $Select_Host_Links = $DB_Sudoers->prepare("SELECT `host`
-			FROM `lnk_rules_to_hosts`
-			WHERE `rule` = ?"
+		my $Group_ID = $Select_Links[0];
+
+		my $Select_Groups = $DB_Connection->prepare("SELECT `groupname`
+			FROM `host_groups`
+			WHERE `id` = ?
+			AND `active` = '1'
+			AND (`expires` >= '$Date'
+				OR `expires` = '0000-00-00')"
 		);
-		$Select_Host_Links->execute($Rule_ID);
+		$Select_Groups->execute($Group_ID);
 
-		while ( my @Select_Links = $Select_Host_Links->fetchrow_array() )
+		while ( my @Select_Group_Array = $Select_Groups->fetchrow_array() )
 		{
-			
-			my $Host_ID = $Select_Links[0];
+			my $Host_Group_Name = $Select_Group_Array[0];
+			$Host_Group_Name = uc($Host_Group_Name); # Turn to uppercase so that sudo can read it correctly
+			$Group_to_Return = $Group_to_Return . 'HOST_GROUP_' . $Host_Group_Name . ', ';
+		}
+	}
+	
+	### Hosts
+	my $Select_Host_Links = $DB_Connection->prepare("SELECT `host`
+		FROM `lnk_rules_to_hosts`
+		WHERE `rule` = ?"
+	);
+	$Select_Host_Links->execute($Rule_ID);
 
-			my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`
+	while ( my @Select_Links = $Select_Host_Links->fetchrow_array() )
+	{
+		
+		my $Host_ID = $Select_Links[0];
+
+		my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `dhcp`, `dsms`
+		FROM `host_attributes`
+		WHERE `host_id` = ?");
+		$Select_Host_Attributes->execute($Host_ID);
+
+		my ($DHCP_Extract, $DSMS_Extract) = $Select_Host_Attributes->fetchrow_array();
+
+		if ($DSMS_Extract) {
+			my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`
 				FROM `hosts`
 				WHERE `id` = ?
 				AND `active` = '1'
@@ -509,14 +546,47 @@ sub create_host_rule_groups {
 			);
 			$Select_Hosts->execute($Host_ID);
 
-			while ( my @Select_Hosts_Array = $Select_Hosts->fetchrow_array() )
-			{
-				my $Host_Name = $Select_Hosts_Array[0];
+			my $Host_Name = $Select_Hosts->fetchrow_array();
+			my $Blocks;
+
+			if (!$DHCP_Extract) {
+				## Block discovery
+				my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
+					FROM `lnk_hosts_to_ipv4_allocations`
+					WHERE `host` = ?");
+				$Select_Block_Links->execute($Host_ID);
+	
+				while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
+				
+					my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+						FROM `ipv4_allocations`
+						WHERE `id` = ?");
+					$Select_Blocks->execute($Block_ID);
+				
+					while (my $Block = $Select_Blocks->fetchrow_array() ) {
+				
+						my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
+							FROM `lnk_hosts_to_ipv4_allocations`
+							WHERE `ip` = ?");
+						$Count_Block_Allocations->execute($Block_ID);
+				
+						$Blocks = $Block . ', ' . $Blocks;
+					}
+				}
+				## / Block discovery
+			}
+
+			if (!$Blocks) {
 				$Group_to_Return = $Group_to_Return . $Host_Name . ', ';
 			}
-		}
+			else {
+				$Group_to_Return = $Group_to_Return . $Host_Name . ', ' . $Blocks;
+			}
 
-	$Group_to_Return =~ s/,\s$//; # Remove trailing comma
+		} # if DSMS
+	}
+
+	$Group_to_Return =~ s/,\s?$//; # Remove trailing comma
 	return $Group_to_Return;
 
 } # sub create_host_rule_groups
@@ -526,64 +596,63 @@ sub create_user_rule_groups {
 	my $Rule_ID = $_[0];
 	my $Group_to_Return;
 	
-		### User Groups
-		my $Select_User_Group_Links = $DB_Sudoers->prepare("SELECT `user_group`
-			FROM `lnk_rules_to_user_groups`
-			WHERE `rule` = ?"
-		);
-		$Select_User_Group_Links->execute($Rule_ID);
+	### User Groups
+	my $Select_User_Group_Links = $DB_Connection->prepare("SELECT `user_group`
+		FROM `lnk_rules_to_user_groups`
+		WHERE `rule` = ?"
+	);
+	$Select_User_Group_Links->execute($Rule_ID);
 
-		while ( my @Select_Links = $Select_User_Group_Links->fetchrow_array() )
-		{
-			
-			my $Group_ID = $Select_Links[0];
-
-			my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`
-				FROM `user_groups`
-				WHERE `id` = ?
-				AND `active` = '1'
-				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
-			);
-			$Select_Groups->execute($Group_ID);
-
-			while ( my @Select_Group_Array = $Select_Groups->fetchrow_array() )
-			{
-				my $User_Group_Name = $Select_Group_Array[0];
-				$User_Group_Name = uc($User_Group_Name); # Turn to uppercase so that sudo can read it correctly
-				$User_Group_Name =~ s/[^A-Z0-9]/_/g;
-				$Group_to_Return = $Group_to_Return . 'USER_GROUP_' . $User_Group_Name . ', ';
-			}
-		}
+	while ( my @Select_Links = $Select_User_Group_Links->fetchrow_array() )
+	{
 		
-		### Users
-		my $Select_User_Links = $DB_Sudoers->prepare("SELECT `user`
-			FROM `lnk_rules_to_users`
-			WHERE `rule` = ?"
+		my $Group_ID = $Select_Links[0];
+
+		my $Select_Groups = $DB_Connection->prepare("SELECT `groupname`
+			FROM `user_groups`
+			WHERE `id` = ?
+			AND `active` = '1'
+			AND (`expires` >= '$Date'
+				OR `expires` = '0000-00-00')"
 		);
-		$Select_User_Links->execute($Rule_ID);
+		$Select_Groups->execute($Group_ID);
 
-		while ( my @Select_Links = $Select_User_Links->fetchrow_array() )
+		while ( my @Select_Group_Array = $Select_Groups->fetchrow_array() )
 		{
-			
-			my $User_ID = $Select_Links[0];
-
-			my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
-				FROM `users`
-				WHERE `id` = ?
-				AND `active` = '1'
-				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
-			);
-			$Select_Users->execute($User_ID);
-
-			while ( my @Select_Users_Array = $Select_Users->fetchrow_array() )
-			{
-				my $User_Name = $Select_Users_Array[0];
-				$Group_to_Return = $Group_to_Return . $User_Name . ', ';
-			}
+			my $User_Group_Name = $Select_Group_Array[0];
+			$User_Group_Name = uc($User_Group_Name); # Turn to uppercase so that sudo can read it correctly
+			$User_Group_Name =~ s/[^A-Z0-9]/_/g;
+			$Group_to_Return = $Group_to_Return . 'USER_GROUP_' . $User_Group_Name . ', ';
 		}
+	}
+	
+	### Users
+	my $Select_User_Links = $DB_Connection->prepare("SELECT `user`
+		FROM `lnk_rules_to_users`
+		WHERE `rule` = ?"
+	);
+	$Select_User_Links->execute($Rule_ID);
 
+	while ( my @Select_Links = $Select_User_Links->fetchrow_array() )
+	{
+		
+		my $User_ID = $Select_Links[0];
+
+		my $Select_Users = $DB_Connection->prepare("SELECT `username`
+			FROM `users`
+			WHERE `id` = ?
+			AND `active` = '1'
+			AND (`expires` >= '$Date'
+				OR `expires` = '0000-00-00')"
+		);
+		$Select_Users->execute($User_ID);
+
+		while ( my @Select_Users_Array = $Select_Users->fetchrow_array() )
+		{
+			my $User_Name = $Select_Users_Array[0];
+			$Group_to_Return = $Group_to_Return . $User_Name . ', ';
+		}
+	}
 
 	$Group_to_Return =~ s/,\s$//; # Remove trailing comma
 	return $Group_to_Return;
@@ -595,64 +664,63 @@ sub create_command_rule_groups {
 	my $Rule_ID = $_[0];
 	my $Group_to_Return;
 	
-		### Command Groups
-		my $Select_Command_Group_Links = $DB_Sudoers->prepare("SELECT `command_group`
-			FROM `lnk_rules_to_command_groups`
-			WHERE `rule` = ?"
-		);
-		$Select_Command_Group_Links->execute($Rule_ID);
+	### Command Groups
+	my $Select_Command_Group_Links = $DB_Connection->prepare("SELECT `command_group`
+		FROM `lnk_rules_to_command_groups`
+		WHERE `rule` = ?"
+	);
+	$Select_Command_Group_Links->execute($Rule_ID);
 
-		while ( my @Select_Links = $Select_Command_Group_Links->fetchrow_array() )
-		{
-			
-			my $Group_ID = $Select_Links[0];
-
-			my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`
-				FROM `command_groups`
-				WHERE `id` = ?
-				AND `active` = '1'
-				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
-			);
-			$Select_Groups->execute($Group_ID);
-
-			while ( my @Select_Group_Array = $Select_Groups->fetchrow_array() )
-			{
-				my $Commnand_Group = $Select_Group_Array[0];
-				$Commnand_Group = uc($Commnand_Group); # Turn to uppercase so that sudo can read it correctly
-				$Group_to_Return = $Group_to_Return . 'COMMAND_GROUP_' . $Commnand_Group . ', ';
-			}
-		}
+	while ( my @Select_Links = $Select_Command_Group_Links->fetchrow_array() )
+	{
 		
-		### Commands
-		my $Select_Command_Links = $DB_Sudoers->prepare("SELECT `command`
-			FROM `lnk_rules_to_commands`
-			WHERE `rule` = ?"
+		my $Group_ID = $Select_Links[0];
+
+		my $Select_Groups = $DB_Connection->prepare("SELECT `groupname`
+			FROM `command_groups`
+			WHERE `id` = ?
+			AND `active` = '1'
+			AND (`expires` >= '$Date'
+				OR `expires` = '0000-00-00')"
 		);
-		$Select_Command_Links->execute($Rule_ID);
+		$Select_Groups->execute($Group_ID);
 
-		while ( my @Select_Links = $Select_Command_Links->fetchrow_array() )
+		while ( my @Select_Group_Array = $Select_Groups->fetchrow_array() )
 		{
-			
-			my $Command_ID = $Select_Links[0];
-
-			my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`
-				FROM `commands`
-				WHERE `id` = ?
-				AND `active` = '1'
-				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
-			);
-			$Select_Commands->execute($Command_ID);
-
-			while ( my @Select_Commands_Array = $Select_Commands->fetchrow_array() )
-			{
-				my $Command_Alias = $Select_Commands_Array[0];
-				$Command_Alias = uc($Command_Alias); # Turn to uppercase so that sudo can read it correctly
-				$Group_to_Return = $Group_to_Return . 'COMMAND_' . $Command_Alias . ', ';
-			}
+			my $Commnand_Group = $Select_Group_Array[0];
+			$Commnand_Group = uc($Commnand_Group); # Turn to uppercase so that sudo can read it correctly
+			$Group_to_Return = $Group_to_Return . 'COMMAND_GROUP_' . $Commnand_Group . ', ';
 		}
+	}
+	
+	### Commands
+	my $Select_Command_Links = $DB_Connection->prepare("SELECT `command`
+		FROM `lnk_rules_to_commands`
+		WHERE `rule` = ?"
+	);
+	$Select_Command_Links->execute($Rule_ID);
 
+	while ( my @Select_Links = $Select_Command_Links->fetchrow_array() )
+	{
+		
+		my $Command_ID = $Select_Links[0];
+
+		my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`
+			FROM `commands`
+			WHERE `id` = ?
+			AND `active` = '1'
+			AND (`expires` >= '$Date'
+				OR `expires` = '0000-00-00')"
+		);
+		$Select_Commands->execute($Command_ID);
+
+		while ( my @Select_Commands_Array = $Select_Commands->fetchrow_array() )
+		{
+			my $Command_Alias = $Select_Commands_Array[0];
+			$Command_Alias = uc($Command_Alias); # Turn to uppercase so that sudo can read it correctly
+			$Group_to_Return = $Group_to_Return . 'COMMAND_' . $Command_Alias . ', ';
+		}
+	}
 
 	$Group_to_Return =~ s/,\s$//; # Remove trailing comma
 	return $Group_to_Return;
@@ -665,7 +733,7 @@ sub write_rules {
 
 	print FILE "\n### Rule Section Begins ###\n\n";
 
-	my $Select_Rules = $DB_Sudoers->prepare("SELECT `id`, `name`, `all_hosts`, `run_as`, `nopasswd`, `noexec`, `expires`, `last_approved`, `approved_by`, `last_modified`, `modified_by`
+	my $Select_Rules = $DB_Connection->prepare("SELECT `id`, `name`, `all_hosts`, `run_as`, `nopasswd`, `noexec`, `expires`, `last_approved`, `approved_by`, `last_modified`, `modified_by`
 		FROM `rules`
 		WHERE `active` = '1'
 		AND `approved` = '1'
@@ -715,9 +783,24 @@ sub write_rules {
 			print FILE "Cmnd_Alias	COMMAND_RULE_GROUP_$DBID = $Returned_Command_Group\n";
 			print FILE "USER_RULE_GROUP_$DBID	HOST_RULE_GROUP_$DBID = ($Run_As) $NOPASSWD:$NOEXEC: COMMAND_RULE_GROUP_$DBID\n\n";
 		}
+		elsif (!$Returned_Host_Group) {
+			print FILE "#######\n";
+			print FILE "####### $DB_Rule_Name (ID: $DBID) was not written because the rule is not complete. It lacks defined Hosts. #######\n";
+			print FILE "#######\n\n";
+		}
+		elsif (!$Returned_User_Group) {
+			print FILE "#######\n";
+			print FILE "####### $DB_Rule_Name (ID: $DBID) was not written because the rule is not complete. It lacks defined Users. #######\n";
+			print FILE "#######\n\n";
+		}
+		elsif (!$Returned_Command_Group) {
+			print FILE "#######\n";
+			print FILE "####### $DB_Rule_Name (ID: $DBID) was not written because the rule is not complete. It lacks defined Commands. #######\n";
+			print FILE "#######\n\n";
+		}
 		else {
 			print FILE "#######\n";
-			print FILE "####### $DB_Rule_Name (ID: $DBID) was not written because the rule is not complete. It lacks defined Hosts, Users or Commands. #######\n";
+			print FILE "####### $DB_Rule_Name (ID: $DBID) was not written because the rule is not complete. #######\n";
 			print FILE "#######\n\n";
 		}
 	}
@@ -731,7 +814,7 @@ sub record_audit {
 
 	my $Result = $_[0];
 
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -775,7 +858,6 @@ sub record_audit {
 	else {
 		print "New sudoers matches old sudoers. Not replacing.\n";
 	}
-
 
 	# / Audit Log
 

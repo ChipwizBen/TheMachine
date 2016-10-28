@@ -4,7 +4,7 @@ use strict;
 use HTML::Table;
 
 require 'common.pl';
-my $DB_Management = DB_Management();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $User_Name = $Session->param("User_Name");  
@@ -44,7 +44,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /access-log.cgi/) {
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -70,7 +70,7 @@ sub html_output {
 	);
 
 
-	my $Select_Logs = $DB_Management->prepare("SELECT `id`, `ip`, `hostname`, `user_agent`, `script`, `referer`, `query`, `request_method`, `https`, `username`, `time`
+	my $Select_Logs = $DB_Connection->prepare("SELECT `id`, `ip`, `hostname`, `user_agent`, `script`, `referer`, `query`, `request_method`, `https`, `username`, `time`
 		FROM `access_log`
 		WHERE `username` LIKE ?
 		AND (
@@ -93,7 +93,7 @@ sub html_output {
 	
 	my $Rows = $Select_Logs->rows();
 
-	my $Select_Logs_Count = $DB_Management->prepare("SELECT `id` FROM `access_log`");
+	my $Select_Logs_Count = $DB_Connection->prepare("SELECT `id` FROM `access_log`");
 		$Select_Logs_Count->execute( );
 		my $Total_Rows = $Select_Logs_Count->rows();
 
@@ -191,7 +191,7 @@ print <<ENDHTML;
 							<option value=''>All</option>
 ENDHTML
 
-my $User_Name_Retreive = $DB_Management->prepare("SELECT `username`
+my $User_Name_Retreive = $DB_Connection->prepare("SELECT `username`
 FROM `credentials`");
 $User_Name_Retreive->execute( );
 

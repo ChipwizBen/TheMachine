@@ -3,8 +3,7 @@
 use strict;
 
 require 'common.pl';
-my $DB_Management = DB_Management();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Header = Header();
@@ -46,7 +45,7 @@ if (!$Sudoers_Not_Found) {
 }
 
 my $Rules_Require_Approval;
-my $Select_Rules = $DB_Sudoers->prepare("SELECT `id`
+my $Select_Rules = $DB_Connection->prepare("SELECT `id`
 	FROM `rules`
 	WHERE `active` = '1'
 	AND `approved` = '0'"

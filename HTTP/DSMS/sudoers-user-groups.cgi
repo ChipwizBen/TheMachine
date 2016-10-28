@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Group = $CGI->param("Add_Group");
@@ -229,7 +229,7 @@ my @Users = split(',', $Add_User_Temp_Existing);
 
 foreach my $User (@Users) {
 
-	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+	my $User_Query = $DB_Connection->prepare("SELECT `username`, `expires`, `active`
 		FROM `users`
 		WHERE `id` = ? ");
 	$User_Query->execute($User);
@@ -320,7 +320,7 @@ function System_Group_Toggle() {
 			<select name='Add_User_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-				my $User_List_Query = $DB_Sudoers->prepare("SELECT `id`, `username`, `expires`, `active`
+				my $User_List_Query = $DB_Connection->prepare("SELECT `id`, `username`, `expires`, `active`
 				FROM `users`
 				ORDER BY `username` ASC");
 				$User_List_Query->execute( );
@@ -426,7 +426,7 @@ ENDHTML
 sub add_group {
 
 	### Existing Group_Name Check
-	my $Existing_Group_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_Group_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `user_groups`
 		WHERE `groupname` = ?");
 		$Existing_Group_Name_Check->execute($Group_Name_Add);
@@ -457,7 +457,7 @@ sub add_group {
 		$Expires_Date_Add = '0000-00-00';
 	}
 
-	my $Group_Insert = $DB_Sudoers->prepare("INSERT INTO `user_groups` (
+	my $Group_Insert = $DB_Connection->prepare("INSERT INTO `user_groups` (
 		`id`,
 		`groupname`,
 		`system_group`,
@@ -472,7 +472,7 @@ sub add_group {
 
 	$Group_Insert->execute($Group_Name_Add, $System_Group_Toggle_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
-	my $Group_Insert_ID = $DB_Sudoers->{mysql_insertid};
+	my $Group_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	$Add_User_Temp_Existing =~ s/,$//;
 	my @Users = split(',', $Add_User_Temp_Existing);
@@ -482,7 +482,7 @@ sub add_group {
 
 		$User_Count++;
 
-		my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_user_groups_to_users` (
+		my $User_Insert = $DB_Connection->prepare("INSERT INTO `lnk_user_groups_to_users` (
 			`id`,
 			`group`,
 			`user`
@@ -512,7 +512,7 @@ sub add_group {
 	my $Users_Attached;
 	foreach my $User (@Users) {
 
-		my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+		my $Select_Users = $DB_Connection->prepare("SELECT `username`
 			FROM `users`
 			WHERE `id` = ?"
 		);
@@ -533,8 +533,8 @@ sub add_group {
 		$Users_Attached = '';
 	}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -556,7 +556,7 @@ sub html_edit_group {
 ### Currently Attached Users Retrieval and Conversion
 
 my $Users;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+my $Select_Links = $DB_Connection->prepare("SELECT `user`
 	FROM `lnk_user_groups_to_users`
 	WHERE `group` = ? "
 );
@@ -566,7 +566,7 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+	my $User_Query = $DB_Connection->prepare("SELECT `username`, `expires`, `active`
 		FROM `users`
 		WHERE `id` = ? ");
 	$User_Query->execute($Link);
@@ -611,7 +611,7 @@ if ($Edit_User_Temp_New) {
 	$Edit_User_Temp_Existing !~ m/,$Edit_User_Temp_New,/g) {
 		
 		### Check to see if new link is already attached to this group
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_user_groups_to_users`
 			WHERE `user` = ?
 			AND `group` = ? "
@@ -631,7 +631,7 @@ my @Users = split(',', $Edit_User_Temp_Existing);
 
 foreach my $User (@Users) {
 
-	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+	my $User_Query = $DB_Connection->prepare("SELECT `username`, `expires`, `active`
 		FROM `users`
 		WHERE `id` = ? ");
 	$User_Query->execute($User);
@@ -670,7 +670,7 @@ foreach my $User (@Users) {
 ### Group Details Retrieval
 
 if (!$Group_Name_Edit) {
-	my $Select_Group_Details = $DB_Sudoers->prepare("SELECT `groupname`, `system_group`, `expires`, `active`
+	my $Select_Group_Details = $DB_Connection->prepare("SELECT `groupname`, `system_group`, `expires`, `active`
 		FROM `user_groups`
 		WHERE `id` = ? "
 	);
@@ -763,7 +763,7 @@ function System_Group_Toggle() {
 			<select name='Edit_User_Temp_New' onchange='this.form.submit()' style="width: 300px" $System_Group_Disabled>
 ENDHTML
 
-				my $User_List_Query = $DB_Sudoers->prepare("SELECT `id`, `username`, `expires`, `active`
+				my $User_List_Query = $DB_Connection->prepare("SELECT `id`, `username`, `expires`, `active`
 				FROM `users`
 				ORDER BY `username` ASC");
 				$User_List_Query->execute( );
@@ -910,7 +910,7 @@ ENDHTML
 sub edit_group {
 
 	### Existing Group_Name Check
-	my $Existing_Group_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_Group_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `user_groups`
 		WHERE `groupname` = ?
 		AND `id` != ?");
@@ -933,7 +933,7 @@ sub edit_group {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_user_groups`
 	ON `rules`.`id` = `lnk_rules_to_user_groups`.`rule`
 	SET
@@ -951,7 +951,7 @@ sub edit_group {
 	if ($System_Group_Toggle_Edit eq 'on') {
 		$System_Group_Toggle_Edit = 1;
 		$Edit_User_Temp_Existing = '';
-		my $Delete_Users_From_System_Group = $DB_Sudoers->prepare("DELETE from `lnk_user_groups_to_users`
+		my $Delete_Users_From_System_Group = $DB_Connection->prepare("DELETE from `lnk_user_groups_to_users`
 			WHERE `group` = ?");
 		$Delete_Users_From_System_Group->execute($Edit_Group);
 	}
@@ -963,7 +963,7 @@ sub edit_group {
 		$Expires_Date_Edit = '0000-00-00';
 	}
 
-	my $Update_Group = $DB_Sudoers->prepare("UPDATE `user_groups` SET
+	my $Update_Group = $DB_Connection->prepare("UPDATE `user_groups` SET
 		`groupname` = ?,
 		`system_group` = ?,
 		`expires` = ?,
@@ -980,7 +980,7 @@ sub edit_group {
 
 		$User_Count++;
 
-		my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_user_groups_to_users` (
+		my $User_Insert = $DB_Connection->prepare("INSERT INTO `lnk_user_groups_to_users` (
 			`id`,
 			`group`,
 			`user`
@@ -1010,7 +1010,7 @@ sub edit_group {
 	my $Users_Attached;
 	foreach my $User (@Users) {
 
-		my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+		my $Select_Users = $DB_Connection->prepare("SELECT `username`
 			FROM `users`
 			WHERE `id` = ?"
 		);
@@ -1031,8 +1031,8 @@ sub edit_group {
 		$Users_Attached = '';
 	}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -1054,7 +1054,7 @@ sub edit_group {
 
 sub html_delete_group {
 
-	my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname`
+	my $Select_Group = $DB_Connection->prepare("SELECT `groupname`
 	FROM `user_groups`
 	WHERE `id` = ?");
 
@@ -1100,7 +1100,7 @@ sub delete_group {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_user_groups`
 	ON `rules`.`id` = `lnk_rules_to_user_groups`.`rule`
 	SET
@@ -1116,7 +1116,7 @@ sub delete_group {
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+	my $Select_Links = $DB_Connection->prepare("SELECT `user`
 		FROM `lnk_user_groups_to_users`
 		WHERE `group` = ?"
 	);
@@ -1126,7 +1126,7 @@ sub delete_group {
 	while (( my $User_ID ) = $Select_Links->fetchrow_array() )
 	{
 
-		my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+		my $Select_Users = $DB_Connection->prepare("SELECT `username`
 			FROM `users`
 			WHERE `id` = ?"
 		);
@@ -1138,7 +1138,7 @@ sub delete_group {
 		}
 	}
 
-	my $Select_Users = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
+	my $Select_Users = $DB_Connection->prepare("SELECT `groupname`, `expires`, `active`
 		FROM `user_groups`
 		WHERE `id` = ?");
 
@@ -1164,8 +1164,8 @@ sub delete_group {
 			$Users_Attached = 'no users attached.';
 		}
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1183,17 +1183,17 @@ sub delete_group {
 	}
 	# / Audit Log
 
-	my $Delete_Group = $DB_Sudoers->prepare("DELETE from `user_groups`
+	my $Delete_Group = $DB_Connection->prepare("DELETE from `user_groups`
 		WHERE `id` = ?");
 	
 	$Delete_Group->execute($Delete_Group_Confirm);
 
- 	my $Delete_User = $DB_Sudoers->prepare("DELETE from `lnk_user_groups_to_users`
+ 	my $Delete_User = $DB_Connection->prepare("DELETE from `lnk_user_groups_to_users`
 		WHERE `group` = ?");
 	
 	$Delete_User->execute($Delete_Group_Confirm);
 
- 	my $Delete_Rule_Links = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_user_groups`
+ 	my $Delete_Rule_Links = $DB_Connection->prepare("DELETE from `lnk_rules_to_user_groups`
 		WHERE `user_group` = ?");
 	
 	$Delete_Rule_Links->execute($Delete_Group_Confirm);
@@ -1204,7 +1204,7 @@ sub delete_user {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_user_groups`
 	ON `rules`.`id` = `lnk_rules_to_user_groups`.`rule`
 	SET
@@ -1220,7 +1220,7 @@ sub delete_user {
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Users = $DB_Sudoers->prepare("SELECT `username`
+	my $Select_Users = $DB_Connection->prepare("SELECT `username`
 		FROM `users`
 		WHERE `id` = ?");
 
@@ -1229,8 +1229,8 @@ sub delete_user {
 	while (( my $Username ) = $Select_Users->fetchrow_array() )
 	{
 	
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1248,7 +1248,7 @@ sub delete_user {
 	}
 	# / Audit Log
 
-	my $Delete_User = $DB_Sudoers->prepare("DELETE from `lnk_user_groups_to_users`
+	my $Delete_User = $DB_Connection->prepare("DELETE from `lnk_user_groups_to_users`
 		WHERE `group` = ?
 		AND `user` = ?");
 
@@ -1277,7 +1277,7 @@ sub html_show_links {
 
 	### Users
 
-	my $Select_User_Links = $DB_Sudoers->prepare("SELECT `user`
+	my $Select_User_Links = $DB_Connection->prepare("SELECT `user`
 		FROM `lnk_user_groups_to_users`
 		WHERE `group` = ?"
 	);
@@ -1288,7 +1288,7 @@ sub html_show_links {
 		
 		my $User_ID = $Select_Links[0];
 
-		my $Select_Users = $DB_Sudoers->prepare("SELECT `username`, `active`
+		my $Select_Users = $DB_Connection->prepare("SELECT `username`, `active`
 			FROM `users`
 			WHERE `id` = ?"
 		);
@@ -1316,7 +1316,7 @@ sub html_show_links {
 
 	### Rules
 
-	my $Select_Rule_Links = $DB_Sudoers->prepare("SELECT `rule`
+	my $Select_Rule_Links = $DB_Connection->prepare("SELECT `rule`
 		FROM `lnk_rules_to_user_groups`
 		WHERE `user_group` = ?"
 	);
@@ -1327,7 +1327,7 @@ sub html_show_links {
 		
 		my $Rule_ID = $Select_Links[0];
 
-		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
+		my $Select_Rules = $DB_Connection->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`
 			WHERE `id` = ?"
 		);
@@ -1394,7 +1394,7 @@ sub html_notes {
 
 	### Discover Group Name
 	my $Group_Name;
-	my $Select_Group_Name = $DB_Sudoers->prepare("SELECT `groupname`
+	my $Select_Group_Name = $DB_Connection->prepare("SELECT `groupname`
 	FROM `user_groups`
 	WHERE `id` = ?");
 
@@ -1403,7 +1403,7 @@ sub html_notes {
 	### / Discover Group Name
 
 	### Discover Note Count
-	my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+	my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 		FROM `notes`
 		WHERE `type_id` = '04'
 		AND `item_id` = ?"
@@ -1412,7 +1412,7 @@ sub html_notes {
 	my $Note_Count = $Select_Note_Count->fetchrow_array();
 	### / Discover Note Count
 
-	my $Select_Notes = $DB_Sudoers->prepare("SELECT `note`, `last_modified`, `modified_by`
+	my $Select_Notes = $DB_Connection->prepare("SELECT `note`, `last_modified`, `modified_by`
 	FROM `notes`
 	WHERE `type_id` = '04'
 	AND `item_id` = ?
@@ -1481,7 +1481,7 @@ ENDHTML
 
 sub add_note {
 
-	my $Note_Submission = $DB_Sudoers->prepare("INSERT INTO `notes` (
+	my $Note_Submission = $DB_Connection->prepare("INSERT INTO `notes` (
 		`type_id`,
 		`item_id`,
 		`note`,
@@ -1509,12 +1509,12 @@ sub html_output {
 	);
 
 
-	my $Select_Group_Count = $DB_Sudoers->prepare("SELECT `id` FROM `user_groups`");
+	my $Select_Group_Count = $DB_Connection->prepare("SELECT `id` FROM `user_groups`");
 		$Select_Group_Count->execute( );
 		my $Total_Rows = $Select_Group_Count->rows();
 
 
-	my $Select_Groups = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `active`, `last_modified`, `modified_by`
+	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `groupname`, `system_group`, `expires`, `active`, `last_modified`, `modified_by`
 		FROM `user_groups`
 		WHERE `id` LIKE ?
 		OR `groupname` LIKE ?
@@ -1561,7 +1561,7 @@ sub html_output {
 
 		### Discover Note Count
 
-		my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+		my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 			FROM `notes`
 			WHERE `type_id` = '04'
 			AND `item_id` = ?"
@@ -1571,7 +1571,7 @@ sub html_output {
 
 		### / Discover Note Count
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `user`
+		my $Select_Links = $DB_Connection->prepare("SELECT `user`
 			FROM `lnk_user_groups_to_users`
 			WHERE `group` = ?"
 		);
@@ -1582,7 +1582,7 @@ sub html_output {
 
 			my $User_ID = $Select_Links[0];
 
-			my $Select_Users = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+			my $Select_Users = $DB_Connection->prepare("SELECT `username`, `expires`, `active`
 				FROM `users`
 				WHERE `id` = ?"
 			);
@@ -1751,7 +1751,7 @@ print <<ENDHTML;
 						<select name='Edit_Group' style="width: 150px">
 ENDHTML
 
-						my $Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`
+						my $Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`
 						FROM `user_groups`
 						ORDER BY `groupname` ASC");
 						$Group_List_Query->execute( );

@@ -10,7 +10,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_DNS = DB_DNS();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Record = $CGI->param("Add_Record");
@@ -233,7 +233,7 @@ function Record_Options(value) {
 			<select name='Record_Domain_Add' style="width: 100%">
 ENDHTML
 
-	my $Domain_Query = $DB_DNS->prepare("SELECT `id`, `domain`
+	my $Domain_Query = $DB_Connection->prepare("SELECT `id`, `domain`
 	FROM `domains`
 	ORDER BY `domain` ASC");
 	$Domain_Query->execute( );
@@ -332,7 +332,7 @@ sub add_record {
 		$Record_Options_Add = $Record_Option_SRV_Add;
 	}
 
-	my $Record_Insert = $DB_DNS->prepare("INSERT INTO `zone_records` (
+	my $Record_Insert = $DB_Connection->prepare("INSERT INTO `zone_records` (
 		`source`,
 		`domain`,
 		`time_to_live`,
@@ -352,7 +352,7 @@ sub add_record {
 	$Record_Insert->execute($Record_Source_Add, $Record_Domain_Add, $Record_TTL_Add, $Record_Type_Add, $Record_Options_Add, 
 	$Record_Target_Add, $Record_Zone_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
-	my $Record_Insert_ID = $DB_DNS->{mysql_insertid};
+	my $Record_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
 	if ($Expires_Date_Add eq '0000-00-00') {
@@ -364,8 +364,8 @@ sub add_record {
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -384,7 +384,7 @@ sub add_record {
 
 sub html_edit_record {
 
-	my $Select_Record = $DB_DNS->prepare("SELECT `source`, `domain`, `time_to_live`, `type`, `options`, `target`, `zone`,	`expires`, `active`
+	my $Select_Record = $DB_Connection->prepare("SELECT `source`, `domain`, `time_to_live`, `type`, `options`, `target`, `zone`,	`expires`, `active`
 	FROM `zone_records`
 	WHERE `id` = ?");
 	$Select_Record->execute($Edit_Record);
@@ -466,7 +466,7 @@ function Record_Options(value) {
 			<select name='Record_Domain_Edit' style="width: 100%">
 ENDHTML
 
-	my $Domain_Query = $DB_DNS->prepare("SELECT `id`, `domain`
+	my $Domain_Query = $DB_Connection->prepare("SELECT `id`, `domain`
 	FROM `domains`
 	ORDER BY `domain` ASC");
 	$Domain_Query->execute( );
@@ -610,7 +610,7 @@ sub edit_record {
 		$Record_Options_Edit = $Record_Option_SRV_Edit;
 	}
 
-	my $Update_Record = $DB_DNS->prepare("UPDATE `zone_records` SET
+	my $Update_Record = $DB_Connection->prepare("UPDATE `zone_records` SET
 		`source` = ?,
 		`domain` = ?,
 		`time_to_live` = ?,
@@ -636,8 +636,8 @@ sub edit_record {
 
 	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -654,7 +654,7 @@ sub edit_record {
 
 sub html_delete_record {
 
-	my $Select_Record = $DB_DNS->prepare("SELECT `source`, `type`, `target`
+	my $Select_Record = $DB_Connection->prepare("SELECT `source`, `type`, `target`
 	FROM `zone_records`
 	WHERE `id` = ?");
 
@@ -710,7 +710,7 @@ ENDHTML
 sub delete_record {
 
 	# Audit Log
-	my $Select_Records = $DB_DNS->prepare("SELECT `source`, `type`, `target`, `expires`, `active`
+	my $Select_Records = $DB_Connection->prepare("SELECT `source`, `type`, `target`, `expires`, `active`
 		FROM `zone_records`
 		WHERE `id` = ?");
 
@@ -728,8 +728,8 @@ sub delete_record {
 	
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -744,7 +744,7 @@ sub delete_record {
 	}
 	# / Audit Log
 
-	my $Delete_Record = $DB_DNS->prepare("DELETE from `zone_records`
+	my $Delete_Record = $DB_Connection->prepare("DELETE from `zone_records`
 		WHERE `id` = ?");
 	
 	$Delete_Record->execute($Delete_Record_Confirm);
@@ -766,12 +766,12 @@ sub html_output {
 	);
 
 
-	my $Select_Record_Count = $DB_DNS->prepare("SELECT `id` FROM `zone_records`");
+	my $Select_Record_Count = $DB_Connection->prepare("SELECT `id` FROM `zone_records`");
 		$Select_Record_Count->execute( );
 		my $Total_Rows = $Select_Record_Count->rows();
 
 
-	my $Select_Records = $DB_DNS->prepare("SELECT `id`, `source`, `domain`, `time_to_live`, `type`, `options`, 
+	my $Select_Records = $DB_Connection->prepare("SELECT `id`, `source`, `domain`, `time_to_live`, `type`, `options`, 
 	`target`, `zone`, `expires`, `active`, `last_modified`, `modified_by`
 		FROM `zone_records`
 			WHERE `id` LIKE ?
@@ -821,7 +821,7 @@ sub html_output {
 		my $Last_Modified = $Select_Records[10];
 		my $Modified_By = $Select_Records[11];
 
-		my $Resolve_Domain = $DB_DNS->prepare("SELECT `domain`
+		my $Resolve_Domain = $DB_Connection->prepare("SELECT `domain`
 			FROM `domains`
 			WHERE `id` LIKE ?"
 		);
@@ -972,7 +972,7 @@ print <<ENDHTML;
 						<select name='Edit_Record' style="width: 150px">
 ENDHTML
 
-						my $Record_List_Query = $DB_DNS->prepare("SELECT `id`, `source`, `type`, `target`
+						my $Record_List_Query = $DB_Connection->prepare("SELECT `id`, `source`, `type`, `target`
 						FROM `zone_records`
 						ORDER BY `source` ASC");
 						$Record_List_Query->execute( );

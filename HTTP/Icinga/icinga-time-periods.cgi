@@ -8,7 +8,7 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $Header = Header();
-my $DB_Icinga = DB_Icinga();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Time = $CGI->param("Add_Time");
@@ -179,7 +179,7 @@ ENDHTML
 
 sub add_time_period {
 
-	my $Time_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `alias`
+	my $Time_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
 	FROM `nagios_timeperiod`
 	WHERE `timeperiod_name` = '$Time_Add'");
 
@@ -202,7 +202,7 @@ sub add_time_period {
 		}
 	}
 	else {
-		my $Time_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_timeperiod` (
+		my $Time_Insert = $DB_Connection->prepare("INSERT INTO `nagios_timeperiod` (
 			`id`,
 			`timeperiod_name`,
 			`alias`,
@@ -221,7 +221,7 @@ sub add_time_period {
 
 		$Time_Insert->execute($Time_Add, $Alias_Add, $Active_Add);
 
-		my $Time_Insert_ID = $DB_Icinga->{mysql_insertid};
+		my $Time_Insert_ID = $DB_Connection->{mysql_insertid};
 		my @Time_Definitions = ($Sunday_Add, $Monday_Add, $Tuesday_Add, $Wednesday_Add, $Thursday_Add, $Friday_Add, $Saturday_Add);
 
 		my $Day_Count;
@@ -237,7 +237,7 @@ sub add_time_period {
 			if ($Day_Count eq 6) {$Day = 'friday'};
 			if ($Day_Count eq 7) {$Day = 'saturday'};
 			if ($_ ne undef) {
-				my $Time_Definition_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_timedefinition` (
+				my $Time_Definition_Insert = $DB_Connection->prepare("INSERT INTO `nagios_timedefinition` (
 					`id`,
 					`tipId`,
 					`definition`,
@@ -264,7 +264,7 @@ sub add_time_period {
 
 sub html_edit_time_period {
 
-	my $Select_Time = $DB_Icinga->prepare("SELECT `timeperiod_name`, `alias`, `active`
+	my $Select_Time = $DB_Connection->prepare("SELECT `timeperiod_name`, `alias`, `active`
 	FROM `nagios_timeperiod`
 	WHERE `id` = '$Edit_Time'");
 	$Select_Time->execute( );
@@ -332,7 +332,7 @@ ENDHTML
 
 sub edit_time_period {
 
-	my $Time_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `alias`
+	my $Time_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
 	FROM `nagios_timeperiod`
 	WHERE `timeperiod_name` = '$Time_Edit'
 	AND `id` != '$Time_Edit_Post'");
@@ -357,7 +357,7 @@ sub edit_time_period {
 	}
 	else {
 
-		my $Time_Update = $DB_Icinga->prepare("UPDATE `nagios_timeperiod` SET
+		my $Time_Update = $DB_Connection->prepare("UPDATE `nagios_timeperiod` SET
 			`timeperiod_name` = ?,
 			`alias` = ?,
 			`active` = ?,
@@ -373,7 +373,7 @@ sub edit_time_period {
 
 sub html_delete_time_period {
 
-	my $Select_Time = $DB_Icinga->prepare("SELECT `timeperiod_name`, `alias`
+	my $Select_Time = $DB_Connection->prepare("SELECT `timeperiod_name`, `alias`
 	FROM `nagios_timeperiod`
 	WHERE `id` = '$Delete_Time'");
 	$Select_Time->execute( );
@@ -423,16 +423,16 @@ ENDHTML
 
 sub delete_time_period {
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_timeperiod` WHERE `id` = ?");
+	my $Delete = $DB_Connection->prepare("DELETE from `nagios_timeperiod` WHERE `id` = ?");
 		$Delete->execute($Time_Delete_Post);
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_timedefinition` WHERE `tipId` = ?");
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_timedefinition` WHERE `tipId` = ?");
 		$Delete->execute($Time_Delete_Post);
 
 } # sub delete_time_period
 
 sub html_display_config {
 
-	my $Select_Time = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`, `active`, `last_modified`, `modified_by`
+	my $Select_Time = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`, `active`, `last_modified`, `modified_by`
 	FROM `nagios_timeperiod`
 	WHERE `id` = ?");
 	$Select_Time->execute($Display_Config);
@@ -447,7 +447,7 @@ sub html_display_config {
 		my $Last_Modified_Extract = $DB_Time[4];
 		my $Modified_By_Extract = $DB_Time[5];
 
-		my $Select_Definitions = $DB_Icinga->prepare("SELECT `definition`, `range`
+		my $Select_Definitions = $DB_Connection->prepare("SELECT `definition`, `range`
 		FROM `nagios_timedefinition`
 		WHERE `tipId` LIKE ?");
 		
@@ -609,11 +609,11 @@ sub html_output {
 	$Table->addRow ( "ID", "Name", "Alias", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Active", "Last Modified", "Modified By", "View Config", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Times_Count = $DB_Icinga->prepare("SELECT `id` FROM `nagios_timeperiod`");
+	my $Select_Times_Count = $DB_Connection->prepare("SELECT `id` FROM `nagios_timeperiod`");
 		$Select_Times_Count->execute( );
 		my $Total_Rows = $Select_Times_Count->rows();
 
-	my $Select_Times = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`, `active`, `last_modified`, `modified_by`
+	my $Select_Times = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`, `active`, `last_modified`, `modified_by`
 	FROM `nagios_timeperiod`
 	WHERE (`id` LIKE '%$Filter%'
 	OR `timeperiod_name` LIKE '%$Filter%'
@@ -644,7 +644,7 @@ sub html_output {
 		my $Last_Modified_Extract = $DB_Time[4];
 		my $Modified_By_Extract = $DB_Time[5];
 
-		my $Select_Definitions = $DB_Icinga->prepare("SELECT `definition`, `range`
+		my $Select_Definitions = $DB_Connection->prepare("SELECT `definition`, `range`
 		FROM `nagios_timedefinition`
 		WHERE `tipId` LIKE ?");
 		
@@ -771,7 +771,7 @@ print <<ENDHTML;
 						<select name='Edit_Time' style="width: 150px">
 ENDHTML
 
-						my $Time_Period_List_Query = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`
+						my $Time_Period_List_Query = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`
 						FROM `nagios_timeperiod`
 						ORDER BY `timeperiod_name` ASC");
 						$Time_Period_List_Query->execute( );

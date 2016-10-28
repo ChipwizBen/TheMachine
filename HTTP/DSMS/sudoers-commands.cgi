@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Command = $CGI->param("Add_Command");
@@ -281,7 +281,7 @@ ENDHTML
 sub add_command {
 
 	### Existing Command_Alias Check
-	my $Existing_Command_Alias_Check = $DB_Sudoers->prepare("SELECT `id`, `command`
+	my $Existing_Command_Alias_Check = $DB_Connection->prepare("SELECT `id`, `command`
 		FROM `commands`
 		WHERE `command_alias` = ?");
 		$Existing_Command_Alias_Check->execute($Command_Alias_Add);
@@ -304,7 +304,7 @@ sub add_command {
 	### / Existing Command_Alias Check
 
 	### Existing Command Check
-	my $Existing_Command_Check = $DB_Sudoers->prepare("SELECT `id`, `command_alias`
+	my $Existing_Command_Check = $DB_Connection->prepare("SELECT `id`, `command_alias`
 		FROM `commands`
 		WHERE `command` = ?");
 		$Existing_Command_Check->execute($Command_Add);
@@ -330,7 +330,7 @@ sub add_command {
 		$Expires_Date_Add = '0000-00-00';
 	}
 
-	my $Command_Insert = $DB_Sudoers->prepare("INSERT INTO `commands` (
+	my $Command_Insert = $DB_Connection->prepare("INSERT INTO `commands` (
 		`id`,
 		`command_alias`,
 		`command`,
@@ -349,7 +349,7 @@ sub add_command {
 
 	$Command_Insert->execute($Command_Alias_Add, $Command_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
-	my $Command_Insert_ID = $DB_Sudoers->{mysql_insertid};
+	my $Command_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
 	if ($Expires_Date_Add eq '0000-00-00') {
@@ -361,8 +361,8 @@ sub add_command {
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -384,7 +384,7 @@ sub add_command {
 
 sub html_edit_command {
 
-	my $Select_Command = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
+	my $Select_Command = $DB_Connection->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 	FROM `commands`
 	WHERE `id` = ?");
 	$Select_Command->execute($Edit_Command);
@@ -496,7 +496,7 @@ ENDHTML
 sub edit_command {
 
 	### Existing Command_Alias Check
-	my $Existing_Command_Alias_Check = $DB_Sudoers->prepare("SELECT `id`, `command`
+	my $Existing_Command_Alias_Check = $DB_Connection->prepare("SELECT `id`, `command`
 		FROM `commands`
 		WHERE `command_alias` = ?
 		AND `id` != ?");
@@ -520,7 +520,7 @@ sub edit_command {
 	### / Existing Command_Alias Check
 
 	### Existing Command Check
-	my $Existing_Command_Check = $DB_Sudoers->prepare("SELECT `id`, `command_alias`
+	my $Existing_Command_Check = $DB_Connection->prepare("SELECT `id`, `command_alias`
 		FROM `commands`
 		WHERE `command` = ?
 		AND `id` != ?");
@@ -545,7 +545,7 @@ sub edit_command {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_commands`
 	ON `rules`.`id` = `lnk_rules_to_commands`.`rule`
 	SET
@@ -564,7 +564,7 @@ sub edit_command {
 		$Expires_Date_Edit = '0000-00-00';
 	}
 
-	my $Update_Command = $DB_Sudoers->prepare("UPDATE `commands` SET
+	my $Update_Command = $DB_Connection->prepare("UPDATE `commands` SET
 		`command_alias` = ?,
 		`command` = ?,
 		`expires` = ?,
@@ -584,8 +584,8 @@ sub edit_command {
 
 	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -605,7 +605,7 @@ sub edit_command {
 
 sub html_delete_command {
 
-	my $Select_Command = $DB_Sudoers->prepare("SELECT `command_alias`, `command`
+	my $Select_Command = $DB_Connection->prepare("SELECT `command_alias`, `command`
 	FROM `commands`
 	WHERE `id` = ?");
 
@@ -657,7 +657,7 @@ sub delete_command {
 
 	### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules`
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
 	INNER JOIN `lnk_rules_to_commands`
 	ON `rules`.`id` = `lnk_rules_to_commands`.`rule`
 	SET
@@ -673,7 +673,7 @@ sub delete_command {
 	### / Revoke Rule Approval ###
 
 	# Audit Log
-	my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
+	my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 		FROM `commands`
 		WHERE `id` = ?");
 
@@ -691,8 +691,8 @@ sub delete_command {
 	
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 	
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -710,17 +710,17 @@ sub delete_command {
 	}
 	# / Audit Log
 
-	my $Delete_Command = $DB_Sudoers->prepare("DELETE from `commands`
+	my $Delete_Command = $DB_Connection->prepare("DELETE from `commands`
 		WHERE `id` = ?");
 	
 	$Delete_Command->execute($Delete_Command_Confirm);
 
-	my $Delete_Command_From_Groups = $DB_Sudoers->prepare("DELETE from `lnk_command_groups_to_commands`
+	my $Delete_Command_From_Groups = $DB_Connection->prepare("DELETE from `lnk_command_groups_to_commands`
 			WHERE `command` = ?");
 		
 	$Delete_Command_From_Groups->execute($Delete_Command_Confirm);
 
-	my $Delete_Command_From_Rules = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_commands`
+	my $Delete_Command_From_Rules = $DB_Connection->prepare("DELETE from `lnk_rules_to_commands`
 			WHERE `command` = ?");
 		
 	$Delete_Command_From_Rules->execute($Delete_Command_Confirm);
@@ -748,7 +748,7 @@ sub html_show_links {
 
 	### Command Groups
 
-	my $Select_Group_Links = $DB_Sudoers->prepare("SELECT `group`
+	my $Select_Group_Links = $DB_Connection->prepare("SELECT `group`
 		FROM `lnk_command_groups_to_commands`
 		WHERE `command` = ?"
 	);
@@ -759,7 +759,7 @@ sub html_show_links {
 		
 		my $Group_ID = $Select_Links[0];
 
-		my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`, `active`
+		my $Select_Groups = $DB_Connection->prepare("SELECT `groupname`, `active`
 			FROM `command_groups`
 			WHERE `id` = ?"
 		);
@@ -787,7 +787,7 @@ sub html_show_links {
 
 	### Rules
 
-	my $Select_Links = $DB_Sudoers->prepare("SELECT `rule`
+	my $Select_Links = $DB_Connection->prepare("SELECT `rule`
 		FROM `lnk_rules_to_commands`
 		WHERE `command` = ?"
 	);
@@ -798,7 +798,7 @@ sub html_show_links {
 		
 		my $Rule_ID = $Select_Links[0];
 
-		my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `active`, `approved`
+		my $Select_Rules = $DB_Connection->prepare("SELECT `name`, `active`, `approved`
 			FROM `rules`
 			WHERE `id` = ?"
 		);
@@ -865,7 +865,7 @@ sub html_notes {
 
 	### Discover Command Name
 	my $Command_Name;
-	my $Select_Command_Name = $DB_Sudoers->prepare("SELECT `command_alias`
+	my $Select_Command_Name = $DB_Connection->prepare("SELECT `command_alias`
 	FROM `commands`
 	WHERE `id` = ?");
 
@@ -874,7 +874,7 @@ sub html_notes {
 	### / Discover Command Name
 
 	### Discover Note Count
-	my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+	my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 		FROM `notes`
 		WHERE `type_id` = '05'
 		AND `item_id` = ?"
@@ -883,7 +883,7 @@ sub html_notes {
 	my $Note_Count = $Select_Note_Count->fetchrow_array();
 	### / Discover Note Count
 
-	my $Select_Notes = $DB_Sudoers->prepare("SELECT `note`, `last_modified`, `modified_by`
+	my $Select_Notes = $DB_Connection->prepare("SELECT `note`, `last_modified`, `modified_by`
 	FROM `notes`
 	WHERE `type_id` = '05'
 	AND `item_id` = ?
@@ -952,7 +952,7 @@ ENDHTML
 
 sub add_note {
 
-	my $Note_Submission = $DB_Sudoers->prepare("INSERT INTO `notes` (
+	my $Note_Submission = $DB_Connection->prepare("INSERT INTO `notes` (
 		`type_id`,
 		`item_id`,
 		`note`,
@@ -979,12 +979,12 @@ sub html_output {
 		-padding=>1
 	);
 
-	my $Select_Command_Count = $DB_Sudoers->prepare("SELECT `id` FROM `commands`");
+	my $Select_Command_Count = $DB_Connection->prepare("SELECT `id` FROM `commands`");
 		$Select_Command_Count->execute( );
 		my $Total_Rows = $Select_Command_Count->rows();
 
 
-	my $Select_Commands = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`, `last_modified`, `modified_by`
+	my $Select_Commands = $DB_Connection->prepare("SELECT `id`, `command_alias`, `command`, `expires`, `active`, `last_modified`, `modified_by`
 		FROM `commands`
 			WHERE `id` LIKE ?
 			OR `command_alias` LIKE ?
@@ -1033,7 +1033,7 @@ sub html_output {
 
 		### Discover Note Count
 
-		my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+		my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 			FROM `notes`
 			WHERE `type_id` = '05'
 			AND `item_id` = ?"
@@ -1163,7 +1163,7 @@ print <<ENDHTML;
 						<select name='Edit_Command' style="width: 150px">
 ENDHTML
 
-						my $Command_List_Query = $DB_Sudoers->prepare("SELECT `id`, `command_alias`
+						my $Command_List_Query = $DB_Connection->prepare("SELECT `id`, `command_alias`
 						FROM `commands`
 						ORDER BY `command_alias` ASC");
 						$Command_List_Query->execute( );

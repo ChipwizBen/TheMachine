@@ -9,7 +9,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Host = $CGI->param("Add_Host");
@@ -19,12 +19,22 @@ my $Host_Name_Add = $CGI->param("Host_Name_Add");
 	$Host_Name_Add =~ s/\s//g;
 	$Host_Name_Add =~ s/[^a-zA-Z0-9\-\.]//g;
 my $Host_Type_Add = $CGI->param("Host_Type_Add");
+my $Host_Fingerprint_Add = $CGI->param("Host_Fingerprint_Add");
+my $DHCP_Toggle_Add = $CGI->param("DHCP_Toggle_Add");
+	if ($DHCP_Toggle_Add eq 'on') {$DHCP_Toggle_Add = 1} else {$DHCP_Toggle_Add = 0}
+my $DSMS_Toggle_Add = $CGI->param("DSMS_Toggle_Add");
+	if ($DSMS_Toggle_Add eq 'on') {$DSMS_Toggle_Add = 1} else {$DSMS_Toggle_Add = 0}
 
 my $Edit_Host_Post = $CGI->param("Edit_Host_Post");
 my $Host_Name_Edit = $CGI->param("Host_Name_Edit");
 	$Host_Name_Edit =~ s/\s//g;
 	$Host_Name_Edit =~ s/[^a-zA-Z0-9\-\.]//g;
 my $Host_Type_Edit = $CGI->param("Host_Type_Edit");
+my $Host_Fingerprint_Edit = $CGI->param("Host_Fingerprint_Edit");
+my $DHCP_Toggle_Edit = $CGI->param("DHCP_Toggle_Edit");
+	if ($DHCP_Toggle_Edit eq 'on') {$DHCP_Toggle_Edit = 1} else {$DHCP_Toggle_Edit = 0}
+my $DSMS_Toggle_Edit = $CGI->param("DSMS_Toggle_Edit");
+	if ($DSMS_Toggle_Edit eq 'on') {$DSMS_Toggle_Edit = 1} else {$DSMS_Toggle_Edit = 0}
 
 my $Delete_Host = $CGI->param("Delete_Host");
 my $Delete_Host_Confirm = $CGI->param("Delete_Host_Confirm");
@@ -175,7 +185,7 @@ print <<ENDHTML;
 			<select name='Host_Type_Add' style="width: 300px">
 ENDHTML
 
-	my $Host_Type_Query = $DB_IP_Allocation->prepare("SELECT `id`, `type`
+	my $Host_Type_Query = $DB_Connection->prepare("SELECT `id`, `type`
 	FROM `host_types`
 	ORDER BY `type` ASC");
 	$Host_Type_Query->execute( );
@@ -190,21 +200,22 @@ print <<ENDHTML
 		</td>
 	</tr>
 	<tr>
-		<td>Add to DSMS?</td>
-		<td><input type='checkbox' name='Host_Sudoers_Add'></td>
+		<td style="text-align: right;">Fingerprint:</td>
+		<td><input type='text' name='Host_Fingerprint_Add' style="width:100%" maxlength='50' placeholder="SHA256:deadbeef... / de:ad:be:ef..."></td>
 	</tr>
 	<tr>
-		<td>Add to BIND?</td>
-		<td><input type='checkbox' name='Host_BIND_Add'></td>
+		<td style="text-align: right;">DHCP?:</td>
+		<td style='text-align: left;'><input type="checkbox" onclick="DHCP_Toggle()" name="DHCP_Toggle_Add"></td>
 	</tr>
 	<tr>
-		<td>Add to Icinga?</td>
-		<td><input type='checkbox' name='Host_Icinga_Add'></td>
+		<td>Manage sudo?</td>
+		<td style='text-align: left;'><input type='checkbox' name='DSMS_Toggle_Add'></td>
 	</tr>
 </table>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-<li>Host Names must be unique and POSIX compliant.</li>
+	<li>Host Names must be unique and POSIX compliant.</li>
+	<li>If you do not specify a fingerprint, it will be recorded on the host's first connection.</li>
 </ul>
 
 <hr width="50%">
@@ -219,7 +230,7 @@ ENDHTML
 sub add_host {
 
 	### Existing Host_Name Check
-	my $Existing_Host_Name_Check = $DB_IP_Allocation->prepare("SELECT `id`
+	my $Existing_Host_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `hosts`
 		WHERE `hostname` = ?");
 		$Existing_Host_Name_Check->execute($Host_Name_Add);
@@ -239,7 +250,7 @@ sub add_host {
 	}
 	### / Existing Host_Name Check
 
-	my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `hosts` (
+	my $Host_Insert = $DB_Connection->prepare("INSERT INTO `hosts` (
 		`hostname`,
 		`type`,
 		`modified_by`
@@ -250,12 +261,37 @@ sub add_host {
 
 	$Host_Insert->execute($Host_Name_Add, $Host_Type_Add, $User_Name);
 
-	my $Host_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
+	my $Host_Insert_ID = $DB_Connection->{mysql_insertid};
 
+
+	my $Host_Attribute_Insert = $DB_Connection->prepare("INSERT INTO `host_attributes` (
+		`host_id`,
+		`fingerprint`,
+		`dhcp`,
+		`dsms`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)
+	ON DUPLICATE KEY UPDATE `fingerprint` = ?, `dhcp` = ?, `dsms` = ?");
+	
+	$Host_Attribute_Insert->execute($Host_Insert_ID, $Host_Fingerprint_Add, $DHCP_Toggle_Add, $DSMS_Toggle_Add, $Host_Fingerprint_Add, $DHCP_Toggle_Add, $DSMS_Toggle_Add);
+
+	if ($DSMS_Toggle_Add) {
+		my $Distribution_Insert = $DB_Connection->prepare("INSERT INTO `distribution` (
+			`host_id`,
+			`last_modified`,
+			`modified_by`
+		)
+		VALUES (
+			?, NOW(), ?
+		)");
+		$Distribution_Insert->execute($Host_Insert_ID, $User_Name);
+	}
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -275,7 +311,7 @@ sub add_host {
 
 sub html_edit_host {
 
-	my $Select_Host = $DB_IP_Allocation->prepare("SELECT `hostname`, `type`
+	my $Select_Host = $DB_Connection->prepare("SELECT `hostname`, `type`
 	FROM `hosts`
 	WHERE `id` = ?");
 	$Select_Host->execute($Edit_Host);
@@ -285,6 +321,29 @@ sub html_edit_host {
 
 		my $Host_Name_Extract = $DB_Host[0];
 		my $Type_Extract = $DB_Host[1];
+
+	my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `fingerprint`, `dhcp`, `dsms`
+	FROM `host_attributes`
+	WHERE `host_id` = ?");
+	$Select_Host_Attributes->execute($Edit_Host);
+
+	my ($Host_Fingerprint_Extract, $DHCP_Extract, $DSMS_Extract) = $Select_Host_Attributes->fetchrow_array();
+
+		my $DHCP_Checked;
+		if ($DHCP_Extract) {
+			$DHCP_Checked = 'checked';
+		}
+		else {
+			$DHCP_Checked = '';
+		}
+
+		my $DSMS_Checked;
+		if ($DSMS_Extract) {
+			$DSMS_Checked = 'checked';
+		}
+		else {
+			$DSMS_Checked = '';
+		}
 
 print <<ENDHTML;
 <div id="small-popup-box">
@@ -309,7 +368,7 @@ ENDHTML
 
 
 
-	my $Host_Type_Query = $DB_IP_Allocation->prepare("SELECT `id`, `type`
+	my $Host_Type_Query = $DB_Connection->prepare("SELECT `id`, `type`
 	FROM `host_types`
 	ORDER BY `type` ASC");
 	$Host_Type_Query->execute( );
@@ -328,12 +387,25 @@ print <<ENDHTML;
 			</select>
 		</td>
 	</tr>
+	<tr>
+		<td style="text-align: right;">Fingerprint:</td>
+		<td><input type='text' name='Host_Fingerprint_Edit' style="width:100%" maxlength='50' value='$Host_Fingerprint_Extract' placeholder="SHA256:deadbeef... / de:ad:be:ef..."></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">DHCP?:</td>
+		<td style='text-align: left;'><input type="checkbox" onclick="DHCP_Toggle()" name="DHCP_Toggle_Edit" $DHCP_Checked></td>
+	</tr>
+	<tr>
+		<td>Manage sudo?</td>
+		<td style='text-align: left;'><input type='checkbox' name='DSMS_Toggle_Edit' $DSMS_Checked></td>
+	</tr>
 </table>
 
 <input type='hidden' name='Edit_Host_Post' value='$Edit_Host'>
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-<li>Host Names must be unique and POSIX compliant.</li>
+	<li>Host Names must be unique and POSIX compliant.</li>
+	<li>If you do not specify a fingerprint, it will be recorded on the host's first connection.</li>
 </ul>
 
 <hr width="50%">
@@ -349,7 +421,7 @@ ENDHTML
 sub edit_host {
 
 	### Existing Host_Name Check
-	my $Existing_Host_Name_Check = $DB_IP_Allocation->prepare("SELECT `id`
+	my $Existing_Host_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `hosts`
 		WHERE `hostname` = ?
 		AND `id` != ?");
@@ -370,7 +442,7 @@ sub edit_host {
 	}
 	### / Existing Host_Name Check
 
-	my $Update_Host = $DB_IP_Allocation->prepare("UPDATE `hosts` SET
+	my $Update_Host = $DB_Connection->prepare("UPDATE `hosts` SET
 		`hostname` = ?,
 		`type` = ?,
 		`modified_by` = ?
@@ -378,9 +450,35 @@ sub edit_host {
 		
 	$Update_Host->execute($Host_Name_Edit, $Host_Type_Edit, $User_Name, $Edit_Host_Post);
 
+	my $Host_Attribute_Insert = $DB_Connection->prepare("INSERT INTO `host_attributes` (
+		`host_id`,
+		`fingerprint`,
+		`dhcp`,
+		`dsms`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)
+	ON DUPLICATE KEY UPDATE `fingerprint` = ?, `dhcp` = ?, `dsms` = ?");
+	
+	$Host_Attribute_Insert->execute($Edit_Host_Post, $Host_Fingerprint_Edit, $DHCP_Toggle_Edit, $DSMS_Toggle_Edit, $Host_Fingerprint_Edit, $DHCP_Toggle_Edit, $DSMS_Toggle_Edit);
+
+	if ($DSMS_Toggle_Edit) {
+		my $Distribution_Insert = $DB_Connection->prepare("INSERT INTO `distribution` (
+			`host_id`,
+			`last_modified`,
+			`modified_by`
+		)
+		VALUES (
+			?, NOW(), ?
+		)
+		ON DUPLICATE KEY UPDATE `last_modified` = NOW(), `modified_by` = ?");
+		$Distribution_Insert->execute($Edit_Host_Post, $User_Name, $User_Name);
+	}
+
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -397,7 +495,7 @@ sub edit_host {
 
 sub html_delete_host {
 
-	my $Select_Host = $DB_IP_Allocation->prepare("SELECT `hostname`
+	my $Select_Host = $DB_Connection->prepare("SELECT `hostname`
 	FROM `hosts`
 	WHERE `id` = ?");
 
@@ -443,32 +541,94 @@ ENDHTML
 sub delete_host {
 
 	# Audit Log
+	my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`, `expires`, `active`
+		FROM `hosts`
+		WHERE `id` = ?");
 
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	$Select_Hosts->execute($Delete_Host_Confirm);
 
+	### Revoke Rule Approval ###
 
-	$Audit_Log_Submission->execute("Hosts", "Delete", "$User_Name deleted Host $Host_Name_Delete, ID $Delete_Host_Confirm.", $User_Name);
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules`
+	INNER JOIN `lnk_rules_to_hosts`
+	ON `rules`.`id` = `lnk_rules_to_hosts`.`rule`
+	SET
+	`modified_by` = '$User_Name',
+	`approved` = '0',
+	`approved_by` = 'Approval Revoked by $User_Name when deleting Host ID $Delete_Host_Confirm'
+	WHERE `lnk_rules_to_hosts`.`host` = ?");
 
+	my $Rules_Revoked = $Update_Rule->execute($Delete_Host_Confirm);
+
+	if ($Rules_Revoked eq '0E0') {$Rules_Revoked = 0}
+
+	### / Revoke Rule Approval ###
+
+	while (( my $Hostname, my $Expires, my $Active ) = $Select_Hosts->fetchrow_array() )
+	{
+
+		if ($Expires eq '0000-00-00') {
+			$Expires = 'does not expire';
+		}
+		else {
+			$Expires = "expires on " . $Expires;
+		}
+	
+		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
+
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
+			`category`,
+			`method`,
+			`action`,
+			`username`
+		)
+		VALUES (
+			?, ?, ?, ?
+		)");
+
+		if ($Rules_Revoked > 0) {
+			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Host ID $Delete_Host_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
+		}
+		$Audit_Log_Submission->execute("Hosts", "Delete", "$User_Name deleted Host ID $Delete_Host_Confirm. The deleted entry's last values were $Hostname, set $Active and $Expires.", $User_Name);
+
+		# Check attributes
+		my $Select_Host_From_Distribution = $DB_Connection->prepare("SELECT `dsms`
+			FROM `host_attributes`
+			WHERE `host_id` = ?");
+		$Select_Host_From_Distribution->execute($Delete_Host_Confirm);
+		 my $DSMS_Tag = $Select_Host_From_Distribution->fetchrow_array();
+
+		if ($DSMS_Tag) {
+			$Audit_Log_Submission->execute("Distribution", "Delete", "$User_Name deleted $Hostname [Host ID $Delete_Host_Confirm] from the sudoers distribution system.", $User_Name);
+		}
+
+	}
 	# / Audit Log
 
-	my $Delete_Host = $DB_IP_Allocation->prepare("DELETE from `hosts`
+	my $Delete_Host = $DB_Connection->prepare("DELETE from `hosts`
 		WHERE `id` = ?");
-	
 	$Delete_Host->execute($Delete_Host_Confirm);
 
-	my $Delete_Associations = $DB_IP_Allocation->prepare("DELETE from `lnk_hosts_to_ipv4_allocations`
+	my $Delete_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_allocations`
 		WHERE `host` = ?");
-	
 	$Delete_Associations->execute($Delete_Host_Confirm);
+
+	my $Delete_Host_From_Groups = $DB_Connection->prepare("DELETE from `lnk_host_groups_to_hosts`
+		WHERE `host` = ?");
+	$Delete_Host_From_Groups->execute($Delete_Host_Confirm);
+
+	my $Delete_Host_From_Rules = $DB_Connection->prepare("DELETE from `lnk_rules_to_hosts`
+		WHERE `host` = ?");
+	$Delete_Host_From_Rules->execute($Delete_Host_Confirm);
+
+	my $Delete_Host_From_Distribution = $DB_Connection->prepare("DELETE from `distribution`
+		WHERE `host_id` = ?");
+	$Delete_Host_From_Distribution->execute($Delete_Host_Confirm);
+
+	my $Delete_Attributes = $DB_Connection->prepare("DELETE from `host_attributes`
+		WHERE `host_id` = ?");
+	$Delete_Attributes->execute($Delete_Host_Confirm);
 
 } # sub delete_host
 
@@ -486,12 +646,12 @@ sub html_output {
 		-padding=>1
 	);
 
-	my $Select_Host_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `hosts`");
+	my $Select_Host_Count = $DB_Connection->prepare("SELECT `id` FROM `hosts`");
 		$Select_Host_Count->execute( );
 		my $Total_Rows = $Select_Host_Count->rows();
 
 
-	my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`, `type`, `last_modified`, `modified_by`
+	my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`, `type`, `last_modified`, `modified_by`
 		FROM `hosts`
 			WHERE `id` LIKE ?
 			OR `hostname` LIKE ?
@@ -530,7 +690,7 @@ sub html_output {
 
 		my $Type;
 		if ($Host_Type != 0) {
-			my $Select_Type = $DB_IP_Allocation->prepare("SELECT `type`
+			my $Select_Type = $DB_Connection->prepare("SELECT `type`
 				FROM `host_types`
 				WHERE `id` LIKE ?");
 			$Select_Type->execute($Host_Type);
@@ -540,7 +700,7 @@ sub html_output {
 			$Type = 'Undefined';
 		}
 
-		my $Select_Block_Links = $DB_IP_Allocation->prepare("SELECT `ip`
+		my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
 			FROM `lnk_hosts_to_ipv4_allocations`
 			WHERE `host` = ?");
 		$Select_Block_Links->execute($DBID);
@@ -548,14 +708,14 @@ sub html_output {
 		my $Blocks;
 		while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
 
-			my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `ip_block`
+			my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
 				FROM `ipv4_allocations`
 				WHERE `id` = ?");
 			$Select_Blocks->execute($Block_ID);
 
 			while (my $Block = $Select_Blocks->fetchrow_array() ) {
 
-				my $Count_Block_Allocations = $DB_IP_Allocation->prepare("SELECT `id`
+				my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
 					FROM `lnk_hosts_to_ipv4_allocations`
 					WHERE `ip` = ?");
 				$Count_Block_Allocations->execute($Block_ID);
@@ -660,7 +820,7 @@ print <<ENDHTML;
 						<select name='Edit_Host' style="width: 150px">
 ENDHTML
 
-						my $Host_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`
+						my $Host_List_Query = $DB_Connection->prepare("SELECT `id`, `hostname`
 						FROM `hosts`
 						ORDER BY `hostname` ASC");
 						$Host_List_Query->execute( );

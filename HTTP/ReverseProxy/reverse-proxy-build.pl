@@ -8,8 +8,7 @@ require '../common.pl';
 my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
-my $DB_Management = DB_Management();
-my $DB_Reverse_Proxy = DB_Reverse_Proxy();
+my $DB_Connection = DB_Connection();
 my $Reverse_Proxy_Location = Reverse_Proxy_Location();
 	unlink glob "$Reverse_Proxy_Location/*.conf";
 my $Proxy_Redirect_Location = Proxy_Redirect_Location();
@@ -35,7 +34,7 @@ foreach my $Parameter (@ARGV) {
 
 # Safety check for other running build processes
 
-	my $Select_Locks = $DB_Management->prepare("SELECT `reverse-proxy-build` FROM `lock`");
+	my $Select_Locks = $DB_Connection->prepare("SELECT `reverse-proxy-build` FROM `lock`");
 	$Select_Locks->execute();
 
 	my ($Reverse_Proxy_Build_Lock, $Reverse_Proxy_Distribution_Lock) = $Select_Locks->fetchrow_array();
@@ -60,7 +59,7 @@ foreach my $Parameter (@ARGV) {
 			}
 		}
 		else {
-			$DB_Management->do("UPDATE `lock` SET
+			$DB_Connection->do("UPDATE `lock` SET
 				`reverse-proxy-build` = '1',
 				`last-reverse-proxy-build-started` = NOW()");
 		}
@@ -72,7 +71,7 @@ print "Reverse proxy configuration written to $Reverse_Proxy_Location/\n";
 &write_redirect;
 print "Redirect configuration written to $Proxy_Redirect_Location/\n";
 
-$DB_Management->do("UPDATE `lock` SET 
+$DB_Connection->do("UPDATE `lock` SET 
 `reverse-proxy-build` = '0',
 `last-reverse-proxy-build-finished` = NOW()");
 exit(0);
@@ -86,7 +85,7 @@ sub write_reverse_proxy {
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
-	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
+	my $Record_Query = $DB_Connection->prepare("SELECT `id`, `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
 	`transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_ca_certificate_file`,
 	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
 	`permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
@@ -305,7 +304,7 @@ sub write_redirect {
 	my ($Default_Transfer_Log,
 		$Default_Error_Log) = Redirect_Defaults();
 
-	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`, `redirect_destination`, 
+	my $Record_Query = $DB_Connection->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`, `redirect_destination`, 
 	`transfer_log`, `error_log`, `last_modified`, `modified_by`
 	FROM `redirect`
 	WHERE `active` = '1'

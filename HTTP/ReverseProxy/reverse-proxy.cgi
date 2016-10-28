@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Reverse_Proxy = DB_Reverse_Proxy();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Reverse_Proxy = $CGI->param("Add_Reverse_Proxy");
@@ -437,7 +437,7 @@ sub add_reverse_proxy {
 	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log;}
 	if ($Enforce_SSL_Add == 0) {$HSTS_Add = '0'};
 
-	my $Reverse_Proxy_Insert = $DB_Reverse_Proxy->prepare("INSERT INTO `reverse_proxy` (
+	my $Reverse_Proxy_Insert = $DB_Connection->prepare("INSERT INTO `reverse_proxy` (
 		`server_name`,
 		`proxy_pass_source`,
 		`proxy_pass_destination`,
@@ -473,11 +473,11 @@ sub add_reverse_proxy {
 	$X_Frame_Options_Add, $X_XSS_Protection_Add, $X_Content_Type_Options_Add, $Content_Security_Policy_Add,
 	$X_Permitted_Cross_Domain_Policies_Add, $X_Powered_By_Add, $Custom_Attributes_Add, $User_Name);
 
-	my $Reverse_Proxy_Insert_ID = $DB_Reverse_Proxy->{mysql_insertid};
+	my $Reverse_Proxy_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -496,7 +496,7 @@ sub add_reverse_proxy {
 
 sub html_edit_reverse_proxy {
 
-	my $Select_Reverse_Proxy = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `proxy_pass_source`,
+	my $Select_Reverse_Proxy = $DB_Connection->prepare("SELECT `server_name`, `proxy_pass_source`,
 		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
 		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,
 		`content_security_policy`, `permitted_cross_domain_policies`, `powered_by`, `custom_attributes`
@@ -888,7 +888,7 @@ sub edit_reverse_proxy {
 	if (!$Error_Log_Edit) {$Error_Log_Edit = $Default_Error_Log;}
 	if ($Enforce_SSL_Edit == 0) {$HSTS_Edit = '0'};
 
-	my $Update_Reverse_Proxy = $DB_Reverse_Proxy->prepare("UPDATE `reverse_proxy` SET
+	my $Update_Reverse_Proxy = $DB_Connection->prepare("UPDATE `reverse_proxy` SET
 		`server_name` = ?,
 		`proxy_pass_source` = ?,
 		`proxy_pass_destination` = ?,
@@ -917,8 +917,8 @@ sub edit_reverse_proxy {
 		$X_Permitted_Cross_Domain_Policies_Edit, $X_Powered_By_Edit, $Custom_Attributes_Edit, $User_Name, $Edit_Reverse_Proxy_Post);
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -936,7 +936,7 @@ sub edit_reverse_proxy {
 
 sub html_delete_reverse_proxy {
 
-	my $Select_Reverse_Proxy = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`
+	my $Select_Reverse_Proxy = $DB_Connection->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`
 	FROM `reverse_proxy`
 	WHERE `id` = ?");
 
@@ -989,7 +989,7 @@ ENDHTML
 sub delete_reverse_proxy {
 
 	# Audit Log
-	my $Select_Reverse_Proxy = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`
+	my $Select_Reverse_Proxy = $DB_Connection->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`
 	FROM `reverse_proxy`
 	WHERE `id` = ?");
 
@@ -998,8 +998,8 @@ sub delete_reverse_proxy {
 	while ( my ($Server_Name, $Proxy_Pass_Source, $Proxy_Pass_Destination) = $Select_Reverse_Proxy->fetchrow_array() )
 	{
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1015,7 +1015,7 @@ sub delete_reverse_proxy {
 	}
 	# / Audit Log
 
-	my $Delete_Reverse_Proxy = $DB_Reverse_Proxy->prepare("DELETE from `reverse_proxy`
+	my $Delete_Reverse_Proxy = $DB_Connection->prepare("DELETE from `reverse_proxy`
 		WHERE `id` = ?");
 	
 	$Delete_Reverse_Proxy->execute($Delete_Reverse_Proxy_Confirm);
@@ -1030,7 +1030,7 @@ sub html_view_reverse_proxy {
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
-	my $Record_Query = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
+	my $Record_Query = $DB_Connection->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
 	`transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_ca_certificate_file`,
 	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
 	`permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
@@ -1241,12 +1241,12 @@ sub html_output {
 		-padding=>1
 	);
 
-	my $Select_Reverse_Proxy_Count = $DB_Reverse_Proxy->prepare("SELECT `id` FROM `reverse_proxy`");
+	my $Select_Reverse_Proxy_Count = $DB_Connection->prepare("SELECT `id` FROM `reverse_proxy`");
 		$Select_Reverse_Proxy_Count->execute( );
 		my $Total_Rows = $Select_Reverse_Proxy_Count->rows();
 
 
-	my $Select_Reverse_Proxies = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `proxy_pass_source`,
+	my $Select_Reverse_Proxies = $DB_Connection->prepare("SELECT `id`, `server_name`, `proxy_pass_source`,
 		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
 		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,
 		`content_security_policy`, `permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
@@ -1541,7 +1541,7 @@ print <<ENDHTML;
 						<select name='Edit_Reverse_Proxy' style="width: 150px">
 ENDHTML
 
-						my $Reverse_Proxy_List_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `proxy_pass_source`, `proxy_pass_destination`
+						my $Reverse_Proxy_List_Query = $DB_Connection->prepare("SELECT `id`, `server_name`, `proxy_pass_source`, `proxy_pass_destination`
 						FROM `reverse_proxy`
 						ORDER BY `server_name` ASC");
 						$Reverse_Proxy_List_Query->execute( );

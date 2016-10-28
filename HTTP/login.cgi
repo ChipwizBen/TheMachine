@@ -9,7 +9,7 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $System_Name = System_Name();
-my $DB_Management = DB_Management();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 my $LDAP_Check = LDAP_Login('Status_Check');
 my $Recovery_Email_Address = Recovery_Email_Address();
@@ -49,7 +49,7 @@ sub ldap_login {
 		$Session->param('User_Name', $LDAP_User_Name);
 		$Session->flush();
 
-		my $Details_Update = $DB_Management->prepare("INSERT INTO `credentials` (
+		my $Details_Update = $DB_Connection->prepare("INSERT INTO `credentials` (
 			`username`,
 			`email`,
 			`last_login`,
@@ -69,7 +69,7 @@ sub ldap_login {
     		`lockout_counter` = 0");
     	$Details_Update->execute($LDAP_User_Name, $LDAP_Email, $LDAP_User_Name, $LDAP_Email);
 
-		my $Permissions_Query = $DB_Management->prepare("SELECT `id`, `admin`, `ip_admin`, `icinga_admin`, `dshell_admin`, `dns_admin`, `reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, `lockout`
+		my $Permissions_Query = $DB_Connection->prepare("SELECT `id`, `admin`, `ip_admin`, `icinga_admin`, `dshell_admin`, `dns_admin`, `reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, `lockout`
 		FROM `credentials`
 		WHERE `username` = ?");
 		$Permissions_Query->execute($LDAP_User_Name);
@@ -121,8 +121,8 @@ sub ldap_login {
 }
 
 sub login_user {
-	my $Login_DB_Query = $DB_Management->prepare("SELECT `id`, `password`, `salt`, `email`, `admin`, `ip_admin`, `icinga_admin`, 
-	`dshell_admin`, `dns_admin`, `reverse_proxy_admin`, `approver`, `requires_approval`, `lockout`
+	my $Login_DB_Query = $DB_Connection->prepare("SELECT `id`, `password`, `salt`, `email`, `admin`, `ip_admin`, `icinga_admin`, 
+	`dshell_admin`, `dns_admin`, `reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, `lockout`
 	FROM `credentials`
 	WHERE `username` = ?");
 	$Login_DB_Query->execute($User_Name_Form);
@@ -140,9 +140,10 @@ sub login_user {
 		my $DB_DShell_Admin = $DB_Query[7];
 		my $DB_DNS_Admin = $DB_Query[8];
 		my $DB_Reverse_Proxy_Admin = $DB_Query[9];
-		my $DB_Approver = $DB_Query[10];
-		my $DB_Requires_Approval = $DB_Query[11];
-		my $DB_Lockout = $DB_Query[12];
+		my $DB_DSMS_Admin = $DB_Query[10];
+		my $DB_Approver = $DB_Query[11];
+		my $DB_Requires_Approval = $DB_Query[12];
+		my $DB_Lockout = $DB_Query[13];
 
 		$User_Password_Form = $User_Password_Form . $DB_Salt;
 			$User_Password_Form = sha512_hex($User_Password_Form);
@@ -155,7 +156,7 @@ sub login_user {
 		elsif ("$DB_Password" ne "$User_Password_Form")
 		{
 
-			my $Lockout_Counter_Query = $DB_Management->prepare("SELECT `lockout_counter`
+			my $Lockout_Counter_Query = $DB_Connection->prepare("SELECT `lockout_counter`
 				FROM `credentials`
 				WHERE `username` = ?");
 
@@ -164,14 +165,14 @@ sub login_user {
 			while ( (my $Lockout_Counter) = my @Lockout_Counter_Query = $Lockout_Counter_Query->fetchrow_array() )
 			{
 				$Lockout_Counter++;
-				my $Lockout_Increase = $DB_Management->prepare("UPDATE `credentials`
+				my $Lockout_Increase = $DB_Connection->prepare("UPDATE `credentials`
 					SET `lockout_counter` = '$Lockout_Counter'
 					WHERE `username` = ?");
 
 				$Lockout_Increase->execute($User_Name_Form);
 
 					if ($Lockout_Counter >= 5) {
-						my $Lockout_User = $DB_Management->prepare("UPDATE `credentials`
+						my $Lockout_User = $DB_Connection->prepare("UPDATE `credentials`
 							SET `lockout` = '1'
 							WHERE `username` = ?");
 						$Lockout_User->execute($User_Name_Form);
@@ -192,11 +193,12 @@ sub login_user {
 			$Session->param('User_DShell_Admin', $DB_DShell_Admin);
 			$Session->param('User_DNS_Admin', $DB_DNS_Admin);
 			$Session->param('User_Reverse_Proxy_Admin', $DB_Reverse_Proxy_Admin);
+			$Session->param('User_DSMS_Admin', $DB_DSMS_Admin);
 			$Session->param('User_Approver', $DB_Approver);
 			$Session->param('User_Requires_Approval', $DB_Requires_Approval);
 			$Session->flush();
 
-			my $Login_User = $DB_Management->prepare("UPDATE `credentials`
+			my $Login_User = $DB_Connection->prepare("UPDATE `credentials`
 			SET `lockout_counter` = '0',
 			`last_login` = NOW()
 			WHERE `username` = ?");
@@ -224,7 +226,7 @@ sub email_user_password_reset {
 	my $Server_Hostname = Server_Hostname();
 
 	## Grabbing administration details
-	my $Administrator_Email_Address_Query = $DB_Management->prepare("SELECT `username`, `email`
+	my $Administrator_Email_Address_Query = $DB_Connection->prepare("SELECT `username`, `email`
 	FROM `credentials`
 	WHERE `admin` = '1'
 	AND `lockout` = '0'");
@@ -237,7 +239,7 @@ sub email_user_password_reset {
 	}
 	## / Grabbing administration details
 
-	my $User_Email_Address_Query = $DB_Management->prepare("SELECT `email` FROM `credentials`
+	my $User_Email_Address_Query = $DB_Connection->prepare("SELECT `email` FROM `credentials`
 	WHERE `username` = ?");
 	$User_Email_Address_Query->execute($User_Name_Form);
 
@@ -275,7 +277,7 @@ $System_Name<br/>
 			Data	=> "$Email_Body");
 
 			$Random_Alpha_Numeric_Password = sha512_hex($Random_Alpha_Numeric_Password);
-				my $Perform_Lockout_Password_Set = $DB_Management->prepare("UPDATE `credentials`
+				my $Perform_Lockout_Password_Set = $DB_Connection->prepare("UPDATE `credentials`
 					SET `lockout_reset` = '$Random_Alpha_Numeric_Password'
 					WHERE `username` = ?");
 				

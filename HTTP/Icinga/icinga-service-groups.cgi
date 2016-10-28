@@ -8,7 +8,7 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $Header = Header();
-my $DB_Icinga = DB_Icinga();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Group = $CGI->param("Add_Group");
@@ -153,7 +153,7 @@ ENDHTML
 
 sub add_group {
 
-	my $Group_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `alias`
+	my $Group_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
 	FROM `nagios_servicegroup`
 	WHERE `servicegroup_name` = '$Group_Add'");
 
@@ -176,7 +176,7 @@ sub add_group {
 		}
 	}
 	else {
-		my $Group_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_servicegroup` (
+		my $Group_Insert = $DB_Connection->prepare("INSERT INTO `nagios_servicegroup` (
 			`id`,
 			`servicegroup_name`,
 			`alias`,
@@ -200,7 +200,7 @@ sub add_group {
 
 sub html_edit_group {
 
-	my $Select_Group = $DB_Icinga->prepare("SELECT `servicegroup_name`, `alias`, `active`
+	my $Select_Group = $DB_Connection->prepare("SELECT `servicegroup_name`, `alias`, `active`
 	FROM `nagios_servicegroup`
 	WHERE `id` = '$Edit_Group'");
 	$Select_Group->execute( );
@@ -268,7 +268,7 @@ ENDHTML
 
 sub edit_group {
 
-	my $Group_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `alias`
+	my $Group_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
 	FROM `nagios_servicegroup`
 	WHERE `servicegroup_name` = '$Group_Edit'
 	AND `id` != '$Group_Edit_Post'");
@@ -293,7 +293,7 @@ sub edit_group {
 	}
 	else {
 
-		my $Group_Update = $DB_Icinga->prepare("UPDATE `nagios_servicegroup` SET
+		my $Group_Update = $DB_Connection->prepare("UPDATE `nagios_servicegroup` SET
 			`servicegroup_name` = ?,
 			`alias` = ?,
 			`active` = ?,
@@ -309,7 +309,7 @@ sub edit_group {
 
 sub html_delete_group {
 
-	my $Select_Group = $DB_Icinga->prepare("SELECT `servicegroup_name`, `alias`
+	my $Select_Group = $DB_Connection->prepare("SELECT `servicegroup_name`, `alias`
 	FROM `nagios_servicegroup`
 	WHERE `id` = '$Delete_Group'");
 	$Select_Group->execute( );
@@ -359,7 +359,7 @@ ENDHTML
 
 sub delete_group {
 
-	$DB_Icinga->do("DELETE from `nagios_servicegroup`
+	$DB_Connection->do("DELETE from `nagios_servicegroup`
 				WHERE `id` = '$Group_Delete_Post'");
 
 } # sub delete_group
@@ -367,7 +367,7 @@ sub delete_group {
 sub html_display_config {
 
 	my $Members;
-	my $Select_Group = $DB_Icinga->prepare("SELECT `servicegroup_name`, `alias`, `active`, `last_modified`, `modified_by`
+	my $Select_Group = $DB_Connection->prepare("SELECT `servicegroup_name`, `alias`, `active`, `last_modified`, `modified_by`
 	FROM `nagios_servicegroup`
 	WHERE `id` = ?");
 	$Select_Group->execute($Display_Config);
@@ -455,11 +455,11 @@ sub html_output {
 	$Table->addRow ( "ID", "Name", "Alias", "Active", "Last Modified", "Modified By", "View Config", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Groups_Count = $DB_Icinga->prepare("SELECT `id` FROM `nagios_servicegroup`");
+	my $Select_Groups_Count = $DB_Connection->prepare("SELECT `id` FROM `nagios_servicegroup`");
 		$Select_Groups_Count->execute( );
 		my $Total_Rows = $Select_Groups_Count->rows();
 
-	my $Select_Groups = $DB_Icinga->prepare("SELECT `id`, `servicegroup_name`, `alias`, `active`, `last_modified`, `modified_by`
+	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `servicegroup_name`, `alias`, `active`, `last_modified`, `modified_by`
 	FROM `nagios_servicegroup`
 	WHERE (`id` LIKE '%$Filter%'
 	OR `servicegroup_name` LIKE '%$Filter%'

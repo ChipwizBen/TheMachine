@@ -12,8 +12,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Management = DB_Management();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Block = $CGI->param("Add_Block");
@@ -357,7 +356,7 @@ ENDHTML
 sub add_block {
 
 	### Existing Block Check
-	my $Existing_Block_Check = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`
+	my $Existing_Block_Check = $DB_Connection->prepare("SELECT `id`, `ip_block_name`
 		FROM `ipv4_blocks`
 		WHERE `ip_block_name` = ?");
 		$Existing_Block_Check->execute($Block_Name_Add);
@@ -379,7 +378,7 @@ sub add_block {
 	}
 	### / Existing Block Check
 
-	my $Block_Insert = $DB_IP_Allocation->prepare("INSERT INTO `ipv4_blocks` (
+	my $Block_Insert = $DB_Connection->prepare("INSERT INTO `ipv4_blocks` (
 		`ip_block_name`,
 		`ip_block_description`,
 		`ip_block`,
@@ -407,9 +406,9 @@ sub add_block {
 		$Range_For_Use_Add, $Range_For_Use_Subnet_Add, $DNS_1_Add, $DNS_2_Add, 
 		$NTP_1_Add, $NTP_2_Add, $User_Name);
 
-	my $Block_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
+	my $Block_Insert_ID = $DB_Connection->{mysql_insertid};
 
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -427,7 +426,7 @@ sub add_block {
 
 sub html_edit_block {
 
-	my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `ip_block_name`, `ip_block_description`, `ip_block`, `gateway`, `range_for_use`, `range_for_use_subnet`, `dns1`, `dns2`, `ntp1`, `ntp2`
+	my $IPv4_Block_Query = $DB_Connection->prepare("SELECT `ip_block_name`, `ip_block_description`, `ip_block`, `gateway`, `range_for_use`, `range_for_use_subnet`, `dns1`, `dns2`, `ntp1`, `ntp2`
 	FROM `ipv4_blocks`
 	WHERE `id` LIKE ?");
 
@@ -579,7 +578,7 @@ ENDHTML
 sub edit_block {
 
 	### Existing Block Check
-	my $Existing_Block_Check = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block`
+	my $Existing_Block_Check = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block`
 		FROM `ipv4_blocks`
 		WHERE `ip_block_name` = ?
 		AND `id` != ?");
@@ -609,7 +608,7 @@ sub edit_block {
 		$Range_For_Use = $Range_For_Use_Begin_Edit . " - " . $Range_For_Use_End_Edit;
 	}
 
-	my $Update_Block = $DB_IP_Allocation->prepare("UPDATE `ipv4_blocks` SET
+	my $Update_Block = $DB_Connection->prepare("UPDATE `ipv4_blocks` SET
 		`ip_block_name` = ?,
 		`ip_block_description` = ?,
 		`ip_block` = ?,
@@ -627,7 +626,7 @@ sub edit_block {
 		$Gateway_Edit, $Range_For_Use, $Range_For_Use_Subnet_Edit, $DNS_1_Edit, $DNS_2_Edit, $NTP_1_Edit, 
 		$NTP_2_Edit, $User_Name, $Block_Edit);
 
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -643,7 +642,7 @@ sub edit_block {
 
 sub html_delete_block {
 
-	my $Select_Block = $DB_IP_Allocation->prepare("SELECT `ip_block_name`, `ip_block`
+	my $Select_Block = $DB_Connection->prepare("SELECT `ip_block_name`, `ip_block`
 	FROM `ipv4_blocks`
 	WHERE `id` = ?");
 
@@ -694,7 +693,7 @@ ENDHTML
 sub delete_block {
 
 	# Audit Log
-	my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `ip_block_name`, `ip_block`
+	my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block_name`, `ip_block`
 		FROM `ipv4_blocks`
 		WHERE `id` = ?");
 
@@ -702,8 +701,8 @@ sub delete_block {
 
 	while (( my $Block_Name, my $IP ) = $Select_Blocks->fetchrow_array() )
 	{
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -716,7 +715,7 @@ sub delete_block {
 	}
 	# / Audit Log
 
-	my $Delete_Block = $DB_IP_Allocation->prepare("DELETE from `ipv4_blocks`
+	my $Delete_Block = $DB_Connection->prepare("DELETE from `ipv4_blocks`
 		WHERE `id` = ?");
 	
 	$Delete_Block->execute($Delete_Block_Confirm);
@@ -858,7 +857,7 @@ $Table->addRow ( "ID",
 "Last Modified", "Modified By", "Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
 
-my $IPv4_Block_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`, 
+my $IPv4_Block_Query = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`, 
 `gateway`, `range_for_use`, `range_for_use_subnet`, `dns1`, `dns2`, `ntp1`, `ntp2`, `percent_used`, `last_modified`, `modified_by`
 FROM `ipv4_blocks`
 WHERE `ip_block` LIKE ?
@@ -878,7 +877,7 @@ $IPv4_Block_Query->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "
 	"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
 
 my $Rows = $IPv4_Block_Query->rows();
-my $IP_Block_Total_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `ipv4_blocks`");
+my $IP_Block_Total_Count = $DB_Connection->prepare("SELECT `id` FROM `ipv4_blocks`");
 	$IP_Block_Total_Count->execute( );
 	my $Total_Rows = $IP_Block_Total_Count->rows();
 
@@ -1007,7 +1006,7 @@ print <<ENDHTML;
 						<select name='Edit_Block' style="width: 150px">
 ENDHTML
 
-						my $Block_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block`
+						my $Block_List_Query = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block`
 						FROM `ipv4_blocks`
 						ORDER BY `ip_block_name` ASC");
 						$Block_List_Query->execute( );

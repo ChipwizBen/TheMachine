@@ -11,9 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Management = DB_Management();
-my $DB_DShell = DB_DShell();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 my $ps = ps();
 my $grep = sudo_grep();
@@ -147,7 +145,7 @@ else {
 
 sub html_run_job {
 
-	my $Select_Job = $DB_DShell->prepare("SELECT `on_failure`
+	my $Select_Job = $DB_Connection->prepare("SELECT `on_failure`
 		FROM `jobs`
 		WHERE `id` = ?");
 	$Select_Job->execute($Run_Job);
@@ -199,7 +197,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Keys
-				my $Key_List_Query = $DB_Management->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`
+				my $Key_List_Query = $DB_Connection->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`
 				FROM `auth`
 				WHERE `key_owner` LIKE ?
 				ORDER BY `id` ASC");
@@ -254,8 +252,8 @@ ENDHTML
 sub pause_job {
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -268,7 +266,7 @@ sub pause_job {
 	$Audit_Log_Submission->execute("D-Shell", "Pause", "$User_Name paused Job ID $Pause_Job.", $User_Name);
 	# / Audit Log
 
-	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -279,8 +277,8 @@ sub pause_job {
 sub stop_job {
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -293,7 +291,7 @@ sub stop_job {
 	$Audit_Log_Submission->execute("D-Shell", "Stop", "$User_Name killed Job ID $Stop_Job.", $User_Name);
 	# / Audit Log
 
-	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -304,8 +302,8 @@ sub stop_job {
 sub resume_job {
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -318,7 +316,7 @@ sub resume_job {
 	$Audit_Log_Submission->execute("D-Shell", "Resume", "$User_Name resumed Job ID $Resume_Job.", $User_Name);
 	# / Audit Log
 
-	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -329,8 +327,8 @@ sub resume_job {
 sub run_job {
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -343,7 +341,7 @@ sub run_job {
 	$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Name started Job ID $Trigger_Job.", $User_Name);
 	# / Audit Log
 
-	my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`on_failure` = ?,
 		`status` = ?,
 		`modified_by` = ?
@@ -351,7 +349,7 @@ sub run_job {
 	if (!$On_Failure) {$On_Failure = 0};
 	$Update_Job->execute($On_Failure, '10', $User_Name, $Trigger_Job);
 
-		my $Update_Job_Status = $DB_DShell->prepare("INSERT INTO `job_status` (
+		my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
 			`output`,
@@ -409,7 +407,7 @@ sub html_job_log {
 	$Table->addRow( "#", "Command", "Output", "Exit Code", "Started", "Ended", "User");
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Log_Entries = $DB_DShell->prepare("SELECT `command`, `exit_code`, `output`, `task_started`, `task_ended`, `modified_by`
+	my $Select_Log_Entries = $DB_Connection->prepare("SELECT `command`, `exit_code`, `output`, `task_started`, `task_ended`, `modified_by`
 	FROM `job_status`
 	WHERE `job_id` = ?
 	ORDER BY `id` ASC");
@@ -519,12 +517,15 @@ sub html_output {
 	);
 
 
-	my $Select_Job_Count = $DB_DShell->prepare("SELECT `id` FROM `jobs`");
+	my $Select_Job_Count = $DB_Connection->prepare("SELECT `id` FROM `jobs`");
 		$Select_Job_Count->execute( );
 		my $Total_Rows = $Select_Job_Count->rows();
 
+	my $Select_Running_Job_Count = $DB_Connection->prepare("SELECT `id` FROM `jobs` WHERE `status` = 1");
+		$Select_Running_Job_Count->execute( );
+		my $Total_Running_Jobs = $Select_Running_Job_Count->rows();
 
-	my $Select_Jobs = $DB_DShell->prepare("SELECT `id`, `host_id`, `command_set_id`, `on_failure`, `status`, `last_modified`, `modified_by`
+	my $Select_Jobs = $DB_Connection->prepare("SELECT `id`, `host_id`, `command_set_id`, `on_failure`, `status`, `last_modified`, `modified_by`
 		FROM `jobs`
 		ORDER BY `id` DESC
 		LIMIT 0 , $Rows_Returned"
@@ -556,7 +557,7 @@ sub html_output {
 			my $Processing = `$ps aux | $grep 'JobID $DBID' | grep -v grep | wc -l`;
 			if ($Processing == 0) {
 				$Status = 12;
-				my $Update_Job = $DB_DShell->prepare("UPDATE `jobs` SET
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 					`status` = ?,
 					`modified_by` = ?
 					WHERE `id` = ?");
@@ -564,13 +565,13 @@ sub html_output {
 			}
 		}
 
-		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
+		my $Host_Query = $DB_Connection->prepare("SELECT `hostname`
 		FROM `hosts`
 		WHERE `id` = ?");
 		$Host_Query->execute($Host_ID);
 		my $Host_Name = $Host_Query->fetchrow_array();
 
-		my $Command_Query = $DB_DShell->prepare("SELECT `name`, `description`, `revision`
+		my $Command_Query = $DB_Connection->prepare("SELECT `name`, `description`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?");
 		$Command_Query->execute($Command_Set_ID);
@@ -579,7 +580,7 @@ sub html_output {
 
 		## Gather dependency data
 		my $Command_Set_Dependencies;
-		my $Select_Command_Set_Dependencies = $DB_DShell->prepare("SELECT `dependent_command_set_id`
+		my $Select_Command_Set_Dependencies = $DB_Connection->prepare("SELECT `dependent_command_set_id`
 			FROM `command_set_dependency`
 			WHERE `command_set_id` = ?
 			ORDER BY `order` ASC"
@@ -590,7 +591,7 @@ sub html_output {
 		{
 			my $Dependent_Command_Set_ID = $Dependencies[0];
 
-			my $Select_Dependency_Name = $DB_DShell->prepare("SELECT `name`, `description`, `revision`
+			my $Select_Dependency_Name = $DB_Connection->prepare("SELECT `name`, `description`, `revision`
 				FROM `command_sets`
 				WHERE `id` = ?"
 			);
@@ -610,7 +611,7 @@ sub html_output {
 
 		### Discover Status Count
 
-		my $Select_Log_Count = $DB_DShell->prepare("SELECT COUNT(*)
+		my $Select_Log_Count = $DB_Connection->prepare("SELECT COUNT(*)
 			FROM `job_status`
 			WHERE `job_id` = ?"
 		);
@@ -622,7 +623,7 @@ sub html_output {
 		### Discover Currently Running Command
 
 		my $Running_Command;
-		my $Select_Currently_Running_Command = $DB_DShell->prepare("SELECT `command`
+		my $Select_Currently_Running_Command = $DB_Connection->prepare("SELECT `command`
 			FROM `job_status`
 			WHERE `job_id` = ?
 			ORDER BY `id` DESC
@@ -739,6 +740,12 @@ sub html_output {
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
+		elsif ($Status == 17) {
+			$Running_Command = 'Fingerprint mismatch with database. Clear or modify the recorded fingerprint for the host.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
 		elsif ($Status == 99) {
 			$Running_Command = 'My head fell off. I don\'t know why.';
 			$Status = 'Error';
@@ -844,8 +851,8 @@ print <<ENDHTML;
 		<td align="center">
 
 		</td>
-		<td align="right">
-
+		<td align="right" style="font-size:14px;">
+			$Total_Running_Jobs currently running jobs.
 		</td>
 	</tr>
 </table>

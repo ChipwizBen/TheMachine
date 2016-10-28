@@ -8,7 +8,7 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $Header = Header();
-my $DB_Icinga = DB_Icinga();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Contact = $CGI->param("Add_Contact");
@@ -178,7 +178,7 @@ print <<ENDHTML;
 						<select name='Host_Notification_Command_Add' style="width: 200px">
 ENDHTML
 		
-						my $Select_Host_Commands = $DB_Icinga->prepare("SELECT `id`, `command_name`
+						my $Select_Host_Commands = $DB_Connection->prepare("SELECT `id`, `command_name`
 						FROM `nagios_command`
 						WHERE `command_name` LIKE '%notify%'
 						OR `command_name` LIKE '%webops%'
@@ -202,7 +202,7 @@ ENDHTML
 						<select name='Service_Notification_Command_Add' style="width: 200px">
 ENDHTML
 		
-					my $Select_Service_Commands = $DB_Icinga->prepare("SELECT `id`, `command_name`
+					my $Select_Service_Commands = $DB_Connection->prepare("SELECT `id`, `command_name`
 					FROM `nagios_command`
 					WHERE `command_name` LIKE '%notify%'
 					OR `command_name` LIKE '%webops%'
@@ -227,7 +227,7 @@ ENDHTML
 ENDHTML
 		
 		
-					my $Select_Time_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+					my $Select_Time_Periods = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 					FROM `nagios_timeperiod`
 					WHERE `active` = '1'
 					ORDER BY `timeperiod_name` ASC");
@@ -252,7 +252,7 @@ ENDHTML
 ENDHTML
 		
 		
-							my $Select_Notification_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Notification_Periods = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
@@ -329,7 +329,7 @@ ENDHTML
 
 sub add_contact {
 
-	my $Contact_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `alias`
+	my $Contact_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
 	FROM `nagios_contact`
 	WHERE `contact_name` = '$Contact_Add'");
 
@@ -370,7 +370,7 @@ sub add_contact {
 		if ($Service_Notification_Add_S) {$Service_Notification_Add = "$Service_Notification_Add_S,$Service_Notification_Add"}
 		$Service_Notification_Add =~ s/,$//g;
 
-		my $Contact_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_contact` (
+		my $Contact_Insert = $DB_Connection->prepare("INSERT INTO `nagios_contact` (
 			`id`,
 			`contact_name`,
 			`alias`,
@@ -393,9 +393,9 @@ sub add_contact {
 		$Contact_Insert->execute($Contact_Add, $Alias_Add, $Host_Notification_Period_Add, $Service_Notification_Period_Add,
 		$Host_Notification_Add, $Service_Notification_Add, $Email_Add, $Active_Add);
 
-		my $Contact_ID = $DB_Icinga->{mysql_insertid};
+		my $Contact_ID = $DB_Connection->{mysql_insertid};
 		
-		my $Host_Command_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkContactToCommandHost` (
+		my $Host_Command_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkContactToCommandHost` (
 			`idMaster`,
 			`idSlave`
 		)
@@ -405,7 +405,7 @@ sub add_contact {
 
 		$Host_Command_Insert->execute($Contact_ID, $Host_Notification_Command_Add);
 
-		my $Service_Command_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkContactToCommandService` (
+		my $Service_Command_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkContactToCommandService` (
 			`idMaster`,
 			`idSlave`
 		)
@@ -421,7 +421,7 @@ sub add_contact {
 
 sub html_edit_contact {
 
-	my $Select_Contacts = $DB_Icinga->prepare("SELECT `contact_name`, `alias`, `host_notification_period`,
+	my $Select_Contacts = $DB_Connection->prepare("SELECT `contact_name`, `alias`, `host_notification_period`,
 	`service_notification_period`, `host_notification_options`, `service_notification_options`,
 	`email`, `active`
 	FROM `nagios_contact`
@@ -474,7 +474,7 @@ sub html_edit_contact {
 								<select name='Host_Notification_Command_Edit' style="width: 200px">
 ENDHTML
 				
-								my $Select_Host_Command_Link = $DB_Icinga->prepare("SELECT `idSlave`
+								my $Select_Host_Command_Link = $DB_Connection->prepare("SELECT `idSlave`
 								FROM `nagios_lnkContactToCommandHost`
 								WHERE `idMaster` = '$Edit_Contact'");
 								$Select_Host_Command_Link->execute();
@@ -485,7 +485,7 @@ ENDHTML
 									$Host_Notification_Command_ID = $DB_Host_Command_Link[0];
 								}
 						
-								my $Select_Host_Command_Name = $DB_Icinga->prepare("SELECT `id`, `command_name`
+								my $Select_Host_Command_Name = $DB_Connection->prepare("SELECT `id`, `command_name`
 								FROM `nagios_command`
 								WHERE `command_name` LIKE '%notify%'
 								OR `command_name` LIKE '%webops%'");
@@ -514,7 +514,7 @@ ENDHTML
 								<select name='Service_Notification_Command_Edit' style="width: 200px">
 ENDHTML
 				
-								my $Select_Service_Command_Link = $DB_Icinga->prepare("SELECT `idSlave`
+								my $Select_Service_Command_Link = $DB_Connection->prepare("SELECT `idSlave`
 								FROM `nagios_lnkContactToCommandService`
 								WHERE `idMaster` = '$Edit_Contact'");
 								$Select_Service_Command_Link->execute();
@@ -525,7 +525,7 @@ ENDHTML
 									$Service_Notification_Command_ID = $DB_Service_Command_Link[0];
 								}
 						
-								my $Select_Service_Command_Name = $DB_Icinga->prepare("SELECT `id`, `command_name`
+								my $Select_Service_Command_Name = $DB_Connection->prepare("SELECT `id`, `command_name`
 								FROM `nagios_command`
 								WHERE `command_name` LIKE '%notify%'
 								OR `command_name` LIKE '%webops%'");
@@ -554,7 +554,7 @@ ENDHTML
 								<select name='Host_Notification_Period_Edit' style="width: 200px">
 ENDHTML
 
-							my $Select_Host_Notification_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Host_Notification_Periods = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
@@ -584,7 +584,7 @@ ENDHTML
 								<select name='Service_Notification_Period_Edit' style="width: 200px">
 ENDHTML
 
-							my $Select_Service_Notification_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Service_Notification_Periods = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
@@ -758,7 +758,7 @@ ENDHTML
 
 sub edit_contact {
 
-	my $Contact_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `alias`
+	my $Contact_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
 	FROM `nagios_contact`
 	WHERE `contact_name` = '$Contact_Edit'
 	AND `id` != '$Contact_Edit_Post'");
@@ -800,7 +800,7 @@ sub edit_contact {
 		if ($Service_Notification_Edit_S) {$Service_Notification_Edit = "$Service_Notification_Edit_S,$Service_Notification_Edit"}
 		$Service_Notification_Edit =~ s/,$//g;
 
-		my $Contact_Update = $DB_Icinga->prepare("UPDATE `nagios_contact` SET
+		my $Contact_Update = $DB_Connection->prepare("UPDATE `nagios_contact` SET
 			`contact_name` = ?,
 			`alias` = ?,
 			`host_notification_period` = ?,
@@ -817,12 +817,12 @@ sub edit_contact {
 			$Host_Notification_Edit, $Service_Notification_Edit, $Email_Edit, $Active_Edit, $Contact_Edit_Post);
 
 
-		my $Delete_Contact_Host = $DB_Icinga->prepare("DELETE FROM `nagios_lnkContactToCommandHost` WHERE `idMaster` = ?");
+		my $Delete_Contact_Host = $DB_Connection->prepare("DELETE FROM `nagios_lnkContactToCommandHost` WHERE `idMaster` = ?");
 			$Delete_Contact_Host->execute($Contact_Edit_Post);
-		my $Delete_Contact_Service = $DB_Icinga->prepare("DELETE FROM `nagios_lnkContactToCommandService` WHERE `idMaster` = ?");
+		my $Delete_Contact_Service = $DB_Connection->prepare("DELETE FROM `nagios_lnkContactToCommandService` WHERE `idMaster` = ?");
 			$Delete_Contact_Service->execute($Contact_Edit_Post);
 
-		my $Host_Command_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkContactToCommandHost` (
+		my $Host_Command_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkContactToCommandHost` (
 			`idMaster`,
 			`idSlave`
 		)
@@ -832,7 +832,7 @@ sub edit_contact {
 
 		$Host_Command_Insert->execute($Contact_Edit_Post, $Host_Notification_Command_Edit);
 
-		my $Service_Command_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkContactToCommandService` (
+		my $Service_Command_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkContactToCommandService` (
 			`idMaster`,
 			`idSlave`
 		)
@@ -848,7 +848,7 @@ sub edit_contact {
 
 sub html_delete_contact {
 
-	my $Select_Contact = $DB_Icinga->prepare("SELECT `contact_name`, `alias`
+	my $Select_Contact = $DB_Connection->prepare("SELECT `contact_name`, `alias`
 	FROM `nagios_contact`
 	WHERE `id` = '$Delete_Contact'");
 	$Select_Contact->execute( );
@@ -898,15 +898,15 @@ ENDHTML
 
 sub delete_contact {
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_contact`
+	my $Delete = $DB_Connection->prepare("DELETE from `nagios_contact`
 		WHERE `id` = ?");
 	$Delete->execute($Contact_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkContactToCommandHost`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkContactToCommandHost`
 		WHERE `idMaster` = ?");
 	$Delete->execute($Contact_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkContactToCommandService`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkContactToCommandService`
 		WHERE `idMaster` = ?");
 	$Delete->execute($Contact_Delete_Post);
 
@@ -914,7 +914,7 @@ sub delete_contact {
 
 sub html_display_config {
 
-	my $Select_Contact = $DB_Icinga->prepare("SELECT `contact_name`, `alias`, `host_notification_period`,
+	my $Select_Contact = $DB_Connection->prepare("SELECT `contact_name`, `alias`, `host_notification_period`,
 	`service_notification_period`, `host_notification_options`, `service_notification_options`, `email`, `active`,
 	`last_modified`, `modified_by`
 	FROM `nagios_contact`
@@ -935,7 +935,7 @@ sub html_display_config {
 		my $Last_Modified_Extract = $DB_Contact[8];
 		my $Modified_By_Extract = $DB_Contact[9];
 
-		my $Select_Host_Time_Periods = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Host_Time_Periods = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Host_Time_Periods->execute($Host_Notification_Period_Extract);
@@ -946,7 +946,7 @@ sub html_display_config {
 				$Host_Notification_Period_Conversion = $DB_Host_Period[0];
 			}
 
-		my $Select_Service_Time_Periods = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Service_Time_Periods = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Service_Time_Periods->execute($Service_Notification_Period_Extract);
@@ -958,7 +958,7 @@ sub html_display_config {
 			}
 
 		### Command Conversion
-		my $Select_Host_Command_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Command_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkContactToCommandHost`
 		WHERE `idMaster` = ?");
 		$Select_Host_Command_Link->execute($Display_Config);
@@ -968,7 +968,7 @@ sub html_display_config {
 			{
 				my $Host_Notification_Command_ID = $DB_Host_Command_Link[0];
 
-				my $Select_Host_Command_Name = $DB_Icinga->prepare("SELECT `command_name`
+				my $Select_Host_Command_Name = $DB_Connection->prepare("SELECT `command_name`
 				FROM `nagios_command`
 				WHERE `id` = ?");
 				$Select_Host_Command_Name->execute($Host_Notification_Command_ID);
@@ -979,7 +979,7 @@ sub html_display_config {
 				}
 			}
 
-		my $Select_Service_Command_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Command_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkContactToCommandService`
 		WHERE `idMaster` = ?");
 		$Select_Service_Command_Link->execute($Display_Config);
@@ -989,7 +989,7 @@ sub html_display_config {
 			{
 				my $Service_Notification_Command_ID = $DB_Service_Command_Link[0];
 
-				my $Select_Service_Command_Name = $DB_Icinga->prepare("SELECT `command_name`
+				my $Select_Service_Command_Name = $DB_Connection->prepare("SELECT `command_name`
 				FROM `nagios_command`
 				WHERE `id` = ?");
 				$Select_Service_Command_Name->execute($Service_Notification_Command_ID);
@@ -1125,11 +1125,11 @@ sub html_output {
 		$Table->setCellRowSpan(1, 15, 2);
 		$Table->setCellRowSpan(1, 16, 2);
 
-	my $Select_Contacts_Count = $DB_Icinga->prepare("SELECT `id` FROM `nagios_contact`");
+	my $Select_Contacts_Count = $DB_Connection->prepare("SELECT `id` FROM `nagios_contact`");
 		$Select_Contacts_Count->execute( );
 		my $Total_Rows = $Select_Contacts_Count->rows();
 
-	my $Select_Contacts = $DB_Icinga->prepare("SELECT `id`, `contact_name`, `alias`, `host_notification_period`,
+	my $Select_Contacts = $DB_Connection->prepare("SELECT `id`, `contact_name`, `alias`, `host_notification_period`,
 	`service_notification_period`, `host_notification_options`, `service_notification_options`,
 	`email`, `active`, `last_modified`, `modified_by`
 	FROM `nagios_contact`
@@ -1170,7 +1170,7 @@ sub html_output {
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		#### Converting time period ID to regular text (from nagios_timeperiod table)
-		my $Select_Host_Time_Periods = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Host_Time_Periods = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = '$Host_Notification_Period_Extract'");
 		$Select_Host_Time_Periods->execute();
@@ -1181,7 +1181,7 @@ sub html_output {
 				$Host_Notification_Period_Conversion = $DB_Host_Period[0];
 			}
 
-		my $Select_Service_Time_Periods = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Service_Time_Periods = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = '$Service_Notification_Period_Extract'");
 		$Select_Service_Time_Periods->execute();
@@ -1217,7 +1217,7 @@ sub html_output {
 		#### / Translating Icinga d,u,r etc values to regular text
 
 		#### Converting command ID references to actual commands via link table (because host|service & command are many<->many)
-		my $Select_Host_Command_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Command_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkContactToCommandHost`
 		WHERE `idMaster` = '$ID_Extract'");
 		$Select_Host_Command_Link->execute();
@@ -1228,7 +1228,7 @@ sub html_output {
 			{
 				$Host_Notification_Command_ID = $DB_Host_Command_Link[0];
 
-				my $Select_Host_Command_Name = $DB_Icinga->prepare("SELECT `command_name`
+				my $Select_Host_Command_Name = $DB_Connection->prepare("SELECT `command_name`
 				FROM `nagios_command`
 				WHERE `id` = '$Host_Notification_Command_ID'");
 				$Select_Host_Command_Name->execute();
@@ -1243,7 +1243,7 @@ sub html_output {
 				}
 			}
 
-		my $Select_Service_Command_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Command_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkContactToCommandService`
 		WHERE `idMaster` = '$ID_Extract'");
 		$Select_Service_Command_Link->execute();
@@ -1254,7 +1254,7 @@ sub html_output {
 			{
 				$Service_Notification_Command_ID = $DB_Service_Command_Link[0];
 
-				my $Select_Service_Command_Name = $DB_Icinga->prepare("SELECT `command_name`
+				my $Select_Service_Command_Name = $DB_Connection->prepare("SELECT `command_name`
 				FROM `nagios_command`
 				WHERE `id` = '$Service_Notification_Command_ID'");
 				$Select_Service_Command_Name->execute();
@@ -1379,7 +1379,7 @@ print <<ENDHTML;
 						<select name='Edit_Contact' style="width: 150px">
 ENDHTML
 
-						my $Contact_List_Query = $DB_Icinga->prepare("SELECT `id`, `contact_name`
+						my $Contact_List_Query = $DB_Connection->prepare("SELECT `id`, `contact_name`
 						FROM `nagios_contact`
 						ORDER BY `contact_name` ASC");
 						$Contact_List_Query->execute( );

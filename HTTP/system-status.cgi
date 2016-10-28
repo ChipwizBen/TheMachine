@@ -4,8 +4,7 @@ use strict;
 use Date::Parse qw(str2time);
 
 require 'common.pl';
-my $DB_Management = DB_Management();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 my $Header = Header();
 my $Footer = Footer();
@@ -35,7 +34,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /system-status.cgi/) {
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -312,7 +311,7 @@ print <<ENDHTML;
 
 ENDHTML
 
-	my $Select_Locks = $DB_Management->prepare("SELECT `sudoers-build`, `sudoers-distribution`, `dns-build`, 
+	my $Select_Locks = $DB_Connection->prepare("SELECT `sudoers-build`, `sudoers-distribution`, `dns-build`, 
 	`reverse-proxy-build`, `last-sudoers-build-started`, `last-sudoers-build-finished`, `last-sudoers-distribution-started`, 
 	`last-sudoers-distribution-finished`, `last-dns-build-started`, `last-dns-build-finished`, 
 	`last-reverse-proxy-build-started`, `last-reverse-proxy-build-finished`
@@ -418,7 +417,7 @@ ENDHTML
 		# / Sudoers Distribution Time
 
 		# Sudoers Client Statues
-		my $Select_Sudoers_Client_Status = $DB_Management->prepare("SELECT `status` FROM `distribution`");
+		my $Select_Sudoers_Client_Status = $DB_Connection->prepare("SELECT `status` FROM `distribution`");
 		$Select_Sudoers_Client_Status->execute( );
 		my $Total_Sudoers_Clients = $Select_Sudoers_Client_Status->rows();
 	

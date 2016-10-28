@@ -8,7 +8,7 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $Header = Header();
-my $DB_Icinga = DB_Icinga();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Service = $CGI->param("Add_Service");
@@ -175,7 +175,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Templates = $DB_Icinga->prepare("SELECT `id`, `template_name`
+							my $Select_Templates = $DB_Connection->prepare("SELECT `id`, `template_name`
 							FROM `nagios_servicetemplate`
 							WHERE `active` = '1'
 							ORDER BY `template_name` ASC");
@@ -204,7 +204,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Service_Groups = $DB_Icinga->prepare("SELECT `id`, `servicegroup_name`
+							my $Select_Service_Groups = $DB_Connection->prepare("SELECT `id`, `servicegroup_name`
 							FROM `nagios_servicegroup`
 							WHERE `active` = '1'
 							ORDER BY `servicegroup_name` ASC");
@@ -229,7 +229,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Check_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Check_Periods = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
@@ -255,7 +255,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Notification_Periods = $DB_Icinga->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Notification_Periods = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `nagios_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
@@ -281,7 +281,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Contacts = $DB_Icinga->prepare("SELECT `id`, `contact_name`, `alias`
+							my $Select_Contacts = $DB_Connection->prepare("SELECT `id`, `contact_name`, `alias`
 							FROM `nagios_contact`
 							WHERE `active` = '1'
 							ORDER BY `contact_name` ASC");
@@ -307,7 +307,7 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Contact_Groups = $DB_Icinga->prepare("SELECT `id`, `contactgroup_name`, `alias`
+							my $Select_Contact_Groups = $DB_Connection->prepare("SELECT `id`, `contactgroup_name`, `alias`
 							FROM `nagios_contactgroup`
 							WHERE `active` = '1'
 							ORDER BY `contactgroup_name` ASC");
@@ -356,7 +356,7 @@ print <<ENDHTML;
 ENDHTML
 			
 			
-						my $Select_Check_Commands = $DB_Icinga->prepare("SELECT `id`, `command_name`
+						my $Select_Check_Commands = $DB_Connection->prepare("SELECT `id`, `command_name`
 						FROM `nagios_command`
 						ORDER BY `command_name` ASC");
 						$Select_Check_Commands->execute();
@@ -527,7 +527,7 @@ sub add_service {
 	$Notification_Options_Add =~ s/,$//g;
 	if ($Notification_Add_Inherit eq 2) {$Notification_Options_Add = undef};
 
-	my $Service_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_service` (
+	my $Service_Insert = $DB_Connection->prepare("INSERT INTO `nagios_service` (
 		`id`, `service_description`, `active_checks_enabled`, `check_freshness`, `check_period`, `event_handler_enabled`, `flap_detection_enabled`,
 		`check_command`, `is_volatile`, `max_check_attempts`, `check_interval`, `notification_interval`, `notification_options`, `notification_period`,
 		`notifications_enabled`, `obsess_over_service`, `parallelize_check`, `passive_checks_enabled`, `process_perf_data`,
@@ -545,12 +545,12 @@ sub add_service {
 	$Notifications_Add, $Obsess_Over_Service_Add, $Parallelize_Checks_Add, $Passive_Checks_Add, $Process_Performance_Data_Add,
 	$Retain_NonStatus_Information_Add, $Retain_Status_Information_Add, $Retry_Check_Interval_Add, $Active_Add);
 
-	my $Service_Insert_ID = $DB_Icinga->{mysql_insertid};
+	my $Service_Insert_ID = $DB_Connection->{mysql_insertid};
 
 
 	if ($Template_Add) {
 
-		my $Template_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkServiceToServicetemplate` (
+		my $Template_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkServiceToServicetemplate` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -563,7 +563,7 @@ sub add_service {
 
 	if ($Contact_Add) {
 
-		my $Contact_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkServiceToContact` (
+		my $Contact_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkServiceToContact` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -576,7 +576,7 @@ sub add_service {
 
 	if ($Contact_Group_Add) {
 
-		my $Contact_Group_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkServiceToContactgroup` (
+		my $Contact_Group_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkServiceToContactgroup` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -589,7 +589,7 @@ sub add_service {
 
 	if ($Service_Group_Add) {
 
-		my $Contact_Group_Insert = $DB_Icinga->prepare("INSERT INTO `nagios_lnkServiceToServicegroup` (
+		my $Contact_Group_Insert = $DB_Connection->prepare("INSERT INTO `nagios_lnkServiceToServicegroup` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
@@ -604,7 +604,7 @@ sub add_service {
 
 sub html_edit_service {
 
-	my $Select_Service = $DB_Icinga->prepare("SELECT `config_name`, `service_description`, `active`
+	my $Select_Service = $DB_Connection->prepare("SELECT `config_name`, `service_description`, `active`
 	FROM `nagios_service`
 	WHERE `id` = '$Edit_Service'");
 	$Select_Service->execute( );
@@ -668,7 +668,7 @@ ENDHTML
 
 sub edit_service {
 
-	my $Service_Insert_Check = $DB_Icinga->prepare("SELECT `id`, `service_description`
+	my $Service_Insert_Check = $DB_Connection->prepare("SELECT `id`, `service_description`
 	FROM `nagios_service`
 	WHERE `config_name` = '$Service_Name_Edit'
 	AND `id` != '$Service_Edit_Post'");
@@ -693,7 +693,7 @@ sub edit_service {
 	}
 	else {
 
-		my $Service_Update = $DB_Icinga->prepare("UPDATE `nagios_service` SET
+		my $Service_Update = $DB_Connection->prepare("UPDATE `nagios_service` SET
 			`config_name` = ?,
 			`active` = ?,
 			`last_modified` = NOW(),
@@ -708,7 +708,7 @@ sub edit_service {
 
 sub html_delete_service {
 
-	my $Select_Service = $DB_Icinga->prepare("SELECT `id`, `service_description`
+	my $Select_Service = $DB_Connection->prepare("SELECT `id`, `service_description`
 	FROM `nagios_service`
 	WHERE `id` = '$Delete_Service'");
 	$Select_Service->execute( );
@@ -758,23 +758,23 @@ ENDHTML
 
 sub delete_service {
 
-	my $Delete = $DB_Icinga->prepare("DELETE from `nagios_service`
+	my $Delete = $DB_Connection->prepare("DELETE from `nagios_service`
 				WHERE `id` = ?");
 	$Delete->execute($Service_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServiceToServicetemplate`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkServiceToServicetemplate`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Service_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServiceToContact`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkServiceToContact`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Service_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServiceToContactgroup`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkServiceToContactgroup`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Service_Delete_Post);
 
-	$Delete = $DB_Icinga->prepare("DELETE from `nagios_lnkServiceToServicegroup`
+	$Delete = $DB_Connection->prepare("DELETE from `nagios_lnkServiceToServicegroup`
 				WHERE `idMaster` = ?");
 	$Delete->execute($Service_Delete_Post);
 
@@ -782,7 +782,7 @@ sub delete_service {
 
 sub html_display_config {
 
-	my $Select_Service = $DB_Icinga->prepare("SELECT `service_description`, `active_checks_enabled`, `check_freshness`, 
+	my $Select_Service = $DB_Connection->prepare("SELECT `service_description`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `is_volatile`, `max_check_attempts`,
 	`check_interval`, `notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`,
 	`obsess_over_service`, `parallelize_check`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`,
@@ -822,7 +822,7 @@ sub html_display_config {
 
 		## Host Name Collection
 		my $Host_Names;
-		my $Select_Host_Name_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Host_Name_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToHost`
 		WHERE `idMaster` = ?");
 		$Select_Host_Name_Link->execute($Display_Config);
@@ -832,7 +832,7 @@ sub html_display_config {
 
 			my $Host_ID = $DB_Host_Link[0];
 
-			my $Select_Host_Name = $DB_Icinga->prepare("SELECT `host_name`
+			my $Select_Host_Name = $DB_Connection->prepare("SELECT `host_name`
 			FROM `nagios_host`
 			WHERE `id` = '$Host_ID'
 			AND `active` = '1'");
@@ -849,7 +849,7 @@ sub html_display_config {
 
 		## Service Group Collection
 			my $Service_Group_Names;
-			my $Select_Service_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+			my $Select_Service_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 			FROM `nagios_lnkServiceToServicegroup`
 			WHERE `idMaster` = ?");
 			$Select_Service_Group_Link->execute($Display_Config);
@@ -859,7 +859,7 @@ sub html_display_config {
 	
 				my $Service_ID = $DB_Service_Link[0];
 	
-				my $Select_Service_Group_Name = $DB_Icinga->prepare("SELECT `servicegroup_name`
+				my $Select_Service_Group_Name = $DB_Connection->prepare("SELECT `servicegroup_name`
 				FROM `nagios_servicegroup`
 				WHERE `id` = '$Service_ID'
 				AND `active` = '1'");
@@ -875,7 +875,7 @@ sub html_display_config {
 
 		## Contact Link Collection
 		my $Contacts;
-		my $Select_Contact_Name_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Contact_Name_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToContact`
 		WHERE `idMaster` = ?");
 		$Select_Contact_Name_Link->execute($Display_Config);
@@ -885,7 +885,7 @@ sub html_display_config {
 
 			my $Contact_ID = $DB_Contact_Link[0];
 
-			my $Select_Contact_Name = $DB_Icinga->prepare("SELECT `contact_name`
+			my $Select_Contact_Name = $DB_Connection->prepare("SELECT `contact_name`
 			FROM `nagios_contact`
 			WHERE `id` = '$Contact_ID'
 			AND `active` = '1'");
@@ -902,7 +902,7 @@ sub html_display_config {
 
 		## Contact Group Link Collection
 		my $Contact_Groups;
-		my $Select_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToContactgroup`
 		WHERE `idMaster` = ?");
 		$Select_Group_Link->execute($Display_Config);
@@ -912,7 +912,7 @@ sub html_display_config {
 
 			my $Contact_ID = $DB_Contact_Link[0];
 
-			my $Select_Group = $DB_Icinga->prepare("SELECT `contactgroup_name`
+			my $Select_Group = $DB_Connection->prepare("SELECT `contactgroup_name`
 			FROM `nagios_contactgroup`
 			WHERE `id` = '$Contact_ID'
 			AND `active` = '1'");
@@ -937,7 +937,7 @@ sub html_display_config {
 		my $Check_Period_Extract_Template;
 		my $Notification_Period_Extract_Template;
 		my $Check_Command_Extract_Template;
-		my $Select_Service_Template_ID = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToServicetemplate`
 		WHERE `idMaster` = ?");
 		$Select_Service_Template_ID->execute($Display_Config);
@@ -947,7 +947,7 @@ sub html_display_config {
 
 			$Service_Template_ID = $DB_Service_Template_ID[0];
 
-			my $Select_Service_Template = $DB_Icinga->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+			my $Select_Service_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
 			`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `is_volatile`, `max_check_attempts`, `check_interval`,
 			`notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`, `obsess_over_service`,
 			`parallelize_check`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`, `retain_status_information`,
@@ -1005,7 +1005,7 @@ sub html_display_config {
 
 				## Template Hostname collection
 		
-				my $Select_Host_Name_Link = $DB_Icinga->prepare("SELECT `idSlave`
+				my $Select_Host_Name_Link = $DB_Connection->prepare("SELECT `idSlave`
 				FROM `nagios_lnkServicetemplateToHost`
 				WHERE `idMaster` = ?");
 				$Select_Host_Name_Link->execute($Service_Template_ID);
@@ -1015,7 +1015,7 @@ sub html_display_config {
 		
 					my $Host_ID = $DB_Host_Link[0];
 		
-					my $Select_Host_Name = $DB_Icinga->prepare("SELECT `host_name`
+					my $Select_Host_Name = $DB_Connection->prepare("SELECT `host_name`
 					FROM `nagios_host`
 					WHERE `id` = '$Host_ID'
 					AND `active` = '1'");
@@ -1033,7 +1033,7 @@ sub html_display_config {
 
 				## Template Service Group Collection
 					if ($Service_Group_Names eq undef) {
-						my $Select_Service_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+						my $Select_Service_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 						FROM `nagios_lnkServiceToServicegroup`
 						WHERE `idMaster` = ?");
 						$Select_Service_Group_Link->execute($Service_Template_ID);
@@ -1043,7 +1043,7 @@ sub html_display_config {
 				
 							my $Service_ID = $DB_Service_Link[0];
 				
-							my $Select_Service_Group_Name = $DB_Icinga->prepare("SELECT `servicegroup_name`
+							my $Select_Service_Group_Name = $DB_Connection->prepare("SELECT `servicegroup_name`
 							FROM `nagios_servicegroup`
 							WHERE `id` = '$Service_ID'
 							AND `active` = '1'");
@@ -1062,7 +1062,7 @@ sub html_display_config {
 
 			## Template Contact Link Collection
 		
-				my $Select_Contact_Link = $DB_Icinga->prepare("SELECT `idSlave`
+				my $Select_Contact_Link = $DB_Connection->prepare("SELECT `idSlave`
 				FROM `nagios_lnkServicetemplateToContact`
 				WHERE `idMaster` = ?");
 				$Select_Contact_Link->execute($Service_Template_ID);
@@ -1072,7 +1072,7 @@ sub html_display_config {
 		
 					my $Host_ID = $DB_Host_Link[0];
 		
-					my $Select_Contact = $DB_Icinga->prepare("SELECT `contact_name`
+					my $Select_Contact = $DB_Connection->prepare("SELECT `contact_name`
 					FROM `nagios_contact`
 					WHERE `id` = '$Host_ID'
 					AND `active` = '1'");
@@ -1091,7 +1091,7 @@ sub html_display_config {
 	
 			## Template Contact Group Link Collection
 			
-				my $Select_Contact_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+				my $Select_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 				FROM `nagios_lnkServicetemplateToContactgroup`
 				WHERE `idMaster` = ?");
 				$Select_Contact_Group_Link->execute($Service_Template_ID);
@@ -1101,7 +1101,7 @@ sub html_display_config {
 		
 					my $Host_ID = $DB_Host_Link[0];
 		
-					my $Select_Contact = $DB_Icinga->prepare("SELECT `contactgroup_name`
+					my $Select_Contact = $DB_Connection->prepare("SELECT `contactgroup_name`
 					FROM `nagios_contactgroup`
 					WHERE `id` = '$Host_ID'
 					AND `active` = '1'");
@@ -1130,7 +1130,7 @@ sub html_display_config {
 		my $Notification_Period_Extract_Templates_Template;
 		my $Check_Command_Extract_Templates_Template;
 		
-		my $Select_Service_Templates_Template_ID = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Templates_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServicetemplateToServicetemplate`
 		WHERE `idMaster` = ?");
 		$Select_Service_Templates_Template_ID->execute($Service_Template_ID);
@@ -1140,7 +1140,7 @@ sub html_display_config {
 
 			$Service_Templates_Template_ID = $DB_Service_Templates_Template_ID[0];
 
-			my $Select_Service_Templates_Template = $DB_Icinga->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+			my $Select_Service_Templates_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
 			`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `is_volatile`, `max_check_attempts`, `check_interval`,
 			`notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`, `obsess_over_service`,
 			`parallelize_check`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`, `retain_status_information`,
@@ -1242,7 +1242,7 @@ sub html_display_config {
 			$Check_Period = $Check_Period_Extract_Templates_Template;
 		}
 
-		my $Select_Check_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Check_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Check_Period->execute($Check_Period);
@@ -1279,7 +1279,7 @@ sub html_display_config {
 			$Notification_Period = $Notification_Period_Extract_Templates_Template;
 		}
 
-		my $Select_Notification_Period = $DB_Icinga->prepare("SELECT `timeperiod_name`
+		my $Select_Notification_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `nagios_timeperiod`
 		WHERE `id` = ?");
 		$Select_Notification_Period->execute($Notification_Period);
@@ -1319,7 +1319,7 @@ sub html_display_config {
 			$Check_Command_Where_Remaining =~ s/^\d*(.*)/$1/g;
 
 		my $Check_Command;
-		my $Select_Check_Command = $DB_Icinga->prepare("SELECT `command_name`
+		my $Select_Check_Command = $DB_Connection->prepare("SELECT `command_name`
 		FROM `nagios_command`
 		WHERE `id` = '$Check_Command_Where_ID_Extract'");
 		$Select_Check_Command->execute();
@@ -1577,7 +1577,7 @@ sub html_linked_hosts {
 
 	my $Service_Name;
 	my $Service_Description;
-	my $Select_Service_Name = $DB_Icinga->prepare("SELECT `service_description`
+	my $Select_Service_Name = $DB_Connection->prepare("SELECT `service_description`
 	FROM `nagios_service`
 	WHERE `id` = ?");
 	
@@ -1604,7 +1604,7 @@ sub html_linked_hosts {
 	$Table->addRow ( "Host ID", "Name", "Active Host?", "View Host" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Host_Name_Link = $DB_Icinga->prepare("SELECT `idSlave`
+	my $Select_Host_Name_Link = $DB_Connection->prepare("SELECT `idSlave`
 	FROM `nagios_lnkServiceToHost`
 	WHERE `idMaster` = '$Linked_Hosts'");
 	$Select_Host_Name_Link->execute();
@@ -1614,7 +1614,7 @@ sub html_linked_hosts {
 
 			my $Host_ID = $DB_Host_Link[0];
 
-			my $Select_Host_Name = $DB_Icinga->prepare("SELECT `host_name`, `active`
+			my $Select_Host_Name = $DB_Connection->prepare("SELECT `host_name`, `active`
 			FROM `nagios_host`
 			WHERE `id` = '$Host_ID'");
 			$Select_Host_Name->execute();
@@ -1674,11 +1674,11 @@ sub html_output {
 		"Last Modified", "Modified By", "Linked Hosts", "View Config", "Edit (todo)", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Services_Count = $DB_Icinga->prepare("SELECT `id` FROM `nagios_service`");
+	my $Select_Services_Count = $DB_Connection->prepare("SELECT `id` FROM `nagios_service`");
 		$Select_Services_Count->execute( );
 		my $Total_Rows = $Select_Services_Count->rows();
 
-	my $Select_Services = $DB_Icinga->prepare("SELECT `id`, `config_name`, `service_description`, `check_command`,
+	my $Select_Services = $DB_Connection->prepare("SELECT `id`, `config_name`, `service_description`, `check_command`,
 	`active`, `last_modified`, `modified_by`
 	FROM `nagios_service`
 	WHERE (`id` LIKE '%$Filter%'
@@ -1716,7 +1716,7 @@ sub html_output {
 
 		## Service Template Conversion
 		my $Service_Templates;
-		my $Select_Service_Template_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToServicetemplate`
 		WHERE `idMaster` = '$ID_Extract'");
 		$Select_Service_Template_Link->execute();
@@ -1726,7 +1726,7 @@ sub html_output {
 
 				my $Service_Template_Link = $DB_Template_Link[0];
 
-				my $Select_Service_Template = $DB_Icinga->prepare("SELECT `template_name`
+				my $Select_Service_Template = $DB_Connection->prepare("SELECT `template_name`
 				FROM `nagios_servicetemplate`
 				WHERE `id` = '$Service_Template_Link'");
 				$Select_Service_Template->execute();
@@ -1745,7 +1745,7 @@ sub html_output {
 
 		## Service Group Conversion
 		my $Service_Groups;
-		my $Select_Service_Group_Link = $DB_Icinga->prepare("SELECT `idSlave`
+		my $Select_Service_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
 		FROM `nagios_lnkServiceToServicegroup`
 		WHERE `idMaster` = '$ID_Extract'");
 		$Select_Service_Group_Link->execute();
@@ -1755,7 +1755,7 @@ sub html_output {
 
 				my $Service_Group_Link = $DB_Group_Link[0];
 
-				my $Select_Service_Group = $DB_Icinga->prepare("SELECT `servicegroup_name`
+				my $Select_Service_Group = $DB_Connection->prepare("SELECT `servicegroup_name`
 				FROM `nagios_servicegroup`
 				WHERE `id` = '$Service_Group_Link'");
 				$Select_Service_Group->execute();
@@ -1780,7 +1780,7 @@ sub html_output {
 			$Check_Command_Extract_Command_Remaining =~ s/^\d*(.*)/$1/g;
 
 		my $Check_Command;
-		my $Select_Check_Command = $DB_Icinga->prepare("SELECT `command_name`
+		my $Select_Check_Command = $DB_Connection->prepare("SELECT `command_name`
 		FROM `nagios_command`
 		WHERE `id` = ?");
 		$Select_Check_Command->execute($Check_Command_Extract_Command_ID_Extract);
@@ -1887,7 +1887,7 @@ print <<ENDHTML;
 						<select name='Edit_Service' style="width: 150px">
 ENDHTML
 
-						my $Service_List_Query = $DB_Icinga->prepare("SELECT `id`, `config_name`
+						my $Service_List_Query = $DB_Connection->prepare("SELECT `id`, `config_name`
 						FROM `nagios_service`
 						ORDER BY `config_name` ASC");
 						$Service_List_Query->execute( );

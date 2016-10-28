@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Reverse_Proxy = DB_Reverse_Proxy();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Redirect = $CGI->param("Add_Redirect");
@@ -226,7 +226,7 @@ sub add_redirect {
 	if (!$Transfer_Log_Add) {$Transfer_Log_Add = $Default_Transfer_Log;}
 	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log;}
 
-	my $Redirect_Insert = $DB_Reverse_Proxy->prepare("INSERT INTO `redirect` (
+	my $Redirect_Insert = $DB_Connection->prepare("INSERT INTO `redirect` (
 		`server_name`,
 		`port`,
 		`redirect_source`,
@@ -241,11 +241,11 @@ sub add_redirect {
 
 	$Redirect_Insert->execute($Server_Name_Add, $Port_Add, $Source_Add, $Destination_Add, $Transfer_Log_Add, $Error_Log_Add, $User_Name);
 
-	my $Redirect_Insert_ID = $DB_Reverse_Proxy->{mysql_insertid};
+	my $Redirect_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -264,7 +264,7 @@ sub add_redirect {
 
 sub html_edit_redirect {
 
-	my $Select_Redirect = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `port`, `redirect_source`,
+	my $Select_Redirect = $DB_Connection->prepare("SELECT `server_name`, `port`, `redirect_source`,
 		`redirect_destination`, `transfer_log`, `error_log`
 		FROM `redirect`
 		WHERE `id` = ?");
@@ -339,7 +339,7 @@ ENDHTML
 
 sub edit_redirect {
 
-	my $Update_Redirect = $DB_Reverse_Proxy->prepare("UPDATE `redirect` SET
+	my $Update_Redirect = $DB_Connection->prepare("UPDATE `redirect` SET
 		`server_name` = ?,
 		`port` = ?,
 		`redirect_source` = ?,
@@ -353,8 +353,8 @@ sub edit_redirect {
 	$User_Name, $Edit_Redirect_Post);
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -372,7 +372,7 @@ sub edit_redirect {
 
 sub html_delete_redirect {
 
-	my $Select_Redirect = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `port`, `redirect_source`, `redirect_destination`
+	my $Select_Redirect = $DB_Connection->prepare("SELECT `server_name`, `port`, `redirect_source`, `redirect_destination`
 	FROM `redirect`
 	WHERE `id` = ?");
 
@@ -425,7 +425,7 @@ ENDHTML
 sub delete_redirect {
 
 	# Audit Log
-	my $Select_Redirect = $DB_Reverse_Proxy->prepare("SELECT `server_name`, `redirect_source`, `redirect_destination`
+	my $Select_Redirect = $DB_Connection->prepare("SELECT `server_name`, `redirect_source`, `redirect_destination`
 	FROM `redirect`
 	WHERE `id` = ?");
 
@@ -434,8 +434,8 @@ sub delete_redirect {
 	while ( my ($Server_Name, $Redirect_Source, $Redirect_Destination) = $Select_Redirect->fetchrow_array() )
 	{
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -451,7 +451,7 @@ sub delete_redirect {
 	}
 	# / Audit Log
 
-	my $Delete_Redirect = $DB_Reverse_Proxy->prepare("DELETE from `redirect`
+	my $Delete_Redirect = $DB_Connection->prepare("DELETE from `redirect`
 		WHERE `id` = ?");
 	
 	$Delete_Redirect->execute($Delete_Redirect_Confirm);
@@ -473,12 +473,12 @@ sub html_output {
 	);
 
 
-	my $Select_Redirect_Count = $DB_Reverse_Proxy->prepare("SELECT `id` FROM `redirect`");
+	my $Select_Redirect_Count = $DB_Connection->prepare("SELECT `id` FROM `redirect`");
 		$Select_Redirect_Count->execute( );
 		my $Total_Rows = $Select_Redirect_Count->rows();
 
 
-	my $Select_Reverse_Proxies = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`,
+	my $Select_Reverse_Proxies = $DB_Connection->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`,
 		`redirect_destination`, `transfer_log`, `error_log`, `last_modified`, `modified_by`
 		FROM `redirect`
 		WHERE `id` LIKE ?
@@ -617,7 +617,7 @@ print <<ENDHTML;
 						<select name='Edit_Redirect' style="width: 150px">
 ENDHTML
 
-						my $Redirect_List_Query = $DB_Reverse_Proxy->prepare("SELECT `id`, `server_name`, `redirect_source`, `redirect_destination`
+						my $Redirect_List_Query = $DB_Connection->prepare("SELECT `id`, `server_name`, `redirect_source`, `redirect_destination`
 						FROM `redirect`
 						ORDER BY `server_name` ASC");
 						$Redirect_List_Query->execute( );

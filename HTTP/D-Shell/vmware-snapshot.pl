@@ -12,8 +12,7 @@ require $Common_Config;
 my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my $Version = Version();
-my $DB_DShell = DB_DShell();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 my $Note = "If you've got another snapshot/remove process running for this VM, VMWare won't let you do two at a time. This can also happen if you specify to remove snapshots and take a new one - VMWare sometimes can't delete them fast enough (and there's no way to see what's processing on the command line :-[ ) Try again in 10 minutes.";
 my %Hosts_Found = ();
 
@@ -218,7 +217,7 @@ my $SSH_Fork = new Parallel::ForkManager($Threads);
 	);
 
 	foreach my $Host_ID (@Host_IDs) {
-		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
+		my $Host_Query = $DB_Connection->prepare("SELECT `hostname`
 		FROM `hosts`
 		WHERE `id` = ?");
 		$Host_Query->execute($Host_ID);

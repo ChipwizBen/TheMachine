@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Host_Type = $CGI->param("Add_Host Type");
@@ -182,7 +182,7 @@ ENDHTML
 
 sub add_host_type {
 
-	my $Host_Type_Insert = $DB_IP_Allocation->prepare("INSERT INTO `host_types` (
+	my $Host_Type_Insert = $DB_Connection->prepare("INSERT INTO `host_types` (
 		`type`,
 		`modified_by`
 	)
@@ -192,11 +192,11 @@ sub add_host_type {
 
 	$Host_Type_Insert->execute($Host_Type_Add, $User_Name);
 
-	my $Host_Type_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
+	my $Host_Type_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -215,7 +215,7 @@ sub add_host_type {
 
 sub html_edit_host_type {
 
-	my $Select_Host_Type = $DB_IP_Allocation->prepare("SELECT `type`
+	my $Select_Host_Type = $DB_Connection->prepare("SELECT `type`
 	FROM `host_types`
 	WHERE `id` = ?");
 	$Select_Host_Type->execute($Edit_Host_Type);
@@ -261,7 +261,7 @@ ENDHTML
 sub edit_host_type {
 
 
-	my $Update_Host_Type = $DB_IP_Allocation->prepare("UPDATE `host_types` SET
+	my $Update_Host_Type = $DB_Connection->prepare("UPDATE `host_types` SET
 		`type` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -269,8 +269,8 @@ sub edit_host_type {
 	$Update_Host_Type->execute($Host_Type_Edit, $User_Name, $Edit_Host_Type_Post);
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -287,7 +287,7 @@ sub edit_host_type {
 
 sub html_delete_host_type {
 
-	my $Select_Host_Type = $DB_IP_Allocation->prepare("SELECT `type`
+	my $Select_Host_Type = $DB_Connection->prepare("SELECT `type`
 	FROM `host_types`
 	WHERE `id` = ?");
 
@@ -332,7 +332,7 @@ ENDHTML
 sub delete_host_type {
 
 	# Audit Log
-	my $Select_Host_Types = $DB_IP_Allocation->prepare("SELECT `type`
+	my $Select_Host_Types = $DB_Connection->prepare("SELECT `type`
 		FROM `host_types`
 		WHERE `id` = ?");
 
@@ -342,8 +342,8 @@ sub delete_host_type {
 	{
 
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -358,7 +358,7 @@ sub delete_host_type {
 	}
 	# / Audit Log
 
-	my $Delete_Host_Type = $DB_IP_Allocation->prepare("DELETE from `host_types`
+	my $Delete_Host_Type = $DB_Connection->prepare("DELETE from `host_types`
 		WHERE `id` = ?");
 	
 	$Delete_Host_Type->execute($Delete_Host_Type_Confirm);
@@ -380,12 +380,12 @@ sub html_output {
 	);
 
 
-	my $Select_Host_Type_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `host_types`");
+	my $Select_Host_Type_Count = $DB_Connection->prepare("SELECT `id` FROM `host_types`");
 		$Select_Host_Type_Count->execute( );
 		my $Total_Rows = $Select_Host_Type_Count->rows();
 
 
-	my $Select_Host_Types = $DB_IP_Allocation->prepare("SELECT `id`, `type`, `last_modified`, `modified_by`
+	my $Select_Host_Types = $DB_Connection->prepare("SELECT `id`, `type`, `last_modified`, `modified_by`
 		FROM `host_types`
 		WHERE `id` LIKE ?
 		OR `type` LIKE ?
@@ -498,7 +498,7 @@ print <<ENDHTML;
 						<select name='Edit_Host Type' style="width: 150px">
 ENDHTML
 
-						my $Host_Type_List_Query = $DB_IP_Allocation->prepare("SELECT `id`, `type`
+						my $Host_Type_List_Query = $DB_Connection->prepare("SELECT `id`, `type`
 						FROM `host_types`
 						ORDER BY `type` ASC");
 						$Host_Type_List_Query->execute( );

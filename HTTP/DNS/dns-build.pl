@@ -4,8 +4,7 @@ use strict;
 use POSIX qw(strftime);
 
 require '../common.pl';
-my $DB_Management = DB_Management();
-my $DB_DNS = DB_DNS();
+my $DB_Connection = DB_Connection();
 my $DNS_Internal_Location = DNS_Internal_Location();
 my $DNS_External_Location = DNS_External_Location();
 my $DNS_Storage = DNS_Storage();
@@ -35,7 +34,7 @@ foreach my $Parameter (@ARGV) {
 
 # Safety check for other running build processes
 
-	my $Select_Locks = $DB_Management->prepare("SELECT `dns-build` FROM `lock`");
+	my $Select_Locks = $DB_Connection->prepare("SELECT `dns-build` FROM `lock`");
 	$Select_Locks->execute();
 
 	my ($DNS_Build_Lock, $DNS_Distribution_Lock) = $Select_Locks->fetchrow_array();
@@ -60,7 +59,7 @@ foreach my $Parameter (@ARGV) {
 			}
 		}
 		else {
-			$DB_Management->do("UPDATE `lock` SET
+			$DB_Connection->do("UPDATE `lock` SET
 				`dns-build` = '1',
 				`last-dns-build-started` = NOW()");
 		}
@@ -69,7 +68,7 @@ foreach my $Parameter (@ARGV) {
 
 &write_zone_master;
 
-$DB_Management->do("UPDATE `lock` SET 
+$DB_Connection->do("UPDATE `lock` SET 
 `dns-build` = '0',
 `last-dns-build-finished` = NOW()");
 exit(0);
@@ -89,7 +88,7 @@ sub write_zone_master {
 	print Zone_Master "// View the changelog or README files for more information.\n";
 	print Zone_Master "/////////////////////////////////////////////////////////////////////////\n\n";
 
-	my $Domain_Query = $DB_DNS->prepare("SELECT `id`, `domain`, `last_modified`, `modified_by`
+	my $Domain_Query = $DB_Connection->prepare("SELECT `id`, `domain`, `last_modified`, `modified_by`
 	FROM `domains`");
 	$Domain_Query->execute( );
 
@@ -97,7 +96,7 @@ sub write_zone_master {
 	{
 
 		# Internal Zone
-		my $Internal_Record_Query = $DB_DNS->prepare("SELECT COUNT(`id`)
+		my $Internal_Record_Query = $DB_Connection->prepare("SELECT COUNT(`id`)
 		FROM `zone_records`
 		WHERE `domain` = ?
 		AND (`zone` = 0
@@ -120,7 +119,7 @@ EOF
 		}
 
 		#External Zone
-		my $External_Record_Query = $DB_DNS->prepare("SELECT COUNT(`id`)
+		my $External_Record_Query = $DB_Connection->prepare("SELECT COUNT(`id`)
 		FROM `zone_records`
 		WHERE `domain` = ?
 		AND (`zone` = 1
@@ -170,7 +169,7 @@ sub write_internal {
 		print Domain_Config ";;; This file is for $Domain internal records ;;;\n\n";
 		print Domain_Config "$Domain_SOA\n";
 
-		my $Record_Query = $DB_DNS->prepare("SELECT `id`, `source`, `time_to_live`, `type`, `options`, `target`, `last_modified`, `modified_by`
+		my $Record_Query = $DB_Connection->prepare("SELECT `id`, `source`, `time_to_live`, `type`, `options`, `target`, `last_modified`, `modified_by`
 		FROM `zone_records`
 		WHERE `domain` = ?
 		AND `active` = '1'
@@ -232,7 +231,7 @@ sub write_external {
 		print Domain_Config ";;; This file is for $Domain external records ;;;\n\n";
 		print Domain_Config "$Domain_SOA\n";
 
-		my $Record_Query = $DB_DNS->prepare("SELECT `id`, `source`, `time_to_live`, `type`, `options`, `target`, `last_modified`, `modified_by`
+		my $Record_Query = $DB_Connection->prepare("SELECT `id`, `source`, `time_to_live`, `type`, `options`, `target`, `last_modified`, `modified_by`
 		FROM `zone_records`
 		WHERE `domain` = ?
 		AND `active` = '1'

@@ -4,7 +4,7 @@ use strict;
 use HTML::Table;
 
 require 'common.pl';
-my $DB_Management = DB_Management();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $User_Name = $Session->param("User_Name"); #Auditing User_Name session var
@@ -46,7 +46,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /audit-log.cgi/) {
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -72,7 +72,7 @@ sub html_output {
 	);
 
 
-	my $Select_Logs = $DB_Management->prepare("SELECT `id`, `category`, `method`, `action`, `time`, `username`
+	my $Select_Logs = $DB_Connection->prepare("SELECT `id`, `category`, `method`, `action`, `time`, `username`
 		FROM `audit_log`
 		WHERE `username` LIKE ?
 		AND `category` LIKE ?
@@ -92,7 +92,7 @@ sub html_output {
 
 	my $Rows = $Select_Logs->rows();
 
-	my $Select_Logs_Count = $DB_Management->prepare("SELECT `id` FROM `audit_log`");
+	my $Select_Logs_Count = $DB_Connection->prepare("SELECT `id` FROM `audit_log`");
 		$Select_Logs_Count->execute( );
 		my $Total_Rows = $Select_Logs_Count->rows();
 
@@ -216,7 +216,7 @@ print <<ENDHTML;
 							<option value=''>All</option>
 ENDHTML
 
-my $User_Name_Retreive = $DB_Management->prepare("SELECT `username`
+my $User_Name_Retreive = $DB_Connection->prepare("SELECT `username`
 FROM `credentials`");
 $User_Name_Retreive->execute( );
 
@@ -243,7 +243,7 @@ print <<ENDHTML;
 							<option value=''>All</option>
 ENDHTML
 
-my $Category_Retreive = $DB_Management->prepare("SELECT DISTINCT `category`
+my $Category_Retreive = $DB_Connection->prepare("SELECT DISTINCT `category`
 FROM `audit_log`
 ORDER BY `category` ASC");
 $Category_Retreive->execute( );
@@ -271,7 +271,7 @@ print <<ENDHTML;
 							<option value=''>All</option>
 ENDHTML
 
-my $Method_Retreive = $DB_Management->prepare("SELECT DISTINCT `method`
+my $Method_Retreive = $DB_Connection->prepare("SELECT DISTINCT `method`
 FROM `audit_log`
 ORDER BY `method` ASC");
 $Method_Retreive->execute( );

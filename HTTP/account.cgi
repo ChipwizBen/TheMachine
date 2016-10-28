@@ -4,7 +4,7 @@ use strict;
 use Digest::SHA qw(sha512_hex);
 
 require 'common.pl';
-my $DB_Management = DB_Management();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Message_Red;
@@ -93,7 +93,7 @@ sub change_password {
 	}
 	### / Password Complexity Check ###
 
-	my $Select_User_Name = $DB_Management->prepare("SELECT `id`, `username`, `password`, `salt`, `email`
+	my $Select_User_Name = $DB_Connection->prepare("SELECT `id`, `username`, `password`, `salt`, `email`
 	FROM `credentials`
 	WHERE `username` = ?
 	");
@@ -120,7 +120,7 @@ sub change_password {
 		elsif (($Old_Password eq $Password) && ($New_Password ne '') && ($New_Password eq $Confirm_Password)) {
 
 			# Audit Log
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -135,7 +135,7 @@ sub change_password {
 
 			$Message_Green="Password successfully changed.";
 		
-			my $Change_Password = $DB_Management->prepare("UPDATE `credentials` SET
+			my $Change_Password = $DB_Connection->prepare("UPDATE `credentials` SET
 			`password` = ?,
 			`salt` = ?,
 			`last_modified` = NOW(),
@@ -180,7 +180,7 @@ sub add_key {
 
 	if ($Key_Passphrase eq 'on') {$Key_Passphrase = 1} else {$Key_Passphrase = 0}
 
-	my $Submit_Key = $DB_Management->prepare("INSERT INTO `auth` (
+	my $Submit_Key = $DB_Connection->prepare("INSERT INTO `auth` (
 	`key_owner`,
 	`key_name`,
 	`salt`,
@@ -198,7 +198,7 @@ sub add_key {
 
 sub delete_key {
 
-	my $Select_Key = $DB_Management->prepare("SELECT `key_owner`
+	my $Select_Key = $DB_Connection->prepare("SELECT `key_owner`
 	FROM `auth`
 	WHERE `id` = ?");
 
@@ -209,7 +209,7 @@ sub delete_key {
 	if ($User_Name_Extract eq '') {$User_Name_Extract = 'nobody'}
 	if ($User_Name_Extract ne $User_Name) {
 
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -228,7 +228,7 @@ sub delete_key {
 		exit(0);
 	}
 	else {
-		my $Delete = $DB_Management->prepare("DELETE from `auth`
+		my $Delete = $DB_Connection->prepare("DELETE from `auth`
 			WHERE `id` = ?");
 		
 		$Delete->execute($Delete_Key);
@@ -238,7 +238,7 @@ sub delete_key {
 
 sub default_key {
 
-	my $Select_Key = $DB_Management->prepare("SELECT `key_owner`
+	my $Select_Key = $DB_Connection->prepare("SELECT `key_owner`
 	FROM `auth`
 	WHERE `id` = ?");
 
@@ -249,7 +249,7 @@ sub default_key {
 	if ($User_Name_Extract eq '') {$User_Name_Extract = 'nobody'}
 	if ($User_Name_Extract ne $User_Name) {
 
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -268,12 +268,12 @@ sub default_key {
 		exit(0);
 	}
 	else {
-		my $Clear_Defaults = $DB_Management->prepare("UPDATE `auth` SET
+		my $Clear_Defaults = $DB_Connection->prepare("UPDATE `auth` SET
 				`default` = 0
 				WHERE `key_owner` = ?");
 		$Clear_Defaults->execute($User_Name);
 	
-		my $Default = $DB_Management->prepare("UPDATE `auth` SET
+		my $Default = $DB_Connection->prepare("UPDATE `auth` SET
 				`default` = 1
 				WHERE `id` = ?");
 		$Default->execute($Default_Key);
@@ -302,7 +302,7 @@ sub html_output {
 		"D-Shell Admin", "DNS Admin", "Rev. Proxy Admin", "DSMS Admin", "Approver", "Requires Approval");
 	$Permissions_Table->setRowClass (1, 'tbrow1');
 	
-	my $Select_Users = $DB_Management->prepare("SELECT `email`, `last_login`, `last_active`,  `admin`, 
+	my $Select_Users = $DB_Connection->prepare("SELECT `email`, `last_login`, `last_active`,  `admin`, 
 	`ip_admin`, `icinga_admin`, `dshell_admin`, `dns_admin`, `reverse_proxy_admin`, `dsms_admin`, `approver`, `requires_approval`, 
 	`last_modified`
 	FROM `credentials`
@@ -417,7 +417,7 @@ sub html_output {
 	);
 
 
-	my $Select_Logs = $DB_Management->prepare("SELECT `category`, `method`, `action`, `time`, `username`
+	my $Select_Logs = $DB_Connection->prepare("SELECT `category`, `method`, `action`, `time`, `username`
 		FROM `audit_log`
 		WHERE `username` LIKE ?
 		ORDER BY `id` DESC
@@ -503,7 +503,7 @@ sub html_output {
 		-padding=>1
 	);
 
-	my $Select_Keys = $DB_Management->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`, `last_modified`
+	my $Select_Keys = $DB_Connection->prepare("SELECT `id`, `key_name`, `default`, `key_username`, `key_passphrase`, `last_modified`
 		FROM `auth`
 		WHERE `key_owner` LIKE ?
 		ORDER BY `id` ASC");

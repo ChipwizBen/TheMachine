@@ -22,8 +22,8 @@ if (!$Host_Name) {
 
 sub checkin {
 
-	my $DB_Sudoers = DB_Sudoers();
-	my $Find_Host = $DB_Sudoers->prepare("SELECT `id` FROM `hosts`
+	my $DB_Connection = DB_Connection();
+	my $Find_Host = $DB_Connection->prepare("SELECT `id` FROM `hosts`
 		WHERE `hostname` = ?");
 		
 	$Find_Host->execute($Host_Name);
@@ -34,8 +34,8 @@ sub checkin {
 		my $Host_ID = $Discovered_Host[0];
 
 		# Updating sudoers distribution database with latest checkin
-		my $DB_Management = DB_Management();
-		my $Distribution_Checkin = $DB_Management->prepare("UPDATE `distribution` SET
+		my $DB_Connection = DB_Connection();
+		my $Distribution_Checkin = $DB_Connection->prepare("UPDATE `distribution` SET
 		`last_checkin` = NOW()
 		WHERE `host_id` = ?");
 

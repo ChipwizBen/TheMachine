@@ -9,7 +9,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_DNS = DB_DNS();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Add_Domain = $CGI->param("Add_Domain");
@@ -180,7 +180,7 @@ ENDHTML
 
 sub add_domain {
 
-	my $Domain_Insert = $DB_DNS->prepare("INSERT INTO `domains` (
+	my $Domain_Insert = $DB_Connection->prepare("INSERT INTO `domains` (
 		`domain`,
 		`modified_by`
 	)
@@ -190,11 +190,11 @@ sub add_domain {
 
 	$Domain_Insert->execute($Domain_Add, $User_Name);
 
-	my $Domain_Insert_ID = $DB_DNS->{mysql_insertid};
+	my $Domain_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -213,7 +213,7 @@ sub add_domain {
 
 sub html_edit_domain {
 
-	my $Select_Domain = $DB_DNS->prepare("SELECT `domain`
+	my $Select_Domain = $DB_Connection->prepare("SELECT `domain`
 	FROM `domains`
 	WHERE `id` = ?");
 	$Select_Domain->execute($Edit_Domain);
@@ -259,7 +259,7 @@ ENDHTML
 sub edit_domain {
 
 
-	my $Update_Domain = $DB_DNS->prepare("UPDATE `domains` SET
+	my $Update_Domain = $DB_Connection->prepare("UPDATE `domains` SET
 		`domain` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
@@ -267,8 +267,8 @@ sub edit_domain {
 	$Update_Domain->execute($Domain_Edit, $User_Name, $Edit_Domain_Post);
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -285,7 +285,7 @@ sub edit_domain {
 
 sub html_delete_domain {
 
-	my $Select_Domain = $DB_DNS->prepare("SELECT `domain`
+	my $Select_Domain = $DB_Connection->prepare("SELECT `domain`
 	FROM `domains`
 	WHERE `id` = ?");
 
@@ -330,7 +330,7 @@ ENDHTML
 sub delete_domain {
 
 	# Audit Log
-	my $Select_Domains = $DB_DNS->prepare("SELECT `domain`
+	my $Select_Domains = $DB_Connection->prepare("SELECT `domain`
 		FROM `domains`
 		WHERE `id` = ?");
 
@@ -339,8 +339,8 @@ sub delete_domain {
 	while ( my ( $Domain_Extract ) = $Select_Domains->fetchrow_array() )
 	{
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -355,7 +355,7 @@ sub delete_domain {
 	}
 	# / Audit Log
 
-	my $Delete_Domain = $DB_DNS->prepare("DELETE from `domains`
+	my $Delete_Domain = $DB_Connection->prepare("DELETE from `domains`
 		WHERE `id` = ?");
 	
 	$Delete_Domain->execute($Delete_Domain_Confirm);
@@ -377,12 +377,12 @@ sub html_output {
 	);
 
 
-	my $Select_Domain_Count = $DB_DNS->prepare("SELECT `id` FROM `domains`");
+	my $Select_Domain_Count = $DB_Connection->prepare("SELECT `id` FROM `domains`");
 		$Select_Domain_Count->execute( );
 		my $Total_Rows = $Select_Domain_Count->rows();
 
 
-	my $Select_Domains = $DB_DNS->prepare("SELECT `id`, `domain`, `last_modified`, `modified_by`
+	my $Select_Domains = $DB_Connection->prepare("SELECT `id`, `domain`, `last_modified`, `modified_by`
 		FROM `domains`
 		WHERE `id` LIKE ?
 		OR `domain` LIKE ?
@@ -495,7 +495,7 @@ print <<ENDHTML;
 						<select name='Edit_Domain' style="width: 150px">
 ENDHTML
 
-						my $Domain_List_Query = $DB_DNS->prepare("SELECT `id`, `domain`
+						my $Domain_List_Query = $DB_Connection->prepare("SELECT `id`, `domain`
 						FROM `domains`
 						ORDER BY `domain` ASC");
 						$Domain_List_Query->execute( );

@@ -11,7 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_IP_Allocation = DB_IP_Allocation();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 my $Location_Input = $CGI->param("Location_Input");
@@ -237,7 +237,7 @@ else {
 
 sub allocation {
 
-	my $Discover_Allocatable_Blocks = $DB_IP_Allocation->prepare("SELECT `ip_block_name`, `ip_block`, `ip_block_description`, `range_for_use`, `range_for_use_subnet`
+	my $Discover_Allocatable_Blocks = $DB_Connection->prepare("SELECT `ip_block_name`, `ip_block`, `ip_block_description`, `range_for_use`, `range_for_use_subnet`
 	FROM `ipv4_blocks`
 	WHERE `id` = ?");
 
@@ -268,7 +268,7 @@ sub allocation {
 			
 			$IP_Block =~ s/\/..?//;
 
-			my $IP_Block_Check_Cycle = $DB_IP_Allocation->prepare("SELECT `ip_block`
+			my $IP_Block_Check_Cycle = $DB_Connection->prepare("SELECT `ip_block`
 				FROM `ipv4_allocations`
 				ORDER BY `ip_block` ASC");
 			$IP_Block_Check_Cycle->execute();
@@ -474,7 +474,7 @@ my @Hosts = split(',', $Add_Host_Temp_Existing);
 
 foreach my $Host (@Hosts) {
 
-	my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
+	my $Host_Query = $DB_Connection->prepare("SELECT `hostname`
 		FROM `hosts`
 		WHERE `id` = ?");
 	$Host_Query->execute($Host);
@@ -573,7 +573,7 @@ print <<ENDHTML;
 			<select name='Add_Host_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`
+my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`
 	FROM `hosts`
 	ORDER BY `hostname` ASC"
 );
@@ -639,7 +639,7 @@ ENDHTML
 sub add_block {
 
 	### Existing Block Check
-	my $Existing_Block_Check = $DB_IP_Allocation->prepare("SELECT `id`
+	my $Existing_Block_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `ipv4_allocations`
 		WHERE `ip_block` = ?");
 		$Existing_Block_Check->execute($Final_Allocation);
@@ -659,7 +659,7 @@ sub add_block {
 	}
 	### / Existing Block Check
 
-	my $Block_Insert = $DB_IP_Allocation->prepare("INSERT INTO `ipv4_allocations` (
+	my $Block_Insert = $DB_Connection->prepare("INSERT INTO `ipv4_allocations` (
 		`ip_block`,
 		`parent_block`,
 		`modified_by`
@@ -672,7 +672,7 @@ sub add_block {
 
 	$Block_Insert->execute($Final_Allocation, $Final_Parent, $User_Name);
 
-	my $Block_Insert_ID = $DB_IP_Allocation->{mysql_insertid};
+	my $Block_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	$Add_Host_Temp_Existing =~ s/,$//;
 	my @Host = split(',', $Add_Host_Temp_Existing);
@@ -680,7 +680,7 @@ sub add_block {
 	my $Host_Counter = 0;
 	foreach my $Host (@Host) {
 		$Host_Counter++;
-		my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
 			`host`,
 			`ip`
 		)
@@ -692,8 +692,8 @@ sub add_block {
 	}
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -715,7 +715,7 @@ sub add_block {
 
 sub html_edit_block {
 
-	my $Block_Query = $DB_IP_Allocation->prepare("SELECT `ip_block`, `parent_block`
+	my $Block_Query = $DB_Connection->prepare("SELECT `ip_block`, `parent_block`
 	FROM `ipv4_allocations`
 	WHERE `id` LIKE ?");
 
@@ -723,7 +723,7 @@ sub html_edit_block {
 	
 	my ($Block_Extract, $Block_Parent_Extract) = $Block_Query->fetchrow_array();
 
-	my $Associated_Host_Links = $DB_IP_Allocation->prepare("SELECT `host`
+	my $Associated_Host_Links = $DB_Connection->prepare("SELECT `host`
 	FROM `lnk_hosts_to_ipv4_allocations`
 	WHERE `ip` LIKE ?");
 
@@ -733,7 +733,7 @@ sub html_edit_block {
 	my $Existing_Hosts;
 	while (my $Host = $Associated_Host_Links->fetchrow_array())
 	{
-		my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
+		my $Host_Query = $DB_Connection->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` = ?");
 		$Host_Query->execute($Host);
@@ -759,7 +759,7 @@ sub html_edit_block {
 		$Edit_Host_Temp_Existing !~ m/,$Edit_Host_Temp_New$/g &&
 		$Edit_Host_Temp_Existing !~ m/,$Edit_Host_Temp_New,/g) {
 	
-			my $Select_Links = $DB_IP_Allocation->prepare("SELECT `id`
+			my $Select_Links = $DB_Connection->prepare("SELECT `id`
 				FROM `lnk_hosts_to_ipv4_allocations`
 				WHERE `ip` = ?
 				AND `host` = ? "
@@ -777,7 +777,7 @@ sub html_edit_block {
 		
 		foreach my $Host (@Hosts) {
 		
-			my $Host_Query = $DB_IP_Allocation->prepare("SELECT `hostname`
+			my $Host_Query = $DB_Connection->prepare("SELECT `hostname`
 				FROM `hosts`
 				WHERE `id` = ?");
 			$Host_Query->execute($Host);
@@ -835,7 +835,7 @@ print <<ENDHTML;
 			<select name='Edit_Host_Temp_New' onchange='this.form.submit()' style="width: 300px">
 ENDHTML
 
-my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `id`, `hostname`
+my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`
 	FROM `hosts`
 	ORDER BY `hostname` ASC"
 );
@@ -908,7 +908,7 @@ sub edit_block {
 	my $Host_Counter = 0;
 	foreach my $Host (@Host) {
 		$Host_Counter++;
-		my $Host_Insert = $DB_IP_Allocation->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
 			`host`,
 			`ip`
 		)
@@ -920,8 +920,8 @@ sub edit_block {
 	}
 
 	# Audit Log
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -941,7 +941,7 @@ sub edit_block {
 } # sub edit_block
 
 sub html_delete_block {
-	my $Select_Block = $DB_IP_Allocation->prepare("SELECT `ip_block`, `parent_block`
+	my $Select_Block = $DB_Connection->prepare("SELECT `ip_block`, `parent_block`
 	FROM `ipv4_allocations`
 	WHERE `id` = ?");
 
@@ -953,14 +953,14 @@ sub html_delete_block {
 		my $Block_Extract = $DB_Block[0];
 		my $Block_Parent_Extract = $DB_Block[1];
 
-		my $Select_Block_Links = $DB_IP_Allocation->prepare("SELECT `host`
+		my $Select_Block_Links = $DB_Connection->prepare("SELECT `host`
 			FROM `lnk_hosts_to_ipv4_allocations`
 			WHERE `ip` = ?");
 		$Select_Block_Links->execute($Delete_Block);
 	
 		my $Hosts;
 		while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
-			my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `hostname`
+			my $Select_Blocks = $DB_Connection->prepare("SELECT `hostname`
 				FROM `hosts`
 				WHERE `id` = ?");
 			$Select_Blocks->execute($Block_ID);
@@ -1017,7 +1017,7 @@ ENDHTML
 sub delete_block {
 
 	# Audit Log
-	my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `ip_block`
+	my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
 		FROM `ipv4_allocations`
 		WHERE `id` = ?");
 
@@ -1025,8 +1025,8 @@ sub delete_block {
 
 	while (( my $Block ) = $Select_Blocks->fetchrow_array() )
 	{
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1039,12 +1039,12 @@ sub delete_block {
 	}
 	# / Audit Log
 
-	my $Delete_Block = $DB_IP_Allocation->prepare("DELETE from `ipv4_allocations`
+	my $Delete_Block = $DB_Connection->prepare("DELETE from `ipv4_allocations`
 		WHERE `id` = ?");
 	
 	$Delete_Block->execute($Delete_Block_Confirm);
 
-	my $Delete_Associations = $DB_IP_Allocation->prepare("DELETE from `lnk_hosts_to_ipv4_allocations`
+	my $Delete_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_allocations`
 		WHERE `ip` = ?");
 	
 	$Delete_Associations->execute($Delete_Block_Confirm);
@@ -1195,11 +1195,11 @@ my $Table = new HTML::Table(
 	-padding=>1
 );
 
-my $Select_Block_Count = $DB_IP_Allocation->prepare("SELECT `id` FROM `ipv4_allocations`");
+my $Select_Block_Count = $DB_Connection->prepare("SELECT `id` FROM `ipv4_allocations`");
 	$Select_Block_Count->execute( );
 	my $Total_Rows = $Select_Block_Count->rows();
 
-my $Select_Blocks = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block`, `parent_block`, `last_modified`, `modified_by`
+my $Select_Blocks = $DB_Connection->prepare("SELECT `id`, `ip_block`, `parent_block`, `last_modified`, `modified_by`
 	FROM `ipv4_allocations`
 		WHERE `id` LIKE ?
 		OR `ip_block` LIKE ?
@@ -1236,7 +1236,7 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 	my $Last_Modified = $Select_Blocks[3];
 	my $Modified_By = $Select_Blocks[4];
 
-	my $Select_Host_Links = $DB_IP_Allocation->prepare("SELECT `host`
+	my $Select_Host_Links = $DB_Connection->prepare("SELECT `host`
 		FROM `lnk_hosts_to_ipv4_allocations`
 		WHERE `ip` = ?");
 	$Select_Host_Links->execute($ID);
@@ -1245,7 +1245,7 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 	my $Floating;
 	while (my $Host_ID = $Select_Host_Links->fetchrow_array() ) {
 		$Floating++;
-		my $Select_Hosts = $DB_IP_Allocation->prepare("SELECT `hostname`
+		my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` = ?");
 		$Select_Hosts->execute($Host_ID);
@@ -1336,7 +1336,7 @@ print <<ENDHTML;
 							<select name='Location_Input'>
 ENDHTML
 
-		my $Location_Retreive = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
+		my $Location_Retreive = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
 		FROM `ipv4_blocks`
 		ORDER BY `ip_block_name` ASC");
 		
@@ -1436,7 +1436,7 @@ print <<ENDHTML;
 			<select name='Location_Input_Manual'>
 ENDHTML
 
-		my $Location_Retreive = $DB_IP_Allocation->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
+		my $Location_Retreive = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
 		FROM `ipv4_blocks`
 		ORDER BY `ip_block_name` ASC");
 		

@@ -11,8 +11,7 @@ require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
-my $DB_Management = DB_Management();
-my $DB_Sudoers = DB_Sudoers();
+my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
 # Rule Additions
@@ -326,9 +325,9 @@ if ($Add_Host_Group_Temp_Existing eq 'ALL') {
 else {
 	foreach my $Host_Group (@Host_Groups) {
 
-		my $Host_Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `active`
+		my $Host_Group_Query = $DB_Connection->prepare("SELECT `groupname`, `active`
 			FROM `host_groups`
-			WHERE `id` = ? ");
+			WHERE `id` = ?");
 		$Host_Group_Query->execute($Host_Group);
 
 		while ( (my $Host_Group_Name, my $Active) = my @Host_Group_Query = $Host_Group_Query->fetchrow_array() )
@@ -359,22 +358,25 @@ if ($Add_Host_Temp_Existing eq 'ALL') {
 else {
 	foreach my $Host (@Hosts) {
 	
-		my $Host_Query = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `active`
+		my $Host_Query = $DB_Connection->prepare("SELECT `hostname`, `active`
 			FROM `hosts`
 			WHERE `id` = ? ");
 		$Host_Query->execute($Host);
 			
-		while ( (my $Host_Name, my $IP, my $Active) = my @Host_Query = $Host_Query->fetchrow_array() )
+		while ( (my $Host_Name, my $Active) = my @Host_Query = $Host_Query->fetchrow_array() )
 		{
+
+		my $Blocks = &block_discovery($Host);
+
 		my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 			if ($Host_Name_Character_Limited ne $Host_Name) {
 				$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 			}
 			if ($Active) {
-				$Hosts = $Hosts . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Host_Name_Character_Limited</td><td align='left' style='color: #00FF00'>$IP</td></tr>";
+				$Hosts = $Hosts . "<tr><td align='left' style='color: #00FF00; padding-right: 15px;'>$Host_Name_Character_Limited</td><td align='left' style='color: #00FF00'>$Blocks</td></tr>";
 			}
 			else {
-				$Hosts = $Hosts . "<tr><td align='left' style='color: #FF0000; padding-right: 15px;'>$Host_Name_Character_Limited</td><td align='left' style='color: #FF0000'>$IP</td></tr>";
+				$Hosts = $Hosts . "<tr><td align='left' style='color: #FF0000; padding-right: 15px;'>$Host_Name_Character_Limited</td><td align='left' style='color: #FF0000'>$Blocks</td></tr>";
 			}	
 		}
 	}
@@ -386,7 +388,7 @@ my @User_Groups = split(',', $Add_User_Group_Temp_Existing);
 
 foreach my $User_Group (@User_Groups) {
 
-	my $User_Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `system_group`, `active`
+	my $User_Group_Query = $DB_Connection->prepare("SELECT `groupname`, `system_group`, `active`
 		FROM `user_groups`
 		WHERE `id` = ? ");
 	$User_Group_Query->execute($User_Group);
@@ -414,7 +416,7 @@ my @Users = split(',', $Add_User_Temp_Existing);
 
 foreach my $User (@Users) {
 
-	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `active`
+	my $User_Query = $DB_Connection->prepare("SELECT `username`, `active`
 		FROM `users`
 		WHERE `id` = ? ");
 	$User_Query->execute($User);
@@ -441,7 +443,7 @@ my @Command_Groups = split(',', $Add_Command_Group_Temp_Existing);
 
 foreach my $Command_Group (@Command_Groups) {
 
-	my $Command_Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `active`
+	my $Command_Group_Query = $DB_Connection->prepare("SELECT `groupname`, `active`
 		FROM `command_groups`
 		WHERE `id` = ? ");
 	$Command_Group_Query->execute($Command_Group);
@@ -468,7 +470,7 @@ my @Commands = split(',', $Add_Command_Temp_Existing);
 
 foreach my $Command (@Commands) {
 
-	my $Command_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `active`
+	my $Command_Query = $DB_Connection->prepare("SELECT `command_alias`, `command`, `active`
 		FROM `commands`
 		WHERE `id` = ? ");
 	$Command_Query->execute($Command);
@@ -534,7 +536,7 @@ function Expire_Toggle() {
 ENDHTML
 
 ### Host Groups
-				my $Host_Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `active`
+				my $Host_Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`, `active`
 				FROM `host_groups`
 				ORDER BY `groupname` ASC");
 				$Host_Group_List_Query->execute( );
@@ -568,25 +570,31 @@ print <<ENDHTML;
 ENDHTML
 
 ### Hosts
-				my $Host_List_Query = $DB_Sudoers->prepare("SELECT `id`, `hostname`, `ip`, `active`
+				my $Host_List_Query = $DB_Connection->prepare("SELECT `id`, `hostname`, `active`
 				FROM `hosts`
+				LEFT JOIN `host_attributes`
+				ON `hosts`.`id`=`host_attributes`.`host_id`
+					WHERE `dsms` = 1
 				ORDER BY `hostname` ASC");
 				$Host_List_Query->execute( );
 
 				print "<option value='' selected>--Select a Host--</option>";
 				print "<option value='ALL'>All Hosts (Special sudoers option: ALL)</option>";
 
-				while ( (my $ID, my $Host_Name, my $IP, my $Active) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
+				while ( (my $ID, my $Host_Name, my $Active) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
 				{
+
+					my $Blocks = &block_discovery($ID);
+
 					my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 						if ($Host_Name_Character_Limited ne $Host_Name) {
 							$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 						}
 					if ($Active) {
-						print "<option value='$ID'>$Host_Name_Character_Limited ($IP)</option>";
+						print "<option value='$ID'>$Host_Name_Character_Limited ($Blocks)</option>";
 					}
 					else {
-						print "<option style='color: #FF0000;' value='$ID'>$Host_Name_Character_Limited ($IP) [Inactive]</option>";
+						print "<option style='color: #FF0000;' value='$ID'>$Host_Name_Character_Limited ($Blocks) [Inactive]</option>";
 					}
 
 				}
@@ -603,7 +611,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### User Groups
-				my $User_Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `system_group`, `active`
+				my $User_Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`, `system_group`, `active`
 				FROM `user_groups`
 				ORDER BY `groupname` ASC");
 				$User_Group_List_Query->execute( );
@@ -637,7 +645,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Users
-				my $User_List_Query = $DB_Sudoers->prepare("SELECT `id`, `username`, `active`
+				my $User_List_Query = $DB_Connection->prepare("SELECT `id`, `username`, `active`
 				FROM `users`
 				ORDER BY `username` ASC");
 				$User_List_Query->execute( );
@@ -670,7 +678,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Command Groups
-				my $Command_Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `active`
+				my $Command_Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`, `active`
 				FROM `command_groups`
 				ORDER BY `groupname` ASC");
 				$Command_Group_List_Query->execute( );
@@ -704,7 +712,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Commands
-				my $Command_List_Query = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `active`
+				my $Command_List_Query = $DB_Connection->prepare("SELECT `id`, `command_alias`, `command`, `active`
 				FROM `commands`
 				ORDER BY `command_alias` ASC");
 				$Command_List_Query->execute( );
@@ -958,7 +966,7 @@ ENDHTML
 sub add_rule {
 
 	### Existing Rule_Name Check
-	my $Existing_Rule_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_Rule_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `rules`
 		WHERE `name` = ?");
 		$Existing_Rule_Name_Check->execute($Rule_Name_Add);
@@ -1003,7 +1011,7 @@ sub add_rule {
 		$Approved = 0;
 	}
 
-	my $Rule_Insert = $DB_Sudoers->prepare("INSERT INTO `rules` (
+	my $Rule_Insert = $DB_Connection->prepare("INSERT INTO `rules` (
 		`name`,
 		`all_hosts`,
 		`run_as`,
@@ -1021,7 +1029,7 @@ sub add_rule {
 	$Rule_Insert->execute($Rule_Name_Add, $ALL_Hosts, $Run_As_Add, $NOPASSWD_Add, $NOEXEC_Add, $Expires_Date_Add,
 	$Active_Add, $Approved, $User_Name);
 
-	my $Rule_Insert_ID = $DB_Sudoers->{mysql_insertid};
+	my $Rule_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
 	if ($Expires_Date_Add eq '0000-00-00') {
@@ -1035,8 +1043,8 @@ sub add_rule {
 	if ($NOPASSWD_Add) {$NOPASSWD_Add = 'NOPASSWD'} else {$NOPASSWD_Add = 'PASSWD'}
 	if ($NOEXEC_Add) {$NOEXEC_Add = 'NOEXEC'} else {$NOEXEC_Add = 'EXEC'}
 	
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -1057,7 +1065,7 @@ sub add_rule {
 
 	if (!$User_Requires_Approval && $User_Approver) {
 
-		my $Approve_Rule = $DB_Sudoers->prepare("UPDATE `rules` SET
+		my $Approve_Rule = $DB_Connection->prepare("UPDATE `rules` SET
 		`last_approved` = NOW(),
 		`approved_by` = ?
 		WHERE `id` = ?");
@@ -1065,8 +1073,8 @@ sub add_rule {
 		$Approve_Rule->execute($User_Name, $Rule_Insert_ID);
 
 		# Audit Log
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -1087,7 +1095,7 @@ sub add_rule {
 
 	foreach my $Host_Group (@Host_Groups) {
 
-		my $Host_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_host_groups` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_host_groups` (
 			`id`,
 			`rule`,
 			`host_group`
@@ -1101,12 +1109,12 @@ sub add_rule {
 		$Host_Insert->execute($Rule_Insert_ID, $Host_Group);
 
 		# Audit Log
-		my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname` FROM `host_groups` WHERE `id` = ?");
+		my $Select_Group = $DB_Connection->prepare("SELECT `groupname` FROM `host_groups` WHERE `id` = ?");
 		$Select_Group->execute($Host_Group);
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -1130,7 +1138,7 @@ sub add_rule {
 
 	foreach my $Host (@Hosts) {
 
-		my $Host_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_hosts` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_hosts` (
 			`id`,
 			`rule`,
 			`host`
@@ -1144,12 +1152,12 @@ sub add_rule {
 		$Host_Insert->execute($Rule_Insert_ID, $Host);
 
 		# Audit Log
-		my $Select_Host = $DB_Sudoers->prepare("SELECT `hostname` FROM `hosts` WHERE `id` = ?");
+		my $Select_Host = $DB_Connection->prepare("SELECT `hostname` FROM `hosts` WHERE `id` = ?");
 		$Select_Host->execute($Host);
 		while ( (my $Name) = $Select_Host->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -1173,7 +1181,7 @@ sub add_rule {
 
 	foreach my $User_Group (@User_Groups) {
 
-		my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_user_groups` (
+		my $User_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_user_groups` (
 			`id`,
 			`rule`,
 			`user_group`
@@ -1187,12 +1195,12 @@ sub add_rule {
 		$User_Insert->execute($Rule_Insert_ID, $User_Group);
 
 		# Audit Log
-		my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname` FROM `user_groups` WHERE `id` = ?");
+		my $Select_Group = $DB_Connection->prepare("SELECT `groupname` FROM `user_groups` WHERE `id` = ?");
 		$Select_Group->execute($User_Group);
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -1216,7 +1224,7 @@ sub add_rule {
 
 	foreach my $User (@Users) {
 
-		my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_users` (
+		my $User_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_users` (
 			`id`,
 			`rule`,
 			`user`
@@ -1230,12 +1238,12 @@ sub add_rule {
 		$User_Insert->execute($Rule_Insert_ID, $User);
 
 		# Audit Log
-		my $Select_User = $DB_Sudoers->prepare("SELECT `username` FROM `users` WHERE `id` = ?");
+		my $Select_User = $DB_Connection->prepare("SELECT `username` FROM `users` WHERE `id` = ?");
 		$Select_User->execute($User);
 		while ( (my $Name) = $Select_User->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -1259,7 +1267,7 @@ sub add_rule {
 
 	foreach my $Command_Group (@Command_Groups) {
 
-		my $Command_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_command_groups` (
+		my $Command_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_command_groups` (
 			`id`,
 			`rule`,
 			`command_group`
@@ -1273,12 +1281,12 @@ sub add_rule {
 		$Command_Insert->execute($Rule_Insert_ID, $Command_Group);
 
 		# Audit Log
-		my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname` FROM `command_groups` WHERE `id` = ?");
+		my $Select_Group = $DB_Connection->prepare("SELECT `groupname` FROM `command_groups` WHERE `id` = ?");
 		$Select_Group->execute($Command_Group);
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -1303,7 +1311,7 @@ sub add_rule {
 
 	foreach my $Command (@Commands) {
 
-		my $Command_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_commands` (
+		my $Command_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_commands` (
 			`id`,
 			`rule`,
 			`command`
@@ -1317,12 +1325,12 @@ sub add_rule {
 		$Command_Insert->execute($Rule_Insert_ID, $Command);
 
 		# Audit Log
-		my $Select_Command = $DB_Sudoers->prepare("SELECT `command_alias` FROM `commands` WHERE `id` = ?");
+		my $Select_Command = $DB_Connection->prepare("SELECT `command_alias` FROM `commands` WHERE `id` = ?");
 		$Select_Command->execute($Command);
 		while ( (my $Name) = $Select_Command->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -1351,7 +1359,7 @@ sub html_edit_rule {
 
 ### Rule Details
 
-my $Select_Rule = $DB_Sudoers->prepare("SELECT `name`, `all_hosts`, `run_as`, `nopasswd`, `noexec`, `expires`, `active`
+my $Select_Rule = $DB_Connection->prepare("SELECT `name`, `all_hosts`, `run_as`, `nopasswd`, `noexec`, `expires`, `active`
 FROM `rules`
 WHERE `id` = ?");
 $Select_Rule->execute($Edit_Rule);
@@ -1395,7 +1403,7 @@ if ($Run_As_Edit eq undef) {$Run_As_Edit = $Run_As_Extract};
 ### Currently Attached Host Groups Retrieval and Conversion
 
 my $Existing_Host_Groups;
-my $Select_Links = $DB_Sudoers->prepare("SELECT `host_group`
+my $Select_Links = $DB_Connection->prepare("SELECT `host_group`
 	FROM `lnk_rules_to_host_groups`
 	WHERE `rule` = ? "
 );
@@ -1405,7 +1413,7 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `active`
+	my $Group_Query = $DB_Connection->prepare("SELECT `groupname`, `active`
 		FROM `host_groups`
 		WHERE `id` = ? ");
 	$Group_Query->execute($Link);
@@ -1433,7 +1441,7 @@ if ($Edit_Host_Group_Temp_New) {
 	$Edit_Host_Group_Temp_Existing !~ m/,$Edit_Host_Group_Temp_New$/g &&
 	$Edit_Host_Group_Temp_Existing !~ m/,$Edit_Host_Group_Temp_New,/g) {
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_rules_to_host_groups`
 			WHERE `rule` = ?
 			AND `host_group` = ? "
@@ -1455,7 +1463,7 @@ if ($Edit_Host_Group_Temp_New eq 'ALL') {$Edit_Host_Group_Temp_Existing = 'ALL'}
 
 foreach my $Host_Group (@Host_Groups) {
 
-	my $Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `active`
+	my $Group_Query = $DB_Connection->prepare("SELECT `groupname`, `active`
 		FROM `host_groups`
 		WHERE `id` = ? ");
 	$Group_Query->execute($Host_Group);
@@ -1479,9 +1487,9 @@ if ($Edit_Host_Group_Temp_Existing eq 'ALL') {$New_Host_Groups = "<tr><td align=
 ### Currently Attached Host Retrieval and Conversion
 
 my $Existing_Hosts;
-my $Select_Host_Links = $DB_Sudoers->prepare("SELECT `host`
+my $Select_Host_Links = $DB_Connection->prepare("SELECT `host`
 	FROM `lnk_rules_to_hosts`
-	WHERE `rule` = ? "
+	WHERE `rule` = ?"
 );
 $Select_Host_Links->execute($Edit_Rule);
 
@@ -1489,11 +1497,11 @@ while ( my @Select_Links = $Select_Host_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $Host_Query = $DB_Sudoers->prepare("SELECT `hostname`, `active`
+	my $Host_Query = $DB_Connection->prepare("SELECT `hostname`, `active`
 		FROM `hosts`
-		WHERE `id` = ? ");
+		WHERE `id` = ?");
 	$Host_Query->execute($Link);
-		
+
 	while ( (my $Host_Name, my $Active) = my @Host_Query = $Host_Query->fetchrow_array() )
 	{
 		if ($Active) {
@@ -1517,7 +1525,7 @@ if ($Edit_Host_Temp_New) {
 	$Edit_Host_Temp_Existing !~ m/,$Edit_Host_Temp_New$/g &&
 	$Edit_Host_Temp_Existing !~ m/,$Edit_Host_Temp_New,/g) {
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_rules_to_hosts`
 			WHERE `rule` = ?
 			AND `host` = ? "
@@ -1539,7 +1547,7 @@ if ($Edit_Host_Temp_New eq 'ALL') {$Edit_Host_Temp_Existing = 'ALL'}
 
 foreach my $Host (@Hosts) {
 
-	my $Host_Query = $DB_Sudoers->prepare("SELECT `hostname`, `active`
+	my $Host_Query = $DB_Connection->prepare("SELECT `hostname`, `active`
 		FROM `hosts`
 		WHERE `id` = ? ");
 	$Host_Query->execute($Host);
@@ -1562,7 +1570,7 @@ if ($Edit_Host_Temp_Existing eq 'ALL') {$New_Hosts = "<tr><td align='left' style
 ### Currently Attached User Groups Retrieval and Conversion
 
 my $Existing_User_Groups;
-my $Select_User_Group_Links = $DB_Sudoers->prepare("SELECT `user_group`
+my $Select_User_Group_Links = $DB_Connection->prepare("SELECT `user_group`
 	FROM `lnk_rules_to_user_groups`
 	WHERE `rule` = ? "
 );
@@ -1572,7 +1580,7 @@ while ( my @Select_Links = $Select_User_Group_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `system_group`, `active`
+	my $Group_Query = $DB_Connection->prepare("SELECT `groupname`, `system_group`, `active`
 		FROM `user_groups`
 		WHERE `id` = ? ");
 	$Group_Query->execute($Link);
@@ -1600,7 +1608,7 @@ if ($Edit_User_Group_Temp_New) {
 	$Edit_User_Group_Temp_Existing !~ m/,$Edit_User_Group_Temp_New$/g &&
 	$Edit_User_Group_Temp_Existing !~ m/,$Edit_User_Group_Temp_New,/g) {
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_rules_to_user_groups`
 			WHERE `rule` = ?
 			AND `user_group` = ? "
@@ -1620,7 +1628,7 @@ my @User_Groups = split(',', $Edit_User_Group_Temp_Existing);
 
 foreach my $User_Group (@User_Groups) {
 
-	my $Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `system_group`, `active`
+	my $Group_Query = $DB_Connection->prepare("SELECT `groupname`, `system_group`, `active`
 		FROM `user_groups`
 		WHERE `id` = ? ");
 	$Group_Query->execute($User_Group);
@@ -1643,7 +1651,7 @@ foreach my $User_Group (@User_Groups) {
 ### Currently Attached User Retrieval and Conversion
 
 my $Existing_Users;
-my $Select_User_Links = $DB_Sudoers->prepare("SELECT `user`
+my $Select_User_Links = $DB_Connection->prepare("SELECT `user`
 	FROM `lnk_rules_to_users`
 	WHERE `rule` = ? "
 );
@@ -1653,7 +1661,7 @@ while ( my @Select_Links = $Select_User_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `active`
+	my $User_Query = $DB_Connection->prepare("SELECT `username`, `active`
 		FROM `users`
 		WHERE `id` = ? ");
 	$User_Query->execute($Link);
@@ -1680,7 +1688,7 @@ if ($Edit_User_Temp_New) {
 	$Edit_User_Temp_Existing !~ m/,$Edit_User_Temp_New$/g &&
 	$Edit_User_Temp_Existing !~ m/,$Edit_User_Temp_New,/g) {
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_rules_to_users`
 			WHERE `rule` = ?
 			AND `user` = ? "
@@ -1700,7 +1708,7 @@ my @Users = split(',', $Edit_User_Temp_Existing);
 
 foreach my $User (@Users) {
 
-	my $User_Query = $DB_Sudoers->prepare("SELECT `username`, `active`
+	my $User_Query = $DB_Connection->prepare("SELECT `username`, `active`
 		FROM `users`
 		WHERE `id` = ? ");
 	$User_Query->execute($User);
@@ -1721,7 +1729,7 @@ foreach my $User (@Users) {
 ### Currently Attached Command Groups Retrieval and Conversion
 
 my $Existing_Command_Groups;
-my $Select_Command_Group_Links = $DB_Sudoers->prepare("SELECT `command_group`
+my $Select_Command_Group_Links = $DB_Connection->prepare("SELECT `command_group`
 	FROM `lnk_rules_to_command_groups`
 	WHERE `rule` = ? "
 );
@@ -1731,7 +1739,7 @@ while ( my @Select_Links = $Select_Command_Group_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `active`
+	my $Group_Query = $DB_Connection->prepare("SELECT `groupname`, `active`
 		FROM `command_groups`
 		WHERE `id` = ? ");
 	$Group_Query->execute($Link);
@@ -1758,7 +1766,7 @@ if ($Edit_Command_Group_Temp_New) {
 	$Edit_Command_Group_Temp_Existing !~ m/,$Edit_Command_Group_Temp_New$/g &&
 	$Edit_Command_Group_Temp_Existing !~ m/,$Edit_Command_Group_Temp_New,/g) {
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_rules_to_command_groups`
 			WHERE `rule` = ?
 			AND `command_group` = ? "
@@ -1778,7 +1786,7 @@ my @Command_Groups = split(',', $Edit_Command_Group_Temp_Existing);
 
 foreach my $Command_Group (@Command_Groups) {
 
-	my $Group_Query = $DB_Sudoers->prepare("SELECT `groupname`, `active`
+	my $Group_Query = $DB_Connection->prepare("SELECT `groupname`, `active`
 		FROM `command_groups`
 		WHERE `id` = ? ");
 	$Group_Query->execute($Command_Group);
@@ -1800,7 +1808,7 @@ foreach my $Command_Group (@Command_Groups) {
 ### Currently Attached Command Retrieval and Conversion
 
 my $Existing_Commands;
-my $Select_Command_Links = $DB_Sudoers->prepare("SELECT `command`
+my $Select_Command_Links = $DB_Connection->prepare("SELECT `command`
 	FROM `lnk_rules_to_commands`
 	WHERE `rule` = ? "
 );
@@ -1810,7 +1818,7 @@ while ( my @Select_Links = $Select_Command_Links->fetchrow_array() )
 {
 	my $Link = $Select_Links[0];
 
-	my $Command_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `active`
+	my $Command_Query = $DB_Connection->prepare("SELECT `command_alias`, `active`
 		FROM `commands`
 		WHERE `id` = ? ");
 	$Command_Query->execute($Link);
@@ -1837,7 +1845,7 @@ if ($Edit_Command_Temp_New) {
 	$Edit_Command_Temp_Existing !~ m/,$Edit_Command_Temp_New$/g &&
 	$Edit_Command_Temp_Existing !~ m/,$Edit_Command_Temp_New,/g) {
 
-		my $Select_Links = $DB_Sudoers->prepare("SELECT `id`
+		my $Select_Links = $DB_Connection->prepare("SELECT `id`
 			FROM `lnk_rules_to_commands`
 			WHERE `rule` = ?
 			AND `command` = ? "
@@ -1857,7 +1865,7 @@ my @Commands = split(',', $Edit_Command_Temp_Existing);
 
 foreach my $Command (@Commands) {
 
-	my $Command_Query = $DB_Sudoers->prepare("SELECT `command_alias`, `active`
+	my $Command_Query = $DB_Connection->prepare("SELECT `command_alias`, `active`
 		FROM `commands`
 		WHERE `id` = ? ");
 	$Command_Query->execute($Command);
@@ -1919,7 +1927,7 @@ ENDHTML
 ###### Option Selection
 
 ### Host Groups
-				my $Host_Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `active`
+				my $Host_Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`, `active`
 				FROM `host_groups`
 				ORDER BY `groupname` ASC");
 				$Host_Group_List_Query->execute( );
@@ -1953,25 +1961,31 @@ print <<ENDHTML;
 ENDHTML
 
 ### Hosts
-				my $Host_List_Query = $DB_Sudoers->prepare("SELECT `id`, `hostname`, `ip`, `active`
+				my $Host_List_Query = $DB_Connection->prepare("SELECT `id`, `hostname`, `active`
 				FROM `hosts`
+				LEFT JOIN `host_attributes`
+				ON `hosts`.`id`=`host_attributes`.`host_id`
+					WHERE `dsms` = 1
 				ORDER BY `hostname` ASC");
 				$Host_List_Query->execute( );
 
 				print "<option value='' selected>--Select a Host--</option>";
 				print "<option value='ALL'>All Hosts (Special sudoers option: ALL)</option>";
 
-				while ( (my $ID, my $Host_Name, my $IP, my $Active) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
+				while ( (my $ID, my $Host_Name, my $Active) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
 				{
+
+					my $Blocks = &block_discovery($ID);
+
 					my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 						if ($Host_Name_Character_Limited ne $Host_Name) {
 							$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 						}
 					if ($Active) {
-						print "<option value='$ID'>$Host_Name ($IP)</option>";
+						print "<option value='$ID'>$Host_Name ($Blocks)</option>";
 					}
 					else {
-						print "<option style='color: #FF0000;' value='$ID'>$Host_Name ($IP) [Inactive]</option>";
+						print "<option style='color: #FF0000;' value='$ID'>$Host_Name ($Blocks) [Inactive]</option>";
 					}
 				}
 
@@ -1987,7 +2001,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### User Groups
-				my $User_Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `system_group`, `active`
+				my $User_Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`, `system_group`, `active`
 				FROM `user_groups`
 				ORDER BY `groupname` ASC");
 				$User_Group_List_Query->execute( );
@@ -2021,7 +2035,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Users
-				my $User_List_Query = $DB_Sudoers->prepare("SELECT `id`, `username`, `active`
+				my $User_List_Query = $DB_Connection->prepare("SELECT `id`, `username`, `active`
 				FROM `users`
 				ORDER BY `username` ASC");
 				$User_List_Query->execute( );
@@ -2054,7 +2068,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Command Groups
-				my $Command_Group_List_Query = $DB_Sudoers->prepare("SELECT `id`, `groupname`, `active`
+				my $Command_Group_List_Query = $DB_Connection->prepare("SELECT `id`, `groupname`, `active`
 				FROM `command_groups`
 				ORDER BY `groupname` ASC");
 				$Command_Group_List_Query->execute( );
@@ -2087,7 +2101,7 @@ print <<ENDHTML;
 ENDHTML
 
 ### Commands
-				my $Command_List_Query = $DB_Sudoers->prepare("SELECT `id`, `command_alias`, `command`, `active`
+				my $Command_List_Query = $DB_Connection->prepare("SELECT `id`, `command_alias`, `command`, `active`
 				FROM `commands`
 				ORDER BY `command_alias` ASC");
 				$Command_List_Query->execute( );
@@ -2359,7 +2373,7 @@ ENDHTML
 sub edit_rule {
 
 	### Existing Rule_Name Check
-	my $Existing_Rule_Name_Check = $DB_Sudoers->prepare("SELECT `id`
+	my $Existing_Rule_Name_Check = $DB_Connection->prepare("SELECT `id`
 		FROM `rules`
 		WHERE `name` = ?
 		AND `id` != ?");
@@ -2382,7 +2396,7 @@ sub edit_rule {
 
 	### Existing Check for ALL Hosts Option
 	my $Existing_ALL_Hosts;
-	my $Existing_ALL_Hosts_Check = $DB_Sudoers->prepare("SELECT `all_hosts`
+	my $Existing_ALL_Hosts_Check = $DB_Connection->prepare("SELECT `all_hosts`
 		FROM `rules`
 		WHERE `id` = ?");
 
@@ -2401,11 +2415,11 @@ sub edit_rule {
 		$Edit_Host_Temp_Existing = '';
 		$ALL_Hosts = 1;
 
-		my $Delete_Host_Group_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_host_groups`
+		my $Delete_Host_Group_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_host_groups`
 			WHERE `rule` = ?");
 		$Delete_Host_Group_Rule->execute($Edit_Rule);
 
-		my $Delete_Host_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_hosts`
+		my $Delete_Host_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_hosts`
 			WHERE `rule` = ?");
 		$Delete_Host_Rule->execute($Edit_Rule);
 
@@ -2431,7 +2445,7 @@ sub edit_rule {
 		$Expires_Date_Edit = '0000-00-00';
 	}
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules` SET
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules` SET
 		`name` = ?,
 		`all_hosts` = ?,
 		`run_as` = ?,
@@ -2457,8 +2471,8 @@ sub edit_rule {
 	if ($NOPASSWD_Edit) {$NOPASSWD_Edit = 'NOPASSWD'} else {$NOPASSWD_Edit = 'PASSWD'}
 	if ($NOEXEC_Edit) {$NOEXEC_Edit = 'NOEXEC'} else {$NOEXEC_Edit = 'EXEC'}
 	
-	my $DB_Management = DB_Management();
-	my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
 		`method`,
 		`action`,
@@ -2483,7 +2497,7 @@ sub edit_rule {
 
 	foreach my $Host_Group (@Host_Groups) {
 
-		my $Host_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_host_groups` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_host_groups` (
 			`id`,
 			`rule`,
 			`host_group`
@@ -2497,12 +2511,12 @@ sub edit_rule {
 		$Host_Insert->execute($Edit_Rule, $Host_Group);
 
 		# Audit Log
-		my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname` FROM `host_groups` WHERE `id` = ?");
+		my $Select_Group = $DB_Connection->prepare("SELECT `groupname` FROM `host_groups` WHERE `id` = ?");
 		$Select_Group->execute($Host_Group);
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -2523,7 +2537,7 @@ sub edit_rule {
 
 	foreach my $Host (@Hosts) {
 
-		my $Host_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_hosts` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_hosts` (
 			`id`,
 			`rule`,
 			`host`
@@ -2537,12 +2551,12 @@ sub edit_rule {
 		$Host_Insert->execute($Edit_Rule, $Host);
 
 		# Audit Log
-		my $Select_Host = $DB_Sudoers->prepare("SELECT `hostname` FROM `hosts` WHERE `id` = ?");
+		my $Select_Host = $DB_Connection->prepare("SELECT `hostname` FROM `hosts` WHERE `id` = ?");
 		$Select_Host->execute($Host);
 		while ( (my $Name) = $Select_Host->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -2563,7 +2577,7 @@ sub edit_rule {
 
 	foreach my $User_Group (@User_Groups) {
 
-		my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_user_groups` (
+		my $User_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_user_groups` (
 			`id`,
 			`rule`,
 			`user_group`
@@ -2577,12 +2591,12 @@ sub edit_rule {
 		$User_Insert->execute($Edit_Rule, $User_Group);
 
 		# Audit Log
-		my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname` FROM `user_groups` WHERE `id` = ?");
+		my $Select_Group = $DB_Connection->prepare("SELECT `groupname` FROM `user_groups` WHERE `id` = ?");
 		$Select_Group->execute($User_Group);
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -2603,7 +2617,7 @@ sub edit_rule {
 
 	foreach my $User (@Users) {
 
-		my $User_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_users` (
+		my $User_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_users` (
 			`id`,
 			`rule`,
 			`user`
@@ -2617,12 +2631,12 @@ sub edit_rule {
 		$User_Insert->execute($Edit_Rule, $User);
 
 		# Audit Log
-		my $Select_User = $DB_Sudoers->prepare("SELECT `username` FROM `users` WHERE `id` = ?");
+		my $Select_User = $DB_Connection->prepare("SELECT `username` FROM `users` WHERE `id` = ?");
 		$Select_User->execute($User);
 		while ( (my $Name) = $Select_User->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -2646,7 +2660,7 @@ sub edit_rule {
 
 	foreach my $Command_Group (@Command_Groups) {
 
-		my $Command_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_command_groups` (
+		my $Command_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_command_groups` (
 			`id`,
 			`rule`,
 			`command_group`
@@ -2660,12 +2674,12 @@ sub edit_rule {
 		$Command_Insert->execute($Edit_Rule, $Command_Group);
 
 		# Audit Log
-		my $Select_Group = $DB_Sudoers->prepare("SELECT `groupname` FROM `command_groups` WHERE `id` = ?");
+		my $Select_Group = $DB_Connection->prepare("SELECT `groupname` FROM `command_groups` WHERE `id` = ?");
 		$Select_Group->execute($Command_Group);
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -2690,7 +2704,7 @@ sub edit_rule {
 
 	foreach my $Command (@Commands) {
 
-		my $Command_Insert = $DB_Sudoers->prepare("INSERT INTO `lnk_rules_to_commands` (
+		my $Command_Insert = $DB_Connection->prepare("INSERT INTO `lnk_rules_to_commands` (
 			`id`,
 			`rule`,
 			`command`
@@ -2704,12 +2718,12 @@ sub edit_rule {
 		$Command_Insert->execute($Edit_Rule, $Command);
 
 		# Audit Log
-		my $Select_Command = $DB_Sudoers->prepare("SELECT `command_alias` FROM `commands` WHERE `id` = ?");
+		my $Select_Command = $DB_Connection->prepare("SELECT `command_alias` FROM `commands` WHERE `id` = ?");
 		$Select_Command->execute($Command);
 		while ( (my $Name) = $Select_Command->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -2728,7 +2742,7 @@ sub edit_rule {
 
 sub html_delete_rule {
 
-	my $Select_Rule = $DB_Sudoers->prepare("SELECT `name`
+	my $Select_Rule = $DB_Connection->prepare("SELECT `name`
 	FROM `rules`
 	WHERE `id` = ?");
 
@@ -2774,7 +2788,7 @@ ENDHTML
 sub delete_rule {
 
 	# Audit Log
-	my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `run_as`, `nopasswd`, `noexec`, `expires`, `active`
+	my $Select_Rules = $DB_Connection->prepare("SELECT `name`, `run_as`, `nopasswd`, `noexec`, `expires`, `active`
 		FROM `rules`
 		WHERE `id` LIKE ?");
 
@@ -2795,8 +2809,8 @@ sub delete_rule {
 	
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -2809,31 +2823,31 @@ sub delete_rule {
 	}
 	# / Audit Log
 
-	my $Delete_Rule = $DB_Sudoers->prepare("DELETE from `rules`
+	my $Delete_Rule = $DB_Connection->prepare("DELETE from `rules`
 		WHERE `id` = ?");
 	$Delete_Rule->execute($Delete_Rule_Confirm);
 
-	my $Delete_Host_Group_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_host_groups`
+	my $Delete_Host_Group_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_host_groups`
 		WHERE `rule` = ?");
 	$Delete_Host_Group_Rule->execute($Delete_Rule_Confirm);
 
-	my $Delete_Host_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_hosts`
+	my $Delete_Host_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_hosts`
 		WHERE `rule` = ?");
 	$Delete_Host_Rule->execute($Delete_Rule_Confirm);
 
-	my $Delete_User_Group_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_user_groups`
+	my $Delete_User_Group_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_user_groups`
 		WHERE `rule` = ?");
 	$Delete_User_Group_Rule->execute($Delete_Rule_Confirm);
 
-	my $Delete_User_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_users`
+	my $Delete_User_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_users`
 		WHERE `rule` = ?");
 	$Delete_User_Rule->execute($Delete_Rule_Confirm);
 
-	my $Delete_Command_Group_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_command_groups`
+	my $Delete_Command_Group_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_command_groups`
 		WHERE `rule` = ?");
 	$Delete_Command_Group_Rule->execute($Delete_Rule_Confirm);
 
-	my $Delete_Command_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_commands`
+	my $Delete_Command_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_commands`
 		WHERE `rule` = ?");
 	$Delete_Command_Rule->execute($Delete_Rule_Confirm);
 
@@ -2843,7 +2857,7 @@ sub delete_rule_item {
 
 ### Find Rule Name ###
 
-	my $Select_Rule = $DB_Sudoers->prepare("SELECT `name`
+	my $Select_Rule = $DB_Connection->prepare("SELECT `name`
 		FROM `rules`
 		WHERE `id` LIKE ?");
 	$Select_Rule->execute($Delete_Rule_Item_ID);
@@ -2854,7 +2868,7 @@ sub delete_rule_item {
 
 ### Revoke Rule Approval ###
 
-	my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules` SET
+	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules` SET
 		`modified_by` = '$User_Name',
 		`approved` = '0',
 		`approved_by` = 'Approval Revoked by $User_Name when modifying this rule.'
@@ -2869,13 +2883,13 @@ if ($Delete_Host_Group_ID) {
 
 	if ($Delete_Host_Group_ID ne 'ALL') {
 
-		my $Delete_Host_Group_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_host_groups`
+		my $Delete_Host_Group_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_host_groups`
 			WHERE `rule` = ?
 			AND `host_group` = ?");
 		$Delete_Host_Group_Rule->execute($Delete_Rule_Item_ID, $Delete_Host_Group_ID);
 
 		# Audit Log
-		my $Select_Item = $DB_Sudoers->prepare("SELECT `groupname`
+		my $Select_Item = $DB_Connection->prepare("SELECT `groupname`
 			FROM `host_groups`
 			WHERE `id` LIKE ?");
 	
@@ -2883,8 +2897,8 @@ if ($Delete_Host_Group_ID) {
 	
 		while (( my $Name ) = $Select_Item->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -2904,14 +2918,14 @@ if ($Delete_Host_Group_ID) {
 		}
 	}
 	else {
-		my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules` SET
+		my $Update_Rule = $DB_Connection->prepare("UPDATE `rules` SET
 			`all_hosts` = 0,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Rule->execute($User_Name, $Delete_Rule_Item_ID);
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -2939,13 +2953,13 @@ if ($Delete_Host_ID) {
 
 	if ($Delete_Host_ID ne 'ALL') {
 
-		my $Delete_Host_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_hosts`
+		my $Delete_Host_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_hosts`
 			WHERE `rule` = ?
 			AND `host` = ?");
 		$Delete_Host_Rule->execute($Delete_Rule_Item_ID, $Delete_Host_ID);
 	
 		# Audit Log
-		my $Select_Item = $DB_Sudoers->prepare("SELECT `hostname`
+		my $Select_Item = $DB_Connection->prepare("SELECT `hostname`
 			FROM `hosts`
 			WHERE `id` LIKE ?");
 	
@@ -2953,8 +2967,8 @@ if ($Delete_Host_ID) {
 	
 		while (( my $Name ) = $Select_Item->fetchrow_array() )
 		{
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -2973,14 +2987,14 @@ if ($Delete_Host_ID) {
 		}
 	}
 	else {
-		my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules` SET
+		my $Update_Rule = $DB_Connection->prepare("UPDATE `rules` SET
 			`all_hosts` = 0,
 			`modified_by` = ?
 			WHERE `id` = ?");
 		$Update_Rule->execute($User_Name, $Delete_Rule_Item_ID);
 
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -3004,13 +3018,13 @@ if ($Delete_Host_ID) {
 ### User Groups ###
 
 if ($Delete_User_Group_ID) {
-	my $Delete_User_Group_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_user_groups`
+	my $Delete_User_Group_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_user_groups`
 		WHERE `rule` = ?
 		AND `user_group` = ?");
 	$Delete_User_Group_Rule->execute($Delete_Rule_Item_ID, $Delete_User_Group_ID);
 
 	# Audit Log
-	my $Select_Item = $DB_Sudoers->prepare("SELECT `groupname`
+	my $Select_Item = $DB_Connection->prepare("SELECT `groupname`
 		FROM `user_groups`
 		WHERE `id` LIKE ?");
 
@@ -3018,8 +3032,8 @@ if ($Delete_User_Group_ID) {
 
 	while (( my $Name ) = $Select_Item->fetchrow_array() )
 	{
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -3047,13 +3061,13 @@ if ($Delete_User_Group_ID) {
 
 ### Users ###
 if ($Delete_User_ID) {
-	my $Delete_User_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_users`
+	my $Delete_User_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_users`
 		WHERE `rule` = ?
 		AND `user` = ?");
 	$Delete_User_Rule->execute($Delete_Rule_Item_ID, $Delete_User_ID);
 
 	# Audit Log
-	my $Select_Item = $DB_Sudoers->prepare("SELECT `username`
+	my $Select_Item = $DB_Connection->prepare("SELECT `username`
 		FROM `users`
 		WHERE `id` LIKE ?");
 
@@ -3061,8 +3075,8 @@ if ($Delete_User_ID) {
 
 	while (( my $Name ) = $Select_Item->fetchrow_array() )
 	{
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -3090,13 +3104,13 @@ if ($Delete_User_ID) {
 
 ### Command Groups ###
 if ($Delete_Command_Group_ID) {
-	my $Delete_Command_Group_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_command_groups`
+	my $Delete_Command_Group_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_command_groups`
 		WHERE `rule` = ?
 		AND `command_group` = ?");
 	$Delete_Command_Group_Rule->execute($Delete_Rule_Item_ID, $Delete_Command_Group_ID);
 
 	# Audit Log
-	my $Select_Item = $DB_Sudoers->prepare("SELECT `groupname`
+	my $Select_Item = $DB_Connection->prepare("SELECT `groupname`
 		FROM `command_groups`
 		WHERE `id` LIKE ?");
 
@@ -3104,8 +3118,8 @@ if ($Delete_Command_Group_ID) {
 
 	while (( my $Name ) = $Select_Item->fetchrow_array() )
 	{
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -3133,13 +3147,13 @@ if ($Delete_Command_Group_ID) {
 
 ### Commands ###
 if ($Delete_Command_ID) {
-	my $Delete_Command_Rule = $DB_Sudoers->prepare("DELETE from `lnk_rules_to_commands`
+	my $Delete_Command_Rule = $DB_Connection->prepare("DELETE from `lnk_rules_to_commands`
 		WHERE `rule` = ?
 		AND `command` = ?");
 	$Delete_Command_Rule->execute($Delete_Rule_Item_ID, $Delete_Command_ID);
 
 	# Audit Log
-	my $Select_Item = $DB_Sudoers->prepare("SELECT `command_alias`
+	my $Select_Item = $DB_Connection->prepare("SELECT `command_alias`
 		FROM `commands`
 		WHERE `id` LIKE ?");
 
@@ -3147,8 +3161,8 @@ if ($Delete_Command_ID) {
 
 	while (( my $Name ) = $Select_Item->fetchrow_array() )
 	{
-		my $DB_Management = DB_Management();
-		my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+		my $DB_Connection = DB_Connection();
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
 			`method`,
 			`action`,
@@ -3178,7 +3192,7 @@ if ($Delete_Command_ID) {
 
 sub approve_rule {
 
-	my $Select_Rules = $DB_Sudoers->prepare("SELECT `name`, `modified_by`
+	my $Select_Rules = $DB_Connection->prepare("SELECT `name`, `modified_by`
 		FROM `rules`
 		WHERE `id` = ?"
 	);
@@ -3188,7 +3202,7 @@ sub approve_rule {
 	while ( (my $Name, my $Modified_By) = my @Select_Rules = $Select_Rules->fetchrow_array() )
 	{
 		if (($User_Requires_Approval && ($User_Name ne $Modified_By)) || $User_Requires_Approval == 0) {
-			my $Update_Rule = $DB_Sudoers->prepare("UPDATE `rules` SET
+			my $Update_Rule = $DB_Connection->prepare("UPDATE `rules` SET
 			`approved` = '1',
 			`last_approved` = NOW(),
 			`approved_by` = ?,
@@ -3198,8 +3212,8 @@ sub approve_rule {
 			$Update_Rule->execute($User_Name, $Approve_Rule_ID);
 
 			# Audit Log
-			my $DB_Management = DB_Management();
-			my $Audit_Log_Submission = $DB_Management->prepare("INSERT INTO `audit_log` (
+			my $DB_Connection = DB_Connection();
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 				`category`,
 				`method`,
 				`action`,
@@ -3246,7 +3260,7 @@ sub html_notes {
 
 	### Discover Rule Name
 	my $Rule_Name;
-	my $Select_Rule_Name = $DB_Sudoers->prepare("SELECT `name`
+	my $Select_Rule_Name = $DB_Connection->prepare("SELECT `name`
 	FROM `rules`
 	WHERE `id` = ?");
 
@@ -3255,7 +3269,7 @@ sub html_notes {
 	### / Discover Rule Name
 
 	### Discover Note Count
-	my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+	my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 		FROM `notes`
 		WHERE `type_id` = '07'
 		AND `item_id` = ?"
@@ -3264,7 +3278,7 @@ sub html_notes {
 	my $Note_Count = $Select_Note_Count->fetchrow_array();
 	### / Discover Note Count
 
-	my $Select_Notes = $DB_Sudoers->prepare("SELECT `note`, `last_modified`, `modified_by`
+	my $Select_Notes = $DB_Connection->prepare("SELECT `note`, `last_modified`, `modified_by`
 	FROM `notes`
 	WHERE `type_id` = '07'
 	AND `item_id` = ?
@@ -3333,7 +3347,7 @@ ENDHTML
 
 sub add_note {
 
-	my $Note_Submission = $DB_Sudoers->prepare("INSERT INTO `notes` (
+	my $Note_Submission = $DB_Connection->prepare("INSERT INTO `notes` (
 		`type_id`,
 		`item_id`,
 		`note`,
@@ -3345,6 +3359,44 @@ sub add_note {
 	$Note_Submission->execute(07, $New_Note_ID, $New_Note, $User_Name);
 
 } # sub add_note
+
+sub block_discovery {
+
+	my $Host_ID = $_[0];
+
+	my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
+		FROM `lnk_hosts_to_ipv4_allocations`
+		WHERE `host` = ?");
+	$Select_Block_Links->execute($Host_ID);
+	
+	my $Blocks;
+	while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
+	
+		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+			FROM `ipv4_allocations`
+			WHERE `id` = ?");
+		$Select_Blocks->execute($Block_ID);
+	
+		while (my $Block = $Select_Blocks->fetchrow_array() ) {
+	
+			my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
+				FROM `lnk_hosts_to_ipv4_allocations`
+				WHERE `ip` = ?");
+			$Count_Block_Allocations->execute($Block_ID);
+			my $Total_Block_Allocations = $Count_Block_Allocations->rows();
+	
+			if ($Total_Block_Allocations > 1) {
+				$Block = "$Block (floating)";
+			}
+			$Blocks = $Block. ",&nbsp;" . $Blocks;
+		}
+	}
+	
+	$Blocks =~ s/,&nbsp;$//;
+	
+	return $Blocks;
+
+}
 
 sub html_output {
 
@@ -3361,12 +3413,12 @@ sub html_output {
 	);
 
 
-	my $Select_Rule_Count = $DB_Sudoers->prepare("SELECT `id` FROM `rules`");
+	my $Select_Rule_Count = $DB_Connection->prepare("SELECT `id` FROM `rules`");
 		$Select_Rule_Count->execute( );
 		my $Total_Rows = $Select_Rule_Count->rows();
 
 
-	my $Select_Rules = $DB_Sudoers->prepare("SELECT `id`, `name`, `all_hosts`, `run_as`, `nopasswd`, `noexec`, `expires`, `active`, `approved`, `last_approved`, `approved_by`, `last_modified`, `modified_by`
+	my $Select_Rules = $DB_Connection->prepare("SELECT `id`, `name`, `all_hosts`, `run_as`, `nopasswd`, `noexec`, `expires`, `active`, `approved`, `last_approved`, `approved_by`, `last_modified`, `modified_by`
 		FROM `rules`
 			WHERE `id` LIKE ?
 			OR `name` LIKE ?
@@ -3437,7 +3489,7 @@ sub html_output {
 
 		if (!$ALL_Hosts) {
 
-			my $Select_Host_Group_Links = $DB_Sudoers->prepare("SELECT `host_group`
+			my $Select_Host_Group_Links = $DB_Connection->prepare("SELECT `host_group`
 				FROM `lnk_rules_to_host_groups`
 				WHERE `rule` = ?"
 			);
@@ -3448,7 +3500,7 @@ sub html_output {
 				
 				my $Group_ID = $Select_Links[0];
 	
-				my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
+				my $Select_Groups = $DB_Connection->prepare("SELECT `groupname`, `expires`, `active`
 					FROM `host_groups`
 					WHERE `id` = ?"
 				);
@@ -3463,7 +3515,7 @@ sub html_output {
 	
 					### Discover Hosts Within Group
 	
-					my $Select_Host_Links = $DB_Sudoers->prepare("SELECT `host`
+					my $Select_Host_Links = $DB_Connection->prepare("SELECT `host`
 						FROM `lnk_host_groups_to_hosts`
 						WHERE `group` = ?"
 					);
@@ -3475,7 +3527,7 @@ sub html_output {
 						
 						my $Host_ID = $Select_Links[0];
 	
-						my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
+						my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`, `expires`, `active`
 							FROM `hosts`
 							WHERE `id` = ?"
 						);
@@ -3485,9 +3537,8 @@ sub html_output {
 						{
 	
 							my $Host = $Select_Hosts[0];
-							my $IP = $Select_Hosts[1];
-							my $Host_Expires = $Select_Hosts[2];
-							my $Host_Active = $Select_Hosts[3];
+							my $Host_Expires = $Select_Hosts[1];
+							my $Host_Active = $Select_Hosts[2];
 	
 							my $Expires_Epoch;
 							my $Today_Epoch = time;
@@ -3497,17 +3548,19 @@ sub html_output {
 							else {
 								$Expires_Epoch = str2time("$Host_Expires"."T23:59:59");
 							}
-	
+
+							my $Blocks = &block_discovery($Host_ID);
+
 							if ($Host_Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-								$Host = "$Host ($IP) [Expired]
+								$Host = "$Host ($Blocks) [Expired]
 "
 							}
 							elsif ($Host_Active) {
-								$Host = "$Host ($IP)
+								$Host = "$Host ($Blocks)
 "
 							}
 							else {
-								$Host = "$Host ($IP) [Inactive]
+								$Host = "$Host ($Blocks) [Inactive]
 "
 							};
 							$Attached_Hosts = $Attached_Hosts . $Host;
@@ -3526,17 +3579,17 @@ sub html_output {
 					}
 	
 					if ($Group_Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-						$Group = "<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #B1B1B1';>$Group</span></a>"
+						$Group = "<a href='/IP/host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #B1B1B1';>$Group</span></a>"
 						. "&nbsp;" .
 						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					}
 					elsif ($Group_Active) {
-						$Group = "<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #00FF00';>$Group</span></a>"
+						$Group = "<a href='/IP/host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #00FF00';>$Group</span></a>"
 						. "&nbsp;" .
 						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 						}
 					else {
-						$Group = "<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #FF0000';>$Group</span></a>"
+						$Group = "<a href='/IP/host-groups.cgi?ID_Filter=$Group_ID' class='tooltip' text=\"Hosts in this group:\n$Attached_Hosts\"><span style='color: #FF0000';>$Group</span></a>"
 						. "&nbsp;" .
 						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_Group_ID=$Group_ID' class='tooltip' text=\"Remove $Group from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					};
@@ -3560,7 +3613,7 @@ sub html_output {
 
 		if (!$ALL_Hosts) {
 
-			my $Select_Host_Links = $DB_Sudoers->prepare("SELECT `host`
+			my $Select_Host_Links = $DB_Connection->prepare("SELECT `host`
 				FROM `lnk_rules_to_hosts`
 				WHERE `rule` = ?"
 			);
@@ -3571,7 +3624,7 @@ sub html_output {
 
 				my $Host_ID = $Select_Links[0];
 	
-				my $Select_Hosts = $DB_Sudoers->prepare("SELECT `hostname`, `ip`, `expires`, `active`
+				my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`, `expires`, `active`
 					FROM `hosts`
 					WHERE `id` = ?"
 				);
@@ -3580,10 +3633,11 @@ sub html_output {
 				while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 				{
 					my $Host = $Select_Hosts[0];
-					my $IP = $Select_Hosts[1];
-					my $Expires = $Select_Hosts[2];
-					my $Active = $Select_Hosts[3];
-	
+					my $Expires = $Select_Hosts[1];
+					my $Active = $Select_Hosts[2];
+
+					my $Blocks = &block_discovery($Host_ID);
+
 					my $Expires_Epoch;
 					my $Today_Epoch = time;
 					if ($Expires =~ /^0000-00-00$/) {
@@ -3594,17 +3648,17 @@ sub html_output {
 					}
 	
 					if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #B1B1B1'>$Host</span></a>"
+						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$Blocks\"><span style='color: #B1B1B1'>$Host</span></a>"
 						. "&nbsp;" .
 						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					}
 					elsif ($Active) {
-						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #00FF00'>$Host</span></a>"
+						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$Blocks\"><span style='color: #00FF00'>$Host</span></a>"
 						. "&nbsp;" .
 						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					}
 					else {
-						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$IP\"><span style='color: #FF0000'>$Host</span></a>"
+						$Host = "<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$Blocks\"><span style='color: #FF0000'>$Host</span></a>"
 						. "&nbsp;" .
 						"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule_Item_ID=$DBID_Clean&Delete_Host_ID=$Host_ID' class='tooltip' text=\"Remove $Host from $DB_Rule_Name_Clean\"><span style='color: #FFC600'>[Remove]</span></a>"
 					};
@@ -3625,7 +3679,7 @@ sub html_output {
 		### Discover Attached User Groups
 
 		my $Attached_User_Groups;
-		my $Select_User_Group_Links = $DB_Sudoers->prepare("SELECT `user_group`
+		my $Select_User_Group_Links = $DB_Connection->prepare("SELECT `user_group`
 			FROM `lnk_rules_to_user_groups`
 			WHERE `rule` = ?"
 		);
@@ -3636,7 +3690,7 @@ sub html_output {
 			
 			my $Group_ID = $Select_Links[0];
 
-			my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`, `system_group`, `expires`, `active`
+			my $Select_Groups = $DB_Connection->prepare("SELECT `groupname`, `system_group`, `expires`, `active`
 				FROM `user_groups`
 				WHERE `id` = ?"
 			);
@@ -3653,7 +3707,7 @@ sub html_output {
 
 				### Discover Users Within Group
 
-				my $Select_User_Links = $DB_Sudoers->prepare("SELECT `user`
+				my $Select_User_Links = $DB_Connection->prepare("SELECT `user`
 					FROM `lnk_user_groups_to_users`
 					WHERE `group` = ?"
 				);
@@ -3665,7 +3719,7 @@ sub html_output {
 					
 					my $User_ID = $Select_Links[0];
 
-					my $Select_Users = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+					my $Select_Users = $DB_Connection->prepare("SELECT `username`, `expires`, `active`
 						FROM `users`
 						WHERE `id` = ?"
 					);
@@ -3750,7 +3804,7 @@ sub html_output {
 		### Discover Attached Users
 
 		my $Attached_Users;
-		my $Select_User_Links = $DB_Sudoers->prepare("SELECT `user`
+		my $Select_User_Links = $DB_Connection->prepare("SELECT `user`
 			FROM `lnk_rules_to_users`
 			WHERE `rule` = ?"
 		);
@@ -3761,7 +3815,7 @@ sub html_output {
 			
 			my $User_ID = $Select_Links[0];
 
-			my $Select_Users = $DB_Sudoers->prepare("SELECT `username`, `expires`, `active`
+			my $Select_Users = $DB_Connection->prepare("SELECT `username`, `expires`, `active`
 				FROM `users`
 				WHERE `id` = ?"
 			);
@@ -3808,7 +3862,7 @@ sub html_output {
 		### Discover Attached Command Groups
 
 		my $Attached_Command_Groups;
-		my $Select_Command_Group_Links = $DB_Sudoers->prepare("SELECT `command_group`
+		my $Select_Command_Group_Links = $DB_Connection->prepare("SELECT `command_group`
 			FROM `lnk_rules_to_command_groups`
 			WHERE `rule` = ?"
 		);
@@ -3819,7 +3873,7 @@ sub html_output {
 			
 			my $Group_ID = $Select_Links[0];
 
-			my $Select_Groups = $DB_Sudoers->prepare("SELECT `groupname`, `expires`, `active`
+			my $Select_Groups = $DB_Connection->prepare("SELECT `groupname`, `expires`, `active`
 				FROM `command_groups`
 				WHERE `id` = ?"
 			);
@@ -3834,7 +3888,7 @@ sub html_output {
 
 				### Discover Commands Within Group
 
-				my $Select_Command_Links = $DB_Sudoers->prepare("SELECT `command`
+				my $Select_Command_Links = $DB_Connection->prepare("SELECT `command`
 					FROM `lnk_command_groups_to_commands`
 					WHERE `group` = ?"
 				);
@@ -3846,7 +3900,7 @@ sub html_output {
 					
 					my $Command_ID = $Select_Links[0];
 
-					my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
+					my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 						FROM `commands`
 						WHERE `id` = ?"
 					);
@@ -3922,7 +3976,7 @@ sub html_output {
 		### Discover Attached Commands
 
 		my $Attached_Commands;
-		my $Select_Command_Links = $DB_Sudoers->prepare("SELECT `command`
+		my $Select_Command_Links = $DB_Connection->prepare("SELECT `command`
 			FROM `lnk_rules_to_commands`
 			WHERE `rule` = ?"
 		);
@@ -3933,7 +3987,7 @@ sub html_output {
 			
 			my $Command_ID = $Select_Links[0];
 
-			my $Select_Commands = $DB_Sudoers->prepare("SELECT `command_alias`, `command`, `expires`, `active`
+			my $Select_Commands = $DB_Connection->prepare("SELECT `command_alias`, `command`, `expires`, `active`
 				FROM `commands`
 				WHERE `id` = ?"
 			);
@@ -3978,7 +4032,7 @@ sub html_output {
 
 		### Discover Note Count
 
-		my $Select_Note_Count = $DB_Sudoers->prepare("SELECT COUNT(*)
+		my $Select_Note_Count = $DB_Connection->prepare("SELECT COUNT(*)
 			FROM `notes`
 			WHERE `type_id` = '07'
 			AND `item_id` = ?"
@@ -4163,7 +4217,7 @@ print <<ENDHTML;
 						<select name='Edit_Rule' style="width: 150px">
 ENDHTML
 
-						my $Rule_List_Query = $DB_Sudoers->prepare("SELECT `id`, `name`
+						my $Rule_List_Query = $DB_Connection->prepare("SELECT `id`, `name`
 						FROM `rules`
 						ORDER BY `name` ASC");
 						$Rule_List_Query->execute( );
@@ -4199,7 +4253,7 @@ print <<ENDHTML;
 							</tr>
 ENDHTML
 
-						my $Rights_Query = $DB_Management->prepare("SELECT `approver`, `requires_approval`
+						my $Rights_Query = $DB_Connection->prepare("SELECT `approver`, `requires_approval`
 						FROM `credentials`
 						WHERE `username` = ?");
 						$Rights_Query->execute($User_Name);
