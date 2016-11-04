@@ -50,6 +50,7 @@ if (!$User_Name) {
 }
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
+my $ID_Filter  = $CGI->param("ID_Filter");
 my $Filter = $CGI->param("Filter");
 
 if ($Rows_Returned eq '') {
@@ -1208,7 +1209,13 @@ my $Select_Blocks = $DB_Connection->prepare("SELECT `id`, `ip_block`, `parent_bl
 		$Order_By_SQL
 	LIMIT 0 , $Rows_Returned");
 
-$Select_Blocks->execute("%$Filter%", "%$Filter%", "%$Filter%");
+if ($ID_Filter) {
+	$Select_Blocks->execute("$ID_Filter", "", "");
+}
+else {
+	$Select_Blocks->execute("%$Filter%", "%$Filter%", "%$Filter%");	
+}
+
 
 my $Rows = $Select_Blocks->rows();
 
@@ -1225,7 +1232,8 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 
 	my $ID = $Select_Blocks[0];
 		my $ID_Clean = $ID;
-		$ID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		if ($ID_Filter) {$ID =~ s/(.*)($ID_Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;}
+		if ($Filter) {$ID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;}
 	my $Block = $Select_Blocks[1];
 		my $Block_Extract = $Block;
 		$Block =~ s/\/32//;

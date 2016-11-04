@@ -15,7 +15,7 @@ my ($Distribution_Default_SFTP_Port,
 	$Distribution_Default_User,
 	$Distribution_Default_Key_Path, 
 	$Distribution_Default_Timeout,
-	$Distribution_Default_Remote_Sudoers) = DSMS_Distribution_Defaults();
+	$Distribution_Default_Remote_Sudoers) = Distribution_Defaults();
 my $Sudoers_Location = Sudoers_Location();
 my $md5sum = md5sum();
 my $cut = cut();
@@ -217,27 +217,27 @@ ENDHTML
 
 sub edit_host_parameters {
 
-		my $Update_Parameters = $DB_Connection->prepare("INSERT INTO `distribution` (
-			`host_id`,
-			`sftp_port`,
-			`user`,
-			`key_path`,
-			`timeout`,
-			`remote_sudoers_path`,
-			`last_modified`,
-			`modified_by`
-		)
-		VALUES (
-			?, ?, ?, ?, ?, ?, NOW(), ?
-		)
-		ON DUPLICATE KEY UPDATE
-			`sftp_port` = ?,
-			`user` = ?,
-			`key_path` = ?,
-			`timeout` = ?,
-			`remote_sudoers_path` = ?,
-			`last_modified` = NOW(),
-			`modified_by` = ?");
+	my $Update_Parameters = $DB_Connection->prepare("INSERT INTO `distribution` (
+		`host_id`,
+		`sftp_port`,
+		`user`,
+		`key_path`,
+		`timeout`,
+		`remote_sudoers_path`,
+		`last_modified`,
+		`modified_by`
+	)
+	VALUES (
+		?, ?, ?, ?, ?, ?, NOW(), ?
+	)
+	ON DUPLICATE KEY UPDATE
+		`sftp_port` = ?,
+		`user` = ?,
+		`key_path` = ?,
+		`timeout` = ?,
+		`remote_sudoers_path` = ?,
+		`last_modified` = NOW(),
+		`modified_by` = ?");
 
 	$Update_Parameters->execute(
 		# Ins
@@ -349,6 +349,7 @@ sub html_output {
 	{
 
 		my $Host_ID = $Select_Hosts[0];
+			my $Host_ID_Clean = $Host_ID;
 			$Host_ID =~ s/(.*)($ID_Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 			$Host_ID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Host_Name = $Select_Hosts[1];
@@ -387,7 +388,7 @@ sub html_output {
 
 		$Table->addRow(
 			$Host_ID,
-			"<a href=\"sudoers-hosts.cgi?ID_Filter=$Host_ID\">$Host_Name</a>",
+			"<a href=\"sudoers-hosts.cgi?ID_Filter=$Host_ID_Clean\">$Host_Name</a>",
 			$SFTP_Port,
 			$User,
 			$Key_Path,
@@ -400,7 +401,7 @@ sub html_output {
 			$Last_Successful_Checkin,
 			$Last_Modified,
 			$Modified_By,
-			"<a href=\"distribution-status.cgi?Edit_Host_Parameters=$Host_ID\"><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host Parameters $Host_ID\" ></a>"
+			"<a href=\"distribution-status.cgi?Edit_Host_Parameters=$Host_ID_Clean\"><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host Parameters $Host_ID_Clean\" ></a>"
 		);
 	
 		if ($Status_Light eq 'OK') {

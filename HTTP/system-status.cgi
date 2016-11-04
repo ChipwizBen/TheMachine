@@ -527,7 +527,7 @@ my ($Distribution_SFTP_Port,
 	$Distribution_User,
 	$Key_Path,
 	$Timeout,
-	$Remote_Sudoers) = DSMS_Distribution_Defaults();
+	$Remote_Sudoers) = Distribution_Defaults();
 
 print <<ENDHTML;
 <h3 style="text-align: center;">DSMS Configuration</h3>

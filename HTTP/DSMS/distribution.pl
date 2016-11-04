@@ -5,6 +5,7 @@ use strict;
 use DBI;
 use POSIX qw(strftime);
 use Net::SFTP::Foreign;
+use Net::SSH::Expect;
 
 my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
@@ -18,8 +19,10 @@ my $Sudoers_Location = Sudoers_Location();
 	my $MD5_Checksum = `$MD5Sum $Sudoers_Location | $Cut -d ' ' -f 1`;
 my $Distribution_Log_Location = Distribution_Log_Location();
 my $Distribution_tmp_Location = Distribution_tmp_Location();
-my $Green = "\e[0;32;40m";
-my $Red = "\e[0;31;40m";
+my $Green = "\e[0;32;10m";
+my $Yellow = "\e[0;33;10m";
+my $Red = "\e[0;31;10m";
+my $Pink = "\e[1;35;10m";
 my $Blue = "\e[1;34;10m";
 my $Clear = "\e[0m";
 
@@ -47,15 +50,15 @@ foreach my $Parameter (@ARGV) {
 			if ($Override) {
 				print "Override detected. (CTRL + C to cancel)...\n\n";
 				print "Continuing in... 5\r";
-				sleep 1;
+			#	sleep 1;
 				print "Continuing in... 4\r";
-				sleep 1;
+			#	sleep 1;
 				print "Continuing in... 3\r";
-				sleep 1;
+			#	sleep 1;
 				print "Continuing in... 2\r";
-				sleep 1;
+			#	sleep 1;
 				print "Continuing in... 1\r";
-				sleep 1;
+			#	sleep 1;
 			}
 			else {
 				print "Another build or distribution process is running. Use --override to continue anyway. Exiting...\n";
@@ -68,8 +71,11 @@ foreach my $Parameter (@ARGV) {
 				`last-sudoers-distribution-started` = NOW()");
 		}
 
-my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`, `ip`
+my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`
 	FROM `hosts`
+	LEFT OUTER JOIN `host_attributes`
+		ON `hosts`.`id`=`host_attributes`.`host_id`
+	WHERE `dsms` = 1
 	ORDER BY `last_modified` DESC");
 
 $Select_Hosts->execute();
@@ -79,15 +85,6 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 
 	my $DBID = $Select_Hosts[0];
 	my $Hostname = $Select_Hosts[1];
-	my $IP = $Select_Hosts[2];
-
-		my $Host_String;
-		if ($IP eq 'DHCP') {
-			$Host_String = $Hostname;
-		}
-		else {
-			$Host_String = $IP;
-		}
 
 	my $Select_Parameters = $DB_Connection->prepare("SELECT `sftp_port`, `user`, `key_path`, `timeout`, `remote_sudoers_path`
 		FROM `distribution`
@@ -95,8 +92,8 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 
 	$Select_Parameters->execute($DBID);
 
-	while ( my @Select_Parameters = $Select_Parameters->fetchrow_array() )
-	{
+	my @Select_Parameters = $Select_Parameters->fetchrow_array();
+
 
 		my $SFTP_Port = $Select_Parameters[0];
 		my $User = $Select_Parameters[1];
@@ -104,35 +101,95 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		my $Timeout = $Select_Parameters[3];
 		my $Remote_Sudoers = $Select_Parameters[4];
 
+		my ($Distribution_Default_SFTP_Port,
+			$Distribution_Default_User,
+			$Distribution_Default_Key_Path, 
+			$Distribution_Default_Timeout,
+			$Distribution_Default_Remote_Sudoers) = Distribution_Defaults();
+
+		my $DB_Needs_A_Refresh;
+		if (!$SFTP_Port) {$SFTP_Port = $Distribution_Default_SFTP_Port; $DB_Needs_A_Refresh = 1;};
+		if (!$User) {$User = $Distribution_Default_User; $DB_Needs_A_Refresh = 1;};
+		if (!$Key_Path) {$Key_Path = $Distribution_Default_Key_Path; $DB_Needs_A_Refresh = 1;};
+		if (!$Timeout) {$Timeout = $Distribution_Default_Timeout; $DB_Needs_A_Refresh = 1;};
+		if (!$Remote_Sudoers) {$Remote_Sudoers = $Distribution_Default_Remote_Sudoers; $DB_Needs_A_Refresh = 1;};
+		
+		if ($DB_Needs_A_Refresh) {
+			my $Update_Parameters = $DB_Connection->prepare("INSERT INTO `distribution` (
+				`host_id`,
+				`sftp_port`,
+				`user`,
+				`key_path`,
+				`timeout`,
+				`remote_sudoers_path`,
+				`last_modified`,
+				`modified_by`
+			)
+			VALUES (
+				?, ?, ?, ?, ?, ?, NOW(), ?
+			)
+			ON DUPLICATE KEY UPDATE
+				`sftp_port` = ?,
+				`user` = ?,
+				`key_path` = ?,
+				`timeout` = ?,
+				`remote_sudoers_path` = ?,
+				`last_modified` = NOW(),
+				`modified_by` = ?");
+
+			$Update_Parameters->execute(
+				# Ins
+				$DBID,
+				$SFTP_Port,
+				$User,
+				$Key_Path,
+				$Timeout,
+				$Remote_Sudoers,
+				'System',
+				# Dupe
+				$SFTP_Port,
+				$User,
+				$Key_Path,
+				$Timeout,
+				$Remote_Sudoers,
+				'System'
+			);
+		}
+
 		my $Error;
 
+		print "${Yellow}$Hostname ${Clear}";
+		my $Host_or_Block = &fingerprint_verification($DBID);
+		if ($Host_or_Block =~ /^Failed/) {
+			print "${Red}[Failed]${Clear}\n";
+			my $Update_Status = $DB_Connection->prepare("UPDATE `distribution` SET
+				`status` = ?,
+				`last_updated` = NOW()
+				WHERE `host_id` = ?");
+			$Update_Status->execute($Host_or_Block, $DBID);
+			next HOST;
+		}
 
 		### Connection
 		if ($Verbose) {
-			print "Attempting to connect to $Hostname with $User\@$Host_String:$SFTP_Port and key $Key_Path...\n";
-		}
-		else {
-			print "$Hostname\t";
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting to connect to ${Yellow}$Hostname${Green} with ${Pink}$Host_or_Block${Green}, key ${Blue}$Key_Path${Green} and host key ${Blue}$Distribution_tmp_Location/$Host_or_Block${Green}...${Clear}\n";
 		}
 
 		open my $DevNull, '>', '/dev/null' or die "unable to open /dev/null";
 
 		my $SFTP = Net::SFTP::Foreign->new(
-			"$User\@$Host_String",
+			"$User\@$Host_or_Block",
 			port => $SFTP_Port,
 			key_path => $Key_Path,
 			timeout => $Timeout,
-			stderr_fh => $DevNull # Suppress banners
+			stderr_fh => $DevNull, # Suppress banners
+			more => "-o UserKnownHostsFile=$Distribution_tmp_Location/$Host_or_Block"
 		);
 		$SFTP->error and $Error = "Connection Failed: " . $SFTP->error;
 
 		if ($SFTP->status == 0) {
-			if ($Verbose) {
-				print "Connected successfully to $Hostname ($IP) on port $SFTP_Port.\n";
-			}
-			else {
-				print "${Green}[Connected]${Clear}\t";
-			}
+			print "${Green}[Connected] ${Clear}";
 		}
 		else {
 
@@ -175,6 +232,8 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 			undef $SFTP;
 		}
 
+		unlink "$Distribution_tmp_Location/$Host_or_Block";
+
 		### / Connection
 
 		### Sudoers Push
@@ -188,13 +247,14 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 			or $Error = "Push Failed: " . $SFTP->error;
 
 		if ($SFTP->status == 0) {
-			if ($Verbose) {
-				print "$Remote_Sudoers written successfully to $Hostname ($IP).\n\n";
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}File $Remote_Sudoers written successfully to ${Yellow}$Hostname${Green} (${Pink}$Host_or_Block:$SFTP_Port${Green}).${Clear}\n\n";
 			}
 			else {
 				print "${Green}[Transfer Completed]${Clear}\n";
 			}
-			my $Status="OK: $Remote_Sudoers written successfully to $Hostname ($IP). Sudoers MD5: $MD5_Checksum";
+			my $Status="OK: $Remote_Sudoers written successfully to $Hostname ($Host_or_Block). Sudoers MD5: $MD5_Checksum";
 			my $Update_Status = $DB_Connection->prepare("UPDATE `distribution` SET
 				`status` = ?,
 				`last_updated` = NOW(),
@@ -238,8 +298,6 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		}
 
 		### / Sudoers Push
-
-	}
 }
 
 $DB_Connection->do("UPDATE `lock` SET 
@@ -252,110 +310,139 @@ sub fingerprint_verification {
 	my $nmap = nmap();
 	my $grep = sudo_grep();
 
-	my $Host = $_[0];
-	my $Host_ID = $_[1];
+	my $Host_ID = $_[0];
 	my $SSH;
-	
-	my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`, `ip`
+
+	my $Select_Hosts = $DB_Connection->prepare("SELECT `hostname`, `dhcp`
 		FROM `hosts`
-		ORDER BY `last_modified` DESC");
-	
-	$Select_Hosts->execute();
+		LEFT JOIN `host_attributes`
+		ON `hosts`.`id`=`host_attributes`.`host_id`
+		WHERE `id` = ?");
+
+	$Select_Hosts->execute($Host_ID);
 
 	HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 	{
-	
-		my $DBID = $Select_Hosts[0];
-		my $Hostname = $Select_Hosts[1];
-		my $IP = $Select_Hosts[2];
+		my $Hostname = $Select_Hosts[0];
+		my $DHCP = $Select_Hosts[1];
+		my $Blocks = &block_discovery($Host_ID);
+
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Discovering fingerprint data for ${Yellow}$Hostname${Green} (ID: ${Blue}$Host_ID${Green}).${Clear}\n";
+		}
 
 		my $Distribution_Transactional_File = "$Distribution_Log_Location/DSMS-Trans-$Hostname";
 
-			my $Host_String;
-			if ($IP eq 'DHCP') {
-				$Host_String = $Hostname;
+			my @Host_Connection_String;
+			if ($DHCP) {
+				@Host_Connection_String = $Hostname;
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}We'll be using the listed DNS address for ${Yellow}$Hostname${Green} (ID: ${Blue}$Host_ID${Green}).${Clear}\n";
+				}
+			}
+			elsif ($Blocks) {
+				@Host_Connection_String = split (',', $Blocks);
 			}
 			else {
-				$Host_String = $IP;
+				@Host_Connection_String = $Hostname;
 			}
 	
-		my $Select_Parameters = $DB_Connection->prepare("SELECT `sftp_port`, `user`, `key_path`, `timeout`, `remote_sudoers_path`
+		my $Select_Parameters = $DB_Connection->prepare("SELECT `sftp_port`, `user`, `timeout`
 			FROM `distribution`
 			WHERE `host_id` = ?");
 	
-		$Select_Parameters->execute($DBID);
+		$Select_Parameters->execute($Host_ID);
 	
 		while ( my @Select_Parameters = $Select_Parameters->fetchrow_array() )
 		{
 
 			my $SFTP_Port = $Select_Parameters[0];
 			my $User_Name = $Select_Parameters[1];
-			my $Key_Path = $Select_Parameters[2];
-			my $Connection_Timeout = $Select_Parameters[3];
-			my $Remote_Sudoers = $Select_Parameters[4];
-
+			my $Connection_Timeout = $Select_Parameters[2];
 
 			my $Private_Key;
-			my $SSH_Check;
 			my $Attempts;
-			while ($SSH_Check !~ /open/) {
-		
+
+			my $Host_or_Block;
+			SSH_CHECK: while (1) {
 				$Attempts++;
-		
-				$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
+
+				my $Tested_Host_or_Block;
+				foreach $Tested_Host_or_Block (@Host_Connection_String) {
+					if (!$Tested_Host_or_Block) {$Tested_Host_or_Block = $Hostname}
+					if ($Verbose) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Testing connection to ${Pink}$Tested_Host_or_Block:$SFTP_Port${Green}.${Clear}\n";
+					}
+					my $SSH_Check=eval {`$nmap $Tested_Host_or_Block -PN -p $SFTP_Port 2>/dev/null | $grep -E 'open'`};
+					if ($SSH_Check =~ /open/) {
+						if ($Verbose) {
+							my $Time_Stamp = strftime "%H:%M:%S", localtime;
+							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}SSH ready for ${Pink}$Tested_Host_or_Block:$SFTP_Port${Green}.${Clear}\n";
+						}
+						$Host_or_Block = $Tested_Host_or_Block;
+						last SSH_CHECK;
+					};
+				}
+
 				sleep 1;
 			
-				if ($Attempts >= 10) {
-					print "Unresolved host, no route to host or SSH not responding. Terminating the transfer.\n";
-					exit(1);
+				if ($Attempts >= 3) {
+					if ($Verbose) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## Could not resolve ${Yellow}$Hostname${Red} (${Pink}@Host_Connection_String${Red}), no route to host or SSH not responding. Terminating the transfer.${Clear}\n";
+					}
+					return "Failed: Could not resolve $Hostname ($Host_or_Block), no route to host or SSH not responding. Terminating the transfer.";
 				}
 			}
-		
+
 			# Fingerprint check/discovery
 			my $Find_Fingerprint = $DB_Connection->prepare("SELECT `fingerprint`
 				FROM `host_attributes`
 				WHERE `host_id` = ?");
 			$Find_Fingerprint->execute($Host_ID);
 			my $Previously_Recorded_Fingerprint = $Find_Fingerprint->fetchrow_array();
-		
-		
+
+
 			my $Hello;
 			while (1) {
-		
-				if ($Verbose == 1) {
-					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting key login${Clear}\n";
-				}
+
 				$SSH = Net::SSH::Expect->new (
-					host => $Host,
+					host => $Host_or_Block,
+					port => $SFTP_Port,
 					user => $User_Name,
 					log_file => $Distribution_Transactional_File,
 					timeout => $Connection_Timeout,
 					raw_pty => 1,
 					restart_timeout_upon_receive => 1,
-					ssh_option => "-i $Key_Path -o UserKnownHostsFile=$Distribution_tmp_Location/$Host"
+					ssh_option => "-o UserKnownHostsFile=$Distribution_tmp_Location/$Host_or_Block"
 				);
-				eval { $SSH->run_ssh(); }; &epic_failure('Login (Key)', $@) if $@;
+				eval { $SSH->run_ssh(); }; print "" if $@;
 		
 				# Fingerprint
 				my $Line = $SSH->read_line();
 				my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
-		
+
+				print "${Green}(${Pink}$Host_or_Block${Green}) ";
+
 				if ($Fingerprint_Prompt) {
 		
 					my $Discovered_Fingerprint = $SSH->match();
 					$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 					}
 					
 					# Fingerprint validity check
 					if (!$Previously_Recorded_Fingerprint) {
-						if ($Verbose == 1) {
+						if ($Verbose) {
 							my $Time_Stamp = strftime "%H:%M:%S", localtime;
-							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
+							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host_or_Block${Green}. Recording and proceeding...${Clear}\n";
 						}
+						print "${Blue}[Fingerprint] ${Clear}";
 						my $Update_Fingerprint = $DB_Connection->prepare("INSERT INTO `host_attributes` (
 							`host_id`,
 							`fingerprint`
@@ -365,34 +452,78 @@ sub fingerprint_verification {
 						)ON DUPLICATE KEY UPDATE `fingerprint` = ?");
 						$Update_Fingerprint->execute($Host_ID, $Discovered_Fingerprint, $Discovered_Fingerprint);
 						$SSH->send('yes');
+						#$Line = $SSH->read_line();
+						eval { $SSH->waitfor(".*Last login.*", $Connection_Timeout, '-re'); }; print "### Bad things: $@\n" if $@;
+						$SSH->close();
+						return $Host_or_Block;
 					}
 					elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
-		
-						if ($Verbose == 1) {
+						print "${Green}[Fingerprint] ${Clear}";
+						if ($Verbose) {
 							my $Time_Stamp = strftime "%H:%M:%S", localtime;
 							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
 						}
 						$SSH->send('yes');
-		
+						#$Line = $SSH->read_line();
+						eval { $SSH->waitfor(".*Last login.*", $Connection_Timeout, '-re'); }; print "### Bad things: $@\n" if $@;
+						$SSH->close();
+						return $Host_or_Block;
 					}
 					else {
+						if ($Verbose) {
+							my $Time_Stamp = strftime "%H:%M:%S", localtime;
+							print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+						}
+						print "${Red}[Fingerprint] ${Clear}\n";
 		
-						my $Time_Stamp = strftime "%H:%M:%S", localtime;
-						print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
-		
-						unlink "$Distribution_tmp_Location/$Host";
-						exit(17);
+						unlink "$Distribution_tmp_Location/$Host_or_Block";
+						return "Failed: Fingerprint mismatch!";
 					}
 				}
 				else {
-					print "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $Distribution_Transactional_File${Clear}\n";
+					print "${Red}[Fingerprint] ${Clear}\n";
+					unlink "$Distribution_tmp_Location/$Host_or_Block";
+					return "Failed: Fingerprint could not be discovered!";
 				}
-
 			}
-			
-			return $SSH;
 		}
 	}
 } # sub fingerprint_verification
+
+sub block_discovery {
+
+	my $DBID = $_[0];
+	my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
+		FROM `lnk_hosts_to_ipv4_allocations`
+		WHERE `host` = ?");
+	$Select_Block_Links->execute($DBID);
+
+	my $Blocks;
+	while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
+
+		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+			FROM `ipv4_allocations`
+			WHERE `id` = ?");
+		$Select_Blocks->execute($Block_ID);
+
+		while (my $Block = $Select_Blocks->fetchrow_array() ) {
+
+			my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
+				FROM `lnk_hosts_to_ipv4_allocations`
+				WHERE `ip` = ?");
+			$Count_Block_Allocations->execute($Block_ID);
+			my $Total_Block_Allocations = $Count_Block_Allocations->rows();
+
+			if ($Block =~ /\/32$/) {
+				$Block =~ s/(.*)\/32$/$1/;
+				$Blocks = $Block. "," . $Blocks;
+			}
+		}
+	}
+
+	$Blocks =~ s/,$//;
+	return $Blocks;
+
+} # sub block_discovery
 
 1;

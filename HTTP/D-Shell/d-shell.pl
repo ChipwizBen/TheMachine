@@ -477,7 +477,8 @@ sub host_connection {
 				exp_internal => $Very_Verbose,
 				exp_debug => $Very_Verbose,
 				raw_pty => 1,
-				restart_timeout_upon_receive => 1
+				restart_timeout_upon_receive => 1,
+				ssh_option => "-o UserKnownHostsFile=/tmp/test"
 			);
 
 			#eval {$SSH->login();}; &epic_failure('Login (Password)', $@) if $@; # Disabled login as it circumvents fingerprint verification, which is bad
@@ -878,7 +879,7 @@ sub processor {
 		)");
 	
 		$Update_Job_Status->execute($Parent_ID, $Command, 'Currently Running...', $User_Name);
-		my $Job_Status_Update_ID = $DB_Connection->{mysql_insertid};		
+		my $Job_Status_Update_ID = $DB_Connection->{mysql_insertid};
 	
 #		while ( defined (my $Line = $SSH->read_all()) ) {
 #			Do nothing! Clearing the input stream for the next command

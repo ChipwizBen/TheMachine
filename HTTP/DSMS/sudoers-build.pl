@@ -166,21 +166,31 @@ sub write_host_groups {
 	);
 	$Select_Groups->execute();
 
-	while ( my @Select_Groups = $Select_Groups->fetchrow_array() )
+	HOST_GROUP: while ( my @Select_Groups = $Select_Groups->fetchrow_array() )
 	{
 
 		my $DBID = $Select_Groups[0];
 		my $Host_Group_Name = $Select_Groups[1];
+			$Host_Group_Name =~ s/ /_/g;
 		my $Expires = $Select_Groups[2];
 		my $Last_Modified = $Select_Groups[3];
 		my $Modified_By = $Select_Groups[4];
 
-			if ($Expires eq '0000-00-00') {
-				$Expires = 'does not expire';
-			}
-			else {
-				$Expires = "expires on " . $Expires;
-			}
+		# Check uses
+		my $Select_Group_Use = $DB_Connection->prepare("SELECT `id`
+		FROM `lnk_rules_to_host_groups`
+		WHERE `host_group` = ?");
+		$Select_Group_Use->execute($DBID);
+		my $Group_Is_Used = $Select_Group_Use->fetchrow_array();
+
+		if (!$Group_Is_Used) {next HOST_GROUP}
+
+		if ($Expires eq '0000-00-00') {
+			$Expires = 'does not expire';
+		}
+		else {
+			$Expires = "expires on " . $Expires;
+		}
 
 		my $Hosts;
 		my $Select_Links = $DB_Connection->prepare("SELECT `host`
@@ -283,15 +293,25 @@ sub write_user_groups {
 	);
 	$Select_Groups->execute();
 
-	while ( my @Select_Groups = $Select_Groups->fetchrow_array() )
+	USER_GROUP: while ( my @Select_Groups = $Select_Groups->fetchrow_array() )
 	{
 
 		my $DBID = $Select_Groups[0];
 		my $User_Group_Name = $Select_Groups[1];
+			$User_Group_Name =~ s/ /_/g;
 		my $System_Group = $Select_Groups[2];
 		my $Expires = $Select_Groups[3];
 		my $Last_Modified = $Select_Groups[4];
 		my $Modified_By = $Select_Groups[5];
+
+		# Check uses
+		my $Select_Group_Use = $DB_Connection->prepare("SELECT `id`
+		FROM `lnk_rules_to_user_groups`
+		WHERE `user_group` = ?");
+		$Select_Group_Use->execute($DBID);
+		my $Group_Is_Used = $Select_Group_Use->fetchrow_array();
+
+		if (!$Group_Is_Used) {next USER_GROUP}
 
 		if ($Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
@@ -368,14 +388,24 @@ sub write_command_groups {
 	);
 	$Select_Groups->execute();
 
-	while ( my @Select_Groups = $Select_Groups->fetchrow_array() )
+	COMMAND_GROUP: while ( my @Select_Groups = $Select_Groups->fetchrow_array() )
 	{
 
 		my $DBID = $Select_Groups[0];
 		my $Command_Group_Name = $Select_Groups[1];
+			$Command_Group_Name =~ s/ /_/g;
 		my $Expires = $Select_Groups[2];
 		my $Last_Modified = $Select_Groups[3];
 		my $Modified_By = $Select_Groups[4];
+
+		# Check uses
+		my $Select_Group_Use = $DB_Connection->prepare("SELECT `id`
+		FROM `lnk_rules_to_command_groups`
+		WHERE `command_group` = ?");
+		$Select_Group_Use->execute($DBID);
+		my $Group_Is_Used = $Select_Group_Use->fetchrow_array();
+
+		if (!$Group_Is_Used) {next COMMAND_GROUP}
 
 		if ($Expires eq '0000-00-00') {
 			$Expires = 'does not expire';

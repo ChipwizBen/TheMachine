@@ -189,7 +189,7 @@ sub Recovery_Email_Address {
 
 sub Sudoers_Location {
 
-	# This is not necessarily the location of the /etc/sudoers file. This is the path that the system writes the temporary sudoers file to. It could be /etc/sudoers, but you ought to consider the rights that Apache will need to overwrite that file, and the implications of giving Apache those rights. If you want to automate it end to end, you should consider writing a temporary sudoers file, then using a separate root cron job to overwrite /etc/sudoers, which is the recommended procedure, instead of directly writing to it. Of course, if you do not intend on using the DSMS system to manage /etc/sudoers on the local machine, then this should NOT be /etc/sudoers. For sudoers locations on remote machines, see DSMS_Distribution_Defaults, or set individual remote sudoers locations through the web panel.
+	# This is not necessarily the location of the /etc/sudoers file. This is the path that the system writes the temporary sudoers file to. It could be /etc/sudoers, but you ought to consider the rights that Apache will need to overwrite that file, and the implications of giving Apache those rights. If you want to automate it end to end, you should consider writing a temporary sudoers file, then using a separate root cron job to overwrite /etc/sudoers, which is the recommended procedure, instead of directly writing to it. Of course, if you do not intend on using the DSMS system to manage /etc/sudoers on the local machine, then this should NOT be /etc/sudoers. For sudoers locations on remote machines, see Distribution_Defaults, or set individual remote sudoers locations through the web panel.
 
 	my $Sudoers_Location = '../sudoers';
 	return $Sudoers_Location;
@@ -254,7 +254,7 @@ sub Distribution_tmp_Location {
 
 	# This is the directory where temporary files are are stored. You do not need a trailing slash.
 
-	my $Distribution_tmp_Location = '../Storage/System/tmp';
+	my $Distribution_tmp_Location = '../Storage/tmp/Distribution';
 	return $Distribution_tmp_Location;
 
 } # sub Distribution_tmp_Location
@@ -543,7 +543,7 @@ sub Redirect_Defaults {
 
 } # sub Redirect_Defaults
 
-sub DSMS_Distribution_Defaults {
+sub Distribution_Defaults {
 
 	# These are the default sudoers distribution settings for new hosts. Keep in mind that any active host is automatically tried for sudoers pushes with their distribution settings. Unless you are confident that all new hosts will have the same settings, you might want to set fail-safe defaults here and manually override each host individually on the Distribution Status page.
 	# A good fail-safe strategy would be to set $Key_Path to be /dev/null so that login to the Remote Server becomes impossible. Alternatively, another good method would be to set $Remote_Sudoers to /sudoers/sudoers (which reflects the chroot recommendations), so that you could accurately test remote login, but not affect the existing sudoers file at /etc/sudoers. This is also dependent on your Cron Configuration on the Remote Server.
@@ -552,13 +552,13 @@ sub DSMS_Distribution_Defaults {
 	my $Distribution_SFTP_Port = '22'; # Default SFTP port
 	my $Distribution_User = 'transport'; # Default SFTP user
 	my $Key_Path = '/root/.ssh/id_rsa'; # Default private key path
-	my $Timeout = '15'; # Default stalled connection Timeout in seconds
+	my $Timeout = '5'; # Default stalled connection Timeout in seconds
 	my $Remote_Sudoers = 'upload/sudoers'; # Default sudoers file location on remote systems, if using chroot use a relative path
 
 	my @Distribution_Defaults = ($Distribution_SFTP_Port, $Distribution_User, $Key_Path, $Timeout, $Remote_Sudoers);
 	return @Distribution_Defaults;
 
-} # sub DSMS_Distribution_Defaults
+} # sub Distribution_Defaults
 
 sub Password_Complexity_Check {
 
