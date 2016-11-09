@@ -20,7 +20,7 @@ my $Owner = Sudoers_Owner_ID();
 my $Group = Sudoers_Group_ID();
 
 my $Date = strftime "%Y-%m-%d", localtime;
-my $Date_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
+my $Date_Time = strftime "%Y-%m-%d %H:%M:%S", localtime;
 
 $| = 1;
 my $Override;
@@ -94,6 +94,15 @@ foreach my $Parameter (@ARGV) {
 &write_command_groups;
 &write_commands;
 &write_rules;
+
+my $Git_Check = Git_Link('Status_Check');
+if ($Git_Check =~ /Yes/i) {
+	my $Git_Directory = Git_Locations('DSMS');
+	use File::Copy;
+	copy("$Sudoers_Location","$Git_Directory/sudoers") or die "Copy failed of sudoers to $Git_Directory/sudoers: $!";
+	&Git_Commit("$Git_Directory/sudoers", "DSMS Sudoers File, last built $Date_Time by The Machine", $Date_Time, 'The Machine')
+}
+&Git_Commit('Push');
 
 my $Sudoers_Check = `$visudo -c -f $Sudoers_Location`;
 

@@ -489,11 +489,11 @@ sub html_output {
 		OR `transfer_log` LIKE ?
 		OR `error_log` LIKE ?
 		ORDER BY `server_name` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
 	$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%",  
-		"%$Filter%", "%$Filter%", "%$Filter%");
+		"%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 
 	my $Rows = $Select_Reverse_Proxies->rows();
 

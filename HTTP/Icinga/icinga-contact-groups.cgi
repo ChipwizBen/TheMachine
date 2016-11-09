@@ -492,9 +492,9 @@ sub html_output {
 	OR `contactgroup_name` LIKE '%$Filter%'
 	OR `alias` LIKE '%$Filter%')
 	ORDER BY `contactgroup_name` ASC
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
-	$Select_Groups->execute( );
+	$Select_Groups->execute(0, $Rows_Returned);
 	my $Rows = $Select_Groups->rows();
 	
 	$Table->setRowClass(1, 'tbrow1');

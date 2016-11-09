@@ -332,15 +332,15 @@ sub html_output {
 			OR `distribution`.`modified_by` LIKE ?)
 			AND `host_attributes`.`dsms` = 1
 		ORDER BY `hosts`.`hostname` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
 	if ($ID_Filter) {
-		$Select_Hosts->execute($ID_Filter, '', '', '', '', '', '', '', '');
+		$Select_Hosts->execute($ID_Filter, '', '', '', '', '', '', '', '', 0, $Rows_Returned);
 	}
 	else {
 		$Select_Hosts->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
-		"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+		"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 
 	my $Rows = $Select_Hosts->rows();

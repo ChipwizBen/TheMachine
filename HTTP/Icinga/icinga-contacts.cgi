@@ -1138,9 +1138,9 @@ sub html_output {
 	OR `alias` LIKE ?
 	OR `email` LIKE ?)
 	ORDER BY `contact_name` ASC
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
-	$Select_Contacts->execute($Filter, "%$Filter%", "%$Filter%", "%$Filter%");
+	$Select_Contacts->execute($Filter, "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	my $Rows = $Select_Contacts->rows();
 
 	my $User_Row_Count=2;

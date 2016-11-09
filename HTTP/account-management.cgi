@@ -1215,8 +1215,8 @@ my $Select_Users = $DB_Connection->prepare("SELECT `id`, `username`, `email`, `l
 `lockout`, `last_modified`, `modified_by`
 FROM `credentials`
 ORDER BY `last_active` DESC
-LIMIT 0 , $Rows_Returned");
-$Select_Users->execute( );
+LIMIT ?, ?");
+$Select_Users->execute(0, $Rows_Returned);
 $Table->setRowClass(1, 'tbrow1');
 
 my $User_Row_Count=1;

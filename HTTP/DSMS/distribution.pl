@@ -11,7 +11,6 @@ my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
-my $Date = strftime "%Y-%m-%d", localtime;
 my $DB_Connection = DB_Connection();
 my $MD5Sum = md5sum();
 my $Cut = cut();
@@ -50,18 +49,18 @@ foreach my $Parameter (@ARGV) {
 			if ($Override) {
 				print "Override detected. (CTRL + C to cancel)...\n\n";
 				print "Continuing in... 5\r";
-			#	sleep 1;
+				sleep 1;
 				print "Continuing in... 4\r";
-			#	sleep 1;
+				sleep 1;
 				print "Continuing in... 3\r";
-			#	sleep 1;
+				sleep 1;
 				print "Continuing in... 2\r";
-			#	sleep 1;
+				sleep 1;
 				print "Continuing in... 1\r";
-			#	sleep 1;
+				sleep 1;
 			}
 			else {
-				print "Another build or distribution process is running. Use --override to continue anyway. Exiting...\n";
+				print "Another build or distribution process is running. Use --override to continue anyway. Exiting.\n";
 				exit(1);
 			}
 		}
@@ -79,10 +78,20 @@ my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`
 	ORDER BY `last_modified` DESC");
 
 $Select_Hosts->execute();
+my $Total = $Select_Hosts->rows();
 
+if ($Verbose) {
+	my $Time_Stamp = strftime "%H:%M:%S", localtime;
+	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found ${Blue}$Total${Green} host receivers${Clear}\n\n";
+}
+else {
+	print "${Green}Found ${Blue}$Total${Green} host receivers${Clear}\n";
+}
+
+my $Current;
 HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 {
-
+	$Current++;
 	my $DBID = $Select_Hosts[0];
 	my $Hostname = $Select_Hosts[1];
 
@@ -93,7 +102,6 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 	$Select_Parameters->execute($DBID);
 
 	my @Select_Parameters = $Select_Parameters->fetchrow_array();
-
 
 		my $SFTP_Port = $Select_Parameters[0];
 		my $User = $Select_Parameters[1];
@@ -158,10 +166,23 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 
 		my $Error;
 
-		print "${Yellow}$Hostname ${Clear}";
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Trying ${Yellow}$Hostname${Green} (ID: ${Blue}$DBID${Green}) [${Blue}$Current${Green}/${Blue}$Total${Green}]${Clear}\n";
+		}
+		else {
+			print "${Yellow}$Hostname ${Clear}";
+		}
 		my $Host_or_Block = &fingerprint_verification($DBID);
 		if ($Host_or_Block =~ /^Failed/) {
-			print "${Red}[Failed]${Clear}\n";
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Failed fingerprint verification for ${Yellow}$Hostname${Red} (ID: ${Blue}$DBID${Red}).${Clear}\n\n";
+			}
+			else {
+				print "${Red}[Failed]${Clear}\n";
+			}
+
 			my $Update_Status = $DB_Connection->prepare("UPDATE `distribution` SET
 				`status` = ?,
 				`last_updated` = NOW()
@@ -173,7 +194,7 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		### Connection
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting to connect to ${Yellow}$Hostname${Green} with ${Pink}$Host_or_Block${Green}, key ${Blue}$Key_Path${Green} and host key ${Blue}$Distribution_tmp_Location/$Host_or_Block${Green}...${Clear}\n";
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting to connect to ${Yellow}$Hostname${Green} with ${Pink}$Host_or_Block${Green}, key ${Blue}$Key_Path${Green} and host key ${Blue}$Distribution_tmp_Location/$Host_or_Block${Green}.${Clear}\n";
 		}
 
 		open my $DevNull, '>', '/dev/null' or die "unable to open /dev/null";
@@ -189,34 +210,49 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		$SFTP->error and $Error = "Connection Failed: " . $SFTP->error;
 
 		if ($SFTP->status == 0) {
-			print "${Green}[Connected] ${Clear}";
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connected to ${Yellow}$Hostname${Green} with ${Pink}$Host_or_Block${Green}, key ${Blue}$Key_Path${Green} and host key ${Blue}$Distribution_tmp_Location/$Host_or_Block${Green}.${Clear}\n";
+			}
+			else {
+				print "${Green}[Connected] ${Clear}";
+			}
 		}
 		else {
 
 			if ($Error =~ /Connection to remote server stalled/) {
-				if ($Verbose) {
-					$Error = $Error . " 
+				$Error = $Error . " 
     Hints: 
     1) Check that the remote host's key fingerprint is stored in known_hosts
     2) Check for a route to the remote host
-    3) Check that your $Timeout second Timeout value is high enough"
+    3) Check that your $Timeout second Timeout value is high enough";
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Connection to ${Yellow}$Hostname${Red} (ID: ${Blue}$DBID${Red}) stalled${Clear}\n\n";
 				}
 				else {
 					print "${Red}[Connection Failed]${Clear}\n";
 				}
 			}
-
 			elsif ($Error =~ /Connection to remote server is broken/) {
-				if ($Verbose) {
-					$Error = $Error ." 
+				$Error = $Error ." 
     Hints: 
-    1) Check that the remote host's key fingerprint is stored in known_hosts
-    2) Check that the user name is correct
-    3) Check that the IP address or port are correct
-    4) Check that the key identity file exists
-    5) Check that there are sufficient permissions to read the key identity file";
-
-					print "$Error\n\n";
+    1) Check that the user name is correct
+    2) Check that the IP address or port are correct
+    3) Check that the key identity file exists
+    4) Check that there are sufficient permissions to read the key identity file";
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Connection to ${Yellow}$Hostname${Red} (ID: ${Blue}$DBID${Red}) broken${Clear}\n\n";
+				}
+				else {
+					print "${Red}[Connection Failed]${Clear}\n";
+				}
+			}
+			else {
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Connection to ${Yellow}$Hostname${Red} (ID: ${Blue}$DBID${Red}) failed ($Error).${Clear}\n\n";
 				}
 				else {
 					print "${Red}[Connection Failed]${Clear}\n";
@@ -228,6 +264,7 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 				`last_updated` = NOW()
 				WHERE `host_id` = ?");
 			$Update_Status->execute($Error, $DBID);
+			unlink "$Distribution_tmp_Location/$Host_or_Block";
 			next HOST;
 			undef $SFTP;
 		}
@@ -247,9 +284,9 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 			or $Error = "Push Failed: " . $SFTP->error;
 
 		if ($SFTP->status == 0) {
-		if ($Verbose) {
-			my $Time_Stamp = strftime "%H:%M:%S", localtime;
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}File $Remote_Sudoers written successfully to ${Yellow}$Hostname${Green} (${Pink}$Host_or_Block:$SFTP_Port${Green}).${Clear}\n\n";
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}File $Remote_Sudoers written successfully to ${Yellow}$Hostname${Green} (${Pink}$Host_or_Block:$SFTP_Port${Green}).${Clear}\n\n";
 			}
 			else {
 				print "${Green}[Transfer Completed]${Clear}\n";
@@ -266,10 +303,12 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		else {
 
 			if ($Error =~ /Permission\sdenied/) {
-				if ($Verbose) {
-					$Error = $Error . " 
+				$Error = $Error . " 
     Hints: 
-    1) Check that $User can write to $Remote_Sudoers"
+    1) Check that $User can write to $Remote_Sudoers";
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Permission denied writing file to ${Yellow}$Hostname${Red} (ID: ${Blue}$DBID${Red})${Clear}\n\n";
 				}
 				else {
 					print "${Red}[Transfer Failed]${Clear}\n";
@@ -277,14 +316,11 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 			}
 
 			elsif ($Error =~ /Couldn't open remote file/) {
-				if ($Verbose) {
-					$Error = $Error . " 
+				$Error = $Error . " 
     Hints: 
     1) Check that the remote path is correct
     2) If the Remote Server uses chroot, try making the path relative (i.e. path/sudoers instead of /path/sudoers)";
-    				print "$Error\n\n";
-				}
-				else {
+				if (!$Verbose) {
 					print "${Red}[Transfer Failed]${Clear}\n";
 				}
 			}
@@ -366,12 +402,11 @@ sub fingerprint_verification {
 			my $Attempts;
 
 			my $Host_or_Block;
-			SSH_CHECK: while (1) {
-				$Attempts++;
-
-				my $Tested_Host_or_Block;
-				foreach $Tested_Host_or_Block (@Host_Connection_String) {
-					if (!$Tested_Host_or_Block) {$Tested_Host_or_Block = $Hostname}
+			if (!@Host_Connection_String) {@Host_Connection_String = $Hostname}
+			SSH_CHECK: foreach my $Tested_Host_or_Block (@Host_Connection_String) {
+				$Attempts = 0;
+				while (1) {
+					$Attempts++;
 					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Testing connection to ${Pink}$Tested_Host_or_Block:$SFTP_Port${Green}.${Clear}\n";
@@ -384,17 +419,20 @@ sub fingerprint_verification {
 						}
 						$Host_or_Block = $Tested_Host_or_Block;
 						last SSH_CHECK;
-					};
-				}
-
-				sleep 1;
-			
-				if ($Attempts >= 3) {
-					if ($Verbose) {
-						my $Time_Stamp = strftime "%H:%M:%S", localtime;
-						print "${Red}## Verbose (PID:$$) $Time_Stamp ## Could not resolve ${Yellow}$Hostname${Red} (${Pink}@Host_Connection_String${Red}), no route to host or SSH not responding. Terminating the transfer.${Clear}\n";
 					}
-					return "Failed: Could not resolve $Hostname ($Host_or_Block), no route to host or SSH not responding. Terminating the transfer.";
+					elsif ($Attempts >= 3) {
+						if ($Verbose) {
+							my $Time_Stamp = strftime "%H:%M:%S", localtime;
+							print "${Red}## Verbose (PID:$$) $Time_Stamp ## Could not resolve ${Yellow}$Hostname${Red} (${Pink}$Tested_Host_or_Block${Red}), no route to host or SSH not responding. Terminating the transfer.${Clear}\n";
+						}
+						if ($Tested_Host_or_Block eq $Host_Connection_String[-1]) {
+							return "Failed: Could not resolve $Hostname ($Tested_Host_or_Block), no route to host or SSH not responding. Terminating the transfer.";
+						}
+						else {
+							next SSH_CHECK;
+						}
+						
+					}
 				}
 			}
 
@@ -420,15 +458,16 @@ sub fingerprint_verification {
 					ssh_option => "-o UserKnownHostsFile=$Distribution_tmp_Location/$Host_or_Block"
 				);
 				eval { $SSH->run_ssh(); }; print "" if $@;
-		
+
 				# Fingerprint
 				my $Line = $SSH->read_line();
-				my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+				my $Fingerprint_Prompt = eval { $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re'); }; &failure("${Red}[Connection Timeout]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block") if $@;
 
-				print "${Green}(${Pink}$Host_or_Block${Green}) ";
+				if (!$Verbose) {
+					print "${Green}(${Pink}$Host_or_Block${Green}) ";
+				}
 
 				if ($Fingerprint_Prompt) {
-		
 					my $Discovered_Fingerprint = $SSH->match();
 					$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
 					if ($Verbose) {
@@ -440,9 +479,11 @@ sub fingerprint_verification {
 					if (!$Previously_Recorded_Fingerprint) {
 						if ($Verbose) {
 							my $Time_Stamp = strftime "%H:%M:%S", localtime;
-							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host_or_Block${Green}. Recording and proceeding...${Clear}\n";
+							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host_or_Block${Green}. Recording and proceeding.${Clear}\n";
 						}
-						print "${Blue}[Fingerprint] ${Clear}";
+						else {
+							print "${Blue}[Fingerprint] ${Clear}";
+						}
 						my $Update_Fingerprint = $DB_Connection->prepare("INSERT INTO `host_attributes` (
 							`host_id`,
 							`fingerprint`
@@ -453,19 +494,22 @@ sub fingerprint_verification {
 						$Update_Fingerprint->execute($Host_ID, $Discovered_Fingerprint, $Discovered_Fingerprint);
 						$SSH->send('yes');
 						#$Line = $SSH->read_line();
-						eval { $SSH->waitfor(".*Last login.*", $Connection_Timeout, '-re'); }; print "### Bad things: $@\n" if $@;
+						eval { $SSH->waitfor(".*Last login.*", $Connection_Timeout, '-re'); }; &failure("${Red}[Connection Timeout]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block") if $@;
 						$SSH->close();
 						return $Host_or_Block;
 					}
 					elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
-						print "${Green}[Fingerprint] ${Clear}";
+
 						if ($Verbose) {
 							my $Time_Stamp = strftime "%H:%M:%S", localtime;
-							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
+							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records.${Clear}\n";
+						}
+						else {
+							print "${Green}[Fingerprint] ${Clear}";
 						}
 						$SSH->send('yes');
 						#$Line = $SSH->read_line();
-						eval { $SSH->waitfor(".*Last login.*", $Connection_Timeout, '-re'); }; print "### Bad things: $@\n" if $@;
+						eval { $SSH->waitfor(".*Last login.*", $Connection_Timeout, '-re'); }; &failure("${Red}[Connection Timeout]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block") if $@;
 						$SSH->close();
 						return $Host_or_Block;
 					}
@@ -474,14 +518,21 @@ sub fingerprint_verification {
 							my $Time_Stamp = strftime "%H:%M:%S", localtime;
 							print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
 						}
-						print "${Red}[Fingerprint] ${Clear}\n";
-		
+						else {
+							print "${Red}[Fingerprint] ${Clear}";
+						}
 						unlink "$Distribution_tmp_Location/$Host_or_Block";
 						return "Failed: Fingerprint mismatch!";
 					}
 				}
 				else {
-					print "${Red}[Fingerprint] ${Clear}\n";
+					if ($Verbose) {
+						my $Time_Stamp = strftime "%H:%M:%S", localtime;
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
+					}
+					else {
+						print "${Red}[Fingerprint] ${Clear}\n";
+					}
 					unlink "$Distribution_tmp_Location/$Host_or_Block";
 					return "Failed: Fingerprint could not be discovered!";
 				}
@@ -525,5 +576,14 @@ sub block_discovery {
 	return $Blocks;
 
 } # sub block_discovery
+
+sub failure {
+
+	my ($Message, $Host_Key) = @_;
+
+	print $Message;
+	unlink $Host_Key;
+
+} # sub failure
 
 1;

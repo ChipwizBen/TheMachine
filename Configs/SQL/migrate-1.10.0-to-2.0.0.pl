@@ -51,6 +51,7 @@ sub DB_TheMachine {
 	return $DB_TheMachine;
 } # sub DB_TheMachine
 
+#&set_the_machine_flags(1);
 &notes;
 &rules;
 	&lnk_rules_to_command_groups;
@@ -68,6 +69,24 @@ sub DB_TheMachine {
 &lnk_host_groups_to_hosts;
 	&host_groups; # Special exception to the overwrite rule. Results are re-mapped.
 	&hosts; # Special exception to the overwrite rule. Results are re-mapped.
+#&set_the_machine_flags(0);
+
+sub set_the_machine_flags {
+
+	my $Flag = $_[0];
+
+	my $Column;
+	if ($Flag == 1) {
+		$Column = 'ADD COLUMN `tm` INT(1) NOT NULL DEFAULT 1';
+	}
+	else {
+		$Column = 'DROP COLUMN `tm`';
+	}
+
+	$DB_TheMachine->do("ALTER TABLE `TheMachine`.`lnk_hosts_groups_to_hosts` $Column;");
+	$DB_TheMachine->do("ALTER TABLE `TheMachine`.`lnk_hosts_to_ipv4_allocations` $Column;");
+
+} # sub set_the_machine_flags
 
 sub notes {
 
@@ -948,7 +967,6 @@ sub hosts {
 					print "\tID: [$Machine_New_ID]\n";
 					&spin_host_group($ID);
 					&update_host_ids($ID, $Machine_New_ID, $Host, $IP);
-					#&flush_old_id($ID, $Host);
 				}
 			}
 			else {
@@ -1008,8 +1026,6 @@ sub update_host_ids {
 
 	print "\nSwapping out host ID $Old_ID with $Machine_ID.\n";
 
-
-	
 	my $Update_Host_Groups_to_Hosts = $DB_TheMachine->prepare("UPDATE `lnk_host_groups_to_hosts` SET
 		`host` = ?
 		WHERE `host` = ?");
@@ -1025,16 +1041,6 @@ sub update_host_ids {
 		WHERE `item_id` = ?
 		AND `type_id` = '1'");
 	$Update_Notes->execute($Machine_ID, $Old_ID);
-
-	my $Update_Block_Allocations = $DB_TheMachine->prepare("UPDATE `lnk_hosts_to_ipv4_allocations` SET
-		`host` = ?
-		WHERE `host` = ?");
-	$Update_Block_Allocations->execute($Machine_ID, $Old_ID);
-
-	my $Host_Attribute_Update = $DB_TheMachine->prepare("UPDATE `host_attributes` SET
-		`host_id` = ?
-		WHERE `host_id` = ?");
-	$Host_Attribute_Update->execute($Machine_ID, $Old_ID);
 
 	my $Host_Attribute_Insert = $DB_TheMachine->prepare("INSERT INTO `host_attributes` (
 		`host_id`,

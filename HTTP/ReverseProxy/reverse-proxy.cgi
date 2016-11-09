@@ -1184,7 +1184,6 @@ sub html_view_reverse_proxy {
 <VirtualHost *:80>
     $Server_Names
 
-    ProxyEngine              On
     ProxyRequests            Off
     ProxyPreserveHost        On
     ProxyPass                $Source    $Destination
@@ -1261,11 +1260,11 @@ sub html_output {
 		OR `ssl_certificate_key_file` LIKE ?
 		OR `ssl_ca_certificate_file` LIKE ?
 		ORDER BY `server_name` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
 	$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
-		"%$Filter%", "%$Filter%", "%$Filter%");
+		"%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 
 	my $Rows = $Select_Reverse_Proxies->rows();
 

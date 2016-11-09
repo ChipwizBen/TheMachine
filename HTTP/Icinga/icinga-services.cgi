@@ -1685,9 +1685,9 @@ sub html_output {
 	OR `config_name` LIKE '%$Filter%'
 	OR `service_description` LIKE '%$Filter%')
 	ORDER BY `config_name` ASC
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
-	$Select_Services->execute( );
+	$Select_Services->execute(0, $Rows_Returned);
 	my $Rows = $Select_Services->rows();
 
 	$Table->setRowClass(1, 'tbrow1');

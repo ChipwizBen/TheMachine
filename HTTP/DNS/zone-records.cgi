@@ -781,10 +781,10 @@ sub html_output {
 			OR `target` LIKE ?
 			OR `expires` LIKE ?
 		ORDER BY `source` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
-	$Select_Records->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+	$Select_Records->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 
 	my $Rows = $Select_Records->rows();
 

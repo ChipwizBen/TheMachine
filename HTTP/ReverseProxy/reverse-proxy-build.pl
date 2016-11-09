@@ -14,7 +14,6 @@ my $Reverse_Proxy_Location = Reverse_Proxy_Location();
 my $Proxy_Redirect_Location = Proxy_Redirect_Location();
 	unlink glob "$Proxy_Redirect_Location/*.conf";
 my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
-my $Date_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
 
 $| = 1;
 my $Override;
@@ -70,6 +69,7 @@ foreach my $Parameter (@ARGV) {
 print "Reverse proxy configuration written to $Reverse_Proxy_Location/\n";
 &write_redirect;
 print "Redirect configuration written to $Proxy_Redirect_Location/\n";
+&Git_Commit('Push');
 
 $DB_Connection->do("UPDATE `lock` SET 
 `reverse-proxy-build` = '0',
@@ -93,6 +93,8 @@ sub write_reverse_proxy {
 	WHERE `active` = '1'
 	ORDER BY `server_name` ASC");
 	$Record_Query->execute();
+
+	unlink "$Reverse_Proxy_Location/*";
 
 	while ( my @Proxy_Entry = $Record_Query->fetchrow_array() )
 	{
@@ -128,40 +130,32 @@ sub write_reverse_proxy {
 		}
 		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
 
-		my $Config_File = "$Reverse_Proxy_Location/httpd.rp-$Server_Name.conf";
+		my $Config_Name = "httpd.rp-$Server_Name.conf";
+		my $Config_File = "$Reverse_Proxy_Location/$Config_Name";
 
 		if ($Verbose) {print "\nRP-SN: $Server_Name\n    RPID: $ID\n    Config: $Config_File\n"}
-
-		if (-f $Config_File) {
-			tie my @File_Lines, 'Tie::File', $Config_File;
-			my $Last_Written_Time = $File_Lines[3];
-				$Last_Written_Time =~ s/^##\sWritten:\s//;
 				
-				if ($Verbose) {print "    Found existing config, appending.\n"}
-			
-			if ($Last_Written_Time eq $Date_Time) {
-				open( Reverse_Proxy_Config, ">>$Config_File" ) or die "Can't open $Config_File";
-			}
-			else {
-				open( Reverse_Proxy_Config, ">$Config_File" ) or die "Can't open $Config_File";
-			}
+		if ($Verbose) {print "    Found existing config, appending.\n"}
+		
+		if (-f $Config_File) {
+			open( Reverse_Proxy_Config, ">>$Config_File" ) or die "Can't open $Config_File";
 		}
 		else {
 			open( Reverse_Proxy_Config, ">$Config_File" ) or die "Can't open $Config_File";
+			print Reverse_Proxy_Config "#########################################################################\n";
+			print Reverse_Proxy_Config "## $System_Name\n";
+			print Reverse_Proxy_Config "## Version: $Version\n";
+			print Reverse_Proxy_Config "## AUTO GENERATED FILE\n";
+			print Reverse_Proxy_Config "## Please do not edit by hand\n";
+			print Reverse_Proxy_Config "## This file is part of a wider system and is automatically overwritten often\n";
+			print Reverse_Proxy_Config "## View the changelog or README files for more information.\n";
+			print Reverse_Proxy_Config "#########################################################################\n";
+			print Reverse_Proxy_Config "\n";
+			print Reverse_Proxy_Config "## Reverse Proxy ID $ID, last modified $Last_Modified by $Modified_By\n";		
+			print Reverse_Proxy_Config "\n";
 		}
 
-		print Reverse_Proxy_Config "#########################################################################\n";
-		print Reverse_Proxy_Config "## $System_Name\n";
-		print Reverse_Proxy_Config "## Version: $Version\n";
-		print Reverse_Proxy_Config "## Written: $Date_Time\n";
-		print Reverse_Proxy_Config "## AUTO GENERATED FILE\n";
-		print Reverse_Proxy_Config "## Please do not edit by hand\n";
-		print Reverse_Proxy_Config "## This file is part of a wider system and is automatically overwritten often\n";
-		print Reverse_Proxy_Config "## View the changelog or README files for more information.\n";
-		print Reverse_Proxy_Config "#########################################################################\n";
-		print Reverse_Proxy_Config "\n";
-		print Reverse_Proxy_Config "## Reverse Proxy ID $ID, last modified $Last_Modified by $Modified_By\n";		
-		print Reverse_Proxy_Config "\n";
+
 
 		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
 		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
@@ -249,7 +243,7 @@ sub write_reverse_proxy {
 
     SSLProxyEngine		On
     #SSLProxyVerify		none
-    #SSLProxyCheckPeerCN		off
+    #SSLProxyCheckPeerCN	off
     #SSLProxyCheckPeerName	off
     #SSLProxyCheckPeerExpire	off
     ProxyRequests		Off
@@ -280,7 +274,6 @@ RP_EOF
 			print Reverse_Proxy_Config <<RP_EOF;
 <VirtualHost *:80>
     $Server_Names
-    ProxyEngine			On
     ProxyRequests		Off
     ProxyPreserveHost		On
     ProxyPass			$Source	$Destination
@@ -295,6 +288,14 @@ RP_EOF
 
 		print Reverse_Proxy_Config "\n";
 		close Reverse_Proxy_Config;
+
+		my $Git_Check = Git_Link('Status_Check');
+		if ($Git_Check =~ /Yes/i) {
+			my $Git_Directory = Git_Locations('ReverseProxy');
+			use File::Copy;
+			copy("$Config_File","$Git_Directory/$Config_Name") or die "Copy failed of $Config_File to $Git_Directory/$Config_Name: $!";
+			&Git_Commit("$Git_Directory/$Config_Name", "Reverse Proxy ID $ID, last modified $Last_Modified by $Modified_By", $Last_Modified, $Modified_By)
+		}
 	}
 
 } # sub write_reverse_proxy
@@ -310,6 +311,8 @@ sub write_redirect {
 	WHERE `active` = '1'
 	ORDER BY `server_name` ASC");
 	$Record_Query->execute();
+
+	unlink "$Reverse_Proxy_Location/*";
 
 	while ( my @Redirect_Entry = $Record_Query->fetchrow_array() )
 	{
@@ -334,32 +337,26 @@ sub write_redirect {
 		}
 		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
 
-		my $Config_File = "$Proxy_Redirect_Location/httpd.rd-$Port-$Server_Name.conf";
+		my $Config_Name = "httpd.rd-$Port-$Server_Name.conf";
+		my $Config_File = "$Proxy_Redirect_Location/$Config_Name";
 		
 		if ($Verbose) {print "\nRD-SN: $Server_Name\n    RDID: $ID\n    Config: $Config_File\n"}
-		
+		if ($Verbose) {print "    Found existing config, appending.\n"}
+
 		if (-f $Config_File) {
-			tie my @File_Lines, 'Tie::File', $Config_File;
-			my $Last_Written_Time = $File_Lines[3];
-				$Last_Written_Time =~ s/^##\sWritten:\s//;
+			open(Redirect_Config_Read,"$Config_File") || die "Can't open $Config_File (read)\n"; 
+			my @Config_File_Lines = <Redirect_Config_Read>;
+			close(Redirect_Config_Read);
 
-				if ($Verbose) {print "    Found existing config, appending.\n"}
-
-			if ($Last_Written_Time eq $Date_Time) {
-				open(Redirect_Config_Read,"$Config_File") || die "Can't open $Config_File (read)\n"; 
-				my @Config_File_Lines = <Redirect_Config_Read>;
-				close(Redirect_Config_Read);
-
-				open( Redirect_Config, ">$Config_File" ) or die "Can't open $Config_File (write)";
-				foreach my $Line (@Config_File_Lines) {
-					print Redirect_Config $Line;
-				    if ($Line =~ /^## Redirect ID/) {
-				        print Redirect_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n\n";
-				    }
-				    if ($Line =~ /^\s\s\s\sRedirect/) {
-				        print Redirect_Config "    Redirect			$Source	$Destination\n";
-				    }
-				}
+			open( Redirect_Config, ">$Config_File" ) or die "Can't open $Config_File (write)";
+			foreach my $Line (@Config_File_Lines) {
+				print Redirect_Config $Line;
+			    if ($Line =~ /^## Redirect ID/) {
+			        print Redirect_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n\n";
+			    }
+			    if ($Line =~ /^\s\s\s\sRedirect/) {
+			        print Redirect_Config "    Redirect			$Source	$Destination\n";
+			    }
 			}
 		}
 		else {
@@ -367,7 +364,6 @@ sub write_redirect {
 			print Redirect_Config "#########################################################################\n";
 			print Redirect_Config "## $System_Name\n";
 			print Redirect_Config "## Version: $Version\n";
-			print Redirect_Config "## Written: $Date_Time\n";
 			print Redirect_Config "## AUTO GENERATED FILE\n";
 			print Redirect_Config "## Please do not edit by hand\n";
 			print Redirect_Config "## This file is part of a wider system and is automatically overwritten often\n";
@@ -384,8 +380,15 @@ sub write_redirect {
 			print Redirect_Config "</VirtualHost>\n";
 			print Redirect_Config "\n";
 		}
-		
-		close Redirect_Config;
-	}
 
+		close Redirect_Config;
+
+		my $Git_Check = Git_Link('Status_Check');
+		if ($Git_Check =~ /Yes/i) {
+			my $Git_Directory = Git_Locations('Redirect');
+			use File::Copy;
+			copy("$Config_File","$Git_Directory/$Config_Name") or die "Copy failed of $Config_File to $Git_Directory/$Config_Name: $!";
+			&Git_Commit("$Git_Directory/$Config_Name", "Redirect ID $ID, last modified $Last_Modified by $Modified_By", $Last_Modified, $Modified_By)
+		}
+	}
 } # sub write_redirect

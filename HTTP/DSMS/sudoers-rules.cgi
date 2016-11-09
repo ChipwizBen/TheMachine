@@ -19,7 +19,7 @@ my $Add_Rule = $CGI->param("Add_Rule");
 my $Add_Rule_Final = $CGI->param("Add_Rule_Final");
 
 	my $Rule_Name_Add = $CGI->param("Rule_Name_Add");
-		$Rule_Name_Add =~ s/\W//g;
+		$Rule_Name_Add =~ s/\W/_/g;
 	my $Run_As_Add = $CGI->param("Run_As_Add");
 	my $NOPASSWD_Add = $CGI->param("NOPASSWD_Add");
 	my $NOEXEC_Add = $CGI->param("NOEXEC_Add");
@@ -49,7 +49,7 @@ my $Edit_Rule = $CGI->param("Edit_Rule");
 my $Edit_Rule_Final = $CGI->param("Edit_Rule_Final");
 
 	my $Rule_Name_Edit = $CGI->param("Rule_Name_Edit");
-		$Rule_Name_Edit =~ s/\W//g;
+		$Rule_Name_Edit =~ s/\W/_/g;
 	my $Run_As_Edit = $CGI->param("Run_As_Edit");
 	my $NOPASSWD_Edit = $CGI->param("NOPASSWD_Edit");
 	my $NOEXEC_Edit = $CGI->param("NOEXEC_Edit");
@@ -3425,14 +3425,14 @@ sub html_output {
 			OR `run_as` LIKE ?
 			OR `expires` LIKE ?
 		ORDER BY `name` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
 	if ($ID_Filter) {
-		$Select_Rules->execute($ID_Filter, '', '', '');
+		$Select_Rules->execute($ID_Filter, '', '', '', 0, $Rows_Returned);
 	}
 	else {
-		$Select_Rules->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+		$Select_Rules->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 	my $Rows = $Select_Rules->rows();
 

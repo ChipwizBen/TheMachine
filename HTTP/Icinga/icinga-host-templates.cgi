@@ -1414,9 +1414,9 @@ sub html_output {
 	WHERE (`id` LIKE '%$Filter%'
 	OR `template_name` LIKE '%$Filter%')
 	ORDER BY `template_name` ASC
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
-	$Select_Host_Templates->execute( );
+	$Select_Host_Templates->execute(0, $Rows_Returned);
 	my $Rows = $Select_Host_Templates->rows();
 	
 	$Table->setRowClass(1, 'tbrow1');

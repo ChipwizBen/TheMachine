@@ -872,9 +872,9 @@ WHERE `ip_block` LIKE ?
 	OR `ntp2` LIKE ?
 ORDER BY
 	$Order_By_SQL
-LIMIT 0 , $Rows_Returned");
+LIMIT ?, ?");
 $IPv4_Block_Query->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
-	"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+	"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 
 my $Rows = $IPv4_Block_Query->rows();
 my $IP_Block_Total_Count = $DB_Connection->prepare("SELECT `id` FROM `ipv4_blocks`");

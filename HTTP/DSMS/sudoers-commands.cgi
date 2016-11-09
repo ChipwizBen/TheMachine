@@ -991,14 +991,14 @@ sub html_output {
 			OR `command` LIKE ?
 			OR `expires` LIKE ?
 		ORDER BY `command_alias` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
 	if ($ID_Filter) {
-		$Select_Commands->execute($ID_Filter, '', '', '');
+		$Select_Commands->execute($ID_Filter, '', '', '', 0, $Rows_Returned);
 	}
 	else {
-		$Select_Commands->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+		$Select_Commands->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 
 	my $Rows = $Select_Commands->rows();

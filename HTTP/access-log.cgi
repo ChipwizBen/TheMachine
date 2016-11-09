@@ -86,10 +86,10 @@ sub html_output {
 			OR `time` LIKE ?
 			)
 		ORDER BY `time` DESC
-		LIMIT 0 , $Rows_Returned");
+		LIMIT ?, ?");
 
 	$Select_Logs->execute("%$User_Name_Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%",
-		"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+		"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	
 	my $Rows = $Select_Logs->rows();
 

@@ -1587,9 +1587,9 @@ sub html_output {
 	OR `alias` LIKE '%$Filter%'
 	OR `address` LIKE '%$Filter%')
 	ORDER BY `host_name` ASC
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
-	$Select_Hosts->execute( );
+	$Select_Hosts->execute(0, $Rows_Returned);
 	my $Rows = $Select_Hosts->rows();
 	
 	$Table->setRowClass(1, 'tbrow1');

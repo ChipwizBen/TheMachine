@@ -1,0 +1,7 @@
+cd /var/www/html/Storage/Git
+git init
+git add Redirect
+git add ReverseProxy
+git commit -m "Structure"
+git remote add origin git@github.com:ChipwizBen/TheMachine.git
+git push -u origin master

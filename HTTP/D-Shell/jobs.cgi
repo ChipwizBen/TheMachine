@@ -528,10 +528,10 @@ sub html_output {
 	my $Select_Jobs = $DB_Connection->prepare("SELECT `id`, `host_id`, `command_set_id`, `on_failure`, `status`, `last_modified`, `modified_by`
 		FROM `jobs`
 		ORDER BY `id` DESC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
-	$Select_Jobs->execute();
+	$Select_Jobs->execute(0, $Rows_Returned);
 
 	my $Rows = $Select_Jobs->rows();
 

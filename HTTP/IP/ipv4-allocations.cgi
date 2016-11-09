@@ -1207,13 +1207,13 @@ my $Select_Blocks = $DB_Connection->prepare("SELECT `id`, `ip_block`, `parent_bl
 		OR `parent_block` LIKE ?
 	ORDER BY
 		$Order_By_SQL
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
 if ($ID_Filter) {
-	$Select_Blocks->execute("$ID_Filter", "", "");
+	$Select_Blocks->execute("$ID_Filter", "", "", 0, $Rows_Returned);
 }
 else {
-	$Select_Blocks->execute("%$Filter%", "%$Filter%", "%$Filter%");	
+	$Select_Blocks->execute("%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);	
 }
 
 

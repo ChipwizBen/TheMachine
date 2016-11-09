@@ -86,9 +86,9 @@ sub html_output {
 			OR `username` LIKE ?
 			)
 		ORDER BY `id` DESC
-		LIMIT 0 , $Rows_Returned");
+		LIMIT ?, ?");
 
-	$Select_Logs->execute("%$User_Name_Filter%", "%$Category_Filter%", "%$Method_Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%" );
+	$Select_Logs->execute("%$User_Name_Filter%", "%$Category_Filter%", "%$Method_Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 
 	my $Rows = $Select_Logs->rows();
 

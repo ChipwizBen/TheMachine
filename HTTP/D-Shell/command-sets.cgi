@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use POSIX qw(strftime);
 use HTML::Table;
 
 my $Common_Config;
@@ -8,10 +9,13 @@ if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../c
 require $Common_Config;
 
 my $System_Name = System_Name();
+my $Version = Version();
 my $Header = Header();
 my $Footer = Footer();
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
+
+my $Date_Time = strftime "%Y-%m-%d %H:%M:%S", localtime;
 
 my $Add_Command = $CGI->param("Add_Command");
 	my $Command_Add_Final = $CGI->param("Command_Add_Final");
@@ -794,7 +798,7 @@ sub edit_command {
 	$Update_Command->execute($Command_Name_Edit, $Command_Edit, $Command_Description_Edit, $Command_Owner_Edit, $Edit_Command_Revision, $Edit_Command, $User_Name);
 	my $Command_Insert_ID = $DB_Connection->{mysql_insertid};
 
-	# Audit Log (Command Set)
+# Audit Log (Command Set)
 	my $DB_Connection = DB_Connection();
 	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 		`category`,
@@ -1629,9 +1633,9 @@ sub html_output {
 			OR `revision` LIKE ?
 			OR `description` LIKE ?
 			ORDER BY `name` ASC
-			LIMIT 0 , $Rows_Returned"
+			LIMIT ?, ?"
 		);
-		$Select_Command_Sets->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%");
+		$Select_Command_Sets->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 
 	$Table->addRow( "ID", "Command Set Name", "Commands", "Description", "Dependencies", "Owner", 

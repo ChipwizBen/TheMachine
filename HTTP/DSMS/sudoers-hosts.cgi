@@ -467,14 +467,14 @@ sub html_output {
 			OR `hostname` LIKE ?)
 			AND `dsms` = 1
 		ORDER BY `hostname` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
 	if ($ID_Filter) {
-		$Select_Hosts->execute($ID_Filter, '');
+		$Select_Hosts->execute($ID_Filter, '', 0, $Rows_Returned);
 	}
 	else {
-		$Select_Hosts->execute("%$Filter%", "%$Filter%");
+		$Select_Hosts->execute("%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 
 	my $Rows = $Select_Hosts->rows();

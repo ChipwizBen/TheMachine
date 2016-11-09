@@ -619,9 +619,9 @@ sub html_output {
 	OR `timeperiod_name` LIKE '%$Filter%'
 	OR `alias` LIKE '%$Filter%')
 	ORDER BY `timeperiod_name` ASC
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
-	$Select_Times->execute( );
+	$Select_Times->execute(0, $Rows_Returned);
 	my $Rows = $Select_Times->rows();
 	
 	$Table->setRowClass(1, 'tbrow1');

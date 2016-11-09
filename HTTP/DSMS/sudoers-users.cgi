@@ -898,14 +898,14 @@ sub html_output {
 			OR `username` LIKE ?
 			OR `expires` LIKE ?
 		ORDER BY `username` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
 	if ($ID_Filter) {
-		$Select_Users->execute($ID_Filter, '', '');
+		$Select_Users->execute($ID_Filter, '', '', 0, $Rows_Returned);
 	}
 	else {
-		$Select_Users->execute("%$Filter%", "%$Filter%", "%$Filter%");
+		$Select_Users->execute("%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 
 	my $Rows = $Select_Users->rows();

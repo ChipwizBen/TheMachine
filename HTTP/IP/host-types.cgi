@@ -390,10 +390,10 @@ sub html_output {
 		WHERE `id` LIKE ?
 		OR `type` LIKE ?
 		ORDER BY `type` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
-	$Select_Host_Types->execute("%$Filter%", "%$Filter%");
+	$Select_Host_Types->execute("%$Filter%", "%$Filter%", 0, $Rows_Returned);
 
 	my $Rows = $Select_Host_Types->rows();
 

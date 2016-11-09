@@ -387,10 +387,10 @@ sub html_output {
 		WHERE `id` LIKE ?
 		OR `domain` LIKE ?
 		ORDER BY `domain` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
-	$Select_Domains->execute("%$Filter%", "%$Filter%");
+	$Select_Domains->execute("%$Filter%", "%$Filter%", 0, $Rows_Returned);
 
 	my $Rows = $Select_Domains->rows();
 

@@ -200,7 +200,7 @@ sub Sudoers_Storage {
 
 	# This is the directory where replaced sudoers files are stored. You do not need a trailing slash.
 
-	my $Sudoers_Storage = '../Storage/Sudoers';
+	my $Sudoers_Storage = '../Storage/DSMS';
 	return $Sudoers_Storage;
 
 } # sub Sudoers_Storage
@@ -517,6 +517,111 @@ sub DB_Connection {
 	return $DB_Connection;
 
 } # sub DB_Connection
+
+sub Git_Link {
+
+	# This is where you configure your link to Git, if required.
+
+	my $Use_Git = 'Yes'; # If you wish to use Git, set this to yes.
+
+	my $Git_Bin_Path = '/usr/bin/git'; # This is the binary to Git on your system (typically /usr/bin/git).
+	my $Git_Directory = '../Storage/Git'; # This is the local repo location. You do not need a trailing slash.
+	#my $Git_Directory = '/home/ben/Git';
+
+	# Do not edit below this line.
+
+	my $Git_Query = $_[0];
+	if ($Git_Query eq 'Status_Check') {
+		return $Use_Git;
+		exit(0);
+	}
+	elsif ($Git_Query eq 'Directory') {
+		return $Git_Directory;
+		exit(0);
+	}
+
+	if ($Use_Git !~ /Yes/i) {
+		return 0;
+	}
+
+	use Git::Wrapper;
+	eval {
+		my $Git_Connection = Git::Wrapper->new({
+			dir => $Git_Directory,
+			git_binary => $Git_Bin_Path
+		});
+	}
+} # sub Git_Link
+
+sub Git_Locations {
+
+	my $Redirect = 'Redirect';
+	my $ReverseProxy = 'ReverseProxy';
+	my $CommandSets = 'CommandSets';
+	my $DSMS = 'DSMS';
+
+	## Do not edit below here
+
+	my $Git_Query = $_[0];
+
+	my $Git_Directory = Git_Link('Directory');
+
+	if ($Git_Query eq 'Redirect') {
+		$Git_Directory = "$Git_Directory/$Redirect";
+		return $Git_Directory;
+		exit(0);
+	}
+	elsif ($Git_Query eq 'ReverseProxy') {
+		$Git_Directory = "$Git_Directory/$ReverseProxy";
+		return $Git_Directory;
+		exit(0);
+	}
+	elsif ($Git_Query eq 'CommandSets') {
+		$Git_Directory = "$Git_Directory/$CommandSets";
+		return $Git_Directory;
+		exit(0);
+	}
+	elsif ($Git_Query eq 'DSMS') {
+		$Git_Directory = "$Git_Directory/$DSMS";
+		return $Git_Directory;
+		exit(0);
+	}
+
+} # sub Git_Locations
+
+sub Git_Commit {
+
+	# Nothing for you to configure in here.
+
+	my $Use_Git = Git_Link('Status_Check');
+	if ($Use_Git !~ /Yes/i) {
+		return 0;
+	}
+
+	my $File = $_[0];
+		if ($File =~ /^..\/Storage/) {$File =~ s/^..\/Storage\/Git\///;}
+	my $Message = $_[1];
+	my $Date = $_[2];
+	my $Author = $_[3];
+		$Author = 'The Machine';
+
+	my $Git_Link = Git_Link();
+
+	if ($File eq 'Push') {
+		$Git_Link->push();
+	}
+	else {
+		my $DB_Connection = DB_Connection();
+		my $Select_User = $DB_Connection->prepare("SELECT  `email`
+		FROM `credentials`
+		WHERE `username` = ?");
+		$Select_User->execute($Author);
+		my $Email = $Select_User->fetchrow_array();
+		eval { $Git_Link->add($File); }; die("Broke at git add $File: $@\n") if $@;
+		eval { $Git_Link->commit(qw/ --message /, "$Message", qw/ --author /, "$Author <$Email>", qw/ --date /, "$Date", { all => 1}); };
+	}
+
+} # sub Git_Commit
 
 sub Reverse_Proxy_Defaults {
 

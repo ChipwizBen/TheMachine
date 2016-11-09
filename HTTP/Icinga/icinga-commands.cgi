@@ -542,13 +542,13 @@ sub html_output {
 
 	my $Select_Commands = $DB_Connection->prepare("SELECT `id`, `command_name`, `command_line`, `active`, `last_modified`, `modified_by`
 	FROM `nagios_command`
-	WHERE (`id` LIKE '$Filter'
-	OR `command_name` LIKE '%$Filter%'
-	OR `command_line` LIKE '%$Filter%')
+	WHERE (`id` LIKE ?
+	OR `command_name` LIKE ?
+	OR `command_line` LIKE ?)
 	ORDER BY `command_name` ASC
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
-	$Select_Commands->execute( );
+	$Select_Commands->execute("%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	my $Rows = $Select_Commands->rows();
 	
 	$Table->setRowClass(1, 'tbrow1');

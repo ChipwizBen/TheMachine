@@ -1426,9 +1426,9 @@ sub html_output {
 	OR `template_name` LIKE '%$Filter%'
 	OR `check_command` LIKE '%$Filter%')
 	ORDER BY `template_name` ASC
-	LIMIT 0 , $Rows_Returned");
+	LIMIT ?, ?");
 
-	$Select_Service_Templates->execute( );
+	$Select_Service_Templates->execute(0, $Rows_Returned);
 	my $Rows = $Select_Service_Templates->rows();
 
 	$Table->setRowClass(1, 'tbrow1');

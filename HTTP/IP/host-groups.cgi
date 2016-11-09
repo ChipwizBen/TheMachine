@@ -1089,14 +1089,14 @@ sub html_output {
 		OR `groupname` LIKE ?
 		OR `expires` LIKE ?
 		ORDER BY `groupname` ASC
-		LIMIT 0 , $Rows_Returned"
+		LIMIT ?, ?"
 	);
 
 	if ($ID_Filter) {
-		$Select_Groups->execute($ID_Filter, '', '');
+		$Select_Groups->execute($ID_Filter, '', '', 0, $Rows_Returned);
 	}
 	else {
-		$Select_Groups->execute("%$Filter%", "%$Filter%", "%$Filter%");
+		$Select_Groups->execute("%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 	
 	my $Rows = $Select_Groups->rows();
