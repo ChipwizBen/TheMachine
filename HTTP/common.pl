@@ -98,7 +98,7 @@ sub DNS_Server {
 
 	# By setting a DNS server here, it will override the operating system's DNS server when doing lookups
 	
-	my $DNS_Server = '192.168.16.10';
+	my $DNS_Server = '';
 	return $DNS_Server;
 
 } # sub DNS_Server
@@ -109,12 +109,12 @@ sub LDAP_Login {
 
 	my $LDAP_Enabled = 'On'; # Set this to 'Off' to disable LDAP/AD authentication
 
-	my $LDAP_Server = '192.168.59.235';
+	my $LDAP_Server = '';
 	my $LDAP_Port = 389;
-	my $Timeout = 5;
-	my $LDAP_User_Name_Prefix = '\\';
-	my $LDAP_Filter = '(&(objectClass=inetOrgPerson)(memberOf=cn=LibreNMS_Users,ou=Application Groups,ou=Groups,dc=,dc=local))';
-	my $LDAP_Search_Base = "ou=User Accounts,dc=,dc=local";
+	my $LDAP_Timeout = 5;
+	my $LDAP_User_Name_Prefix = '';
+	my $LDAP_Filter = '';
+	my $LDAP_Search_Base = '';
 
 	# ---- Do not edit vaules below this line ---- #
 
@@ -124,7 +124,7 @@ sub LDAP_Login {
 		exit(0);
 	}
 	elsif ($LDAP_Query eq 'Parameters') {
-		my @Parameters = ($LDAP_Server, $LDAP_Port, $Timeout, $LDAP_User_Name_Prefix, $LDAP_Filter, $LDAP_Search_Base);
+		my @Parameters = ($LDAP_Server, $LDAP_Port, $LDAP_Timeout, $LDAP_User_Name_Prefix, $LDAP_Filter, $LDAP_Search_Base);
 		return @Parameters;
 		exit(0);
 	}
@@ -138,10 +138,10 @@ sub LDAP_Login {
 		my $LDAP_Connection = Net::LDAP->new(
 			$LDAP_Server,
 			port => $LDAP_Port,
-			timeout => $Timeout,
+			timeout => $LDAP_Timeout,
 			start_tls => 1,
 			#filter => $LDAP_Filter,
-		) or die "Can't connect to LDAP server $LDAP_Server:$LDAP_Port with timeout $Timeout seconds. $@";
+		) or die "Can't connect to LDAP server $LDAP_Server:$LDAP_Port with timeout $LDAP_Timeout seconds. $@";
 		my $Bind = $LDAP_Connection->bind(
 			$LDAP_User_Name_Prefixed,
 			password => $LDAP_Password,
@@ -503,15 +503,15 @@ sub DB_Connection {
 
 	use DBI;
 
-	my $Host = 'localhost';
-	my $Port = '3306';
-	my $DB = 'TheMachine';
-	my $User = 'TheMachine';
-	my $Password = '<Password>';
+	my $DB_Host = '';
+	my $DB_Port = '';
+	my $DB_Name = '';
+	my $DB_User = '';
+	my $DB_Password = '';
 
-	my $DB_Connection = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
-		$User,
-		$Password,
+	my $DB_Connection = DBI->connect ("DBI:mysql:database=$DB_Name:host=$DB_Host:port=$DB_Port",
+		$DB_User,
+		$DB_Password,
 		{mysql_enable_utf8 => 1})
 		or die "Can't connect to database: $DBI::errstr\n";
 	return $DB_Connection;
@@ -524,7 +524,7 @@ sub Git_Link {
 
 	my $Use_Git = 'Yes'; # If you wish to use Git, set this to yes.
 
-	my $Git_Bin_Path = '/usr/bin/git'; # This is the binary to Git on your system (typically /usr/bin/git).
+	my $Git_Bin_Path = git(); # This is the binary to Git on your system (typically /usr/bin/git).
 	my $Git_Directory = '../Storage/Git'; # This is the local repo location. You do not need a trailing slash.
 	#my $Git_Directory = '/home/ben/Git';
 
@@ -627,11 +627,11 @@ sub Reverse_Proxy_Defaults {
 
 	# These are the default reverse proxy values for entries without custom parameters.
 
-	my $Transfer_Log = '/var/log/apache/access.log';
-	my $Error_Log = '/var/log/apache/error.log';
-	my $SSL_Certificate_File = '/etc/ssl/ssl-wildcard/wildcard.nwk1.com.crt';
-	my $SSL_Certificate_Key_File = '/etc/ssl/ssl-wildcard/wildcard.nwk1.com.key';
-	my $SSL_CA_Certificate_File = '/etc/ssl/ssl-wildcard/SSL_CA_Bundle.pem';
+	my $Transfer_Log = '/var/log/httpd/access.log';
+	my $Error_Log = '/var/log/httpd/error.log';
+	my $SSL_Certificate_File = '/etc/ssl/ssl-wildcard/wildcard.crt';
+	my $SSL_Certificate_Key_File = '/etc/ssl/ssl-wildcard/wildcard.key';
+	my $SSL_CA_Certificate_File = '/etc/ssl/ssl-wildcard/CA_Bundle.pem';
 
 	my @Reverse_Proxy_Defaults = ($Transfer_Log, $Error_Log, $SSL_Certificate_File, $SSL_Certificate_Key_File, $SSL_CA_Certificate_File);
 
@@ -641,8 +641,8 @@ sub Redirect_Defaults {
 
 	# These are the default proxy redirect values for entries without custom parameters.
 
-	my $Transfer_Log = '/var/log/apache/access.log';
-	my $Error_Log = '/var/log/apache/error.log';
+	my $Transfer_Log = '/var/log/httpd/access.log';
+	my $Error_Log = '/var/log/httpd/error.log';
 
 	my @Redirect_Defaults = ($Transfer_Log, $Error_Log);
 
@@ -657,7 +657,7 @@ sub Distribution_Defaults {
 	my $Distribution_SFTP_Port = '22'; # Default SFTP port
 	my $Distribution_User = 'transport'; # Default SFTP user
 	my $Key_Path = '/root/.ssh/id_rsa'; # Default private key path
-	my $Timeout = '5'; # Default stalled connection Timeout in seconds
+	my $Timeout = '15'; # Default stalled connection Timeout in seconds
 	my $Remote_Sudoers = 'upload/sudoers'; # Default sudoers file location on remote systems, if using chroot use a relative path
 
 	my @Distribution_Defaults = ($Distribution_SFTP_Port, $Distribution_User, $Key_Path, $Timeout, $Remote_Sudoers);
@@ -698,13 +698,14 @@ sub Password_Complexity_Check {
 
 	if ($Password eq 'Wn&sCvaG%!nvz}pb|#.pNzMe~I76fRx9m;a1|9wPYNQw4$u"w^]YA5WXr2b>bzyZzNKczDt~K5VHuDe~kX5mm=Ke:U5M9#g9PylHiSO$ob2-/Oc;=j#-KHuQj&#5fA,K_k$J\sSZup3<22MpK<>J|Ptp.r"h6') {
 		# This section is to specifically reply to polls for complexity requirement information for system status.
-		my @Password_Requirements = ($Enforce_Complexity_Requirements,
-										$Minimum_Length,
-										$Minimum_Upper_Case_Characters,
-										$Minimum_Lower_Case_Characters,
-										$Minimum_Digits,
-										$Minimum_Special_Characters,
-										$Special_Characters);
+		my @Password_Requirements = (
+			$Enforce_Complexity_Requirements,
+			$Minimum_Length,
+			$Minimum_Upper_Case_Characters,
+			$Minimum_Lower_Case_Characters,
+			$Minimum_Digits,
+			$Minimum_Special_Characters,
+			$Special_Characters);
 		return @Password_Requirements;
 		exit(0);
 	}
@@ -759,7 +760,7 @@ sub CGI {
 
 	my $Session_In_Database = 'Yes'; # Set this to 'Yes' to store cookies in the DB, otherwise they are stored on disk defined in $Session_Directory
 	my $Session_Expiry = '+1w';
-	my $Session_Directory = '/tmp/CGI-Sessions'; # Set this if you do not intend on using the DB to store session cookies
+	my $Session_Directory = '/tmp/CGI-Sessions'; # This will be used if you do not intend on using the DB to store session cookies
 
 
 	# Do not change values below this point
@@ -916,6 +917,19 @@ sub wc {
 	return $wc;
 
 } # sub wc
+
+sub git {
+
+	# Manually set the path to `git` here, or just leave this as default and the system 
+	# will try to determine its location through `which git --skip-alias`
+
+	#my $git = `which git --skip-alias`;
+	my $git = '/usr/bin/git';
+
+	$git =~ s/\n//g;
+	return $git;
+
+} # sub git
 
 ############################################################################################
 ########### The settings beyond this point are advanced, or shouldn't be changed ###########

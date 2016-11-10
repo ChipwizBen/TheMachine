@@ -1,2 +1,2 @@
 # Distributed Sudoers Management System File Relocation
-*/7 * * * * root cd /home/transport/upload/ > /dev/null 2>&1 && `which visudo --skip-alias` -c -f sudoers > /dev/null 2>&1 && `which cp --skip-alias` sudoers /etc/sudoers > /dev/null 2>&1 && `which curl --skip-alias` -k "https://welldsms.nwk1.com/checkin.pl?Host_Name=`hostname`" > /dev/null 2>&1
+*/7 * * * * root cd /home/transport/upload/ > /dev/null 2>&1 && `which visudo --skip-alias` -c -f sudoers > /dev/null 2>&1 && `which cp --skip-alias` sudoers /etc/sudoers > /dev/null 2>&1 && `which curl --skip-alias` -k "https://themachine/checkin.pl?Host_Name=`hostname`" > /dev/null 2>&1

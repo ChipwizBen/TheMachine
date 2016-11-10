@@ -1045,6 +1045,10 @@ sub processor {
 			if ($Command =~ /.*\*REBOOT.*/) {
 				$Reboot_Required = 1;
 			}
+			
+			if ($Command =~ /^\*SUDO/) {
+				$Command = "if [[ `id -u` -eq 0 ]]; then echo 'Already root'; else sudo su -; fi";
+			}
 
 			if ($Verbose == 1) {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Command${Clear}\n";
