@@ -121,6 +121,7 @@ print <<ENDHTML;
 						</ul>
 					</li>
 					<li><a href="/changelog.cgi">System Changelog</a></li>
+					<li><a href="/resources/The_Machine_Manual.pdf">System Manual</a></li>
 				</ul>
 			</li>
 			<li><a href="/#"><span>&nbsp; IP</span></a>
