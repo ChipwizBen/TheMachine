@@ -302,7 +302,7 @@ print <<ENDHTML;
 <html>
 <head>
 	<title>$System_Name</title>
-	<link rel="stylesheet" type="text/css" href="format.css" media= "screen,print" title ="Distributed - Default"/>
+	<link rel="stylesheet" type="text/css" href="format.css" media= "screen,print" title ="$System_Name CSS"/>
 	<!--[if IE]>
 		<META HTTP-EQUIV=REFRESH CONTENT="0; URL=http://getfirefox.com">
 	<![endif]-->

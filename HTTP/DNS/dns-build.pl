@@ -192,16 +192,9 @@ sub write_internal {
 	close Domain_Config;
 
 #nsupdate << EOF
-#server welwdc01
-#update delete -35720.nwk1.com A
-#update add -35720.nwk1.com 86400 A 1.1.1.1
-#send
-#EOF
-
-#nsupdate << EOF
-#server welwdc01
-#update delete $HOSTNAME A
-#update add $HOSTNAME 86400 A $IP
+#server $Server
+#update delete $Hostname A
+#update add $Hostname 86400 A $IP
 #send
 #EOF
 

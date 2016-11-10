@@ -57,28 +57,7 @@ if (!@ARGV) {
 
 my @Hosts;
 my @Host_IDs;
-my @Nodes = (
-	'vhost1.nwk1.com',
-	'vhost2.nwk1.com',
-	'vhost3.nwk1.com',
-	'vhost4.nwk1.com',
-	'vhost5.nwk1.com',
-	'vhost6.nwk1.com',
-	'vhost7.nwk1.com',
-	'vhost8.nwk1.com',
-	'vhost9.nwk1.com',
-	'vhost10.nwk1.com',
-	'vhost11.nwk1.com',
-	'vhost12.nwk1.com',
-	'vhost13.nwk1.com',
-	'vhost14.nwk1.com',
-	'vhost15.nwk1.com',
-	'vhost16.nwk1.com',
-	'vhost17.nwk1.com',
-	'vhost18.nwk1.com'
-#	'vhost19.nwk1.com',
-#	'vhost20.nwk1.com'
-);
+my @Nodes;
 
 my $Threads = scalar(keys @Nodes);
 my $Verbose = 0;

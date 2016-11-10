@@ -7,6 +7,8 @@ my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 my $DB_Connection = DB_Connection();
+my $System_Name = System_Name();
+my $Version = Version();
 
 my $Date_Time = strftime "%Y-%m-%d %H:%M:%S", localtime;
 my $Config_Path = '/etc/icinga2/conf.d'; # No trailing slash
@@ -35,12 +37,13 @@ sub write_time_periods {
 	$Select_Time->execute();
 	my $Rows = $Select_Time->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Time periods defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -124,12 +127,13 @@ sub write_host_groups {
 	$Select_Group->execute( );
 	my $Rows = $Select_Group->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Host groups defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -197,12 +201,13 @@ sub write_service_groups {
 	$Select_Group->execute( );
 	my $Rows = $Select_Group->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Service groups defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -244,12 +249,13 @@ sub write_contact_groups {
 	$Select_Group->execute( );
 	my $Rows = $Select_Group->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Contact groups defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -320,12 +326,13 @@ sub write_host_templates {
 	$Select_Host_Template->execute();
 	my $Rows = $Select_Host_Template->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Templates defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -711,12 +718,13 @@ sub write_service_templates {
 	$Select_Service->execute( );
 	my $Rows = $Select_Service->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Templates defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -1148,12 +1156,13 @@ sub write_contacts {
 	$Select_Contact->execute( );
 	my $Rows = $Select_Contact->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Contacts defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -1281,12 +1290,13 @@ sub write_hosts {
 	$Select_Host->execute( );
 	my $Rows = $Select_Host->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Hosts defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -1605,12 +1615,13 @@ sub write_services {
 	$Select_Service->execute( );
 	my $Rows = $Select_Service->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Services defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
@@ -1954,12 +1965,13 @@ sub write_commands {
 	$Select_Command->execute();
 	my $Rows = $Select_Command->rows();
 
-	print FILE "#######################################\n";
-	print FILE "## AUTO GENERATED SCRIPT\n";
+	print FILE "#########################################################################\n";
+	print FILE "## $System_Name\n";
+	print FILE "## Version: $Version\n";
+	print FILE "## AUTO GENERATED FILE\n";
 	print FILE "## Please do not edit by hand\n";
-	print FILE "## File is automatically overwritten often\n";
-	print FILE "## ben\@nwk1.com\n";
-	print FILE "## File Created: $Date_Time\n";
+	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
+	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Commands defined in file: $Rows\n";
 	print FILE "########################################\n";
 	print FILE "\n\n";
