@@ -22,7 +22,7 @@ sub DB_DSMS {
 	my $Port = '3306';
 	my $DB = 'Sudoers';
 	my $User = 'Sudoers';
-	my $Password = '<Password>';
+	my $Password = '';
 
 	my $DB_DSMS = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
@@ -41,7 +41,7 @@ sub DB_TheMachine {
 	my $Port = '3306';
 	my $DB = 'TheMachine';
 	my $User = 'TheMachine';
-	my $Password = '<Password>';
+	my $Password = '';
 
 	my $DB_TheMachine = DBI->connect ("DBI:mysql:database=$DB:host=$Host:port=$Port",
 		$User,
