@@ -1083,8 +1083,8 @@ sub processor {
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for a moment to watch for potential reboot...${Clear}\n";
 				}
 				sleep 10;
-				eval { $Match = $Connected_Host->waitfor(".*The system is going .*", 5, '-re'); };
-				if (!$Match) {eval { $Match = $Connected_Host->waitfor(".*Shutdown scheduled for .*", 5, '-re'); };}
+				eval { $Match = $Connected_Host->waitfor(".*The system is going .*", 20, '-re'); };
+				if (!$Match) {eval { $Match = $Connected_Host->waitfor(".*Shutdown scheduled for .*", 10, '-re'); };}
 				eval { $Command_Output = $Connected_Host->read_all(); }; $Connected_Host = &reboot_control($Host, $Host_ID) if $@;
 			}
 			else {
