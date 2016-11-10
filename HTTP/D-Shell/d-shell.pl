@@ -166,7 +166,7 @@ if (!$Captured_User_Name && !$Captured_Key) {
 		`modified_by` = ?
 		WHERE `id` = ?");
 	$Update_Job->execute('8', $User_Name, $Parent_ID);
-	exit(1);
+	exit(8);
 }
 else {
 	$User_Name = $Captured_User_Name;
@@ -179,7 +179,7 @@ if ($Captured_User_Name && $Captured_Key) {
 		`modified_by` = ?
 		WHERE `id` = ?");
 	$Update_Job->execute('16', $User_Name, $Parent_ID);
-	exit(1);
+	exit(16);
 }
 
 if (!$Captured_User_Password && !$Captured_Key) {
@@ -447,7 +447,7 @@ sub host_connection {
 			WHERE `id` = ?");
 			$Update_Job->execute('5', $User_Name, $Parent_ID);
 			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
-			exit(1);
+			exit(5);
 		}
 
 	}
@@ -676,7 +676,7 @@ sub host_connection {
 			WHERE `id` = ?");
 			$Update_Job->execute('6', $User_Name, $Parent_ID);
 			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
-			exit(1);
+			exit(6);
 		}
 
 		my $Connection_Timeout_Plus = $Connection_Timeout;
@@ -701,7 +701,7 @@ sub host_connection {
 		WHERE `id` = ?");
 		$Update_Job->execute('5', $User_Name, $Parent_ID);
 		unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
-		exit(1);
+		exit(5);
 	}
 
 	#$SSH->exec("stty raw -echo");
@@ -859,7 +859,7 @@ sub processor {
 				print LOG "${Red}Job killed by $Query_Modified_By. Terminating job.${Clear}\n";
 				my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
 				print LOG "Job killed at $End_Time by $Query_Modified_By.";
-				exit(0);
+				exit(3);
 			}
 		}
 
@@ -1024,7 +1024,7 @@ sub processor {
 				print "${Red}No match for '$Wait_For_String' after $Wait_Timeout_Override seconds. Bailing out!${Clear}\n";
 				print LOG "${Red}No match for '$Wait_For_String' after $Wait_Timeout_Override seconds. Bailing out!${Clear}\n";
 				$Connected_Host->close();
-				exit(1);
+				exit($Exit_Code);
 			}
 		}
 		elsif ($Command =~ /^\*SEND.*/) {
@@ -1542,7 +1542,7 @@ sub reboot_control {
 			`modified_by` = ?
 			WHERE `id` = ?");
 			$Update_Job->execute('14', $User_Name, $Parent_ID);
-			exit(1);
+			exit(14);
 		}
 
 	}
@@ -1770,7 +1770,7 @@ sub reboot_control {
 			WHERE `id` = ?");
 			$Update_Job->execute('6', $User_Name, $Parent_ID);
 			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
-			exit(1);
+			exit(6);
 		}
 	
 		my $Connection_Timeout_Plus = $Connection_Timeout;
@@ -1795,7 +1795,7 @@ sub reboot_control {
 		WHERE `id` = ?");
 		$Update_Job->execute('5', $User_Name, $Parent_ID);
 		unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
-		exit(1);
+		exit(5);
 	}
 
 	$SSH->timeout(1);
