@@ -14,6 +14,8 @@ require $Common_Config;
 my $DB_Connection = DB_Connection();
 my $MD5Sum = md5sum();
 my $Cut = cut();
+my $nmap = nmap();
+my $grep = sudo_grep();
 my $Sudoers_Location = Sudoers_Location();
 	my $MD5_Checksum = `$MD5Sum $Sudoers_Location | $Cut -d ' ' -f 1`;
 my $Distribution_Log_Location = Distribution_Log_Location();
@@ -343,9 +345,6 @@ $DB_Connection->do("UPDATE `lock` SET
 
 sub fingerprint_verification {
 
-	my $nmap = nmap();
-	my $grep = sudo_grep();
-
 	my $Host_ID = $_[0];
 	my $SSH;
 
@@ -457,7 +456,7 @@ sub fingerprint_verification {
 					restart_timeout_upon_receive => 1,
 					ssh_option => "-o UserKnownHostsFile=$Distribution_tmp_Location/$Host_or_Block"
 				);
-				eval { $SSH->run_ssh(); }; print "" if $@;
+				eval { $SSH->run_ssh(); }; print "${Red}[Connection Died]${Clear}: $@\n" if $@;
 
 				# Fingerprint
 				my $Line = $SSH->read_line();
