@@ -36,9 +36,9 @@ foreach my $Parameter (@ARGV) {
 	my $Select_Locks = $DB_Connection->prepare("SELECT `reverse-proxy-build` FROM `lock`");
 	$Select_Locks->execute();
 
-	my ($Reverse_Proxy_Build_Lock, $Reverse_Proxy_Distribution_Lock) = $Select_Locks->fetchrow_array();
+	my ($Reverse_Proxy_Build_Lock) = $Select_Locks->fetchrow_array();
 
-		if ($Reverse_Proxy_Build_Lock == 1 || $Reverse_Proxy_Distribution_Lock == 1) {
+		if ($Reverse_Proxy_Build_Lock == 1) {
 			if ($Override) {
 				print "Override detected. (CTRL + C to cancel)...\n\n";
 				print "Continuing in... 5\r";
@@ -53,7 +53,7 @@ foreach my $Parameter (@ARGV) {
 				sleep 1;	
 			}
 			else {
-				print "Another build or distribution process is running. Use --override to continue anyway. Exiting...\n";
+				print "Another build process is running. Use --override to continue anyway. Exiting...\n";
 				exit(1);
 			}
 		}
@@ -228,7 +228,8 @@ sub write_reverse_proxy {
 
 			my $HSTS_Header;
 			if ($HSTS) {
-				$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000; includeSubDomains"';
+				#$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000; includeSubDomains"';
+				$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000"';
 			}			
 
 			print Reverse_Proxy_Config <<RP_EOF;

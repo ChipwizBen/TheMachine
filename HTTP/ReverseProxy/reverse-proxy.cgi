@@ -1141,7 +1141,8 @@ sub html_view_reverse_proxy {
 
 			my $HSTS_Header;
 			if ($HSTS) {
-				$HSTS_Header = 'Header always set        Strict-Transport-Security "max-age=31536000; includeSubDomains"';
+				#$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000; includeSubDomains"';
+				$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000"';
 			}
 
 			$Reverse_Proxy_Entry = "

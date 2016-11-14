@@ -759,7 +759,7 @@ sub CGI {
 	# '+5s';  # Set to +5s if you're Chuck Norris
 
 	my $Session_In_Database = 'Yes'; # Set this to 'Yes' to store cookies in the DB, otherwise they are stored on disk defined in $Session_Directory
-	my $Session_Expiry = '+1w';
+	my $Session_Expiry = '+1d';
 	my $Session_Directory = '/tmp/CGI-Sessions'; # This will be used if you do not intend on using the DB to store session cookies
 
 

@@ -6,6 +6,7 @@ use DBI;
 use POSIX qw(strftime);
 use Net::SFTP::Foreign;
 use Net::SSH::Expect;
+use Getopt::Long qw(:config no_ignore_case);
 
 my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
@@ -30,15 +31,26 @@ my $Clear = "\e[0m";
 $| = 1;
 my $Override;
 my $Verbose;
+my $Help;
+my $Custom_Host;
 
-foreach my $Parameter (@ARGV) {
-	if ($Parameter eq '--override') {$Override = 1}
-	if ($Parameter eq '--verbose' || $Parameter eq '-v') {$Verbose = 1}
-	if ($Parameter eq '-h' || $Parameter eq '--help') {
-		print "\nOptions are:\n\t--override\tOverrides any database lock\n\t-v, --verbose\tTurns on verbose output\n\n";
-		exit(0);
-	}
+GetOptions(
+	'v' => \$Verbose,
+	'verbose' => \$Verbose,
+	'override' => \$Override,
+	'H:s' => \$Custom_Host,
+	'host:s' => \$Custom_Host,
+	'h' => \$Help,
+	'help' => \$Help
+) or die("Option capture failure.\n");
+
+if ($Verbose) {print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";}
+if ($Custom_Host) {print "${Red}## ${Green}Using custom host ${Yellow}$Custom_Host${Green} only.${Clear}\n";}
+if ($Help) {
+	print "\nOptions are:\n\t--override\tOverrides any database lock\n\t-v, --verbose\tTurns on verbose output\n\n";
+	exit(0);
 }
+
 
 # Safety check for other running distribution processes
 
@@ -72,14 +84,26 @@ foreach my $Parameter (@ARGV) {
 				`last-sudoers-distribution-started` = NOW()");
 		}
 
-my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`
-	FROM `hosts`
-	LEFT OUTER JOIN `host_attributes`
-		ON `hosts`.`id`=`host_attributes`.`host_id`
-	WHERE `dsms` = 1
-	ORDER BY `last_modified` DESC");
+my $Select_Hosts;
 
-$Select_Hosts->execute();
+if ($Custom_Host) {
+	$Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`
+		FROM `hosts`
+		LEFT OUTER JOIN `host_attributes`
+			ON `hosts`.`id`=`host_attributes`.`host_id`
+		WHERE `hostname` = ?");
+	$Select_Hosts->execute($Custom_Host);
+}
+else {
+	$Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`
+		FROM `hosts`
+		LEFT OUTER JOIN `host_attributes`
+			ON `hosts`.`id`=`host_attributes`.`host_id`
+		WHERE `dsms` = 1
+		ORDER BY `last_modified` DESC");
+	$Select_Hosts->execute();
+}
+
 my $Total = $Select_Hosts->rows();
 
 if ($Verbose) {
@@ -91,7 +115,7 @@ else {
 }
 
 my $Current;
-HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
+HOST: while (my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 {
 	$Current++;
 	my $DBID = $Select_Hosts[0];
@@ -200,6 +224,17 @@ HOST: while ( my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		}
 
 		open my $DevNull, '>', '/dev/null' or die "unable to open /dev/null";
+
+		if (! -f "$Distribution_tmp_Location/$Host_or_Block") {
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Could not find host key file (${Blue}$Distribution_tmp_Location/$Host_or_Block${Red}) for ${Yellow}$Hostname${Red} (${Pink}$Host_or_Block${Red}).${Clear}\n\n";
+				next HOST;
+			}
+			else {
+				next HOST;
+			}
+		}
 
 		my $SFTP = Net::SFTP::Foreign->new(
 			"$User\@$Host_or_Block",
@@ -456,11 +491,11 @@ sub fingerprint_verification {
 					restart_timeout_upon_receive => 1,
 					ssh_option => "-o UserKnownHostsFile=$Distribution_tmp_Location/$Host_or_Block"
 				);
-				eval { $SSH->run_ssh(); }; print "${Red}[Connection Died]${Clear}: $@\n" if $@;
+				eval { $SSH->run_ssh(); }; &failure("${Red}[Connection Died]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block", $@) if $@;
 
 				# Fingerprint
 				my $Line = $SSH->read_line();
-				my $Fingerprint_Prompt = eval { $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re'); }; &failure("${Red}[Connection Timeout]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block") if $@;
+				my $Fingerprint_Prompt = eval { $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re'); }; &failure("${Red}[Connection Died]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block", $@) if $@;
 
 				if (!$Verbose) {
 					print "${Green}(${Pink}$Host_or_Block${Green}) ";
@@ -492,8 +527,8 @@ sub fingerprint_verification {
 						)ON DUPLICATE KEY UPDATE `fingerprint` = ?");
 						$Update_Fingerprint->execute($Host_ID, $Discovered_Fingerprint, $Discovered_Fingerprint);
 						$SSH->send('yes');
-						#$Line = $SSH->read_line();
-						eval { $SSH->waitfor(".*Last login.*", $Connection_Timeout, '-re'); }; &failure("${Red}[Connection Timeout]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block") if $@;
+						eval { $SSH->waitfor(".*Last login.*\|.*sftp connections only.*\|.*This account is currently not available.*", $Connection_Timeout, '-re'); };
+							&failure("${Red}[Connection Died]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block", $@) if $@;
 						$SSH->close();
 						return $Host_or_Block;
 					}
@@ -507,8 +542,8 @@ sub fingerprint_verification {
 							print "${Green}[Fingerprint] ${Clear}";
 						}
 						$SSH->send('yes');
-						#$Line = $SSH->read_line();
-						eval { $SSH->waitfor(".*Last login.*", $Connection_Timeout, '-re'); }; &failure("${Red}[Connection Timeout]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block") if $@;
+						eval { $SSH->waitfor(".*Last login.*\|.*sftp connections only.*\|.*This account is currently not available.*", $Connection_Timeout, '-re'); };
+							&failure("${Red}[Connection Died]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block", $@) if $@;
 						$SSH->close();
 						return $Host_or_Block;
 					}
@@ -578,9 +613,10 @@ sub block_discovery {
 
 sub failure {
 
-	my ($Message, $Host_Key) = @_;
+	my ($Message, $Host_Key, $Error) = @_;
 
 	print $Message;
+	if ($Verbose) {print $Error;}
 	unlink $Host_Key;
 
 } # sub failure
