@@ -31,7 +31,7 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 	my $Range_Max = $IP_Ping_Sweep->last_ip();
 
 	print "\n----------\n";
-	print "Checking $Block_Name ($Block_IP). RMin: $Range_Min RMax: $Range_Max\n\n";
+	print "Checking $Block_Name ($Block_IP). RangeMin: $Range_Min RangeMax: $Range_Max\n\n";
 
 	my @IPs_To_Ping;
 	do {
