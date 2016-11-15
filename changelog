@@ -1,3 +1,4 @@
+2.0.1   - Clarified RMin/RMax in IP Sweet
 2.0.0   - DSMS repurposed as The Machine. Now includes IP allocation, DNS management, reverse proxy management, 
           sudoers management, D-Shell, Icinga management and LDAP/Active Directory integration.
 ----------------
