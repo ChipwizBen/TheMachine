@@ -146,10 +146,6 @@ print <<ENDHTML;
 		<td style="text-align: left; color: #00FF00;">$Host_Name</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">IP:</td>
-		<td style="text-align: left; color: #00FF00;"></td>
-	</tr>
-	<tr>
 		<td style="text-align: right;">Expires:</td>
 		<td style="text-align: left; color: #00FF00;">$Expires</td>
 	</tr>
