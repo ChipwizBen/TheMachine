@@ -43,6 +43,9 @@ sub html_output {
 	$Table->addRow('', 'Fixed an issue with Redirects overruling each other.');
 	$Table->addRow('', 'Dropped legacy IP entry in Distribution Status');
 	$Table->addRow('', 'Fixed an issue where hosts without blocks still had () appear in Rules.');
+	$Table->addRow('', 'Correctly handled broken fingerprint probe in D-Shell.');
+	$Table->addRow('', 'Moved block discovery to common functions. Added block discovery to Jobs.');
+
 	$Table->addRow('---', '');
 
 	## Version 2.0.0

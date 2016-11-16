@@ -395,7 +395,7 @@ sub fingerprint_verification {
 	{
 		my $Hostname = $Select_Hosts[0];
 		my $DHCP = $Select_Hosts[1];
-		my $Blocks = &block_discovery($Host_ID);
+		my $Blocks = &Block_Discovery($Host_ID);
 
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
@@ -574,42 +574,6 @@ sub fingerprint_verification {
 		}
 	}
 } # sub fingerprint_verification
-
-sub block_discovery {
-
-	my $DBID = $_[0];
-	my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
-		FROM `lnk_hosts_to_ipv4_allocations`
-		WHERE `host` = ?");
-	$Select_Block_Links->execute($DBID);
-
-	my $Blocks;
-	while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
-
-		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
-			FROM `ipv4_allocations`
-			WHERE `id` = ?");
-		$Select_Blocks->execute($Block_ID);
-
-		while (my $Block = $Select_Blocks->fetchrow_array() ) {
-
-			my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
-				FROM `lnk_hosts_to_ipv4_allocations`
-				WHERE `ip` = ?");
-			$Count_Block_Allocations->execute($Block_ID);
-			my $Total_Block_Allocations = $Count_Block_Allocations->rows();
-
-			if ($Block =~ /\/32$/) {
-				$Block =~ s/(.*)\/32$/$1/;
-				$Blocks = $Block. "," . $Blocks;
-			}
-		}
-	}
-
-	$Blocks =~ s/,$//;
-	return $Blocks;
-
-} # sub block_discovery
 
 sub failure {
 

@@ -366,7 +366,7 @@ else {
 		while ( (my $Host_Name, my $Active) = my @Host_Query = $Host_Query->fetchrow_array() )
 		{
 
-		my $Blocks = &block_discovery($Host);
+		my $Blocks = &Block_Discovery($Host, 1);
 
 		my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 			if ($Host_Name_Character_Limited ne $Host_Name) {
@@ -584,7 +584,7 @@ ENDHTML
 				while ( (my $ID, my $Host_Name, my $Active) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
 				{
 
-					my $Blocks = &block_discovery($ID);
+					my $Blocks = &Block_Discovery($ID, 1);
 						if ($Blocks) {$Blocks = '(' . $Blocks . ')';}
 
 					my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
@@ -1976,7 +1976,7 @@ ENDHTML
 				while ( (my $ID, my $Host_Name, my $Active) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
 				{
 
-					my $Blocks = &block_discovery($ID);
+					my $Blocks = &Block_Discovery($ID, 1);
 						if ($Blocks) {$Blocks = '(' . $Blocks . ')';}
 
 					my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
@@ -3362,44 +3362,6 @@ sub add_note {
 
 } # sub add_note
 
-sub block_discovery {
-
-	my $Host_ID = $_[0];
-
-	my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
-		FROM `lnk_hosts_to_ipv4_allocations`
-		WHERE `host` = ?");
-	$Select_Block_Links->execute($Host_ID);
-	
-	my $Blocks;
-	while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
-	
-		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
-			FROM `ipv4_allocations`
-			WHERE `id` = ?");
-		$Select_Blocks->execute($Block_ID);
-	
-		while (my $Block = $Select_Blocks->fetchrow_array() ) {
-	
-			my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
-				FROM `lnk_hosts_to_ipv4_allocations`
-				WHERE `ip` = ?");
-			$Count_Block_Allocations->execute($Block_ID);
-			my $Total_Block_Allocations = $Count_Block_Allocations->rows();
-	
-			if ($Total_Block_Allocations > 1) {
-				$Block = "$Block [floating]";
-			}
-			$Blocks = $Block. ",&nbsp;" . $Blocks;
-		}
-	}
-	
-	$Blocks =~ s/,&nbsp;$//;
-	
-	return $Blocks;
-
-}
-
 sub html_output {
 
 	my $Table = new HTML::Table(
@@ -3551,7 +3513,7 @@ sub html_output {
 								$Expires_Epoch = str2time("$Host_Expires"."T23:59:59");
 							}
 
-							my $Blocks = &block_discovery($Host_ID);
+							my $Blocks = &Block_Discovery($Host_ID, 1);
 
 							if ($Host_Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
 								$Host = "$Host ($Blocks) [Expired]
@@ -3638,7 +3600,7 @@ sub html_output {
 					my $Expires = $Select_Hosts[1];
 					my $Active = $Select_Hosts[2];
 
-					my $Blocks = &block_discovery($Host_ID);
+					my $Blocks = &Block_Discovery($Host_ID, 1);
 
 					my $Expires_Epoch;
 					my $Today_Epoch = time;

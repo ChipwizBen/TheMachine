@@ -946,7 +946,7 @@ sub Version {
 
 	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
 
-	my $Version = '2.0.0';
+	my $Version = '2.0.1';
 	return $Version;
 
 } # sub Version
@@ -960,6 +960,55 @@ sub Server_Hostname {
 	return $Hostname;
 
 } # sub Server_Hostname
+
+sub Block_Discovery {
+
+	my $Host_ID = $_[0];
+	my $HTML = $_[1];
+	my $DB_Connection = DB_Connection;
+
+	my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
+		FROM `lnk_hosts_to_ipv4_allocations`
+		WHERE `host` = ?");
+	$Select_Block_Links->execute($Host_ID);
+	
+	my $Blocks;
+	while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
+	
+		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+			FROM `ipv4_allocations`
+			WHERE `id` = ?");
+		$Select_Blocks->execute($Block_ID);
+	
+		while (my $Block = $Select_Blocks->fetchrow_array() ) {
+	
+			my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
+				FROM `lnk_hosts_to_ipv4_allocations`
+				WHERE `ip` = ?");
+			$Count_Block_Allocations->execute($Block_ID);
+			my $Total_Block_Allocations = $Count_Block_Allocations->rows();
+
+			if ($HTML) {
+				if ($Total_Block_Allocations > 1) {
+					$Block = "$Block [floating]";
+				}
+				$Blocks = $Block. ",&nbsp;" . $Blocks;
+			}
+			else {
+				if ($Block =~ /\/32$/) {
+					$Block =~ s/(.*)\/32$/$1/;
+					$Blocks = $Block. "," . $Blocks;
+				}
+			}
+		}
+	}
+	
+	$Blocks =~ s/,&nbsp;$//;
+	
+	return $Blocks;
+
+
+} # sub Block_Discovery
 
 sub Random_Alpha_Numeric_Password {
 

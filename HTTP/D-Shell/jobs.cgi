@@ -766,9 +766,11 @@ sub html_output {
 			$On_Failure = 'Continue Job';
 		}
 
+		my $Blocks = &Block_Discovery($Host_ID, 1);
+
 		$Table->addRow(
 			$DBID,
-			$Host_Name,
+			"<a href='/IP/hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"$Blocks\">$Host_Name</a>",
 			"$Command_Name $Command_Set_Dependencies",
 			$Running_Command,
 			$On_Failure,
