@@ -533,11 +533,9 @@ sub Git_Link {
 	my $Git_Query = $_[0];
 	if ($Git_Query eq 'Status_Check') {
 		return $Use_Git;
-		exit(0);
 	}
 	elsif ($Git_Query eq 'Directory') {
 		return $Git_Directory;
-		exit(0);
 	}
 
 	if ($Use_Git !~ /Yes/i) {
@@ -569,22 +567,18 @@ sub Git_Locations {
 	if ($Git_Query eq 'Redirect') {
 		$Git_Directory = "$Git_Directory/$Redirect";
 		return $Git_Directory;
-		exit(0);
 	}
 	elsif ($Git_Query eq 'ReverseProxy') {
 		$Git_Directory = "$Git_Directory/$ReverseProxy";
 		return $Git_Directory;
-		exit(0);
 	}
 	elsif ($Git_Query eq 'CommandSets') {
 		$Git_Directory = "$Git_Directory/$CommandSets";
 		return $Git_Directory;
-		exit(0);
 	}
 	elsif ($Git_Query eq 'DSMS') {
 		$Git_Directory = "$Git_Directory/$DSMS";
 		return $Git_Directory;
-		exit(0);
 	}
 
 } # sub Git_Locations
@@ -603,7 +597,6 @@ sub Git_Commit {
 	my $Message = $_[1];
 	my $Date = $_[2];
 	my $Author = $_[3];
-		$Author = 'The Machine';
 
 	my $Git_Link = Git_Link();
 
