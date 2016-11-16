@@ -37,9 +37,16 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	
+
+	## Version 2.0.1
+	$Table->addRow('2.0.1', 'Clarified RMin/RMax (Range) in IP Sweep.');
+	$Table->addRow('', 'Fixed an issue with Redirects overruling each other.');
+	$Table->addRow('', 'Dropped legacy IP entry in Distribution Status');
+	$Table->addRow('', 'Fixed an issue where hosts without blocks still had () appear in Rules.');
+	$Table->addRow('---', '');
+
 	## Version 2.0.0
-	$Table->addRow('2.0.0', 'DSMS repurposed as The Anchor. Now includes IP allocation, DNS management, reverse proxy 
+	$Table->addRow('2.0.0', 'DSMS repurposed as The Machine. Now includes IP allocation, DNS management, reverse proxy 
 	management, sudoers management and Icinga management.');
 	$Table->addRow('<hr />', '');
 

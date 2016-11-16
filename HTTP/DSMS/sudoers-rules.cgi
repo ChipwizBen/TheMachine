@@ -585,16 +585,17 @@ ENDHTML
 				{
 
 					my $Blocks = &block_discovery($ID);
+						if ($Blocks) {$Blocks = '(' . $Blocks . ')';}
 
 					my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 						if ($Host_Name_Character_Limited ne $Host_Name) {
 							$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 						}
 					if ($Active) {
-						print "<option value='$ID'>$Host_Name_Character_Limited ($Blocks)</option>";
+						print "<option value='$ID'>$Host_Name_Character_Limited $Blocks</option>";
 					}
 					else {
-						print "<option style='color: #FF0000;' value='$ID'>$Host_Name_Character_Limited ($Blocks) [Inactive]</option>";
+						print "<option style='color: #FF0000;' value='$ID'>$Host_Name_Character_Limited $Blocks [Inactive]</option>";
 					}
 
 				}
@@ -1976,16 +1977,17 @@ ENDHTML
 				{
 
 					my $Blocks = &block_discovery($ID);
+						if ($Blocks) {$Blocks = '(' . $Blocks . ')';}
 
 					my $Host_Name_Character_Limited = substr( $Host_Name, 0, 40 );
 						if ($Host_Name_Character_Limited ne $Host_Name) {
 							$Host_Name_Character_Limited = $Host_Name_Character_Limited . '...';
 						}
 					if ($Active) {
-						print "<option value='$ID'>$Host_Name ($Blocks)</option>";
+						print "<option value='$ID'>$Host_Name $Blocks</option>";
 					}
 					else {
-						print "<option style='color: #FF0000;' value='$ID'>$Host_Name ($Blocks) [Inactive]</option>";
+						print "<option style='color: #FF0000;' value='$ID'>$Host_Name $Blocks [Inactive]</option>";
 					}
 				}
 
@@ -3386,7 +3388,7 @@ sub block_discovery {
 			my $Total_Block_Allocations = $Count_Block_Allocations->rows();
 	
 			if ($Total_Block_Allocations > 1) {
-				$Block = "$Block (floating)";
+				$Block = "$Block [floating]";
 			}
 			$Blocks = $Block. ",&nbsp;" . $Blocks;
 		}

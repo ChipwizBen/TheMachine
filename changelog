@@ -1,5 +1,7 @@
-2.0.1   - Clarified RMin/RMax in IP Sweep
+2.0.1   - Clarified RMin/RMax in IP Sweep.
+		- Fixed an issue with Redirects overruling each other.
         - Dropped legacy IP entry in Distribution Status
+        - Fixed an issue where hosts without blocks still had () appear in Rules.
 2.0.0   - DSMS repurposed as The Machine. Now includes IP allocation, DNS management, reverse proxy management, 
           sudoers management, D-Shell, Icinga management and LDAP/Active Directory integration.
 ----------------
