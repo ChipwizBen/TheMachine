@@ -612,7 +612,21 @@ sub Git_Commit {
 		my $Email = $Select_User->fetchrow_array();
 		eval { $Git_Link->add($File); }; die("Broke at git add $File: $@\n") if $@;
 		eval { $Git_Link->commit(qw/ --message /, "$Message", qw/ --author /, "$Author <$Email>", qw/ --date /, "$Date", { all => 1}); };
+
+		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
+			`category`,
+			`method`,
+			`action`,
+			`username`
+		)
+		VALUES (
+			?, ?, ?, ?
+		)");
+		$Audit_Log_Submission->execute("Git", "Commit", "Committed $Message", "$Author");
+
 	}
+
+	return 0;
 
 } # sub Git_Commit
 
