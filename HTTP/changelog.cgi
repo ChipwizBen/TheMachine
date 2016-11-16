@@ -45,7 +45,7 @@ sub html_output {
 	$Table->addRow('', 'Fixed an issue where hosts without blocks still had () appear in Rules.');
 	$Table->addRow('', 'Correctly handled broken fingerprint probe in D-Shell.');
 	$Table->addRow('', 'Moved block discovery to common functions. Added block discovery to Jobs.');
-
+	$Table->addRow('', 'Fixed a bug that prevented ID filtered hosts showing their blocks.');
 	$Table->addRow('---', '');
 
 	## Version 2.0.0

@@ -703,7 +703,7 @@ sub html_output {
 		my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
 			FROM `lnk_hosts_to_ipv4_allocations`
 			WHERE `host` = ?");
-		$Select_Block_Links->execute($DBID);
+		$Select_Block_Links->execute($DBID_Clean);
 
 		my $Blocks;
 		while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
