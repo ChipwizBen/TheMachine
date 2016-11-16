@@ -1199,7 +1199,10 @@ sub html_output {
 					$Type = 'undefined';
 					$Host = "<a href='/IP/hosts.cgi?ID_Filter=$Host_ID' class='tooltip' text=\"Type: $Type\nGroup Membership:\n$Groups\"><span style='color: #00FF00'>$Host</span></a>";
 				}
-				$Hosts = $Hosts . $Host . "&nbsp;&nbsp;&nbsp;" . "<a href='/IP/host-groups.cgi?Delete_Host_ID=$Host_ID&Delete_Host_From_Group_ID=$DBID_Clean&Delete_Host_Name=$Host_Clean&Delete_Host_From_Group_Name=$Group_Name_Clean' class='tooltip' text=\"Delete $Host_Clean from $Group_Name_Clean.\"><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
+				my $Blocks = &Block_Discovery($Host_ID, 1);
+					if ($Blocks) {$Blocks = '(' . $Blocks . ')'}
+					$Blocks =~ s/\[floating\]/<span style='color: #FF0000;'>[floating]<\/span>/g;
+				$Hosts = $Hosts . $Host . " $Blocks" . "&nbsp;&nbsp;&nbsp;" . "<a href='/IP/host-groups.cgi?Delete_Host_ID=$Host_ID&Delete_Host_From_Group_ID=$DBID_Clean&Delete_Host_Name=$Host_Clean&Delete_Host_From_Group_Name=$Group_Name_Clean' class='tooltip' text=\"Delete $Host_Clean from $Group_Name_Clean.\"><span style='color: #FFC600'>[Remove]</span></a>" . "<br />";
 
 			}
 		}

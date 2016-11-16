@@ -46,6 +46,7 @@ sub html_output {
 	$Table->addRow('', 'Correctly handled broken fingerprint probe in D-Shell.');
 	$Table->addRow('', 'Moved block discovery to common functions. Added block discovery to Jobs.');
 	$Table->addRow('', 'Fixed a bug that prevented ID filtered hosts showing their blocks.');
+	$Table->addRow('', 'Blocks for Hosts in a Host Group are now displayed, floating Blocks are flagged as a risk.');
 	$Table->addRow('---', '');
 
 	## Version 2.0.0
