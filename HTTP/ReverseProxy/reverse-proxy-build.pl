@@ -306,90 +306,87 @@ sub write_redirect {
 	my ($Default_Transfer_Log,
 		$Default_Error_Log) = Redirect_Defaults();
 
-	my $Record_Query = $DB_Connection->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`, `redirect_destination`, 
-	`transfer_log`, `error_log`, `last_modified`, `modified_by`
+	my $Server_Group_Query = $DB_Connection->prepare("SELECT `server_name`, `port`, `transfer_log`, `error_log`, `last_modified`, `modified_by`
 	FROM `redirect`
 	WHERE `active` = '1'
-	ORDER BY `server_name` ASC");
-	$Record_Query->execute();
+	GROUP BY `server_name`, `port` ASC");
+	$Server_Group_Query->execute();
 
 	unlink "$Reverse_Proxy_Location/*";
 
-	while ( my @Redirect_Entry = $Record_Query->fetchrow_array() )
+	while ( my @Server_Entry = $Server_Group_Query->fetchrow_array() )
 	{
-		my $ID = $Redirect_Entry[0];
-		my $Server_Name = $Redirect_Entry[1];
-		my $Port = $Redirect_Entry[2];
-		my $Source = $Redirect_Entry[3];
-		my $Destination = $Redirect_Entry[4];
-		my $Transfer_Log = $Redirect_Entry[5];
-		my $Error_Log = $Redirect_Entry[6];
-		my $Last_Modified = $Redirect_Entry[7];
-		my $Modified_By = $Redirect_Entry[8];
+		my $Server_Name = $Server_Entry[0];
+		my $Port = $Server_Entry[1];
+		my $Transfer_Log = $Server_Entry[2];
+		my $Error_Log = $Server_Entry[3];
+		my $Last_Modified = $Server_Entry[4];
+		my $Modified_By = $Server_Entry[5];
+
+		my $ServerAliases;
+		my @ServerAliases = split(',', $Server_Name);
+		my $Server_Name_Single = shift @ServerAliases;
+		foreach my $Alias (@ServerAliases) {
+			$ServerAliases = $ServerAliases . "	\n    ServerAlias			$Alias";
+		}
+		my $Server_Names = "ServerName			" . $Server_Name_Single . $ServerAliases;
+
+		my $Config_Name = "httpd.rd-$Port-$Server_Name_Single.conf";
+		my $Config_File = "$Proxy_Redirect_Location/$Config_Name";
 
 		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
 		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
 
-		my $ServerAliases;
-		my @ServerAliases = split(',', $Server_Name);
-		$Server_Name = shift @ServerAliases;
-		foreach my $Alias (@ServerAliases) {
-			$ServerAliases = $ServerAliases . "	\n    ServerAlias			$Alias";
-		}
-		my $Server_Names = "ServerName			" . $Server_Name . $ServerAliases;
+		open( Redirect_Config, ">$Config_File" ) or die "Can't open $Config_File";
+		print Redirect_Config "#########################################################################\n";
+		print Redirect_Config "## $System_Name\n";
+		print Redirect_Config "## Version: $Version\n";
+		print Redirect_Config "## AUTO GENERATED FILE\n";
+		print Redirect_Config "## Please do not edit by hand\n";
+		print Redirect_Config "## This file is part of a wider system and is automatically overwritten often\n";
+		print Redirect_Config "## View the changelog or README files for more information.\n";
+		print Redirect_Config "#########################################################################\n";
+		print Redirect_Config "\n";
+		print Redirect_Config "<VirtualHost *:$Port>\n";
+		print Redirect_Config "    $Server_Names\n";
 
-		my $Config_Name = "httpd.rd-$Port-$Server_Name.conf";
-		my $Config_File = "$Proxy_Redirect_Location/$Config_Name";
-		
-		if ($Verbose) {print "\nRD-SN: $Server_Name\n    RDID: $ID\n    Config: $Config_File\n"}
-		if ($Verbose) {print "    Found existing config, appending.\n"}
+		my $Server_Attribute_Query = $DB_Connection->prepare("SELECT `id`, `redirect_source`, `redirect_destination`, `last_modified`, `modified_by`
+		FROM `redirect`
+		WHERE `server_name` = ?
+		AND `port` = ?
+		ORDER BY `redirect_source` DESC");
+		$Server_Attribute_Query->execute($Server_Name, $Port);
 
-		if (-f $Config_File) {
-			open(Redirect_Config_Read,"$Config_File") || die "Can't open $Config_File (read)\n"; 
-			my @Config_File_Lines = <Redirect_Config_Read>;
-			close(Redirect_Config_Read);
+		my $ID_Group;
+		while ( my @Redirect_Entry = $Server_Attribute_Query->fetchrow_array() )
+		{
+			my $ID = $Redirect_Entry[0];
+				$ID_Group = $ID_Group . $ID . ', '; 
+			my $Source = $Redirect_Entry[1];
+			my $Destination = $Redirect_Entry[2];
+			$Last_Modified = $Redirect_Entry[3];
+			$Modified_By = $Redirect_Entry[4];
+			
+			if ($Verbose) {print "\nRD-SN: $Server_Name\n    RDID: $ID\n    Config: $Config_File\n"}
+	
+	        print Redirect_Config "\n    ## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n";
+	        print Redirect_Config "    Redirect			$Source	$Destination\n";
+		}
 
-			open( Redirect_Config, ">$Config_File" ) or die "Can't open $Config_File (write)";
-			foreach my $Line (@Config_File_Lines) {
-				print Redirect_Config $Line;
-			    if ($Line =~ /^## Redirect ID/) {
-			        print Redirect_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n\n";
-			    }
-			    if ($Line =~ /^\s\s\s\sRedirect/) {
-			        print Redirect_Config "    Redirect			$Source	$Destination\n";
-			    }
-			}
-		}
-		else {
-			open( Redirect_Config, ">$Config_File" ) or die "Can't open $Config_File";
-			print Redirect_Config "#########################################################################\n";
-			print Redirect_Config "## $System_Name\n";
-			print Redirect_Config "## Version: $Version\n";
-			print Redirect_Config "## AUTO GENERATED FILE\n";
-			print Redirect_Config "## Please do not edit by hand\n";
-			print Redirect_Config "## This file is part of a wider system and is automatically overwritten often\n";
-			print Redirect_Config "## View the changelog or README files for more information.\n";
-			print Redirect_Config "#########################################################################\n";
-			print Redirect_Config "\n";
-			print Redirect_Config "## Redirect ID $ID, last modified $Last_Modified by $Modified_By";
-			print Redirect_Config "\n";
-			print Redirect_Config "<VirtualHost *:$Port>\n";
-			print Redirect_Config "    $Server_Names\n";
-			print Redirect_Config "    Redirect			$Source	$Destination\n";
-			print Redirect_Config "    TransferLog			$Transfer_Log\n";
-			print Redirect_Config "    ErrorLog			$Error_Log\n";
-			print Redirect_Config "</VirtualHost>\n";
-			print Redirect_Config "\n";
-		}
+		print Redirect_Config "\n    TransferLog			$Transfer_Log\n";
+		print Redirect_Config "    ErrorLog			$Error_Log\n";
+		print Redirect_Config "</VirtualHost>\n";
+		print Redirect_Config "\n";
 
 		close Redirect_Config;
+		$ID_Group =~ s/,\s$//g;
 
 		my $Git_Check = Git_Link('Status_Check');
 		if ($Git_Check =~ /Yes/i) {
 			my $Git_Directory = Git_Locations('Redirect');
 			use File::Copy;
 			copy("$Config_File","$Git_Directory/$Config_Name") or die "Copy failed of $Config_File to $Git_Directory/$Config_Name: $!";
-			&Git_Commit("$Git_Directory/$Config_Name", "Redirect ID $ID, last modified $Last_Modified by $Modified_By", $Last_Modified, $Modified_By)
+			&Git_Commit("$Git_Directory/$Config_Name", "$Server_Name_Single ($ID_Group), last modified $Last_Modified by $Modified_By", $Last_Modified, $Modified_By)
 		}
 	}
 } # sub write_redirect
