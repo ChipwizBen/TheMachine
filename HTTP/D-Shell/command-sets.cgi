@@ -85,6 +85,7 @@ if (!$User_Name) {
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
 my $Filter = $CGI->param("Filter");
+	$Filter =~ s/\*/\\*/g;
 my $ID_Filter = $CGI->param("ID_Filter");
 
 if ($Rows_Returned eq '') {
