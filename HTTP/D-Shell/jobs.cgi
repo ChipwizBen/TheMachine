@@ -717,7 +717,7 @@ sub html_output {
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 13) {
-			$Running_Command = 'Died during startup - possible SSH known_hosts mismatch.';
+			$Running_Command = 'Died during startup.';
 			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";

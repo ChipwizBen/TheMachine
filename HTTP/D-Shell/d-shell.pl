@@ -527,7 +527,7 @@ sub host_connection {
 					$SSH->send('yes');
 
 				}
-				else {
+				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
 
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint mismatch! Ejecting!${Clear}\n";
@@ -539,6 +539,18 @@ sub host_connection {
 					WHERE `id` = ?");
 					$Update_Job->execute('17', $User_Name, $Parent_ID);
 					exit(17);
+				}
+				else {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint not found! Connection timeout, network or host resolution problems are the most likely causes.${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## Fingerprint not found! Connection timeout, network or host resolution problems are the most likely causes.${Clear}\n";
+
+					my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+					$Update_Job->execute('5', $User_Name, $Parent_ID);
+					exit(5);
 				}
 
 			}
