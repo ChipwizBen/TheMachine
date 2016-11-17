@@ -516,6 +516,8 @@ sub html_output {
 		-padding=>1
 	);
 
+	$Table->addRow( "ID", "Host", "Execution Sets", "Currently Running Command", "On Failure", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
+	$Table->setRowClass(1, 'tbrow1');
 
 	my $Select_Job_Count = $DB_Connection->prepare("SELECT `id` FROM `jobs`");
 		$Select_Job_Count->execute( );
@@ -525,18 +527,22 @@ sub html_output {
 		$Select_Running_Job_Count->execute( );
 		my $Total_Running_Jobs = $Select_Running_Job_Count->rows();
 
-	my $Select_Jobs = $DB_Connection->prepare("SELECT `id`, `host_id`, `command_set_id`, `on_failure`, `status`, `last_modified`, `modified_by`
+	my $Select_Jobs = $DB_Connection->prepare("SELECT `jobs`.`id`, `hosts`.`hostname`, `host_id`, `command_set_id`, `command_sets`.`name`, `on_failure`, `status`, `jobs`.`last_modified`, `jobs`.`modified_by`
 		FROM `jobs`
-		ORDER BY `id` DESC
+		LEFT JOIN `hosts`
+		ON `jobs`.`host_id` = `hosts`.`id`
+		LEFT JOIN `command_sets`
+		ON `jobs`.`command_set_id` = `command_sets`.`id`
+		WHERE `hosts`.`hostname` LIKE ?
+		OR `command_sets`.`name` LIKE ?
+		OR `jobs`.`last_modified` LIKE ?
+		OR `jobs`.`modified_by` LIKE ?
+		ORDER BY `jobs`.`id` DESC
 		LIMIT ?, ?"
 	);
 
-	$Select_Jobs->execute(0, $Rows_Returned);
-
+	$Select_Jobs->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	my $Rows = $Select_Jobs->rows();
-
-	$Table->addRow( "ID", "Host", "Execution Sets", "Currently Running Command", "On Failure", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
-	$Table->setRowClass(1, 'tbrow1');
 
 	my $Job_Row_Count=1;
 
@@ -546,12 +552,17 @@ sub html_output {
 		$Job_Row_Count++;
 
 		my $DBID = $Jobs[0];
-		my $Host_ID = $Jobs[1];
-		my $Command_Set_ID = $Jobs[2];
-		my $On_Failure = $Jobs[3];
-		my $Status = $Jobs[4];
-		my $Last_Modified = $Jobs[5];
-		my $Modified_By = $Jobs[6];
+		my $Host_Name = $Jobs[1];
+			$Host_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Host_ID = $Jobs[2];
+		my $Command_Set_ID = $Jobs[3];
+		my $Command_Set_Name = $Jobs[4];
+		my $On_Failure = $Jobs[5];
+		my $Status = $Jobs[6];
+		my $Last_Modified = $Jobs[7];
+			$Last_Modified =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Modified_By = $Jobs[8];
+			$Modified_By =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 
 		if ($Status == 1 || $Status == 10) {
 			my $Processing = `$ps aux | $grep 'JobID $DBID' | grep -v grep | wc -l`;
@@ -564,12 +575,6 @@ sub html_output {
 				$Update_Job->execute($Status, $User_Name, $DBID);
 			}
 		}
-
-		my $Host_Query = $DB_Connection->prepare("SELECT `hostname`
-		FROM `hosts`
-		WHERE `id` = ?");
-		$Host_Query->execute($Host_ID);
-		my $Host_Name = $Host_Query->fetchrow_array();
 
 		my $Command_Query = $DB_Connection->prepare("SELECT `name`, `description`, `revision`
 		FROM `command_sets`
