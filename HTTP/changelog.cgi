@@ -37,11 +37,16 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.0.2
+	$Table->addRow('2.0.2', 'Two Reboot checks merged into one for quicker response in Job Processor.');
+	
+	$Table->addRow('---', '');
+	
 
 	## Version 2.0.1
 	$Table->addRow('2.0.1', 'Clarified RMin/RMax (Range) in IP Sweep.');
 	$Table->addRow('', 'Fixed an issue with Redirects overruling each other.');
-	$Table->addRow('', 'Dropped legacy IP entry in Distribution Status');
+	$Table->addRow('', 'Dropped legacy IP entry in Distribution Status.');
 	$Table->addRow('', 'Fixed an issue where hosts without blocks still had () appear in Rules.');
 	$Table->addRow('', 'Correctly handled broken fingerprint probe in D-Shell.');
 	$Table->addRow('', 'Moved block discovery to common functions. Added block discovery to Jobs.');
