@@ -22,7 +22,7 @@ chown root:apache $DIR/http/DSMS/environmental-defaults
 chmod 640 $DIR/http/DSMS/environmental-defaults
 chown -R root:apache $DIR/http/format.css $DIR/http/favicon.ico $DIR/http/resources/
 chmod -R 440 $DIR/http/format.css $DIR/http/favicon.ico $DIR/http/resources/
-chmod 550 $DIR/http/resources/ $DIR/http/resources/imgs/ $DIR/http/resources/imgs/buttons/
+find $DIR/http/ -type d -exec chmod 550 {} \;
 chown -R root:root $DIR/http/Storage/
 chmod -R 711 $DIR/http/Storage/
 chown $User. $DIR/http/Storage/D-Shell/Job-Log
