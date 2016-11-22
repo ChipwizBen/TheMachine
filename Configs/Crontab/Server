@@ -1,6 +1,12 @@
 # Distributed Sudoers Management System Build and Distribution Processes
 */10 * * * * root cd /opt/TheMachine/http/DSMS/ > /dev/null 2>&1 && ./sudoers-build.pl > /dev/null 2>&1 && ./distribution.pl > /dev/null 2>&1
 
+# Reverse Proxy Build
+*/10 * * * * root cd /opt/TheMachine/http/ReverseProxy/ > /dev/null 2>&1 && ./reverse-proxy-build.pl > /dev/null 2>&1
+
+# Command Set Dump
+*/10 * * * * root cd /opt/TheMachine/http/D-Shell/ > /dev/null 2>&1 && ./command-set-dump.pl > /dev/null 2>&1
+
 # IP Allocation Block Capacity Check
 00 * * * * root cd /opt/TheMachine/http/IP/ > /dev/null 2>&1 && ./ip-allocation-counter.pl > /dev/null 2>&1
 
