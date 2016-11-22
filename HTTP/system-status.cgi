@@ -11,6 +11,7 @@ my $Footer = Footer();
 
 my $User_Name = $Session->param("User_Name");
 my $User_Admin = $Session->param("User_Admin");
+my $Release_Lock = $CGI->param("Release_Lock");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -22,6 +23,30 @@ if ($User_Admin != 1 && $User_Admin != 2) {
 	$Session->param('Message_Red', $Message_Red);
 	$Session->flush();
 	print "Location: /index.cgi\n\n";
+	exit(0);
+}
+
+if ($Release_Lock eq 'DSMS') {
+
+	$DB_Connection->do("UPDATE `lock` SET 
+	`sudoers-build` = '0',
+	`sudoers-distribution` = '0'");
+
+	my $Message_Orange="Lock released";
+	$Session->param('Message_Orange', $Message_Orange);
+	$Session->flush();
+	print "Location: /system-status.cgi\n\n";
+	exit(0);
+}
+elsif ($Release_Lock eq 'ReverseProxy') {
+
+	$DB_Connection->do("UPDATE `lock` SET 
+	`reverse-proxy-build` = '0'");
+
+	my $Message_Orange="Lock released";
+	$Session->param('Message_Orange', $Message_Orange);
+	$Session->flush();
+	print "Location: /system-status.cgi\n\n";
 	exit(0);
 }
 
@@ -336,7 +361,7 @@ ENDHTML
 		# Sudoers Build Lock
 		print "<tr><td style='text-align: right;'>Sudoers Build Process</td>";
 		if ($Sudoers_Build_Lock == 1) {
-			print "<td style='color: #FFFF00;'>Locked (Currently Building)</td>";
+			print "<td style='color: #FFFF00;'>Locked (Currently Building)<br /><a href='system-status.cgi?Release_Lock=DSMS'><span style='color: #FF6C00;'>[Release Lock]</span></a></td>";
 		}
 		elsif ($Sudoers_Build_Lock == 2) {
 			print "<td style='color: #FF6C00;'>Error (Last Build Failed Syntax Check)</td>";
@@ -382,7 +407,7 @@ ENDHTML
 		# Sudoers Distribution Lock
 		print "<tr><td style='text-align: right;'>Sudoers Distribution Process</td>";
 		if ($Sudoers_Distribution_Lock == 1) {
-			print "<td style='color: #FFFF00;'>Locked (Currently Distributing)</td>";
+			print "<td style='color: #FFFF00;'>Locked (Currently Distributing)<br /><a href='system-status.cgi?Release_Lock=DSMS'><span style='color: #FF6C00;'>[Release Lock]</span></a></td>";
 		}
 		else {
 			print "<td style='color: #00FF00;'>Unlocked (Ready to Deploy)</td>";
@@ -413,6 +438,10 @@ print <<ENDHTML;
 			<td style="text-align: right;">Total Sudoers Distribution Time</td>
 			<td style='color: #00FF00;'>$Sudoers_Total_Distribution_Time</td>
 		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
 ENDHTML
 		# / Sudoers Distribution Time
 
@@ -434,10 +463,6 @@ ENDHTML
 
 print <<ENDHTML;
 		<tr>
-			<td>&nbsp;</td>
-			<td>&nbsp;</td>
-		</tr>
-		<tr>
 			<td style="text-align: right;">Total Sudoers Clients</td>
 			<td style='color: #00FF00;'>$Total_Sudoers_Clients</td>
 		</tr>
@@ -448,6 +473,10 @@ print <<ENDHTML;
 		<tr>
 			<td style="text-align: right;">Broken Sudoers Clients</td>
 			<td>$Broken_Sudoers_Clients</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
 		</tr>
 ENDHTML
 		# / Sudoers Remote Host Statues
@@ -464,10 +493,6 @@ ENDHTML
 
 print <<ENDHTML;
 		<tr>
-			<td>&nbsp;</td>
-			<td>&nbsp;</td>
-		</tr>
-		<tr>
 			<td style="width: 50%; text-align: right;">Last DNS Build Started</td>
 			<td style='width: 50%; color: #00FF00;'>$DNS_Last_Build_Start</td>
 		</tr>
@@ -478,6 +503,10 @@ print <<ENDHTML;
 		<tr>
 			<td style="text-align: right;">Total DNS Build Time</td>
 			<td style='color: #00FF00;'>$DNS_Total_Build_Time</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>&nbsp;</td>
 		</tr>
 ENDHTML
 		# / DNS Build Time
@@ -492,11 +521,20 @@ ENDHTML
 		elsif ($Reverse_Proxy_Total_Build_Time == 1) {$Reverse_Proxy_Total_Build_Time = '1 second';}
 		else {$Reverse_Proxy_Total_Build_Time = "$Reverse_Proxy_Total_Build_Time seconds";}
 
+		# ReverseProxy Build Lock
+		print "<tr><td style='text-align: right;'>ReverseProxy Build Process</td>";
+		if ($Reverse_Proxy_Lock == 1) {
+			print "<td style='color: #FFFF00;'>Locked (Currently Building)<br /><a href='system-status.cgi?Release_Lock=ReverseProxy'><span style='color: #FF6C00;'>[Release Lock]</span></a></td>";
+		}
+		elsif ($Reverse_Proxy_Lock == 2) {
+			print "<td style='color: #FF6C00;'>Error (Last Build Failed Syntax Check)</td>";
+		}
+		else {
+			print "<td style='color: #00FF00;'>Unlocked (Ready to Build)</td>";
+		}
+		print "</tr>";
+
 print <<ENDHTML;
-		<tr>
-			<td>&nbsp;</td>
-			<td>&nbsp;</td>
-		</tr>
 		<tr>
 			<td style="width: 50%; text-align: right;">Last Reverse Proxy Build Started</td>
 			<td style='width: 50%; color: #00FF00;'>$Reverse_Proxy_Last_Build_Start</td>

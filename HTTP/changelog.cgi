@@ -39,9 +39,8 @@ sub html_output {
 
 	## Version 2.0.2
 	$Table->addRow('2.0.2', 'Two Reboot checks merged into one for quicker response in Job Processor.');
-	
+	$Table->addRow('', 'Added ability to release build/distribution lock in System Status.');
 	$Table->addRow('---', '');
-	
 
 	## Version 2.0.1
 	$Table->addRow('2.0.1', 'Clarified RMin/RMax (Range) in IP Sweep.');

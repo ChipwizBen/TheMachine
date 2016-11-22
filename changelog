@@ -1,4 +1,5 @@
 2.0.2   - Two Reboot checks merged into one for quicker response in Job Processor.
+        - Added ability to release build/distribution lock in System Status.
 2.0.1   - Clarified RMin/RMax in IP Sweep.
 		- Fixed an issue with Redirects overruling each other.
         - Dropped legacy IP entry in Distribution Status.

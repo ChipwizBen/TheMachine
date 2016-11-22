@@ -374,8 +374,8 @@ HOST: while (my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 }
 
 $DB_Connection->do("UPDATE `lock` SET 
-		`sudoers-distribution` = '0',
-		`last-sudoers-distribution-finished` = NOW()");
+	`sudoers-distribution` = '0',
+	`last-sudoers-distribution-finished` = NOW()");
 
 
 sub fingerprint_verification {
