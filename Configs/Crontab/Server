@@ -11,7 +11,7 @@
 00 * * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockCount 2>&1 && ./ip-allocation-counter.pl >> /opt/TheMachine/logs/Cron-IPBlockCount 2>&1
 
 # IP Block Sweep
-01 * * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockSweep 2>&1 && ./ipv4-ping-sweep.pl >> /opt/TheMachine/logs/Cron-IPBlockSweep 2>&1
+00 01 * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockSweep 2>&1 && ./ipv4-ping-sweep.pl >> /opt/TheMachine/logs/Cron-IPBlockSweep 2>&1
 
 # Icinga Config Deployment
 # 00 * * * * root cd /var/www/html/Icinga/ > /dev/null 2>&1 && ./push-config.pl > /dev/null 2>&1
