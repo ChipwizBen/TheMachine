@@ -374,12 +374,16 @@ sub html_output {
 			$Status_Message =~ s/(.*)Failed:/<span style='color: #FF0000'>$1Failed: <\/span>/g;
 			$Status_Message =~ s/Hints:(.*)/<span style='color: #FFC600'>Hints:<\/span><span style='color: #BDBDBD'>$1<\/span>/g;
 			$Status_Message =~ s/\s(\d\))/<span style='color: #FFC600'>$1<\/span>/gm;
+			$Status_Message =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Last_Updated = $Select_Hosts[9];
 			if ($Last_Updated eq '0000-00-00 00:00:00') {$Last_Updated = 'Never';}
+			$Last_Updated =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Last_Successful_Transfer = $Select_Hosts[10];
 			if ($Last_Successful_Transfer eq '0000-00-00 00:00:00') {$Last_Successful_Transfer = 'Never';}
+			$Last_Successful_Transfer =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Last_Successful_Checkin = $Select_Hosts[11];
 			if ($Last_Successful_Checkin eq '0000-00-00 00:00:00') {$Last_Successful_Checkin = 'Unknown';}
+			$Last_Successful_Checkin =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Last_Modified = $Select_Hosts[12];
 			if ($Last_Modified eq "0000-00-00 00:00:00") {$Last_Modified = "Never";}
 			$Last_Modified =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
