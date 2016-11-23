@@ -1084,7 +1084,7 @@ sub processor {
 				$Connected_Host->send(' echo $PS1');
 			}
 
-			$Command =~ s/\*REBOOT/shutdown -r 1/g;
+			$Command =~ s/\*REBOOT/shutdown -r 1 'The Machine is rebooting this host in 1 minute.'/g;
 			$Connected_Host->send($Command);
 
 			my $Match;
@@ -1095,7 +1095,7 @@ sub processor {
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for a moment to watch for potential reboot...${Clear}\n";
 				}
 				
-				eval { $Match = $Connected_Host->waitfor(".*Shutdown scheduled for .*\|.*The system is going .*", 90, '-re'); };
+				eval { $Match = $Connected_Host->waitfor("The Machine is rebooting this host.*\|.*Shutdown scheduled for.*\|.*The system is going.*", 90, '-re'); };
 				eval { $Command_Output = $Connected_Host->read_all(); }; $Connected_Host = &reboot_control($Host, $Host_ID) if $@;
 			}
 			else {
