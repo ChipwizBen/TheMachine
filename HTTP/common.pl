@@ -601,7 +601,7 @@ sub Git_Commit {
 	my $Git_Link = Git_Link();
 
 	if ($File eq 'Push') {
-		$Git_Link->push();
+		eval {$Git_Link->push();}; print "Broke at git push: $@\n" if $@;
 	}
 	else {
 		my $DB_Connection = DB_Connection();
@@ -610,19 +610,19 @@ sub Git_Commit {
 		WHERE `username` = ?");
 		$Select_User->execute($Author);
 		my $Email = $Select_User->fetchrow_array();
-		eval { $Git_Link->add($File); }; die("Broke at git add $File: $@\n") if $@;
-		eval { $Git_Link->commit(qw/ --message /, "$Message", qw/ --author /, "$Author <$Email>", qw/ --date /, "$Date", { all => 1}); };
+		eval { $Git_Link->add($File); }; print "Broke at git add $File: $@\n" if $@;
+		eval { $Git_Link->commit(qw/ --message /, "$Message", qw/ --author /, "$Author <$Email>", qw/ --date /, "$Date", { all => 1}); }; print "Broke at git commit $File: $@\n" if $@;
 
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
-		$Audit_Log_Submission->execute("Git", "Commit", "Committed $Message", "$Author");
+#		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
+#			`category`,
+#			`method`,
+#			`action`,
+#			`username`
+#		)
+#		VALUES (
+#			?, ?, ?, ?
+#		)");
+#		$Audit_Log_Submission->execute("Git", "Commit", "Committed $Message", "$Author");
 
 	}
 

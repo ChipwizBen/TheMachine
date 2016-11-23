@@ -295,7 +295,7 @@ RP_EOF
 			my $Git_Directory = Git_Locations('ReverseProxy');
 			use File::Copy;
 			copy("$Config_File","$Git_Directory/$Config_Name") or die "Copy failed of $Config_File to $Git_Directory/$Config_Name: $!";
-			&Git_Commit("$Git_Directory/$Config_Name", "Reverse Proxy ID $ID, last modified $Last_Modified by $Modified_By", $Last_Modified, $Modified_By)
+			&Git_Commit("$Git_Directory/$Config_Name", "Reverse Proxy $Server_Name ($ID), last modified $Last_Modified by $Modified_By", $Last_Modified, $Modified_By)
 		}
 	}
 
@@ -386,7 +386,7 @@ sub write_redirect {
 			my $Git_Directory = Git_Locations('Redirect');
 			use File::Copy;
 			copy("$Config_File","$Git_Directory/$Config_Name") or die "Copy failed of $Config_File to $Git_Directory/$Config_Name: $!";
-			&Git_Commit("$Git_Directory/$Config_Name", "$Server_Name_Single ($ID_Group), last modified $Last_Modified by $Modified_By", $Last_Modified, $Modified_By)
+			&Git_Commit("$Git_Directory/$Config_Name", "Redirect $Server_Name_Single ($ID_Group), last modified $Last_Modified by $Modified_By", $Last_Modified, $Modified_By)
 		}
 	}
 } # sub write_redirect
