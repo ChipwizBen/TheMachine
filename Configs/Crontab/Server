@@ -1,17 +1,20 @@
 # Distributed Sudoers Management System Build and Distribution Processes
-*/10 * * * * root cd /opt/TheMachine/http/DSMS/ > /dev/null 2>&1 && ./sudoers-build.pl > /dev/null 2>&1 && ./distribution.pl > /dev/null 2>&1
+*/10 * * * * root cd /opt/TheMachine/http/DSMS/ >> /opt/TheMachine/logs/Cron-DSMS 2>&1 && ./sudoers-build.pl >> /opt/TheMachine/logs/Cron-DSMS 2>&1 && ./distribution.pl >> /opt/TheMachine/logs/Cron-DSMS 2>&1
 
 # Reverse Proxy Build
-*/10 * * * * root cd /opt/TheMachine/http/ReverseProxy/ > /dev/null 2>&1 && ./reverse-proxy-build.pl > /dev/null 2>&1
+*/10 * * * * root cd /opt/TheMachine/http/ReverseProxy/ >> /opt/TheMachine/logs/Cron-ReverseProxy 2>&1 && ./reverse-proxy-build.pl >> /opt/TheMachine/logs/Cron-ReverseProxy 2>&1
 
 # Command Set Dump
-*/10 * * * * root cd /opt/TheMachine/http/D-Shell/ > /dev/null 2>&1 && ./command-set-dump.pl > /dev/null 2>&1
+*/10 * * * * root cd /opt/TheMachine/http/D-Shell/ >> /opt/TheMachine/logs/Cron-CommandSetDump 2>&1 && ./command-set-dump.pl >> /opt/TheMachine/logs/Cron-CommandSetDump 2>&1
 
 # IP Allocation Block Capacity Check
-00 * * * * root cd /opt/TheMachine/http/IP/ > /dev/null 2>&1 && ./ip-allocation-counter.pl > /dev/null 2>&1
+00 * * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockCount 2>&1 && ./ip-allocation-counter.pl >> /opt/TheMachine/logs/Cron-IPBlockCount 2>&1
+
+# IP Block Sweep
+01 * * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockSweep 2>&1 && ./ipv4-ping-sweep.pl >> /opt/TheMachine/logs/Cron-IPBlockSweep 2>&1
 
 # Icinga Config Deployment
-00 * * * * root cd /var/www/html/Icinga/ > /dev/null 2>&1 && ./push-config.pl > /dev/null 2>&1
+# 00 * * * * root cd /var/www/html/Icinga/ > /dev/null 2>&1 && ./push-config.pl > /dev/null 2>&1
 
 # MySQL Nightly Backup and Cleaning
 20 20 * * * root /bin/find /root/MySQL-Backups/ -maxdepth 1 -name "mysqldump*.gz" -type f -mtime +7 -exec rm -f {} \;
