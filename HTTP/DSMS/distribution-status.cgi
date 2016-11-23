@@ -310,8 +310,8 @@ sub html_output {
 	my $Total_Rows = $Select_Host_Total->fetchrow_array();
 
 	my $Select_Hosts = $DB_Connection->prepare("
-	SELECT `id`, `hostname`, `active`, `sftp_port`, `user`, `key_path`, `timeout`, `remote_sudoers_path`, 
-	`status`, `last_updated`, `last_successful_transfer`, `last_checkin`, `distribution`.`last_modified`, `distribution`.`modified_by`
+	SELECT `id`, `hostname`, `active`, `sftp_port`, `user`, `key_path`, `timeout`, `remote_sudoers_path`, `status`, `last_updated`,
+	`last_successful_transfer`, `last_checkin`, `distribution`.`last_modified`, `distribution`.`modified_by`
 		FROM `hosts`
 		LEFT OUTER JOIN `host_attributes`
 			ON `hosts`.`id`=`host_attributes`.`host_id`
@@ -324,6 +324,10 @@ sub html_output {
 			OR `key_path` LIKE ?
 			OR `timeout` LIKE ?
 			OR `remote_sudoers_path` LIKE ?
+			OR `status` LIKE ?
+			OR `last_updated` LIKE ?
+			OR `last_successful_transfer` LIKE ?
+			OR `last_checkin` LIKE ?
 			OR `distribution`.`last_modified` LIKE ?
 			OR `distribution`.`modified_by` LIKE ?)
 			AND `host_attributes`.`dsms` = 1
@@ -332,11 +336,11 @@ sub html_output {
 	);
 
 	if ($ID_Filter) {
-		$Select_Hosts->execute($ID_Filter, '', '', '', '', '', '', '', '', 0, $Rows_Returned);
+		$Select_Hosts->execute($ID_Filter, '', '', '', '', '', '', '', '', '', '', '', '', 0, $Rows_Returned);
 	}
 	else {
-		$Select_Hosts->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
-		"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
+		$Select_Hosts->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%",
+		"%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 
 	my $Rows = $Select_Hosts->rows();
