@@ -164,6 +164,9 @@ my $Random_Alpha_Numeric_Password_8 = Random_Alpha_Numeric_Password(8);
 my $Random_Alpha_Numeric_Password_16 = Random_Alpha_Numeric_Password(16);
 my $Random_Alpha_Numeric_Password_32 = Random_Alpha_Numeric_Password(32);
 my $Salt = Salt();
+	$Salt =~ s/&/&amp;/g;
+	$Salt =~ s/</&lt;/g;
+	$Salt =~ s/>/&gt;/g;
 
 print <<ENDHTML;
 	<h3 style="text-align: center;">Global Configuration</h3>
@@ -321,7 +324,7 @@ print <<ENDHTML;
 			<td style='color: #00FF00;'>$Random_Alpha_Numeric_Password_32</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Password Salt Generation Test</td>
+			<td style="text-align: right;">Salt Generation Test</td>
 			<td style='color: #00FF00;'>$Salt</td>
 		</tr>
 	</table>
