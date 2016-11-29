@@ -376,7 +376,7 @@ ENDHTML
 	while ( (my $ID, my $Type) = my @Type_Query = $Host_Type_Query->fetchrow_array() )
 	{
 		if ($ID == $Type_Extract) {
-			print "<option style='background-color: #009400;' value='$ID'>$Type</option>";
+			print "<option style='background-color: #009400;' value='$ID' selected>$Type</option>";
 		}
 		else {
 			print "<option value='$ID'>$Type</option>";

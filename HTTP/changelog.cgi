@@ -42,6 +42,7 @@ sub html_output {
 	$Table->addRow('', 'Added ability to release build/distribution lock in System Status.');
 	$Table->addRow('', 'Changed randomness to be blocking CSPRNG based for generated passwords and salts.');
 	$Table->addRow('', 'Fixed fault in RNG display for salts.');
+	$Table->addRow('', 'Fixed an issue where the first host type was selected when editing a host instead of the actual type.');
 	$Table->addRow('---', '');
 
 	## Version 2.0.1

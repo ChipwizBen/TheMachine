@@ -2,6 +2,7 @@
         - Added ability to release build/distribution lock in System Status.
         - Changed randomness to be blocking CSPRNG based for generated passwords and salts.
         - Fixed fault in RNG display for salts.
+        - Fixed an issue where the first host type was selected when editing a host instead of the actual type.
 2.0.1   - Clarified RMin/RMax in IP Sweep.
 		- Fixed an issue with Redirects overruling each other.
         - Dropped legacy IP entry in Distribution Status.
