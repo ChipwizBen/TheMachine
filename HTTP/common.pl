@@ -1021,24 +1021,21 @@ sub Random_Alpha_Numeric_Password {
 		$Password_Length = 10;
 	}
 
-	my @Chars = split(" ",
-		"a b c d e f g h i j
-		 k l m n o p q r s t
-		 u v w x y z A B C D
-		 E F G H I J K L M N
-		 O P Q R S T U V W X
-		 Y Z 0 1 2 3 4 5 6 7
-		 8 9");
+	my $Chars =
+	"a b c d e f g h i j
+	 k l m n o p q r s t
+	 u v w x y z A B C D
+	 E F G H I J K L M N
+	 O P Q R S T U V W X
+	 Y Z 0 1 2 3 4 5 6 7
+	 8 9";
+	$Chars =~ s/\s//g;
+	$Chars =~ s/\t//g;
+	$Chars =~ s/\n//g;
 
-	srand;
-
-	my $Random_Password;
-	my $Random_Character_Count;
-	while ($Random_Character_Count != $Password_Length) {
-		$Random_Value = int(rand 89);
-		$Random_Password .= $Chars[$Random_Value];
-		$Random_Character_Count = length($Random_Password);
-	}
+	use Bytes::Random::Secure qw(random_string_from);
+	my $CSPRNG = Bytes::Random::Secure->new(NonBlocking => 0);
+	my $Random_Password = $CSPRNG->string_from($Chars, $Password_Length);
 
 	return $Random_Password;
 
@@ -1144,26 +1141,24 @@ sub Salt {
 		$Salt_Length = 4;
 	}
 
-	my @Chars = split(" ",
-		"a b c d e f g h i j
-		 k l m n o p q r s t
-		 u v w x y z A B C D
-		 E F G H I J K L M N
-		 O P Q R S T U V W X
-		 Y Z 0 1 2 3 4 5 6 7
-		 8 9 - _ ! @ # ^ ? =
-		 & * ( ) _ + { } | :
-		 < > / \ . , ; $ %");
+	my $Chars =
+	"a b c d e f g h i j
+	 k l m n o p q r s t
+	 u v w x y z A B C D
+	 E F G H I J K L M N
+	 O P Q R S T U V W X
+	 Y Z 0 1 2 3 4 5 6 7
+	 8 9 - _ ! @ # ^ ? =
+	 & * ( ) _ + { } | :
+	 < > / \ . , ; $ %";
+	$Chars =~ s/\s//g;
+	$Chars =~ s/\t//g;
+	$Chars =~ s/\n//g;
 
-	srand;
+	use Bytes::Random::Secure qw(random_string_from);
+	my $CSPRNG = Bytes::Random::Secure->new(NonBlocking => 0);
+	my $Random_Salt = $CSPRNG->string_from($Chars, $Salt_Length);
 
-	my $Random_Salt;
-	my $Salt_Character_Count;
-	while ($Salt_Character_Count != $Salt_Length) {
-		$Random_Value = int(rand 89);
-		$Random_Salt .= $Chars[$Random_Value];
-		$Salt_Character_Count = length($Random_Salt);
-	}
 	return $Random_Salt;
 
 } # sub Salt
