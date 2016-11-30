@@ -156,20 +156,17 @@ sub html_output {
 		elsif ($Method_Clean eq 'Stop') {
 			$Table->setCellClass (-1, 3, 'tbrowred');
 		}
-
-		$Table->setColWidth(1, '1px');
-		$Table->setColWidth(5, '110px');
-		$Table->setColWidth(6, '110px');
-
-		$Table->setColAlign(1, 'center');
-		$Table->setColAlign(2, 'center');
-		$Table->setColAlign(3, 'center');
-		$Table->setColAlign(5, 'center');
-		$Table->setColAlign(6, 'center');
-
-
 	}
 
+	$Table->setColWidth(1, '1px');
+	$Table->setColWidth(5, '110px');
+	$Table->setColWidth(6, '110px');
+
+	$Table->setColAlign(1, 'center');
+	$Table->setColAlign(2, 'center');
+	$Table->setColAlign(3, 'center');
+	$Table->setColAlign(5, 'center');
+	$Table->setColAlign(6, 'center');
 
 print <<ENDHTML;
 <table style="width:100%; border: solid 2px; border-color:#293E77; background-color:#808080;">

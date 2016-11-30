@@ -1185,7 +1185,7 @@ ENDHTML
 sub html_output {
 
 my $Table = new HTML::Table(
-	-cols=>7,
+	-cols=>9,
 	-align=>'center',
 	-border=>0,
 	-rules=>'cols',
@@ -1196,9 +1196,10 @@ my $Table = new HTML::Table(
 	-padding=>1
 );
 
-my $Select_Block_Count = $DB_Connection->prepare("SELECT `id` FROM `ipv4_allocations`");
-	$Select_Block_Count->execute( );
-	my $Total_Rows = $Select_Block_Count->rows();
+my $Select_Block_Count = $DB_Connection->prepare("SELECT COUNT(*)
+	FROM `ipv4_allocations`");
+	$Select_Block_Count->execute();
+	my $Total_Rows = $Select_Block_Count->fetchrow_array();
 
 my $Select_Blocks = $DB_Connection->prepare("SELECT `id`, `ip_block`, `parent_block`, `last_modified`, `modified_by`
 	FROM `ipv4_allocations`
@@ -1215,8 +1216,6 @@ if ($ID_Filter) {
 else {
 	$Select_Blocks->execute("%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);	
 }
-
-
 my $Rows = $Select_Blocks->rows();
 
 $Table->addRow( "ID", 
@@ -1283,19 +1282,18 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 		$Table->setCellClass ($Row_Count, 5, 'tbrowgreen');
 	}
 
-	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(5, '1px');
-	$Table->setColWidth(6, '110px');
-	$Table->setColWidth(7, '110px');
-	$Table->setColWidth(8, '1px');
-	$Table->setColWidth(9, '1px');
+}
+$Table->setColWidth(1, '1px');
+$Table->setColWidth(5, '1px');
+$Table->setColWidth(6, '110px');
+$Table->setColWidth(7, '110px');
+$Table->setColWidth(8, '1px');
+$Table->setColWidth(9, '1px');
 
-	$Table->setColAlign(1, 'center');
-	$Table->setColAlign(2, 'center');
-	for (4..9) {
-		$Table->setColAlign($_, 'center');
-	}
-
+$Table->setColAlign(1, 'center');
+$Table->setColAlign(2, 'center');
+for (4..9) {
+	$Table->setColAlign($_, 'center');
 }
 print <<ENDHTML;
 <table style="width:100%; border: solid 2px; border-color:#293E77; background-color:#808080;">

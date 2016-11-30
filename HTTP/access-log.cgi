@@ -146,17 +146,16 @@ sub html_output {
 		else {
 			$Table->setCellClass ($Row_Count, 9, 'tbrowred');
 		}
+	}
 
 	$Table->setColWidth(1, '1px');
-		$Table->setColWidth(10, '110px');
-		$Table->setColWidth(11, '110px');
+	$Table->setColWidth(10, '110px');
+	$Table->setColWidth(11, '110px');
 
-		$Table->setColAlign(8, 'center');
-		$Table->setColAlign(9, 'center');
-		$Table->setColAlign(10, 'center');
-		$Table->setColAlign(11, 'center');
-
-	}
+	$Table->setColAlign(8, 'center');
+	$Table->setColAlign(9, 'center');
+	$Table->setColAlign(10, 'center');
+	$Table->setColAlign(11, 'center');
 
 print <<ENDHTML;
 <table style="width:100%; border: solid 2px; border-color:#293E77; background-color:#808080;">
