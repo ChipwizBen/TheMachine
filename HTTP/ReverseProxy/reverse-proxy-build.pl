@@ -10,10 +10,10 @@ my $System_Short_Name = System_Short_Name();
 my $Version = Version();
 my $DB_Connection = DB_Connection();
 my $Reverse_Proxy_Location = Reverse_Proxy_Location();
-	unlink glob "$Reverse_Proxy_Location/*.conf";
+	unlink glob "$Reverse_Proxy_Location/*.conf" or warn "Could not unlink $Reverse_Proxy_Location/*.conf";
 my $Proxy_Redirect_Location = Proxy_Redirect_Location();
-	unlink glob "$Proxy_Redirect_Location/*.conf";
-my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
+	unlink glob "$Proxy_Redirect_Location/*.conf" or warn "Could not unlink $Proxy_Redirect_Location/*.conf";
+#my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
 
 $| = 1;
 my $Override;
@@ -65,11 +65,26 @@ foreach my $Parameter (@ARGV) {
 
 # / Safety check for other running build processes
 
+my $Git_Check = Git_Link('Status_Check');
+if ($Git_Check =~ /Yes/i) {
+	my $ReverseProxy_Git_Directory = Git_Locations('ReverseProxy');
+		unlink glob "$ReverseProxy_Git_Directory/*.conf" or warn "Could not unlink $ReverseProxy_Git_Directory/*.conf";	
+	my $Redirect_Git_Directory = Git_Locations('Redirect');
+		unlink glob "$Redirect_Git_Directory/*.conf" or warn "Could not unlink $Redirect_Git_Directory/*.conf";	
+}
+
 &write_reverse_proxy;
 print "Reverse proxy configuration written to $Reverse_Proxy_Location/\n";
 &write_redirect;
 print "Redirect configuration written to $Proxy_Redirect_Location/\n";
-&Git_Commit('Push');
+
+if ($Git_Check =~ /Yes/i) {
+	my $ReverseProxy_Git_Directory = Git_Locations('ReverseProxy');
+		&Git_Commit("$ReverseProxy_Git_Directory/*", "Cleared old configs.");
+	my $Redirect_Git_Directory = Git_Locations('Redirect');
+		&Git_Commit("$Redirect_Git_Directory/*", "Cleared old configs.");
+	&Git_Commit('Push');
+}
 
 $DB_Connection->do("UPDATE `lock` SET 
 `reverse-proxy-build` = '0',

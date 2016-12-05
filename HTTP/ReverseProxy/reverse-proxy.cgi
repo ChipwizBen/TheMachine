@@ -2,8 +2,6 @@
 
 use strict;
 use HTML::Table;
-use Date::Parse qw(str2time);
-use POSIX qw(strftime);
 
 my $Common_Config;
 if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}

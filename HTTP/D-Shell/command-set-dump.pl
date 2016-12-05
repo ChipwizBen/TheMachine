@@ -18,6 +18,9 @@ my $Select_Command_Sets = $DB_Connection->prepare("SELECT `id`, `name`, `command
 );
 $Select_Command_Sets->execute();
 
+my $Git_Directory = Git_Locations('CommandSets');
+	unlink glob "$Git_Directory/*.sh" or warn "Could not unlink $Git_Directory/*.sh";	
+
 my $Rows;
 COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_array() )
 {
@@ -89,7 +92,6 @@ COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_ar
 	$Command =~ s/\*REBOOT/reboot/gi;
 	$Command =~ s/\*PAUSE/sleep/gi;
 
-	my $Git_Directory = Git_Locations('CommandSets');
 	open( FILE, ">$Git_Directory/$Command_Name.sh" ) or die "Can't open $Git_Directory/$Command_Name.sh";
 	print FILE "#########################################################################\n";
 	print FILE "## $System_Name\n";
@@ -109,5 +111,7 @@ COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_ar
 	print FILE "$Command";
 	close FILE;
 	&Git_Commit("$Git_Directory/$Command_Name.sh", "Command Set $Command_Name (ID: $DBID), [Rev. $Command_Revision], created $Last_Modified by $Modified_By.", $Last_Modified, $Modified_By);
-	&Git_Commit('Push');
 }
+
+&Git_Commit("$Git_Directory/*", "Cleared old configs.");
+&Git_Commit('Push');
