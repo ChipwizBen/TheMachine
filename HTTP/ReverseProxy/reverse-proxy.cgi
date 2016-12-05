@@ -1287,7 +1287,6 @@ sub html_output {
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Server_Name = $Select_Reverse_Proxies[1];
-			$Server_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Source = $Select_Reverse_Proxies[2];
 			$Source =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Destination = $Select_Reverse_Proxies[3];
@@ -1326,8 +1325,10 @@ sub html_output {
 		my $ServerAliases;
 		my @ServerAliases = split(',', $Server_Name);
 		$Server_Name = shift @ServerAliases;
+		$Server_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		foreach my $Alias (@ServerAliases) {
 			$ServerAliases = $ServerAliases . "<br/>$Alias";
+			$ServerAliases =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #FFFFFF'>$2<\/span>$3/gi;
 		}
 
 		if ($PFS) {$PFS = 'On'} else {$PFS = 'Off'};

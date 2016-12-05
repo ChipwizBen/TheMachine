@@ -2,10 +2,10 @@
 */10 * * * * root cd /opt/TheMachine/http/DSMS/ >> /opt/TheMachine/logs/Cron-DSMS 2>&1 && ./sudoers-build.pl >> /opt/TheMachine/logs/Cron-DSMS 2>&1 && ./distribution.pl >> /opt/TheMachine/logs/Cron-DSMS 2>&1
 
 # Reverse Proxy Build
-*/10 * * * * root cd /opt/TheMachine/http/ReverseProxy/ >> /opt/TheMachine/logs/Cron-ReverseProxy 2>&1 && ./reverse-proxy-build.pl >> /opt/TheMachine/logs/Cron-ReverseProxy 2>&1
+*/9 * * * * root cd /opt/TheMachine/http/ReverseProxy/ >> /opt/TheMachine/logs/Cron-ReverseProxy 2>&1 && ./reverse-proxy-build.pl >> /opt/TheMachine/logs/Cron-ReverseProxy 2>&1
 
 # Command Set Dump
-*/10 * * * * root cd /opt/TheMachine/http/D-Shell/ >> /opt/TheMachine/logs/Cron-CommandSetDump 2>&1 && ./command-set-dump.pl >> /opt/TheMachine/logs/Cron-CommandSetDump 2>&1
+*/11 * * * * root cd /opt/TheMachine/http/D-Shell/ >> /opt/TheMachine/logs/Cron-CommandSetDump 2>&1 && ./command-set-dump.pl >> /opt/TheMachine/logs/Cron-CommandSetDump 2>&1
 
 # IP Allocation Block Capacity Check
 00 * * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockCount 2>&1 && ./ip-allocation-counter.pl >> /opt/TheMachine/logs/Cron-IPBlockCount 2>&1

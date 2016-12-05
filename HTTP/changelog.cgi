@@ -44,6 +44,7 @@ sub html_output {
 	$Table->addRow('', 'Fixed fault in RNG display for salts.');
 	$Table->addRow('', 'Fixed an issue where the first host type was selected when editing a host instead of the actual type.');
 	$Table->addRow('', 'Performance improvements in both the DB and a handful of pages.');
+	$Table->addRow('', 'Fixed an issue with highlighting being the same colour as the text for matching server aliases in ReverseProxy.');
 	$Table->addRow('---', '');
 
 	## Version 2.0.1
