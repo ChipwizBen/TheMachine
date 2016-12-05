@@ -595,7 +595,10 @@ sub Git_Commit {
 	my $Commit_All;
 	my $File = $_[0];
 		if ($File =~ /^..\/Storage/) {$File =~ s/^..\/Storage\/Git\///;}
-		if ($File =~ m/\*$/) {$Commit_All = 1};
+		if ($File =~ m/\*$/) {
+			$File =~ s/(.*)\*$/$1/;
+			$Commit_All = 1;
+		};
 	my $Message = $_[1];
 	my $Date = $_[2];
 	my $Author = $_[3];
@@ -622,12 +625,8 @@ sub Git_Commit {
 		}
 
 		eval { $Git_Link->add($File); }; #print "Broke at git add $File: $@\n" if $@;
-		if ($Commit_All) {
-			eval { $Git_Link->commit(qw/ --message /, "$Message", qw/ --author /, "$Author <$Email>", qw/ --date /, "$Date", { all => 1}); }; #print "Broke at git commit $File: $@\n" if $@;
-		}
-		else {
-			eval { $Git_Link->commit(qw/ --message /, "$Message", qw/ --author /, "$Author <$Email>", qw/ --date /, "$Date"); }; #print "Broke at git commit $File: $@\n" if $@;
-		}
+		eval { $Git_Link->commit(qw/ --message /, "$Message", qw/ --author /, "$Author <$Email>", qw/ --date /, "$Date", qw/ -- /, "$File"); }; #print "Broke at git commit $File: $@\n" if $@;
+
 
 #		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 #			`category`,
