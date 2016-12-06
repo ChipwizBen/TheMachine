@@ -73,7 +73,6 @@ my $Run_Command = $CGI->param("Run_Command");
 
 my $Run_Command_Final = $CGI->param("Run_Command_Final");
 
-
 my $User_Name = $Session->param("User_Name");
 my $User_ID = $Session->param("User_ID");
 my $User_DShell_Admin = $Session->param("User_DShell_Admin");
@@ -84,6 +83,8 @@ if (!$User_Name) {
 }
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
+my $Owner = $CGI->param("Owner");
+	if ($Owner ne $User_ID && $Owner ne 0 && $Owner ne 'All') {$Owner = 'All'}
 my $Filter = $CGI->param("Filter");
 	$Filter =~ s/\*/\\*/g;
 my $ID_Filter = $CGI->param("ID_Filter");
@@ -148,12 +149,21 @@ elsif ($Edit_Command && $Command_Edit_Final) {
 		exit(0);
 	}
 	else {
-		&edit_command;
-		my $Message_Green="$Command_Name_Edit edited successfully";
-		$Session->param('Message_Green', $Message_Green);
-		$Session->flush();
-		print "Location: /D-Shell/command-sets.cgi\n\n";
-		exit(0);
+		if ($Command_Owner_Edit ne $User_ID && $Command_Owner_Edit != 0) {
+			my $Message_Red = 'Not cool, man. Not cool.';
+			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
+			print "Location: /D-Shell/command-sets.cgi\n\n";
+			exit(0);
+		}
+		else {
+			&edit_command;
+			my $Message_Green="$Command_Name_Edit edited successfully";
+			$Session->param('Message_Green', $Message_Green);
+			$Session->flush();
+			print "Location: /D-Shell/command-sets.cgi\n\n";
+			exit(0);
+		}
 	}
 }
 elsif ($Revision_History) {
@@ -377,8 +387,8 @@ print <<ENDHTML;
 		<td style="text-align: right;">Used By:</td>
 		<td style="text-align: left;">
 			<select name='Owner_Add' style="width: 200px">
-				<option value='0' selected>Everybody</option>
-				<option value='$User_ID' selected>Only Me</option>
+				<option value='0' selected>Everybody (System)</option>
+				<option value='$User_ID' selected>Only Me ($User_Name)</option>
 			</select>
 		</td>
 	</tr>
@@ -542,6 +552,14 @@ sub html_edit_command {
 		if (!$Command_Description_Edit) {$Command_Description_Edit = $Select_Command_Sets[2]}
 		if (!$Command_Owner_Edit) {$Command_Owner_Edit = $Select_Command_Sets[3]}
 		$Command_Revision_Edit = $Select_Command_Sets[4];
+	}
+
+	if ($Command_Owner_Edit ne $User_ID && $Command_Owner_Edit != 0) {
+		my $Message_Red = 'Not cool, man. Not cool.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/command-sets.cgi\n\n";
+		exit(0);
 	}
 
 	## / Existing Command Set Details
@@ -713,8 +731,12 @@ print <<ENDHTML;
 		<td style="text-align: right;">Used By:</td>
 		<td style="text-align: left;">
 			<select name='Owner_Edit' style="width: 200px">
-				<option value='0' selected>Everybody</option>
-				<option value='$User_ID' selected>Only Me</option>
+ENDHTML
+
+if ($Command_Owner_Edit eq $User_ID) {print "<option value='$User_ID' selected>Only Me ($User_Name)</option>";} else {print "<option value='$User_ID'>Only Me ($User_Name)</option>";}
+if ($Command_Owner_Edit eq 0) {print "<option value='0' selected>Everybody (System)</option>";} else {print "<option value='0'>Everybody (System)</option>";}
+
+print <<ENDHTML;
 			</select>
 		</td>
 	</tr>
@@ -870,14 +892,22 @@ sub edit_command {
 
 sub html_delete_command {
 
-	my $Select_Command = $DB_Connection->prepare("SELECT `name`, `revision`
+	my $Select_Command = $DB_Connection->prepare("SELECT `name`, `revision`, `owner_id`
 	FROM `command_sets`
 	WHERE `id` = ?");
 
 	$Select_Command->execute($Delete_Command);
 	
-	while ( my ($Command_Name, $Command_Revision) = $Select_Command->fetchrow_array() )
+	while ( my ($Command_Name, $Command_Revision, $Owner_ID) = $Select_Command->fetchrow_array() )
 	{
+
+		if ($Owner_ID ne $User_ID && $Owner_ID != 0) {
+			my $Message_Red = 'Not cool, man. Not cool.';
+			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
+			print "Location: /D-Shell/command-sets.cgi\n\n";
+			exit(0);
+		}
 
 
 print <<ENDHTML;
@@ -947,14 +977,22 @@ sub delete_command {
 	}
 
 	# Audit Log
-	my $Select_Commands = $DB_Connection->prepare("SELECT `name`, `revision`
+	my $Select_Commands = $DB_Connection->prepare("SELECT `name`, `revision`, `owner_id`
 		FROM `command_sets`
 		WHERE `id` = ?");
 
 	$Select_Commands->execute($Delete_Command_Confirm);
 
-	while ( my ( $Command_Name, $Command_Revision ) = $Select_Commands->fetchrow_array() )
+	while ( my ( $Command_Name, $Command_Revision, $Owner_ID ) = $Select_Commands->fetchrow_array() )
 	{
+
+		if ($Owner_ID ne $User_ID && $Owner_ID != 0) {
+			my $Message_Red = 'Not cool, man. Not cool.';
+			$Session->param('Message_Red', $Message_Red);
+			$Session->flush();
+			print "Location: /D-Shell/command-sets.cgi\n\n";
+			exit(0);
+		}
 
 		my $DB_Connection = DB_Connection();
 		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
@@ -986,13 +1024,21 @@ sub delete_command {
 
 sub html_run_command {
 
-	my $Select_Command = $DB_Connection->prepare("SELECT `name`
+	my $Select_Command = $DB_Connection->prepare("SELECT `name`, `owner_id`
 		FROM `command_sets`
-		WHERE `id` LIKE ?"
+		WHERE `id` = ?"
 	);
 	
 	$Select_Command->execute($Run_Command);
-	my $Command_Name = $Select_Command->fetchrow_array();
+	my ($Command_Name, $Owner_ID) = $Select_Command->fetchrow_array();
+
+	if ($Owner_ID ne $User_ID && $Owner_ID != 0) {
+		my $Message_Red = 'Not cool, man. Not cool.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/command-sets.cgi\n\n";
+		exit(0);
+	}
 
 	### Temp Selection Filters
 		# *_Temp_Existing are existing temporary allocations from the last refresh. This is basically a list of 'new' elements that have not yet been committed to the database.
@@ -1371,6 +1417,22 @@ ENDHTML
 
 sub run_command {
 
+	my $Select_Command = $DB_Connection->prepare("SELECT `owner_id`
+		FROM `command_sets`
+		WHERE `id` = ?"
+	);
+	
+	$Select_Command->execute($Run_Command);
+	my ($Owner_ID) = $Select_Command->fetchrow_array();
+
+	if ($Owner_ID ne $User_ID && $Owner_ID != 0) {
+		my $Message_Red = 'Not cool, man. Not cool.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/command-sets.cgi\n\n";
+		exit(0);
+	}
+
 	$Add_Host_Temp_Existing =~ s/^,//;
 	$Add_Host_Temp_Existing =~ s/,$//;
 	$Add_Host_Temp_Existing =~ s/,/ /;
@@ -1419,7 +1481,7 @@ sub html_diff_revision {
 
 	use Text::Diff;
 
-	my $Select_First_Diff = $DB_Connection->prepare("SELECT `name`, `command`
+	my $Select_First_Diff = $DB_Connection->prepare("SELECT `name`, `command`, `owner_id`
 		FROM `command_sets`
 		WHERE `id` = ?"
 	);
@@ -1431,9 +1493,17 @@ sub html_diff_revision {
 	while ( my @Diff_One = $Select_First_Diff->fetchrow_array() ) {
 			$Diff_One_Name = $Diff_One[0];
 			$Diff_One_Command = $Diff_One[1];
+			my $Owner_ID = $Diff_One[2];
+			if ($Owner_ID ne $User_ID && $Owner_ID != 0) {
+				my $Message_Red = 'Not cool, man. Not cool.';
+				$Session->param('Message_Red', $Message_Red);
+				$Session->flush();
+				print "Location: /D-Shell/command-sets.cgi\n\n";
+				exit(0);
+			}
 	}
 
-	my $Select_Second_Diff = $DB_Connection->prepare("SELECT `name`, `command`
+	my $Select_Second_Diff = $DB_Connection->prepare("SELECT `name`, `command`, `owner_id`
 		FROM `command_sets`
 		WHERE `id` = ?"
 	);
@@ -1445,10 +1515,20 @@ sub html_diff_revision {
 	while ( my @Diff_Two = $Select_Second_Diff->fetchrow_array() ) {
 			$Diff_Two_Name = $Diff_Two[0];
 			$Diff_Two_Command = $Diff_Two[1];
+			my $Owner_ID = $Diff_Two[2];
+			if ($Owner_ID ne $User_ID && $Owner_ID != 0) {
+				my $Message_Red = 'Not cool, man. Not cool.';
+				$Session->param('Message_Red', $Message_Red);
+				$Session->flush();
+				print "Location: /D-Shell/command-sets.cgi\n\n";
+				exit(0);
+			}
 	}
  
 	my $Diff_Compare = diff \$Diff_One_Command, \$Diff_Two_Command, { STYLE => 'Text::Diff::HTML' };
 	$Diff_Compare =~ s/\r/<br \/>/g;
+
+	if (!$Diff_Compare) {$Diff_Compare = '<br />No differences found.'}
 
 print <<ENDHTML;
 
@@ -1533,6 +1613,14 @@ sub html_revision_history {
 			my $Last_Modified = $Revision[6];
 			my $Modified_By = $Revision[7];
 
+			if ($Command_Owner_ID ne $User_ID && $Command_Owner_ID != 0) {
+				my $Message_Red = 'Not cool, man. Not cool.';
+				$Session->param('Message_Red', $Message_Red);
+				$Session->flush();
+				print "Location: /D-Shell/command-sets.cgi\n\n";
+				exit(0);
+			}
+
 			## Discover owner
 	
 			my $Command_Owner;
@@ -1611,8 +1699,10 @@ sub html_output {
 		-padding=>1
 	);
 
-
-	my $Select_Command_Count = $DB_Connection->prepare("SELECT `id` FROM `command_sets`");
+	my $Select_Command_Count = $DB_Connection->prepare("SELECT `id` FROM `command_sets`
+	WHERE `revision_parent` IS NULL
+	AND (`owner_id` = $User_ID
+		OR `owner_id` = 0)");
 		$Select_Command_Count->execute( );
 		my $Total_Rows = $Select_Command_Count->rows();
 
@@ -1626,13 +1716,16 @@ sub html_output {
 		$Select_Command_Sets->execute($ID_Filter);
 	}
 	else {
+		my $Owner_SQL;
+		if ($Owner ne 'All') {$Owner_SQL = "AND `owner_id` = $Owner"} else {$Owner_SQL = "AND (`owner_id` = $User_ID OR `owner_id` = 0)"}
 		$Select_Command_Sets = $DB_Connection->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
 			FROM `command_sets`
-			WHERE `id` = ?
+			WHERE (`id` = ?
 			OR `name` LIKE ?
 			OR `command` LIKE ?
 			OR `revision` LIKE ?
-			OR `description` LIKE ?
+			OR `description` LIKE ?)
+			$Owner_SQL
 			ORDER BY `name` ASC
 			LIMIT ?, ?"
 		);
@@ -1789,6 +1882,22 @@ if ($Rows_Returned == 1000) {print "<option value=1000 selected>1000</option>";}
 if ($Rows_Returned == 2500) {print "<option value=2500 selected>2500</option>";} else {print "<option value=2500>2500</option>";}
 if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";} else {print "<option value=5000>5000</option>";}
 if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
+
+print <<ENDHTML;
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">
+						Owner:
+					</td>
+					<td style="text-align: right;">
+						<select name='Owner' onchange='this.form.submit()' style="width: 150px">
+ENDHTML
+
+if ($Owner eq 'All') {print "<option value='All' selected>All</option>";} else {print "<option value='All'>All</option>";}
+if ($Owner eq $User_ID) {print "<option value='$User_ID' selected>$User_Name</option>";} else {print "<option value='$User_ID'>$User_Name</option>";}
+if ($Owner eq 0) {print "<option value='0' selected>System</option>";} else {print "<option value='0'>System</option>";}
 
 print <<ENDHTML;
 						</select>

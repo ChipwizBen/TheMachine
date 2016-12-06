@@ -47,6 +47,7 @@ sub html_output {
 	$Table->addRow('', 'Fixed an issue with highlighting being the same colour as the text for matching server aliases in ReverseProxy.');
 	$Table->addRow('', 'Deleted configs are now correctly purged from Git.');
 	$Table->addRow('', 'Configs are now handled individually when committing to Git to stop processes committing each others files.');
+	$Table->addRow('', 'Fixed Command Set owner filter and improved user control of private Command Sets.');
 	$Table->addRow('---', '');
 
 	## Version 2.0.1

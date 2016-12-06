@@ -7,6 +7,7 @@
         - Fixed an issue with highlighting being the same colour as the text for matching server aliases in ReverseProxy.
         - Deleted configs are now correctly purged from Git.
         - Configs are now handled individually when committing to Git to stop processes committing each others files.
+        - Fixed Command Set owner filter and improved user control of private Command Sets.
 2.0.1   - Clarified RMin/RMax in IP Sweep.
 		- Fixed an issue with Redirects overruling each other.
         - Dropped legacy IP entry in Distribution Status.
