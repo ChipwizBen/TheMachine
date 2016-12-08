@@ -48,6 +48,7 @@ sub html_output {
 	$Table->addRow('', 'Deleted configs are now correctly purged from Git.');
 	$Table->addRow('', 'Configs are now handled individually when committing to Git to stop processes committing each others files.');
 	$Table->addRow('', 'Fixed Command Set owner filter and improved user control of private Command Sets.');
+	$Table->addRow('', 'Remembered to include checksums :).');
 	$Table->addRow('---', '');
 
 	## Version 2.0.1

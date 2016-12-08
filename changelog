@@ -8,8 +8,9 @@
         - Deleted configs are now correctly purged from Git.
         - Configs are now handled individually when committing to Git to stop processes committing each others files.
         - Fixed Command Set owner filter and improved user control of private Command Sets.
+        - Remembered to include checksums :).
 2.0.1   - Clarified RMin/RMax in IP Sweep.
-		- Fixed an issue with Redirects overruling each other.
+        - Fixed an issue with Redirects overruling each other.
         - Dropped legacy IP entry in Distribution Status.
         - Fixed an issue where hosts without blocks still had () appear in Rules.
         - Correctly handled broken fingerprint probe in D-Shell.
