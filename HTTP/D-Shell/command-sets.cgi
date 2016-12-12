@@ -439,6 +439,10 @@ print <<ENDHTML;
 			</ul>
 		</ul>
 	<li><span style='color: #FC64FF;'>*REBOOT</span> - Gracefully executes a controlled reboot of the remote system and continues processing when the system recovers.</li>
+	<li><span style='color: #FC64FF;'>*SUDO</span> - Shortcut to 'sudo su -' with a bit of logic around it.</li>
+	<li><span style='color: #FC64FF;'>*VAR{VarName}</span> - Sets a runtime variable. When a Job is executed and runtime variables exist, 
+		you will be asked to provide the variable data at launch. This is especially useful when setting passwords, IP addresses, 
+		or anything else that would differ between different executions of a script.</li>
 
 <input type='hidden' name='Add_Command' value='1'>
 <input type='hidden' name='Add_Command_Dependency_Temp_Existing' value='$Add_Command_Dependency_Temp_Existing'>
@@ -789,6 +793,10 @@ print <<ENDHTML;
 			</ul>
 		</ul>
 	<li><span style='color: #FC64FF;'>*REBOOT</span> - Gracefully executes a controlled reboot of the remote system and continues processing when the system recovers.</li>
+	<li><span style='color: #FC64FF;'>*SUDO</span> - Shortcut to 'sudo su -' with a bit of logic around it.</li>
+	<li><span style='color: #FC64FF;'>*VAR{VarName}</span> - Sets a runtime variable. When a Job is executed and runtime variables exist, 
+		you will be asked to provide the variable data at launch. This is especially useful when setting passwords, IP addresses, 
+		or anything else that would differ between different executions of a script.</li>
 
 <input type='hidden' name='Edit_Command' value='$Edit_Command'>
 <input type='hidden' name='Edit_Command_Revision' value='$Command_Revision_Edit_Plus_One'>
@@ -1938,14 +1946,23 @@ print <<ENDHTML;
 						<select name='Edit_Command' style="width: 150px">
 ENDHTML
 
-						my $Command_List_Query = $DB_Connection->prepare("SELECT `id`, `name`
+						my $Command_List_Query = $DB_Connection->prepare("SELECT `id`, `name`, `revision`
 						FROM `command_sets`
+						WHERE `owner_id` = ?
+						OR `owner_id` = 0
 						ORDER BY `name` ASC");
-						$Command_List_Query->execute( );
+						$Command_List_Query->execute($User_ID);
 						
-						while ( my ($ID, $Command) = my @Command_List_Query = $Command_List_Query->fetchrow_array() )
+						while ( my ($ID, $Command, $Revision) = my @Command_List_Query = $Command_List_Query->fetchrow_array() )
 						{
-							print "<option value='$ID'>$Command</option>";
+
+							## Latest revision filter
+								my $Select_Child = $DB_Connection->prepare("SELECT `id` FROM `command_sets` WHERE `revision_parent` = ?");
+								$Select_Child->execute($ID);
+								my $Children = $Select_Child->rows();
+								if ($Children == 0) {
+									print "<option value='$ID'>$Command (Rev. $Revision)</option>";
+								}
 						}
 
 print <<ENDHTML;
