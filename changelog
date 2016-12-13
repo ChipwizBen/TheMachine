@@ -1,3 +1,6 @@
+2.1.0   - Fixed dropdown in Command Sets that didn't adhere to new owner display system.
+        - Changed a few icons for clarity.
+----------------
 2.0.2   - Two Reboot checks merged into one for quicker response in Job Processor.
         - Added ability to release build/distribution lock in System Status.
         - Changed randomness to be blocking CSPRNG based for generated passwords and salts.

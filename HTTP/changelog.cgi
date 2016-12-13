@@ -37,6 +37,11 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.1.0
+	$Table->addRow('2.1.0', 'Fixed dropdown in Command Sets that didn\'t adhere to new owner display system.');
+	$Table->addRow('', 'Changed a few icons for clarity.');
+	$Table->addRow('<hr />', '');
+
 	## Version 2.0.2
 	$Table->addRow('2.0.2', 'Two Reboot checks merged into one for quicker response in Job Processor.');
 	$Table->addRow('', 'Added ability to release build/distribution lock in System Status.');

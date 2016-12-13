@@ -48,6 +48,7 @@ Options are:
 	${Blue}-d, --dependency-chain\t${Green}Pass the dependency chain ID (only used with dependencies)
 	${Blue}-u, --user\t\t${Green}Pass the user that'll execute the job on the remote system (only used without keys)
 	${Blue}-k, --key\t\t${Green}Pass the key ID used to connect to the server
+	${Blue}-r, --real-time-variable\t\t${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
 	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug)
 	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes _LOTS_ of debug (I did warn you)
 	${Blue}--override\t\t${Green}Override the lock for Complete or Stopped jobs
@@ -74,6 +75,7 @@ my $Parent_ID;
 my $Dependent_Command_Set_ID;
 my $Dependent_Host_ID;
 my $Dependency_Chain_ID;
+my %Runtime_Variable;
 my $Captured_User_Name;
 	my $User_Name = 'System';
 my $Key_ID;
@@ -105,6 +107,8 @@ GetOptions(
 	'host:i' => \$Dependent_Host_ID,
 	'd:i' => \$Dependency_Chain_ID,
 	'dependency-chain:i' => \$Dependency_Chain_ID,
+	'r=s%' => \%Runtime_Variable,
+	'runtime-variable=s%' => \%Runtime_Variable,
 	'P:s' => \$Captured_User_Password,
 	'password:s' => \$Captured_User_Password,
 	'k:i' => \$Captured_Key,

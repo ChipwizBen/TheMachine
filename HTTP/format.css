@@ -334,6 +334,7 @@ textarea:focus {
 	}
 
 #navigation a:hover span {
+	color:#FFFFFF !important;
 	background-image: url(resources/imgs/buttons/nav2.jpg);
 	}
 
