@@ -2,7 +2,6 @@
 
 use strict;
 use HTML::Table;
-use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
 my $Common_Config;

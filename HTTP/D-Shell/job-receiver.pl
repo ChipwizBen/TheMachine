@@ -1,9 +1,6 @@
 #!/usr/bin/perl
 
 use strict;
-use HTML::Table;
-use Date::Parse qw(str2time);
-use POSIX qw(strftime);
 use Getopt::Long qw(:config no_ignore_case);
 
 my $Common_Config;

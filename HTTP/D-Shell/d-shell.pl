@@ -25,6 +25,9 @@ my $Wait_Timeout = DShell_WaitFor_Timeout();
 my $Retry_Count = 0;
 my $Max_Retry_Count = 10;
 my $Connection_Timeout = 5;
+my $Reboot_Retry_Count = 0;
+my $Reboot_Max_Retry_Count = 20;
+my $Reboot_Connection_Timeout = 5;
 
 $0 = 'D-Shell';
 $| = 1;
@@ -1583,7 +1586,7 @@ sub reboot_control {
 				user => $User_Name,
 				password=> $User_Password,
 				log_file => $DShell_Transactional_File,
-				timeout => $Connection_Timeout,
+				timeout => $Reboot_Connection_Timeout,
 				exp_internal => $Very_Verbose,
 				exp_debug => $Very_Verbose,
 				raw_pty => 1,
@@ -1594,7 +1597,7 @@ sub reboot_control {
 
 			# Fingerprint
 			my $Line = $SSH->read_line();
-			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Reboot_Connection_Timeout, '-re');
 
 			if ($Fingerprint_Prompt) {
 
@@ -1656,7 +1659,7 @@ sub reboot_control {
 
 			# Login (password)
 			$Line = $SSH->read_line();
-			my $Password_Prompt = $SSH->waitfor(".*password.*", $Connection_Timeout, '-re');
+			my $Password_Prompt = $SSH->waitfor(".*password.*", $Reboot_Connection_Timeout, '-re');
 			if ($Password_Prompt) {
 				if ($Verbose == 1) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
@@ -1681,7 +1684,7 @@ sub reboot_control {
 				host => $Host,
 				user => $User_Name,
 				log_file => $DShell_Transactional_File,
-				timeout => $Connection_Timeout,
+				timeout => $Reboot_Connection_Timeout,
 				exp_internal => $Very_Verbose,
 				exp_debug => $Very_Verbose,
 				raw_pty => 1,
@@ -1692,7 +1695,7 @@ sub reboot_control {
 
 			# Fingerprint
 			my $Line = $SSH->read_line();
-			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Reboot_Connection_Timeout, '-re');
 
 			if ($Fingerprint_Prompt) {
 
@@ -1775,7 +1778,7 @@ sub reboot_control {
 		$Hello = $SSH->exec($Test_Command, $ID_Command_Timeout);
 	
 		last if $Hello =~ m/uid/;
-		last if $Retry_Count >= $Max_Retry_Count;
+		last if $Reboot_Retry_Count >= $Reboot_Max_Retry_Count;
 		if ($Hello =~ m/Permission denied/) {
 			print "Supplied credentials failed. Terminating the job.\n";
 			print LOG "Supplied credentials failed. Terminating the job.\n";
@@ -1788,22 +1791,22 @@ sub reboot_control {
 			exit(6);
 		}
 	
-		my $Connection_Timeout_Plus = $Connection_Timeout;
-		$Retry_Count++;
+		my $Connection_Timeout_Plus = $Reboot_Connection_Timeout;
+		$Reboot_Retry_Count++;
 		$Connection_Timeout_Plus += 10;
 		
-		if ($Verbose && $Retry_Count > 0) {
-			print "Tried to connect to $Reboot_Host with $Connection_Timeout second timeout but failed. Timeout increased to $Connection_Timeout_Plus, trying again (attempt $Retry_Count of $Max_Retry_Count)...\n";
-			print LOG "Tried to connect to $Reboot_Host with $Connection_Timeout second timeout but failed. Timeout increased to $Connection_Timeout_Plus, trying again (attempt $Retry_Count of $Max_Retry_Count)...\n";
+		if ($Verbose && $Reboot_Retry_Count > 0) {
+			print "Tried to connect to $Reboot_Host with $Reboot_Connection_Timeout second timeout but failed. Timeout increased to $Connection_Timeout_Plus, trying again (attempt $Reboot_Retry_Count of $Reboot_Max_Retry_Count)...\n";
+			print LOG "Tried to connect to $Reboot_Host with $Reboot_Connection_Timeout second timeout but failed. Timeout increased to $Connection_Timeout_Plus, trying again (attempt $Reboot_Retry_Count of $Reboot_Max_Retry_Count)...\n";
 		}
 		
-		$Connection_Timeout = $Connection_Timeout_Plus;
+		$Reboot_Connection_Timeout = $Connection_Timeout_Plus;
 	
 	}
 	
-	if ($Retry_Count >= $Max_Retry_Count) {
-		print "Couldn't connect to $Reboot_Host after $Retry_Count attempts. Terminating the job.\n";
-		print LOG "Couldn't connect to $Reboot_Host after $Retry_Count attempts. Terminating the job.\n";
+	if ($Reboot_Retry_Count >= $Reboot_Max_Retry_Count) {
+		print "Couldn't connect to $Reboot_Host after $Reboot_Retry_Count attempts. Terminating the job.\n";
+		print LOG "Couldn't connect to $Reboot_Host after $Reboot_Retry_Count attempts. Terminating the job.\n";
 		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`status` = ?,
 		`modified_by` = ?

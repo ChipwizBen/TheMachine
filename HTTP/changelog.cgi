@@ -40,6 +40,7 @@ sub html_output {
 	## Version 2.1.0
 	$Table->addRow('2.1.0', 'Fixed dropdown in Command Sets that didn\'t adhere to new owner display system.');
 	$Table->addRow('', 'Changed a few icons for clarity.');
+	$Table->addRow('', 'Squashed a race condition that caused Jobs to register as unexpectedly terminated when they had successfully finished.');
 	$Table->addRow('<hr />', '');
 
 	## Version 2.0.2

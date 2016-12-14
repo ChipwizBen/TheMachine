@@ -564,18 +564,6 @@ sub html_output {
 		my $Modified_By = $Jobs[8];
 			$Modified_By =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 
-		if ($Status == 1 || $Status == 10) {
-			my $Processing = `$ps aux | $grep 'JobID $DBID' | grep -v grep | wc -l`;
-			if ($Processing == 0) {
-				$Status = 12;
-				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
-					`status` = ?,
-					`modified_by` = ?
-					WHERE `id` = ?");
-				$Update_Job->execute($Status, $User_Name, $DBID);
-			}
-		}
-
 		my $Command_Query = $DB_Connection->prepare("SELECT `name`, `description`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?");
@@ -628,18 +616,41 @@ sub html_output {
 		### Discover Currently Running Command
 
 		my $Running_Command;
-		my $Select_Currently_Running_Command = $DB_Connection->prepare("SELECT `command`
+		my $Select_Currently_Running_Command = $DB_Connection->prepare("SELECT `command`, `task_started`, `task_ended`
 			FROM `job_status`
 			WHERE `job_id` = ?
 			ORDER BY `id` DESC
 			LIMIT 1"
 		);
 		$Select_Currently_Running_Command->execute($DBID);
-		my $Held_Running_Command = $Select_Currently_Running_Command->fetchrow_array();
+		my ($Held_Running_Command, $Held_Running_Started, $Held_Running_Ended) = $Select_Currently_Running_Command->fetchrow_array();
 			$Held_Running_Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)\$\=\*\@\:;]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Held_Running_Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 
 		### / Discover Currently Running Command
+
+		if ($Status == 1 || $Status == 10) {
+			my $Processing = `$ps aux | $grep 'JobID $DBID' | $grep -v grep | $wc -l`;
+			my $Now_Epoch = time;
+			if ($Held_Running_Started) {
+				$Held_Running_Started = str2time($Held_Running_Started);
+				$Held_Running_Started = $Now_Epoch - $Held_Running_Started;
+			}
+			if ($Held_Running_Ended) {
+				$Held_Running_Ended = str2time($Held_Running_Ended);
+				$Held_Running_Ended = $Now_Epoch - $Held_Running_Ended;
+			}
+
+			if ($Processing == 0 && ($Held_Running_Started > 60 || $Held_Running_Ended > 60) ||
+				$Processing == 0 && !$Held_Running_Started && !$Held_Running_Ended) {
+				$Status = 18;
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute($Status, $User_Name, $DBID);
+			}
+		}
 
 		my $Control_Button;
 		my $Kill_Button;
@@ -747,6 +758,12 @@ sub html_output {
 		}
 		elsif ($Status == 17) {
 			$Running_Command = 'Fingerprint mismatch with database. Clear or modify the recorded fingerprint for the host.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
+		elsif ($Status == 18) {
+			$Running_Command = 'Job died unexpectedly. It looks like the process was terminated on the system.';
 			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
