@@ -78,7 +78,9 @@ my $Parent_ID;
 my $Dependent_Command_Set_ID;
 my $Dependent_Host_ID;
 my $Dependency_Chain_ID;
-my %Runtime_Variable;
+my %Captured_Runtime_Variables;
+	my %Runtime_Variables;
+	my $Dependency_Runtime_Variables;
 my $Captured_User_Name;
 	my $User_Name = 'System';
 my $Key_ID;
@@ -110,8 +112,8 @@ GetOptions(
 	'host:i' => \$Dependent_Host_ID,
 	'd:i' => \$Dependency_Chain_ID,
 	'dependency-chain:i' => \$Dependency_Chain_ID,
-	'r=s%' => \%Runtime_Variable,
-	'runtime-variable=s%' => \%Runtime_Variable,
+	'r=s%' => \%Captured_Runtime_Variables,
+	'runtime-variable=s%' => \%Captured_Runtime_Variables,
 	'P:s' => \$Captured_User_Password,
 	'password:s' => \$Captured_User_Password,
 	'k:i' => \$Captured_Key,
@@ -146,6 +148,21 @@ if ($Captured_Key_Lock) {
 }
 if ($Captured_Key_Passphrase) {
 	if (!$No_Decode) {$Key_Passphrase = dec($Captured_Key_Passphrase);} else {$Key_Passphrase = $Captured_Key_Passphrase;}
+}
+if (%Captured_Runtime_Variables) {
+	foreach my $Captured_Variable_Key (keys %Captured_Runtime_Variables) {
+
+		my $Variable_Key = $Captured_Variable_Key;
+		my $Variable_Value = $Captured_Runtime_Variables{$Captured_Variable_Key};
+
+		$Dependency_Runtime_Variables = $Dependency_Runtime_Variables . " -r '${Variable_Key}'='${Variable_Value}'";
+
+		if (!$No_Decode) {$Variable_Key = dec($Variable_Key);}
+		if (!$No_Decode) {$Variable_Value = dec($Variable_Value);}
+
+		$Runtime_Variables{$Variable_Key} = $Variable_Value;
+
+	}
 }
 
 my $Top_Level_Job;
@@ -222,6 +239,14 @@ if ($Verbose && $Paper_Trail) {
 	if ($Captured_Key) {print "${Red}## ${Green}Caught Key ID ${Yellow}$Captured_Key${Clear}\n"}
 	if ($Captured_Key_Lock) {print "${Red}## ${Green}Caught Key Lock ${Yellow}$Captured_Key_Lock${Clear}\n"}
 	if ($Captured_Key_Passphrase) {print "${Red}## ${Green}Caught Key Passphrase ${Yellow}$Captured_Key_Passphrase${Clear}\n"}
+	if (%Runtime_Variables) {
+		my $RTVs = scalar(keys %Runtime_Variables);
+		print "${Red}## ${Green}Caught $RTVs Runtime Variables:${Clear}\n\n";
+		foreach my $Variable_Key (keys %Runtime_Variables) {
+			print "${Green}RTV: ${Yellow}$Variable_Key${Clear}\n"; 
+			print "${Green}Value: ${Yellow}" . $Runtime_Variables{$Variable_Key} . "${Clear}\n\n";
+		}
+	}
 
 	if ($Discovered_Job_ID) {print LOG "${Red}## ${Green}Caught Job ID ${Yellow}$Discovered_Job_ID${Clear}\n"}
 	if ($Captured_User_Name) {print LOG "${Red}## ${Green}Caught User Name ${Yellow}$Captured_User_Name${Clear}\n"}
@@ -233,6 +258,14 @@ if ($Verbose && $Paper_Trail) {
 	if ($Captured_Key) {print LOG "${Red}## ${Green}Caught Key ID ${Yellow}$Captured_Key${Clear}\n"}
 	if ($Captured_Key_Lock) {print LOG "${Red}## ${Green}Caught Key Lock ${Yellow}$Captured_Key_Lock${Clear}\n"}
 	if ($Captured_Key_Passphrase) {print LOG "${Red}## ${Green}Caught Key Passphrase ${Yellow}$Captured_Key_Passphrase${Clear}\n"}
+	if (%Runtime_Variables) {
+		my $RTVs = scalar(keys %Runtime_Variables);
+		print LOG "${Red}## ${Green}Caught $RTVs Runtime Variables:${Clear}\n\n";
+		foreach my $Variable_Key (keys %Runtime_Variables) {
+			print LOG "${Green}RTV: ${Yellow}$Variable_Key${Clear}\n"; 
+			print LOG "${Green}Value: ${Yellow}" . $Runtime_Variables{$Variable_Key} . "${Clear}\n\n";
+		}
+	}
 }
 
 if (!$Dependent_Command_Set_ID && $Discovered_Job_ID) {
@@ -485,7 +518,7 @@ sub host_connection {
 				exp_debug => $Very_Verbose,
 				raw_pty => 1,
 				restart_timeout_upon_receive => 1,
-				ssh_option => "-o UserKnownHostsFile=/tmp/test"
+				ssh_option => "-o UserKnownHostsFile=/dev/null"
 			);
 
 			#eval {$SSH->login();}; &epic_failure('Login (Password)', $@) if $@; # Disabled login as it circumvents fingerprint verification, which is bad
@@ -760,7 +793,7 @@ sub processor {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Triggering dependency as: ${Blue}./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name -P $Captured_User_Password${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Triggering dependency as: ${Blue}./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name -P $Captured_User_Password${Clear}\n";
 			}
-			my $System_Exit_Code = system "./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name -P $Captured_User_Password";
+			my $System_Exit_Code = system "./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -u $User_Name -P $Captured_User_Password $Dependency_Runtime_Variables";
 			if ($System_Exit_Code == 0) {
 				print "${Green}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Green} execution complete. Exit code was $System_Exit_Code.${Clear}\n";
 				print LOG "${Green}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Green} execution complete. Exit code was $System_Exit_Code.${Clear}\n";
@@ -779,7 +812,7 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Triggering dependency as: ${Blue}./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Triggering dependency as: ${Blue}./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase${Clear}\n";
 				}
-				$System_Exit_Code = system "./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase";
+				$System_Exit_Code = system "./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase $Dependency_Runtime_Variables";
 			}
 			else {
 				if ($Verbose) {
@@ -787,15 +820,15 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Triggering dependency as: ${Blue}./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -k $Captured_Key -L $Captured_Key_Lock${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Triggering dependency as: ${Blue}./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -k $Captured_Key -L $Captured_Key_Lock${Clear}\n";
 				}
-				$System_Exit_Code = system "./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -k $Captured_Key -L $Captured_Key_Lock";
+				$System_Exit_Code = system "./d-shell.pl ${Control_Switches} -p $Parent_ID -c $Command_Set_Dependency_ID -H $Host_ID -d $Dependency_Chain_ID -k $Captured_Key -L $Captured_Key_Lock $Dependency_Runtime_Variables";
 			}
 			if ($System_Exit_Code == 0) {
 				print "${Green}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Green} execution complete. Exit code was $System_Exit_Code.${Clear}\n";
 				print LOG "${Green}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Green} execution complete. Exit code was $System_Exit_Code.${Clear}\n";
 			}
 			else {
-				print "${Red}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Red} execution complete. Exit code was $System_Exit_Code. Exiting :-(${Clear}\n";
-				print LOG "${Red}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Red} execution complete. Exit code was $System_Exit_Code. Exiting :-(${Clear}\n";
+				print "${Red}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Red} execution failed. Exit code was $System_Exit_Code. Exiting :-(${Clear}\n";
+				print LOG "${Red}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Red} execution failed. Exit code was $System_Exit_Code. Exiting :-(${Clear}\n";
 				exit(1);
 			}
 		}
@@ -844,13 +877,22 @@ sub processor {
 		print LOG "Dependency set $Command_Name started at $Start_Time.\n";
 	}
 
-
-
 	my @Commands = split('\r', $Commands);
 	my $Command_Count = $#Commands;
 	foreach my $Command (@Commands) {
 		$Command =~ s/\n//;
 		$Command =~ s/\r//;
+
+		while ($Command =~ m/\*VAR/) {
+
+			my $Machine_Variable = $Command;
+			$Machine_Variable =~ s/.*\*VAR\{(.*?)\}.*/$1/g;
+
+			my $Variable_Value = $Runtime_Variables{$Machine_Variable};
+
+			$Command =~ s/\*VAR\{$Machine_Variable\}/$Variable_Value/;
+
+		}
 
 		my $Job_Paused;
 		while ($Job_Paused ne 'No') {

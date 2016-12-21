@@ -73,6 +73,8 @@ my $Run_Command = $CGI->param("Run_Command");
 
 my $Run_Command_Final = $CGI->param("Run_Command_Final");
 
+my @Machine_Variables = $CGI->multi_param;
+
 my $User_Name = $Session->param("User_Name");
 my $User_ID = $Session->param("User_ID");
 my $User_DShell_Admin = $Session->param("User_DShell_Admin");
@@ -402,6 +404,9 @@ print <<ENDHTML;
 	</tr>
 </table>
 
+<details>
+	<summary>Tag instruction summary. Click to expand.</summary>
+
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 	<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
 	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
@@ -443,7 +448,7 @@ print <<ENDHTML;
 	<li><span style='color: #FC64FF;'>*VAR{VarName}</span> - Sets a runtime variable. When a Job is executed and runtime variables exist, 
 		you will be asked to provide the variable data at launch. This is especially useful when setting passwords, IP addresses, 
 		or anything else that would differ between different executions of a script.</li>
-
+</details>
 <input type='hidden' name='Add_Command' value='1'>
 <input type='hidden' name='Add_Command_Dependency_Temp_Existing' value='$Add_Command_Dependency_Temp_Existing'>
 
@@ -756,48 +761,50 @@ print <<ENDHTML;
 
 <hr width="50%">
 
-<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
-	<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
-	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
-		<ul style="list-style-type:circle">
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT COUNT</span> Counts the VMWare snapshots of the host..</li>
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> Takes a VMWare snapshot of the host.</li>
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> Removes VMWare snapshots taken by $System_Name.</li>
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
-		</ul>
-	<li><span style='color: #FC64FF;'>*PAUSE</span> <span style='color: #00FF00;'>xx</span> - Pauses for xx seconds before processing the next command 
-		(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot.</li>
-	<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>xx</span> - Waits for xx to appear on the console before processing the next 
-		command. Useful for changing passwords, scripting the answers to interactive questions, sudo elevation, etc. 
-		Accepts regular expressions. The default wait time is 120 seconds; after than the system assumes that something has 
-		gone wrong - you can customise the wait time by appending a duration to the tag (see example below).</li>
-		<ul style="list-style-type:circle">
-			<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>password:</span> (waits for a password prompt)</li>
-			<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>Is this ok?</span> (waits for the 'Is this ok?' prompt like the one seen in yum)</li>
-			<li><span style='color: #FC64FF;'>*WAITFOR300</span> <span style='color: #00FF00;'>Is this ok?</span> (waits up to 300 seconds (5 minutes) for the 
-				'Is this ok?' prompt in yum. You can set 300 to be any second value - e.g. 3600 would be 1 hour.)</li>
-		</ul>
-	<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>xx</span> - Sends characters to the console (e.g. '*SEND y' to send the letter y 
-		to the console). Best used with WAITFOR, it's useful for answering the prompts that WAITFOR is looking for. <b>You should 
-		also use SEND to submit the command <i>before</i> you want to use WAITFOR immediately after it. Not doing so will make the processor wait for the prompt and then wait for your 
-		WAITFOR (this is unlikely to be what you intended).</b> You should use SEND for any command that you believe might need interaction, as well as for any answer (see the working example below).</li>
-		<ul style="list-style-type:circle">
-			<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span> (sends the yum update command, then monitor the output 
-				instead of monitoring the process)</li>
-			<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>d</span> (sends the letter d to just download the packages instead of installing them)</li>
-			<ul style="list-style-type:square">
-				<li>Working example of yum update:
-				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span></li>
-				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*WAITFOR60</span> <span style='color: #00FF00;'>Is this ok?</span></li>
-				<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>y</span></li>
+<details>
+	<summary>Tag instruction summary. Click to expand.</summary>
+	<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
+		<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
+		<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
+			<ul style="list-style-type:circle">
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT COUNT</span> Counts the VMWare snapshots of the host..</li>
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> Takes a VMWare snapshot of the host.</li>
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> Removes VMWare snapshots taken by $System_Name.</li>
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
 			</ul>
-		</ul>
-	<li><span style='color: #FC64FF;'>*REBOOT</span> - Gracefully executes a controlled reboot of the remote system and continues processing when the system recovers.</li>
-	<li><span style='color: #FC64FF;'>*SUDO</span> - Shortcut to 'sudo su -' with a bit of logic around it.</li>
-	<li><span style='color: #FC64FF;'>*VAR{VarName}</span> - Sets a runtime variable. When a Job is executed and runtime variables exist, 
-		you will be asked to provide the variable data at launch. This is especially useful when setting passwords, IP addresses, 
-		or anything else that would differ between different executions of a script.</li>
-
+		<li><span style='color: #FC64FF;'>*PAUSE</span> <span style='color: #00FF00;'>xx</span> - Pauses for xx seconds before processing the next command 
+			(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot.</li>
+		<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>xx</span> - Waits for xx to appear on the console before processing the next 
+			command. Useful for changing passwords, scripting the answers to interactive questions, sudo elevation, etc. 
+			Accepts regular expressions. The default wait time is 120 seconds; after than the system assumes that something has 
+			gone wrong - you can customise the wait time by appending a duration to the tag (see example below).</li>
+			<ul style="list-style-type:circle">
+				<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>password:</span> (waits for a password prompt)</li>
+				<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>Is this ok?</span> (waits for the 'Is this ok?' prompt like the one seen in yum)</li>
+				<li><span style='color: #FC64FF;'>*WAITFOR300</span> <span style='color: #00FF00;'>Is this ok?</span> (waits up to 300 seconds (5 minutes) for the 
+					'Is this ok?' prompt in yum. You can set 300 to be any second value - e.g. 3600 would be 1 hour.)</li>
+			</ul>
+		<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>xx</span> - Sends characters to the console (e.g. '*SEND y' to send the letter y 
+			to the console). Best used with WAITFOR, it's useful for answering the prompts that WAITFOR is looking for. <b>You should 
+			also use SEND to submit the command <i>before</i> you want to use WAITFOR immediately after it. Not doing so will make the processor wait for the prompt and then wait for your 
+			WAITFOR (this is unlikely to be what you intended).</b> You should use SEND for any command that you believe might need interaction, as well as for any answer (see the working example below).</li>
+			<ul style="list-style-type:circle">
+				<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span> (sends the yum update command, then monitor the output 
+					instead of monitoring the process)</li>
+				<li><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>d</span> (sends the letter d to just download the packages instead of installing them)</li>
+				<ul style="list-style-type:square">
+					<li>Working example of yum update:
+					<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>yum update</span></li>
+					<li style='list-style-type:none;'><span style='color: #FC64FF;'>*WAITFOR60</span> <span style='color: #00FF00;'>Is this ok?</span></li>
+					<li style='list-style-type:none;'><span style='color: #FC64FF;'>*SEND</span> <span style='color: #00FF00;'>y</span></li>
+				</ul>
+			</ul>
+		<li><span style='color: #FC64FF;'>*REBOOT</span> - Gracefully executes a controlled reboot of the remote system and continues processing when the system recovers.</li>
+		<li><span style='color: #FC64FF;'>*SUDO</span> - Shortcut to 'sudo su -' with a bit of logic around it.</li>
+		<li><span style='color: #FC64FF;'>*VAR{VarName}</span> - Sets a runtime variable. When a Job is executed and runtime variables exist, 
+			you will be asked to provide the variable data at launch. This is especially useful when setting passwords, IP addresses, 
+			or anything else that would differ between different executions of a script.</li>
+</details>
 <input type='hidden' name='Edit_Command' value='$Edit_Command'>
 <input type='hidden' name='Edit_Command_Revision' value='$Command_Revision_Edit_Plus_One'>
 <input type='hidden' name='Edit_Command_Dependency_Temp_Existing' value='$Edit_Command_Dependency_Temp_Existing'>
@@ -1032,13 +1039,13 @@ sub delete_command {
 
 sub html_run_command {
 
-	my $Select_Command = $DB_Connection->prepare("SELECT `name`, `owner_id`
+	my $Select_Command = $DB_Connection->prepare("SELECT `name`, `command`, `owner_id`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?"
 	);
 	
 	$Select_Command->execute($Run_Command);
-	my ($Command_Name, $Owner_ID) = $Select_Command->fetchrow_array();
+	my ($Command_Name, $Command, $Owner_ID, $Command_Revision) = $Select_Command->fetchrow_array();
 
 	if ($Owner_ID ne $User_ID && $Owner_ID != 0) {
 		my $Message_Red = 'Not cool, man. Not cool.';
@@ -1047,6 +1054,71 @@ sub html_run_command {
 		print "Location: /D-Shell/command-sets.cgi\n\n";
 		exit(0);
 	}
+
+	## Initial Variable gatering
+	my %Variable_Tracking;
+	foreach ($Command =~ m/\*VAR\{.*?\}/g) {
+
+		my $Machine_Variable = $_;
+		$Machine_Variable =~ s/\*VAR\{(.*?)\}/$1/g;
+
+		my $Existing_Machine_Variables = $Variable_Tracking{$Machine_Variable};
+		if ($Existing_Machine_Variables && $Existing_Machine_Variables !~ /#$Run_Command#/) {
+			$Variable_Tracking{$Machine_Variable} = "$Existing_Machine_Variables, #$Run_Command#";
+		}
+		else {
+			$Variable_Tracking{$Machine_Variable} = "#$Run_Command#";
+		}
+
+
+	}
+	## / Initial Variable gatering
+
+	## Discover dependencies
+	my @Dependency_Chain;
+	my $Loop_Count=0;
+	push @Dependency_Chain, $Run_Command;
+	foreach (@Dependency_Chain) {
+
+		my $Command_Set_Dependency = $Dependency_Chain[$Loop_Count];
+		$Loop_Count++;
+
+		my $Discover_Dependencies = $DB_Connection->prepare("SELECT `dependent_command_set_id`
+			FROM `command_set_dependency`
+			WHERE `command_set_id` = ?
+			ORDER BY `order` ASC
+		");
+		$Discover_Dependencies->execute($Command_Set_Dependency);
+
+		while ( my $Command_Set_Dependency_ID = $Discover_Dependencies->fetchrow_array() ) {
+
+			my $Select_Command_Sets = $DB_Connection->prepare("SELECT `command`
+				FROM `command_sets`
+				WHERE `id` = ?");
+			$Select_Command_Sets->execute($Command_Set_Dependency_ID);
+			
+			while ( my $Command_Set_Command = $Select_Command_Sets->fetchrow_array() ) {
+
+				push @Dependency_Chain, $Command_Set_Dependency_ID;
+
+				foreach ($Command_Set_Command =~ m/\*VAR\{.*?\}/g) {
+
+					my $Machine_Variable = $_;
+					$Machine_Variable =~ s/\*VAR\{(.*?)\}/$1/g;
+
+					my $Existing_Machine_Variables = $Variable_Tracking{$Machine_Variable};
+					if ($Existing_Machine_Variables && $Existing_Machine_Variables !~ /#$Command_Set_Dependency_ID#/) {
+						$Variable_Tracking{$Machine_Variable} = "$Existing_Machine_Variables, #$Command_Set_Dependency_ID#";
+					}
+					else {
+						$Variable_Tracking{$Machine_Variable} = "#$Command_Set_Dependency_ID#";
+					}
+				}
+			}
+		}
+	}
+	## / Discover dependencies
+
 
 	### Temp Selection Filters
 		# *_Temp_Existing are existing temporary allocations from the last refresh. This is basically a list of 'new' elements that have not yet been committed to the database.
@@ -1095,14 +1167,14 @@ sub html_run_command {
 	
 	if ($Delete_Host_Run_Entry_ID) {$Add_Host_Temp_Existing =~ s/$Delete_Host_Run_Entry_ID//;}
 	$Add_Host_Temp_Existing =~ s/,,/,/g;
-	
+
 	#Hosts
-	
+
 	my $Hosts;
 	my @Hosts = split(',', $Add_Host_Temp_Existing);
 	
 	foreach my $Host (@Hosts) {
-	
+
 		### Group Query
 		my $Group_Link_Query = $DB_Connection->prepare("SELECT `group`
 			FROM `lnk_host_groups_to_hosts`
@@ -1158,19 +1230,9 @@ sub html_run_command {
 
 		}
 	}
-	
-	my $Run_Now_Checked;
-	my $Run_Now_Disabled;
+
 	my $On_Failure_Continue;
 	my $On_Failure_Kill;
-	if ($Run_Toggle_Add eq 'on') {
-		$Run_Now_Checked = 'checked';
-		$Run_Now_Disabled = '';
-	}
-	else {
-		$Run_Now_Checked = '';
-		$Run_Now_Disabled = 'disabled';
-	}
 	if ($On_Failure_Add) {
 		$On_Failure_Kill = 'checked';
 	}
@@ -1189,39 +1251,25 @@ print <<ENDHTML;
 </div>
 </a>
 
-<h3 align="center">Queue Command Set <span style='color: #00FF00;'>$Command_Name</span></h3>
+<h3 align="center">Queue Command Set <span style='color: #00FF00;'>$Command_Name [Rev. $Command_Revision]</span></h3>
 
+<script src="/resources/jquery.min-2.1.1.js"></script>
 <SCRIPT LANGUAGE="JavaScript"><!--
-function Run_Job_Toggle() {
-	if(document.Run_Command.Run_Toggle_Add.checked)
-	{
-		document.Run_Command.User_Name_Add.disabled=false;
-		document.Run_Command.Password_Add.disabled=false;
-		document.Run_Command.SSH_Key.disabled=false;
-		document.Run_Command.Key_Lock_Phrase.disabled=false;
-		document.Run_Command.Key_Passphrase.disabled=false;
-		document.Run_Command.User_Name_Add.value="$User_Name_Add";
-		document.Run_Command.Password_Add.value="$Password_Add";
-		document.Run_Command.Run_Command_Final.value="Run Job";
-	}
-	else
-	{
-		document.Run_Command.User_Name_Add.disabled=true;
-		document.Run_Command.Password_Add.disabled=true;
-		document.Run_Command.User_Name_Add.value="$User_Name_Add";
-		document.Run_Command.Password_Add.value="$Password_Add";
-		document.Run_Command.SSH_Key.disabled=true;
-		document.Run_Command.Key_Lock_Phrase.disabled=true;
-		document.Run_Command.Key_Passphrase.disabled=true;
-		document.Run_Command.Run_Command_Final.value="Queue Job";
-	}
-}
+	\$(document).ready(function () {
+		\$('#RunNowToggle').change(function () {
+		var row = \$("#VariableTable tr.TableVariables");
+
+		if (!this.checked)
+			row.fadeOut('slow');
+		else
+			row.fadeIn('slow');
+		}).change();
+});
 //-->
 </SCRIPT>
 
 <form action='/D-Shell/command-sets.cgi' name='Run_Command' method='post' >
-
-<table align = "center">
+<table align="center">
 
 	<tr>
 		<td style="text-align: right;">Add Type:</td>
@@ -1333,7 +1381,7 @@ else {
 
 print <<ENDHTML;
 
-<br /><br />
+<br />
 
 <table align="center">
 	<tr>
@@ -1347,26 +1395,73 @@ print <<ENDHTML;
 
 <hr width="50%">
 
-<table align="center">
+<table id='VariableTable' align='center'>
 	<tr>
 		<td style="text-align: right;">Run Job Now?:</td>
-		<td colspan='4' align='left'><input type="checkbox" onclick="Run_Job_Toggle()" name="Run_Toggle_Add" $Run_Now_Checked></td>
+		<td colspan='4' align='left'><input type="checkbox" id='RunNowToggle' name="Run_Toggle_Add"></td>
 	</tr>
-	<tr>
+ENDHTML
+
+	if (%Variable_Tracking) {
+		print <<ENDHTML;
+		<tr class='TableVariables' style='display: none;'>
+			<td></td>
+			<td align='left' colspan='4' style='font-size: 1.3em';>Machine Variables</td>
+		</tr>
+ENDHTML
+		foreach my $Variable_Key (sort keys %Variable_Tracking) {
+
+			my $Command_IDs = $Variable_Tracking{$Variable_Key};
+				my @Commands = split(',', $Command_IDs);
+
+			my $Appears_In;
+			foreach (@Commands) {
+				my $Command_ID = $_;
+				$Command_ID =~ s/#//g;
+				$Command_ID =~ s/\s//g;
+				my $Select_Command_Sets = $DB_Connection->prepare("SELECT `name`, `revision`
+					FROM `command_sets`
+					WHERE `id` = ?");
+				$Select_Command_Sets->execute($Command_ID);
+
+				while ( my ($Command_Set_Name, $Command_Set_Revision) = $Select_Command_Sets->fetchrow_array() ) {
+					$Appears_In = $Appears_In . "\n\t&bull; $Command_Set_Name [Rev. $Command_Set_Revision]";
+				}
+			}
+			print  "<tr align='right' class='TableVariables' style='display: none;'>
+						<td style='text-align: left;' class='tooltip' text='Machine Variable:\n\t*VAR{$Variable_Key}\nAppears in: $Appears_In'>$Variable_Key</td>
+						<td colspan='4'><input type='text' name='TMVar_$Variable_Key' placeholder='' style='width:100%'></td>
+					</tr>
+			";
+		}
+
+	print <<ENDHTML;
+	<tr class='TableVariables' style='display: none;'>
+		<td align='center' colspan='5'><hr width="25%"></td>
+	</tr>
+ENDHTML
+	}
+
+print <<ENDHTML;
+	<tr class='TableVariables' style='display: none;'>
+		<td></td>
+		<td align='left' colspan='4' style='font-size: 1.3em';>Connection</td>
+	</tr>
+	<tr class='TableVariables' style='display: none;'>
 		<td style="text-align: right;">SSH Username:</td>
-		<td colspan='4'><input type="text" name="User_Name_Add" value="$User_Name_Add" placeholder="SSH Username" style="width:100%" $Run_Now_Disabled></td>
+		<td colspan='4'><input type="text" name="User_Name_Add" value="$User_Name_Add" placeholder="SSH Username" style="width:100%"></td>
 	</tr>
-	<tr>
+	<tr class='TableVariables' style='display: none;'>
 		<td style="text-align: right;">SSH Password:</td>
-		<td colspan='4'><input type="password" name="Password_Add" value="$Password_Add" placeholder="SSH Password" style="width:100%" $Run_Now_Disabled></td>
+		<td colspan='4'><input type="password" name="Password_Add" value="$Password_Add" placeholder="SSH Password" style="width:100%"></td>
 	</tr>
-	<tr>
+	<tr class='TableVariables' style='display: none;'>
 		<td colspan='5'>-- or --</td>
 	</tr>
-	<tr>
+	<tr class='TableVariables' style='display: none;'>
 		<td style="text-align: right;">Key:</td>
 		<td colspan="3" style="text-align: left;">
-			<select name='SSH_Key' style="width: 300px" $Run_Now_Disabled>
+			<select name='SSH_Key' style="width: 300px">
 ENDHTML
 
 ### Keys
@@ -1397,13 +1492,13 @@ print <<ENDHTML;
 			</select>
 		</td>
 	</tr>
-	<tr>
+	<tr class='TableVariables' style='display: none;'>
 		<td style="text-align: right;">Key Lock Phrase:</td>
-		<td colspan='4'><input type="password" name="Key_Lock_Phrase" placeholder="DB Lock Phrase" style="width:100%" $Run_Now_Disabled></td>
+		<td colspan='4'><input type="password" name="Key_Lock_Phrase" placeholder="DB Lock Phrase" style="width:100%"></td>
 	</tr>
-	<tr>
+	<tr class='TableVariables' style='display: none;'>
 		<td style="text-align: right;">Key Passphrase:</td>
-		<td colspan='4'><input type="password" name="Key_Passphrase" placeholder="Key Passphrase" style="width:100%" $Run_Now_Disabled></td>
+		<td colspan='4'><input type="password" name="Key_Passphrase" placeholder="Key Passphrase" style="width:100%"></td>
 	</tr>
 </table>
 
@@ -1441,6 +1536,18 @@ sub run_command {
 		exit(0);
 	}
 
+	my $Command_Variable_Submission;
+	foreach (@Machine_Variables) {
+		my $Variable_Name = $_;
+		if ($Variable_Name =~ m/^TMVar_/) {
+			my $Variable_Value = $CGI->param("$Variable_Name");
+			$Variable_Name =~ s/TMVar_//;
+			$Variable_Name = enc($Variable_Name, 3);
+			$Variable_Value = enc($Variable_Value, 3);
+			$Command_Variable_Submission = $Command_Variable_Submission . " -r '${Variable_Name}'='${Variable_Value}'";
+		}
+	}
+
 	$Add_Host_Temp_Existing =~ s/^,//;
 	$Add_Host_Temp_Existing =~ s/,$//;
 	$Add_Host_Temp_Existing =~ s/,/ /;
@@ -1456,7 +1563,7 @@ sub run_command {
 	VALUES (
 		?, ?, ?, ?
 	)");
-	
+
 	$Audit_Log_Submission->execute("D-Shell", "Queue", "$User_Name queued a job.", $User_Name);
 	# / Audit Log
 
@@ -1465,23 +1572,25 @@ sub run_command {
 	if ($Run_Toggle_Add) {
 		if ($Password_Add) {
 			my $Password = enc($Password_Add);
-			system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -u $User_Name_Add -P $Password -f $On_Failure_Add -X ${Push_User_Name}");			
+			system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -u $User_Name_Add -P $Password -f $On_Failure_Add ${Command_Variable_Submission} -X ${Push_User_Name}");			
 		}
 		elsif ($SSH_Key) {
 			$Key_Lock_Phrase =~ s/\s//g;
 			my $Lock = enc($Key_Lock_Phrase);
 			if ($Key_Passphrase) {
 				my $Passphrase = enc($Key_Passphrase);
-				system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -k $SSH_Key -L $Lock -K $Passphrase -f $On_Failure_Add -X ${Push_User_Name}");
+				system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -k $SSH_Key -L $Lock -K $Passphrase -f $On_Failure_Add ${Command_Variable_Submission} -X ${Push_User_Name}");
 			}
 			else {
-				system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -k $SSH_Key -L $Lock -f $On_Failure_Add -X ${Push_User_Name}");
+				system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -k $SSH_Key -L $Lock -f $On_Failure_Add ${Command_Variable_Submission} -X ${Push_User_Name}");
 			}
 		}
 	}
 	else {
 		system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -f $On_Failure_Add -X ${Push_User_Name}");
 	}
+
+1;
 
 } # sub run_command
 
@@ -1834,7 +1943,7 @@ sub html_output {
 		}
 		$Table->addRow(
 			$DBID,
-			"<span style='font-size: 15px; color: #FF8A00;'>" . $Command_Name . "</span><br /> <span style='color: #00FF00;'>Revision " . $Command_Revision . "</span>",
+			"<span style='font-size: 15px;'>" . $Command_Name . "</span><br /> <span style='color: #00FF00;'>Revision " . $Command_Revision . "</span>",
 			"<details>
 				<summary>#This command set has $Line_Count lines. Expand to view.</summary>
 				<p>$Command</p>

@@ -41,6 +41,8 @@ sub html_output {
 	$Table->addRow('2.1.0', 'Fixed dropdown in Command Sets that didn\'t adhere to new owner display system.');
 	$Table->addRow('', 'Changed a few icons for clarity.');
 	$Table->addRow('', 'Squashed a race condition that caused Jobs to register as unexpectedly terminated when they had successfully finished.');
+	$Table->addRow('', 'Fixed a bug where the Job receiver would die if a Job was queued but not run.');
+	$Table->addRow('', 'Added ability to inject variables at runtime (triggered by *VAR{VarNameHere}).');
 	$Table->addRow('<hr />', '');
 
 	## Version 2.0.2

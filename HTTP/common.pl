@@ -1081,6 +1081,14 @@ sub enc {
 
 	use MIME::Base64;
 	my $Query = $_[0];
+	my $Length = $_[1];
+		my @Chars;
+		if (!$Length) {
+			@Chars = split(" ", "5 6 7 8 9");
+		}
+		else {
+			@Chars = split(" ", "$Length $Length $Length $Length $Length");
+		} 
 	my $Salt1 = Salt(10);
 	my $Salt2 = Salt(10);
 	$Query = "$Salt1$Query$Salt2";
@@ -1088,7 +1096,6 @@ sub enc {
 	my $Subroutine = (caller(0))[3];
 	&System_Logger($Subroutine, "Query=$Query Salt1=$Salt1 Salt2=$Salt2");
 
-	my @Chars = split(" ", "5 6 7 8 9");
 	srand;
 
 	my $Random_Value;
