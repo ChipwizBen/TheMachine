@@ -31,7 +31,10 @@ my $Pause_Job = $CGI->param("Pause_Job");
 my $Stop_Job = $CGI->param("Stop_Job");
 my $Resume_Job = $CGI->param("Resume_Job");
 
+my @Machine_Variables = $CGI->multi_param;
+
 my $User_Name = $Session->param("User_Name");
+my $User_ID = $Session->param("User_ID");
 my $User_DShell_Admin = $Session->param("User_DShell_Admin");
 
 if (!$User_Name) {
@@ -145,14 +148,95 @@ else {
 
 sub html_run_job {
 
-	my $Select_Job = $DB_Connection->prepare("SELECT `on_failure`
+	my $Select_Job = $DB_Connection->prepare("SELECT `on_failure`, `command_set_id`
 		FROM `jobs`
 		WHERE `id` = ?");
 	$Select_Job->execute($Run_Job);
-	my $On_Failure_Check = $Select_Job->fetchrow_array();
+	my ($On_Failure_Check, $Command_Set_ID) = $Select_Job->fetchrow_array();
 
 	my ($On_Failure_Continue, $On_Failure_Kill);
 	if ($On_Failure_Check) {$On_Failure_Kill = 'checked';} else {$On_Failure_Continue = 'checked';}
+
+
+	my $Select_Command = $DB_Connection->prepare("SELECT `name`, `command`, `owner_id`, `revision`
+		FROM `command_sets`
+		WHERE `id` = ?"
+	);
+	$Select_Command->execute($Command_Set_ID);
+	my ($Command_Name, $Command, $Owner_ID, $Command_Revision) = $Select_Command->fetchrow_array();
+
+	if ($Owner_ID ne $User_ID && $Owner_ID != 0) {
+		my $Message_Red = 'Not cool, man. Not cool.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/jobs.cgi\n\n";
+		exit(0);
+	}
+
+	## Initial Variable gatering
+	my %Variable_Tracking;
+	foreach ($Command =~ m/\*VAR\{.*?\}/g) {
+
+		my $Machine_Variable = $_;
+		$Machine_Variable =~ s/\*VAR\{(.*?)\}/$1/g;
+
+		my $Existing_Machine_Variables = $Variable_Tracking{$Machine_Variable};
+		if ($Existing_Machine_Variables && $Existing_Machine_Variables !~ /#$Command_Set_ID#/) {
+			$Variable_Tracking{$Machine_Variable} = "$Existing_Machine_Variables, #$Command_Set_ID#";
+		}
+		else {
+			$Variable_Tracking{$Machine_Variable} = "#$Command_Set_ID#";
+		}
+
+
+	}
+	## / Initial Variable gatering
+
+	## Discover dependencies
+	my @Dependency_Chain;
+	my $Loop_Count=0;
+	push @Dependency_Chain, $Command_Set_ID;
+	foreach (@Dependency_Chain) {
+
+		my $Command_Set_Dependency = $Dependency_Chain[$Loop_Count];
+		$Loop_Count++;
+
+		my $Discover_Dependencies = $DB_Connection->prepare("SELECT `dependent_command_set_id`
+			FROM `command_set_dependency`
+			WHERE `command_set_id` = ?
+			ORDER BY `order` ASC
+		");
+		$Discover_Dependencies->execute($Command_Set_Dependency);
+
+		while ( my $Command_Set_Dependency_ID = $Discover_Dependencies->fetchrow_array() ) {
+
+			my $Select_Command_Sets = $DB_Connection->prepare("SELECT `command`
+				FROM `command_sets`
+				WHERE `id` = ?");
+			$Select_Command_Sets->execute($Command_Set_Dependency_ID);
+			
+			while ( my $Command_Set_Command = $Select_Command_Sets->fetchrow_array() ) {
+
+				push @Dependency_Chain, $Command_Set_Dependency_ID;
+
+				foreach ($Command_Set_Command =~ m/\*VAR\{.*?\}/g) {
+
+					my $Machine_Variable = $_;
+					$Machine_Variable =~ s/\*VAR\{(.*?)\}/$1/g;
+
+					my $Existing_Machine_Variables = $Variable_Tracking{$Machine_Variable};
+					if ($Existing_Machine_Variables && $Existing_Machine_Variables !~ /#$Command_Set_Dependency_ID#/) {
+						$Variable_Tracking{$Machine_Variable} = "$Existing_Machine_Variables, #$Command_Set_Dependency_ID#";
+					}
+					else {
+						$Variable_Tracking{$Machine_Variable} = "#$Command_Set_Dependency_ID#";
+					}
+				}
+			}
+		}
+	}
+	## / Discover dependencies
+
 
 print <<ENDHTML;
 
@@ -174,11 +258,53 @@ print <<ENDHTML;
 		<td style="text-align: right;"><input type="radio" name="On_Failure" value="1" $On_Failure_Kill></td>
 		<td style="text-align: left; color: #FFC600;">Kill Job</td>
 	</tr>
-</table>
+ENDHTML
 
-<hr width="50%">
+	if (%Variable_Tracking) {
+		print <<ENDHTML;
+		<tr>
+			<td></td>
+			<td align='left' colspan='4' style='font-size: 1.3em';>Machine Variables</td>
+		</tr>
+ENDHTML
+		foreach my $Variable_Key (sort keys %Variable_Tracking) {
 
-<table align="center">
+			my $Command_IDs = $Variable_Tracking{$Variable_Key};
+				my @Commands = split(',', $Command_IDs);
+
+			my $Appears_In;
+			foreach (@Commands) {
+				my $Command_ID = $_;
+				$Command_ID =~ s/#//g;
+				$Command_ID =~ s/\s//g;
+				my $Select_Command_Sets = $DB_Connection->prepare("SELECT `name`, `revision`
+					FROM `command_sets`
+					WHERE `id` = ?");
+				$Select_Command_Sets->execute($Command_ID);
+
+				while ( my ($Command_Set_Name, $Command_Set_Revision) = $Select_Command_Sets->fetchrow_array() ) {
+					$Appears_In = $Appears_In . "\n\t&bull; $Command_Set_Name [Rev. $Command_Set_Revision]";
+				}
+			}
+			print  "<tr align='right'>
+						<td style='text-align: left;' class='tooltip' text='Machine Variable:\n\t*VAR{$Variable_Key}\nAppears in: $Appears_In'>$Variable_Key</td>
+						<td colspan='4'><input type='text' name='TMVar_$Variable_Key' placeholder='' style='width:100%'></td>
+					</tr>
+			";
+		}
+
+	print <<ENDHTML;
+	<tr>
+		<td align='center' colspan='5'><hr width="25%"></td>
+	</tr>
+ENDHTML
+	}
+
+print <<ENDHTML;
+	<tr>
+		<td></td>
+		<td align='left' colspan='4' style='font-size: 1.3em';>Connection</td>
+	</tr>
 	<tr>
 		<td style="text-align: right;">SSH Username:</td>
 		<td colspan='4'><input type="text" name="Captured_User_Name" placeholder="SSH Username" style="width:100%"></td>
@@ -192,7 +318,7 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">Key:</td>
-		<td colspan="3" style="text-align: left;">
+		<td colspan="4" style="text-align: left;">
 			<select name='Captured_Key' style="width: 300px">
 ENDHTML
 
@@ -341,6 +467,18 @@ sub run_job {
 	$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Name started Job ID $Trigger_Job.", $User_Name);
 	# / Audit Log
 
+	my $Command_Variable_Submission;
+	foreach (@Machine_Variables) {
+		my $Variable_Name = $_;
+		if ($Variable_Name =~ m/^TMVar_/) {
+			my $Variable_Value = $CGI->param("$Variable_Name");
+			$Variable_Name =~ s/TMVar_//;
+			$Variable_Name = enc($Variable_Name, 3);
+			$Variable_Value = enc($Variable_Value, 3);
+			$Command_Variable_Submission = $Command_Variable_Submission . " -r '${Variable_Name}'='${Variable_Value}'";
+		}
+	}
+
 	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 		`on_failure` = ?,
 		`status` = ?,
@@ -365,23 +503,20 @@ sub run_job {
 	$SIG{CHLD} = 'IGNORE';
 	my $PID = fork();
 	if (defined $PID && $PID == 0) {
-#		my $Password = enc($Captured_Password);
-#		exec "./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Password >> /tmp/output 2>&1 &";
-#		exit(0);
 
 		if ($Captured_Password) {
 			my $Password = enc($Captured_Password);
-			exec("./d-shell.pl -j $Trigger_Job -u $Captured_User_Name -P $Password");
+			exec("./d-shell.pl -j ${Trigger_Job} -u ${Captured_User_Name} -P ${Password} ${Command_Variable_Submission}");
 		}
 		elsif ($Captured_Key) {
 			$Captured_Key_Lock =~ s/\s//g;
 			my $Lock = enc($Captured_Key_Lock);
 			if ($Captured_Key_Passphrase) {
 				my $Passphrase = enc($Captured_Key_Passphrase);
-				exec("./d-shell.pl -j $Trigger_Job -k $Captured_Key -L $Lock -K $Passphrase");
+				exec("./d-shell.pl -j ${Trigger_Job} -k ${Captured_Key} -L ${Lock} -K ${Passphrase} ${Command_Variable_Submission}");
 			}
 			else {
-				exec("./d-shell.pl -j $Trigger_Job -k $Captured_Key -L $Lock");
+				exec("./d-shell.pl -j ${Trigger_Job} -k ${Captured_Key} -L ${Lock} ${Command_Variable_Submission}");
 			}
 		}
 	}
@@ -516,7 +651,7 @@ sub html_output {
 		-padding=>1
 	);
 
-	$Table->addRow( "ID", "Host", "Execution Sets", "Currently Running Command", "On Failure", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
+	$Table->addRow( "ID", "Host", "Executing Command Sets", "Currently Running Command", "On Failure", "Status", "Last Modified", "Modified By", "Log", "Control", "Kill" );
 	$Table->setRowClass(1, 'tbrow1');
 
 	my $Select_Job_Count = $DB_Connection->prepare("SELECT `id` FROM `jobs`");
@@ -564,24 +699,12 @@ sub html_output {
 		my $Modified_By = $Jobs[8];
 			$Modified_By =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 
-		if ($Status == 1 || $Status == 10) {
-			my $Processing = `$ps aux | $grep 'JobID $DBID' | grep -v grep | wc -l`;
-			if ($Processing == 0) {
-				$Status = 12;
-				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
-					`status` = ?,
-					`modified_by` = ?
-					WHERE `id` = ?");
-				$Update_Job->execute($Status, $User_Name, $DBID);
-			}
-		}
-
 		my $Command_Query = $DB_Connection->prepare("SELECT `name`, `description`, `revision`
 		FROM `command_sets`
 		WHERE `id` = ?");
 		$Command_Query->execute($Command_Set_ID);
 		my ($Command_Name, $Command_Description, $Command_Revision) = $Command_Query->fetchrow_array();
-		$Command_Name = "<a href='/D-Shell/command-sets.cgi?ID_Filter=$Command_Set_ID' class='tooltip' text=\"$Command_Description\"><span style='font-size: 15px; color: #FF8A00;'>$Command_Name</span> <span style='color: #00FF00;'>[Rev. $Command_Revision]</span></a>";
+		$Command_Name = "<a href='/D-Shell/command-sets.cgi?ID_Filter=$Command_Set_ID' class='tooltip' text=\"$Command_Description\"><span style='font-size: 15px;'>$Command_Name</span> <span style='color: #00FF00;'>[Rev. $Command_Revision]</span></a>";
 
 		## Gather dependency data
 		my $Command_Set_Dependencies;
@@ -628,18 +751,41 @@ sub html_output {
 		### Discover Currently Running Command
 
 		my $Running_Command;
-		my $Select_Currently_Running_Command = $DB_Connection->prepare("SELECT `command`
+		my $Select_Currently_Running_Command = $DB_Connection->prepare("SELECT `command`, `task_started`, `task_ended`
 			FROM `job_status`
 			WHERE `job_id` = ?
 			ORDER BY `id` DESC
 			LIMIT 1"
 		);
 		$Select_Currently_Running_Command->execute($DBID);
-		my $Held_Running_Command = $Select_Currently_Running_Command->fetchrow_array();
+		my ($Held_Running_Command, $Held_Running_Started, $Held_Running_Ended) = $Select_Currently_Running_Command->fetchrow_array();
 			$Held_Running_Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)\$\=\*\@\:;]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Held_Running_Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 
 		### / Discover Currently Running Command
+
+		if ($Status == 1 || $Status == 10) {
+			my $Processing = `$ps aux | $grep 'JobID $DBID' | $grep -v grep | $wc -l`;
+			my $Now_Epoch = time;
+			if ($Held_Running_Started) {
+				$Held_Running_Started = str2time($Held_Running_Started);
+				$Held_Running_Started = $Now_Epoch - $Held_Running_Started;
+			}
+			if ($Held_Running_Ended) {
+				$Held_Running_Ended = str2time($Held_Running_Ended);
+				$Held_Running_Ended = $Now_Epoch - $Held_Running_Ended;
+			}
+
+			if ($Processing == 0 && ($Held_Running_Started > 60 || $Held_Running_Ended > 60) ||
+				$Processing == 0 && !$Held_Running_Started && !$Held_Running_Ended) {
+				$Status = 18;
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute($Status, $User_Name, $DBID);
+			}
+		}
 
 		my $Control_Button;
 		my $Kill_Button;
@@ -747,6 +893,12 @@ sub html_output {
 		}
 		elsif ($Status == 17) {
 			$Running_Command = 'Fingerprint mismatch with database. Clear or modify the recorded fingerprint for the host.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
+		elsif ($Status == 18) {
+			$Running_Command = 'Job died unexpectedly. It looks like the process was terminated on the system.';
 			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";

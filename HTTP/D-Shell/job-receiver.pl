@@ -1,9 +1,6 @@
 #!/usr/bin/perl
 
 use strict;
-use HTML::Table;
-use Date::Parse qw(str2time);
-use POSIX qw(strftime);
 use Getopt::Long qw(:config no_ignore_case);
 
 my $Common_Config;
@@ -54,6 +51,8 @@ my $Captured_Password;
 my $Captured_Key;
 my $Captured_Key_Lock;
 my $Captured_Key_Passphrase;
+my %Captured_Runtime_Variables;
+	my $Runtime_Variables;
 my $On_Failure;
 
 GetOptions(
@@ -72,6 +71,8 @@ GetOptions(
 	'lock:s' => \$Captured_Key_Lock,
 	'K:s' => \$Captured_Key_Passphrase,
 	'passphrase:s' => \$Captured_Key_Passphrase,
+	'r=s%' => \%Captured_Runtime_Variables,
+	'runtime-variable=s%' => \%Captured_Runtime_Variables,
 	'f:s' => \$On_Failure,
 	'failure:s' => \$On_Failure,
 ) or die("Option capture badness: $@\n");
@@ -80,6 +81,13 @@ $User_Trigger =~ s/MagicTagSpace/ /g;
 if (!$User_Trigger) {$User_Trigger = 'System'}
 
 my @Hosts = split(/[\s,]+/,join(',' , @Hosts_List));
+
+if (%Captured_Runtime_Variables) {
+	foreach my $Variable_Key (keys %Captured_Runtime_Variables) {
+		my $Variable = $Captured_Runtime_Variables{$Variable_Key};
+		$Runtime_Variables = $Runtime_Variables . " -r '${Variable_Key}'='${Variable}'";
+	}
+}
 
 if ($Command_Set && @Hosts) {
 
@@ -128,12 +136,6 @@ if ($Command_Set && @Hosts) {
 			$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Trigger started Job ID $Command_Insert_ID.", $User_Trigger);
 			# / Audit Log
 
-			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
-				`status` = ?,
-				`modified_by` = ?
-				WHERE `id` = ?");
-			$Update_Job->execute( '10', $User_Trigger, $Command_Insert_ID);
-
 			$SIG{CHLD} = 'IGNORE';
 			my $PID = fork();
 			if (defined $PID && $PID == 0) {
@@ -148,24 +150,25 @@ if ($Command_Set && @Hosts) {
 				)");
 				if ($Captured_User_Name && $Captured_Password) {
 					$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with username $Captured_User_Name.", $User_Trigger);
-					exec "./d-shell.pl -j $Command_Insert_ID -u $Captured_User_Name -P $Captured_Password >> /dev/null 2>&1 &";
+					exec "./d-shell.pl -j $Command_Insert_ID -u $Captured_User_Name -P $Captured_Password $Runtime_Variables >> /dev/null 2>&1 &";
+					exit(0);
 				}
 				elsif ($Captured_Key && $Captured_Key_Lock) {
 					if ($Captured_Key_Passphrase) {
 						$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with key.", $User_Trigger);
-						exec "./d-shell.pl -j $Command_Insert_ID -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase >> /dev/null 2>&1 &";
+						exec "./d-shell.pl -j $Command_Insert_ID -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase $Runtime_Variables >> /dev/null 2>&1 &";
 						exit(0);
 					}
 					else {
 						$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with key.", $User_Trigger);
-						exec "./d-shell.pl -j $Command_Insert_ID -k $Captured_Key -L $Captured_Key_Lock >> /dev/null 2>&1 &";
+						exec "./d-shell.pl -j $Command_Insert_ID -k $Captured_Key -L $Captured_Key_Lock $Runtime_Variables >> /dev/null 2>&1 &";
 						exit(0);						
 					}
 
 				}
 				else {
-					print "Didn't get what I expected. Dying.";
-					exit(1);
+					$Audit_Log_Submission->execute("D-Shell", "Queue", "Job ID $Command_Insert_ID queued.", $User_Trigger);
+					exit(0);
 				}
 			}
 		}
