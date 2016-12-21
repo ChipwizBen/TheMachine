@@ -1,3 +1,4 @@
+2.1.1   - Fixed formatting on command line help outputs on job receiver and executor.
 2.1.0   - Fixed dropdown in Command Sets that didn't adhere to new owner display system.
         - Changed a few icons for clarity.
         - Squashed a race condition that caused Jobs to register as unexpectedly terminated when they had successfully finished.

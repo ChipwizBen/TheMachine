@@ -37,6 +37,10 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.1.1
+	$Table->addRow('2.1.0', 'Fixed formatting on command line help outputs on job receiver and executor.');
+	$Table->addRow('---', '');
+
 	## Version 2.1.0
 	$Table->addRow('2.1.0', 'Fixed dropdown in Command Sets that didn\'t adhere to new owner display system.');
 	$Table->addRow('', 'Changed a few icons for clarity.');

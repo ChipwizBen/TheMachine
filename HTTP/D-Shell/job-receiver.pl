@@ -31,6 +31,7 @@ Options are:
 	${Blue}-P, --password\t\t${Green}Password for the remote host(s)
 	${Blue}-k, --key\t\t${Green}Pass the key ID used to connect to the server
 	${Blue}-f, --failure\t\t${Green}Specify the on-failure behaviour (0 is continue, 1 is die)
+	${Blue}-r, --real-time-variable${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
 
 ${Green}Examples:
 	${Green}## Ha! Yeah right. You shouldn't even BE here! Oh go on then, just this once, but only because I like you.

@@ -51,7 +51,7 @@ Options are:
 	${Blue}-d, --dependency-chain\t${Green}Pass the dependency chain ID (only used with dependencies)
 	${Blue}-u, --user\t\t${Green}Pass the user that'll execute the job on the remote system (only used without keys)
 	${Blue}-k, --key\t\t${Green}Pass the key ID used to connect to the server
-	${Blue}-r, --real-time-variable\t\t${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
+	${Blue}-r, --real-time-variable${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
 	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug)
 	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes _LOTS_ of debug (I did warn you)
 	${Blue}--override\t\t${Green}Override the lock for Complete or Stopped jobs
