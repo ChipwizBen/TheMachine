@@ -1,4 +1,4 @@
-67457387f335762729003e613f92d718  ./changelog
+dadf8a69946147c1a2753bdf3b01b3d3  ./changelog
 82582ad79c85c01de6037bdf1dffb6a4  ./Configs/Permissions.sh
 d057c8db76913d95c0e460c7bdd98b27  ./Configs/Perl Modules/Net-LDAP-0.65.tar.gz
 1f0bcd24b64b50a29ad1cf997c2247e9  ./Configs/Perl Modules/Text-Diff-1.44.tar.gz
@@ -6,6 +6,7 @@ e58f7e6886872febac88228ef7c94aee  ./Configs/Perl Modules/Net-Ping-External-0.15.
 f6de59c9f7e23c3a46eedc0c20f56559  ./Configs/Perl Modules/Digest-SHA-5.92.tar.gz
 3db5117d60df67e3b400fe367e716be0  ./Configs/Perl Modules/Crypt-CBC-2.33.tar.gz
 b1d91153ac971347aee84292ed886c1c  ./Configs/Perl Modules/TimeDate-2.30.tar.gz
+53d95b7efc5962fe41835c7ab0f83475  ./Configs/Perl Modules/Bytes-Random-Secure-0.29.tar.gz
 444d3c305e86597e11092b517794a840  ./Configs/Perl Modules/DBI-1.631.tar.gz
 58ab70ecfd306a0fd678d405b15715e9  ./Configs/Perl Modules/Git-Wrapper-0.047.tar.gz
 5e7b7cf596f4a70afb8045a291048c29  ./Configs/Perl Modules/Net-IP-XS-0.06.tar.gz
@@ -34,7 +35,7 @@ b437c8c8f5c4793c9a28abae3bd91a74  ./HTTP/account-management.cgi
 edf2468c9e622af45e54156824f35917  ./HTTP/IP/index.cgi
 7f22351b3094770a2b56e8d05fa4ec11  ./HTTP/IP/hosts.cgi
 35893e84cca838d4af64a37f8c716ea1  ./HTTP/IP/ip-allocation-counter.pl
-6478bf11b87d6b5e97b1c2f16d5fbf91  ./HTTP/IP/host-types.cgi
+378c154ba2afe3afc72d27b7b0d1c2de  ./HTTP/IP/host-types.cgi
 8f8039039aa117948a8246bed44388f5  ./HTTP/IP/ipv4-blocks.cgi
 232db3eeee61fce65fc9d1f36f689cc9  ./HTTP/IP/ipv4-ping-sweep.pl
 a07550b40e579d4cfce3868ddddb472b  ./HTTP/IP/ipv4-allocations.cgi
@@ -44,19 +45,19 @@ c82afc4d838d3bab3e5001c37764b383  ./HTTP/system-status.cgi
 edf2468c9e622af45e54156824f35917  ./HTTP/resources/index.cgi
 11fe6f63b8646a425da13ae241c1a5b5  ./HTTP/resources/The_Machine_Manual.pdf
 452653c8d20f9b7b827bfef025430204  ./HTTP/resources/imgs/message.png
-98ae7aa37c217df786ec3bcd34f59f34  ./HTTP/resources/imgs/edit.png
+49483b150a6787cbc1df427adb9c10ca  ./HTTP/resources/imgs/edit.png
 e9eca13d22934bb31e2ce9f2ec892f26  ./HTTP/resources/imgs/diff.png
-f3fd0c19b645cdde3972ed7ceb98d75b  ./HTTP/resources/imgs/delete.png
+30ab5151aa7d551a5e6b7d3e45e3a6fb  ./HTTP/resources/imgs/delete.png
 3ccc12f7dd8e4683c5508727ebd92f80  ./HTTP/resources/imgs/index.cgi
 b3dba428ad19042b9ff17a1677695200  ./HTTP/resources/imgs/add-note.png
 1ceb49ca7e6d8fa44417a08afd9d17d7  ./HTTP/resources/imgs/back.png
 0f094b5d3df70728366537bfd29302db  ./HTTP/resources/imgs/buttons/index.cgi
 2123075e7118e7e928936495eed0cc4a  ./HTTP/resources/imgs/buttons/close-hover.png
-089de609308606ad9f541d90819bd265  ./HTTP/resources/imgs/buttons/nav.jpg
-5732c8da64f5c0f66e4f9238e7e9ee00  ./HTTP/resources/imgs/buttons/nav2.jpg
+3454418f1d1fe485532f0f6e8e2b1f70  ./HTTP/resources/imgs/buttons/nav.jpg
+d89d7cba7b30045d971384a6c6659515  ./HTTP/resources/imgs/buttons/nav2.jpg
 f3fd0c19b645cdde3972ed7ceb98d75b  ./HTTP/resources/imgs/buttons/close.png
 1c6e222701353cc018e6fb8501a41136  ./HTTP/resources/imgs/grey.png
-bd56c43a291eec93c9e4db45e94b6de4  ./HTTP/resources/imgs/confirm.png
+e1fe9fc21208238410790e5fb48e369b  ./HTTP/resources/imgs/confirm.png
 3efb74b4a83db828a34a07d01ebee3e4  ./HTTP/resources/imgs/terminal.png
 ea7b2a82fce453991bf6a5c437ecdd0f  ./HTTP/resources/imgs/red.png
 cd1bdc14ef8c48f75b5c404bf78978d0  ./HTTP/resources/imgs/loading.gif
@@ -68,20 +69,21 @@ aa91657ae1a45dc8f5092b2e1116448b  ./HTTP/resources/imgs/clock.png
 e987f1da07a44882feb9bac5ddaf0fca  ./HTTP/resources/imgs/graph.png
 94aca36e216512cbbdc8c094996bd16a  ./HTTP/resources/imgs/strip.xcf
 dff0e5db07d658ef63f1efa2e70929da  ./HTTP/resources/imgs/history.png
-316bbf1ea7a038176914617d3b25bd64  ./HTTP/resources/imgs/confirm-dim.png
+b83147d62c6d442d40b166be3f97453e  ./HTTP/resources/imgs/confirm-dim.png
 1fb310ee6670bf0b5af5d48b7cf5bf07  ./HTTP/resources/imgs/orange.png
-3a65216135c30a57062840b0914ffa97  ./HTTP/resources/imgs/forward.png
+02feb05acee917d4d8bce8bcb749cd2f  ./HTTP/resources/imgs/forward.png
 ddd8bacea242524302523bd1d08698aa  ./HTTP/resources/imgs/pause.png
+e40ec2161fe7993196f23c8a07346306  ./HTTP/resources/jquery.min-2.1.1.js
 1c0225e12e97440a292711e6c80347c8  ./HTTP/footer.cgi
-d65a0d31812a2ae3a817c2a3dc7783d2  ./HTTP/common.pl
+648466fa5189f89990a8e5c2b7642384  ./HTTP/common.pl
 982204d7ca5f3d0bdc0d550629bc78f0  ./HTTP/login.cgi
 9ba1599b391533c3b6613f805c47a7ff  ./HTTP/maintenance.cgi
 edf2468c9e622af45e54156824f35917  ./HTTP/ReverseProxy/index.cgi
 2c8d217042a6ecb39ade2b9eb6be5665  ./HTTP/ReverseProxy/reverse-proxy.cgi
 bb54fea463734ae1e4ddc5a227c4150a  ./HTTP/ReverseProxy/redirects.cgi
 04924eac244b447cc45dd85aee271ddf  ./HTTP/ReverseProxy/reverse-proxy-build.pl
-5c3aa35a0974243e708984cc23817360  ./HTTP/format.css
-79dfd2ef506850343c54f66afa093aea  ./HTTP/changelog.cgi
+2ab01e452571848f12726e439de180df  ./HTTP/format.css
+e0e324b81896d6031a172301a7a02c2d  ./HTTP/changelog.cgi
 21f3747098c088fa82b6e78680bbdf02  ./HTTP/audit-log.cgi
 bee12e7847da203041465f6d2af40735  ./HTTP/header.cgi
 8a8199ce34a8bdcbb23d77266c1784b9  ./HTTP/Icinga/push-config.pl
@@ -115,12 +117,12 @@ edf2468c9e622af45e54156824f35917  ./HTTP/DSMS/index.cgi
 6954cb61c89b5b15a9bd096695f8c2f7  ./HTTP/DSMS/sudoers-user-groups.cgi
 2424798ac824fe4ee665a6c6b367a502  ./HTTP/DSMS/sudoers-users.cgi
 ce69b6345e6a9e127f8db15435ec1200  ./HTTP/DSMS/sudoers-commands.cgi
-b8d95517042908c5ff1f75623b783d5d  ./HTTP/D-Shell/jobs.cgi
-c840d162e7843b8f87554a54b97563d9  ./HTTP/D-Shell/command-sets.cgi
-c8611503c1452b8c0dbc748fdd9626c7  ./HTTP/D-Shell/d-shell.pl
+8f96cd6e430011fd6c723ce12415753d  ./HTTP/D-Shell/jobs.cgi
+d2a855ba2bf1b61e18c0615f90d5c853  ./HTTP/D-Shell/command-sets.cgi
+254c61b74ebf30e3907790a764163731  ./HTTP/D-Shell/d-shell.pl
 49a8549f47fc6077271b8b861702987e  ./HTTP/D-Shell/vmware-snapshot.pl
 82f5a8ab5e53efcba9f42ea8553292c2  ./HTTP/D-Shell/command-set-dump.pl
-8f3d953172b741f45adc3f48faf03b05  ./HTTP/D-Shell/job-receiver.pl
+3ca76c3f269040978686bdcc582bbba1  ./HTTP/D-Shell/job-receiver.pl
 edf2468c9e622af45e54156824f35917  ./HTTP/Storage/index.cgi
 3ccc12f7dd8e4683c5508727ebd92f80  ./HTTP/Storage/Git/index.cgi
 0f094b5d3df70728366537bfd29302db  ./HTTP/Storage/Git/ReverseProxy/index.cgi
