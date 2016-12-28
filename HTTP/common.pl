@@ -961,7 +961,7 @@ sub Version {
 
 	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
 
-	my $Version = '2.1.1';
+	my $Version = '2.2.0';
 	return $Version;
 
 } # sub Version
@@ -969,7 +969,7 @@ sub Version {
 sub Server_Hostname {
 
 	# Don't touch this unless you want to trick the system into believing it isn't who it thinks 
-	# it is.
+	# it is. Only useful in load balanced situations.
 
 	my $Hostname = `hostname`;
 	return $Hostname;

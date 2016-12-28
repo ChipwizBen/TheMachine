@@ -37,6 +37,10 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.2.0
+	$Table->addRow('2.2.0', 'Added handler for incorrect use of SEND and WAITFOR together in the same command.');
+	$Table->addRow('<hr />', '');
+
 	## Version 2.1.1
 	$Table->addRow('2.1.0', 'Fixed formatting on command line help outputs on job receiver and executor.');
 	$Table->addRow('---', '');

@@ -44,17 +44,17 @@ ${Green}$System_Short_Name version $Version
 Hello there, intrepid random file executer! If you're reading this, you're probably lost. This file is only useful as part of the wider system, so you're going to struggle without all the bits. But here are the options anyway for you to break stuff, you crazy fool:
 
 Options are:
-	${Blue}-j, --job\t\t${Green}Pass the Job ID to be executed
-	${Blue}-p, --parent\t\t${Green}Pass the Job ID of the highest parent (only used with dependencies)
-	${Blue}-c, --command-set\t${Green}Pass the Command Set ID for the dependent process (only used with dependencies)
-	${Blue}-H, --host\t\t${Green}Pass the Host ID for the dependent process (only used with dependencies)
-	${Blue}-d, --dependency-chain\t${Green}Pass the dependency chain ID (only used with dependencies)
-	${Blue}-u, --user\t\t${Green}Pass the user that'll execute the job on the remote system (only used without keys)
-	${Blue}-k, --key\t\t${Green}Pass the key ID used to connect to the server
-	${Blue}-r, --real-time-variable${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
-	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug)
-	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes _LOTS_ of debug (I did warn you)
-	${Blue}--override\t\t${Green}Override the lock for Complete or Stopped jobs
+	${Blue}-j, --job\t\t ${Green}Pass the Job ID to be executed
+	${Blue}-p, --parent\t\t ${Green}Pass the Job ID of the highest parent (only used with dependencies)
+	${Blue}-c, --command-set\t ${Green}Pass the Command Set ID for the dependent process (only used with dependencies)
+	${Blue}-H, --host\t\t ${Green}Pass the Host ID for the dependent process (only used with dependencies)
+	${Blue}-d, --dependency-chain\t ${Green}Pass the dependency chain ID (only used with dependencies)
+	${Blue}-u, --user\t\t ${Green}Pass the user that'll execute the job on the remote system (only used without keys)
+	${Blue}-k, --key\t\t ${Green}Pass the key ID used to connect to the server
+	${Blue}-r, --real-time-variable ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
+	${Blue}-v, --verbose\t\t ${Green}Turns on verbose output (useful for debug)
+	${Blue}-V, --very-verbose\t ${Green}Same as verbose, but also includes _LOTS_ of debug (I did warn you)
+	${Blue}--override\t\t ${Green}Override the lock for Complete or Stopped jobs
 
 ${Green}Examples:
 	${Green}## Run a job
@@ -942,10 +942,6 @@ sub processor {
 		$Update_Job_Status->execute($Parent_ID, $Command, 'Currently Running...', $User_Name);
 		my $Job_Status_Update_ID = $DB_Connection->{mysql_insertid};
 	
-#		while ( defined (my $Line = $SSH->read_all()) ) {
-#			Do nothing! Clearing the input stream for the next command
-#		} 
-	
 		my $Command_Output;
 		my $Exit_Code;
 		if (($Command =~ /^#/) || ($Command eq undef)) {
@@ -955,6 +951,37 @@ sub processor {
 			}
 			$Command_Output = 'Skipped comment / empty line.';
 			$Exit_Code = 0;
+		}
+		elsif ($Command =~ /^\*SEND.*/ && $Command =~ /^\*WAITFOR.*/) {
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Incorrect use of SEND and WAITFOR together.${Clear}\n";
+			print LOG "${Red}Incorrect use of SEND and WAITFOR together.\n";
+			$Command_Output = "Incorrect use of SEND and WAITFOR together.";
+			$Exit_Code = 19;
+			$Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
+				`exit_code` = ?,
+				`output` = ?,
+				`task_ended` = NOW(),
+				`modified_by` = ?
+				WHERE `id` = ?");
+			$Command_Output =~ s/$Predictable_Prompt//g;
+			$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+			my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
+				`job_id`,
+				`command`,
+				`output`,
+				`task_ended`,
+				`modified_by`
+			)
+			VALUES (
+				?, ?, ?, NOW(), ?
+			)");
+			$Update_Job_Status->execute($Parent_ID, "### Incorrect use of SEND and WAITFOR together.", '', $User_Name);
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+				`status` = ?,
+				`modified_by` = ?
+				WHERE `id` = ?");
+			$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+			exit($Exit_Code);
 		}
 		elsif ($Command =~ /^\*PAUSE.*/) {
 			my $Pause = $Command;
@@ -1154,7 +1181,6 @@ sub processor {
 			$Connected_Host->send(' Command_Exit=`echo $?`');
 			$Connected_Host->send(" $Set_Predictable_Prompt");
 			$Connected_Host->send(' echo $PS1');
-			#eval { $Connected_Host->exec(' echo $PS1', 1); }; $Connected_Host = &reboot_control($Host, $Host_ID) if $@;
 
 			if ($Reboot_Required) {
 				if ($Match) {
