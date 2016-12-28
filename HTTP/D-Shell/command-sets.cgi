@@ -417,7 +417,7 @@ print <<ENDHTML;
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
 		</ul>
 	<li><span style='color: #FC64FF;'>*PAUSE</span> <span style='color: #00FF00;'>xx</span> - Pauses for xx seconds before processing the next command 
-		(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot.</li>
+		(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot. Sending *PAUSE without a value will pause the Job indefinitely.</li>
 	<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>xx</span> - Waits for xx to appear on the console before processing the next 
 		command. Useful for changing passwords, scripting the answers to interactive questions, sudo elevation, etc. 
 		Accepts regular expressions. The default wait time is 120 seconds; after than the system assumes that something has 
@@ -773,7 +773,7 @@ print <<ENDHTML;
 				<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
 			</ul>
 		<li><span style='color: #FC64FF;'>*PAUSE</span> <span style='color: #00FF00;'>xx</span> - Pauses for xx seconds before processing the next command 
-			(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot.</li>
+			(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot. Sending *PAUSE without a value will pause the Job indefinitely.</li>
 		<li><span style='color: #FC64FF;'>*WAITFOR</span> <span style='color: #00FF00;'>xx</span> - Waits for xx to appear on the console before processing the next 
 			command. Useful for changing passwords, scripting the answers to interactive questions, sudo elevation, etc. 
 			Accepts regular expressions. The default wait time is 120 seconds; after than the system assumes that something has 

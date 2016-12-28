@@ -984,15 +984,47 @@ sub processor {
 			exit($Exit_Code);
 		}
 		elsif ($Command =~ /^\*PAUSE.*/) {
+
 			my $Pause = $Command;
 			$Pause =~ s/\*PAUSE (.*)/$1/;
-			if ($Verbose == 1) {
-				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for ${Blue}$Pause ${Green}seconds${Clear}\n";
-				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for ${Blue}$Pause ${Green}seconds${Clear}\n";
+
+			if ($Pause !~ /^\d*$/) {
+
+				if ($Verbose == 1) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Paused by the Job indefinitely. You should manually resume this to continue.${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Paused by the Job indefinitely. You should manually resume this to continue.${Clear}\n";
+				}
+	
+				my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
+					`job_id`,
+					`command`,
+					`output`,
+					`task_ended`,
+					`modified_by`
+				)
+				VALUES (
+					?, ?, ?, NOW(), ?
+				)");
+				$Update_Job_Status->execute($Parent_ID, "### Paused by the Job indefinitely. You should manually resume this to continue.", '', $User_Name);
+
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute( '2', $User_Name, $Parent_ID);
+
 			}
-			sleep $Pause;
-			$Command_Output = "Paused for $Pause seconds.";
-			$Exit_Code = 0;
+			else {
+
+				if ($Verbose == 1) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for ${Blue}$Pause ${Green}seconds${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for ${Blue}$Pause ${Green}seconds${Clear}\n";
+				}
+				sleep $Pause;
+				$Command_Output = "Paused for $Pause seconds.";
+				$Exit_Code = 0;
+
+			}
 		}
 		elsif ($Command =~ /^\*VSNAPSHOT.*/) {
 			my $Snapshot = $Command;

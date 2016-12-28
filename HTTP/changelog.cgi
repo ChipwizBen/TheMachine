@@ -39,6 +39,7 @@ sub html_output {
 
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of SEND and WAITFOR together in the same command.');
+	$Table->addRow('', 'Added the ability to pause a Job indefinitely from within a Command Set.');
 	$Table->addRow('<hr />', '');
 
 	## Version 2.1.1
