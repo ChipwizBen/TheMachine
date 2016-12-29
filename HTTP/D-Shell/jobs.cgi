@@ -90,8 +90,14 @@ elsif ($Pause_Job) {
 	}
 	else {
 		&pause_job;
-		my $Message_Orange = "Job ID $Pause_Job paused.";
-		$Session->param('Message_Orange', $Message_Orange);
+		if ($Pause_Job == 'All') {
+			my $Message_Orange = "All running Jobs paused.";
+			$Session->param('Message_Orange', $Message_Orange);
+		}
+		else {
+			my $Message_Orange = "Job ID $Pause_Job paused.";
+			$Session->param('Message_Orange', $Message_Orange);
+		}
 		$Session->flush();
 		undef $Trigger_Job;
 		print $CGI->redirect(-url=>'/D-Shell/jobs.cgi');
@@ -126,8 +132,14 @@ elsif ($Resume_Job) {
 	}
 	else {
 		&resume_job;
-		my $Message_Green = "Job ID $Resume_Job resumed.";
-		$Session->param('Message_Green', $Message_Green);
+		if ($Resume_Job eq 'All') {
+			my $Message_Green = "All Jobs resumed.";
+			$Session->param('Message_Green', $Message_Green);
+		}
+		else {
+			my $Message_Green = "Job ID $Resume_Job resumed.";
+			$Session->param('Message_Green', $Message_Green);
+		}
 		$Session->flush();
 		undef $Trigger_Job;
 		print $CGI->redirect(-url=>'/D-Shell/jobs.cgi');
@@ -389,14 +401,28 @@ sub pause_job {
 		?, ?, ?, ?
 	)");
 
-	$Audit_Log_Submission->execute("D-Shell", "Pause", "$User_Name paused Job ID $Pause_Job.", $User_Name);
+	if ($Pause_Job eq 'ALL') {
+		$Audit_Log_Submission->execute("D-Shell", "Pause", "$User_Name paused all Jobs.", $User_Name);
+	}
+	else {
+		$Audit_Log_Submission->execute("D-Shell", "Pause", "$User_Name paused Job ID $Pause_Job.", $User_Name);
+	}
 	# / Audit Log
 
-	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
-		`status` = ?,
-		`modified_by` = ?
-		WHERE `id` = ?");
-	$Update_Job->execute( '2', $User_Name, $Pause_Job);
+	if ($Pause_Job eq 'ALL') {
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `status` = ?");
+		$Update_Job->execute( '2', $User_Name, '1');
+	}
+	else {
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute( '2', $User_Name, $Pause_Job);
+	}
 
 } # sub pause_job
 
@@ -439,14 +465,28 @@ sub resume_job {
 		?, ?, ?, ?
 	)");
 
-	$Audit_Log_Submission->execute("D-Shell", "Resume", "$User_Name resumed Job ID $Resume_Job.", $User_Name);
+	if ($Resume_Job eq 'ALL') {
+		$Audit_Log_Submission->execute("D-Shell", "Resume", "$User_Name resumed all Jobs.", $User_Name);
+	}
+	else {
+		$Audit_Log_Submission->execute("D-Shell", "Resume", "$User_Name resumed Job ID $Resume_Job.", $User_Name);
+	}
 	# / Audit Log
 
-	my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
-		`status` = ?,
-		`modified_by` = ?
-		WHERE `id` = ?");
-	$Update_Job->execute( '1', $User_Name, $Resume_Job);
+	if ($Resume_Job eq 'ALL') {
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `status` = ?");
+		$Update_Job->execute( '1', $User_Name, '2');
+	}
+	else {
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute( '1', $User_Name, $Resume_Job);
+	}
 
 } # sub resume_job
 
@@ -560,7 +600,8 @@ sub html_job_log {
 			$Command =~ s/  /&nbsp;&nbsp;/g;
 			$Command =~ s/\r/<br \/>/g;
 			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)\$\=\*\@\:;]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
-			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
+			$Command =~ s/(\*[A-Z0-9]+\{.*?\})(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
+			$Command =~ s/(\*[A-Z0-9]+)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Exit_Code = $Entries[1];
 		my $Output = $Entries[2];
@@ -661,6 +702,10 @@ sub html_output {
 	my $Select_Running_Job_Count = $DB_Connection->prepare("SELECT `id` FROM `jobs` WHERE `status` = 1");
 		$Select_Running_Job_Count->execute( );
 		my $Total_Running_Jobs = $Select_Running_Job_Count->rows();
+
+	my $Select_Paused_Job_Count = $DB_Connection->prepare("SELECT `id` FROM `jobs` WHERE `status` = 2");
+		$Select_Paused_Job_Count->execute( );
+		my $Total_Paused_Jobs = $Select_Paused_Job_Count->rows();
 
 	my $Select_Jobs = $DB_Connection->prepare("SELECT `jobs`.`id`, `hosts`.`hostname`, `host_id`, `command_set_id`, `command_sets`.`name`, `on_failure`, `status`, `jobs`.`last_modified`, `jobs`.`modified_by`
 		FROM `jobs`
@@ -903,6 +948,12 @@ sub html_output {
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
+		elsif ($Status == 19) {
+			$Running_Command = 'Incorrect use of WAITFOR and SEND together. Job died.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}		
 		elsif ($Status == 99) {
 			$Running_Command = 'My head fell off. I don\'t know why.';
 			$Status = 'Error';
@@ -1011,7 +1062,10 @@ print <<ENDHTML;
 
 		</td>
 		<td align="right" style="font-size:14px;">
-			$Total_Running_Jobs currently running jobs.
+			$Total_Running_Jobs currently running jobs.<br />
+			$Total_Paused_Jobs currently paused jobs.<br />
+			Pause all running jobs <a href='/D-Shell/jobs.cgi?Pause_Job=ALL'><img src=\"/resources/imgs/pause.png\" alt=\"Pause all Jobs\" ></a><br />
+			Resume all paused jobs <a href='/D-Shell/jobs.cgi?Resume_Job=ALL'><img src=\"/resources/imgs/forward.png\" alt=\"Resume all paused Jobs\" ></a><br />
 		</td>
 	</tr>
 </table>

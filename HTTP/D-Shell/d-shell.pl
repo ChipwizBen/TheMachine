@@ -882,6 +882,7 @@ sub processor {
 	foreach my $Command (@Commands) {
 		$Command =~ s/\n//;
 		$Command =~ s/\r//;
+		my $Command_Status = $Command;
 
 		while ($Command =~ m/\*VAR/) {
 
@@ -939,7 +940,7 @@ sub processor {
 			?, ?, ?, NOW(), ?
 		)");
 	
-		$Update_Job_Status->execute($Parent_ID, $Command, 'Currently Running...', $User_Name);
+		$Update_Job_Status->execute($Parent_ID, $Command_Status, 'Currently Running...', $User_Name);
 		my $Job_Status_Update_ID = $DB_Connection->{mysql_insertid};
 	
 		my $Command_Output;
@@ -952,7 +953,7 @@ sub processor {
 			$Command_Output = 'Skipped comment / empty line.';
 			$Exit_Code = 0;
 		}
-		elsif ($Command =~ /^\*SEND.*/ && $Command =~ /^\*WAITFOR.*/) {
+		elsif ($Command =~ /\*SEND.*/ && $Command =~ /\*WAITFOR.*/) {
 			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Incorrect use of SEND and WAITFOR together.${Clear}\n";
 			print LOG "${Red}Incorrect use of SEND and WAITFOR together.\n";
 			$Command_Output = "Incorrect use of SEND and WAITFOR together.";
@@ -991,8 +992,8 @@ sub processor {
 			if ($Pause !~ /^\d*$/) {
 
 				if ($Verbose == 1) {
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Paused by the Job indefinitely. You should manually resume this to continue.${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Paused by the Job indefinitely. You should manually resume this to continue.${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Paused the Job indefinitely. You should manually resume this to continue.${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Paused the Job indefinitely. You should manually resume this to continue.${Clear}\n";
 				}
 	
 				my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
@@ -1005,7 +1006,7 @@ sub processor {
 				VALUES (
 					?, ?, ?, NOW(), ?
 				)");
-				$Update_Job_Status->execute($Parent_ID, "### Paused by the Job indefinitely. You should manually resume this to continue.", '', $User_Name);
+				$Update_Job_Status->execute($Parent_ID, "### Paused the Job indefinitely. You should manually resume this to continue.", '', $User_Name);
 
 				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 					`status` = ?,
