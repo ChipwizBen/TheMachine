@@ -1818,9 +1818,9 @@ sub html_output {
 
 	my $Select_Command_Count = $DB_Connection->prepare("SELECT `id` FROM `command_sets`
 	WHERE `revision_parent` IS NULL
-	AND (`owner_id` = $User_ID
+	AND (`owner_id` = ?
 		OR `owner_id` = 0)");
-		$Select_Command_Count->execute( );
+		$Select_Command_Count->execute($User_ID);
 		my $Total_Rows = $Select_Command_Count->rows();
 
 

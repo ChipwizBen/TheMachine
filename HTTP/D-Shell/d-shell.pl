@@ -954,9 +954,9 @@ sub processor {
 			$Exit_Code = 0;
 		}
 		elsif ($Command =~ /\*SEND.*/ && $Command =~ /\*WAITFOR.*/) {
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Incorrect use of SEND and WAITFOR together.${Clear}\n";
-			print LOG "${Red}Incorrect use of SEND and WAITFOR together.\n";
-			$Command_Output = "Incorrect use of SEND and WAITFOR together.";
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Incorrect use of *WAITFOR and *SEND together.${Clear}\n";
+			print LOG "${Red}Incorrect use of *WAITFOR and *SEND together.\n";
+			$Command_Output = "Incorrect use of *WAITFOR and *SEND together.";
 			$Exit_Code = 19;
 			$Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 				`exit_code` = ?,
@@ -976,7 +976,7 @@ sub processor {
 			VALUES (
 				?, ?, ?, NOW(), ?
 			)");
-			$Update_Job_Status->execute($Parent_ID, "### Incorrect use of SEND and WAITFOR together.", '', $User_Name);
+			$Update_Job_Status->execute($Parent_ID, "### Incorrect use of *WAITFOR and *SEND together.", '', $User_Name);
 			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 				`status` = ?,
 				`modified_by` = ?

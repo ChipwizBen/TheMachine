@@ -949,7 +949,7 @@ sub html_output {
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 19) {
-			$Running_Command = 'Incorrect use of WAITFOR and SEND together. Job died.';
+			$Running_Command = 'Incorrect use of *WAITFOR and *SEND together. Job died.';
 			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";

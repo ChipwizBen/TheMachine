@@ -38,12 +38,14 @@ sub html_output {
 	$Table->setRowClass (1, 'tbrow1');
 
 	## Version 2.2.0
-	$Table->addRow('2.2.0', 'Added handler for incorrect use of SEND and WAITFOR together in the same command.');
+	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');
 	$Table->addRow('', 'Added the ability to pause a Job indefinitely from within a Command Set.');
 	$Table->addRow('', 'Changed the licence from GPLv3 to AGPLv3.');
 	$Table->addRow('', 'Added the ability to pause all running or resume all paused Jobs.');
 	$Table->addRow('', 'Fixed an issue with variables not being highlighted correctly.');
 	$Table->addRow('', 'Fixed an issue that displayed resolved variables in commands which could include sensitive data.');
+	$Table->addRow('', 'Generated Command Set dumps now include owner tags.');
+	$Table->addRow('', 'Fixed a bug where if a Command Set owner was deleted the Command Set was not reassigned (now reassigned to System).');
 	$Table->addRow('<hr />', '');
 
 	## Version 2.1.1

@@ -1,9 +1,11 @@
-2.2.0   - Added handler for incorrect use of SEND and WAITFOR together in the same command.
+2.2.0   - Added handler for incorrect use of *WAITFOR and *SEND together in the same command.
         - Added the ability to pause a Job indefinitely from within a Command Set.
         - Changed the licence from GPLv3 to AGPLv3.
         - Added the ability to pause all running or resume all paused Jobs.
         - Fixed an issue with variables not being highlighted correctly.
         - Fixed an issue that displayed resolved variables in commands which could include sensitive data.
+        - Generated Command Set dumps now include owner tags.
+        - Fixed a bug where if a Command Set owner was deleted the Command Set was not reassigned (now reassigned to System).
 2.1.1   - Fixed formatting on command line help outputs on job receiver and executor.
 2.1.0   - Fixed dropdown in Command Sets that didn't adhere to new owner display system.
         - Changed a few icons for clarity.

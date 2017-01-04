@@ -11,7 +11,7 @@ my $Version = Version();
 my $DB_Connection = DB_Connection();
 
 my $Git_Check = Git_Link('Status_Check');
-if ($Git_Check !~ /Yes/i) {print "Git disabled. Exiting."; exit 0;}
+if ($Git_Check !~ /Yes/i) {print "Git disabled so exiting gracefully. Nothing was changed.\n"; exit 0;}
 
 my $Select_Command_Sets = $DB_Connection->prepare("SELECT `id`, `name`, `command`, `description`, `owner_id`, `revision`, `revision_parent`, `last_modified`, `modified_by`
 	FROM `command_sets`"
@@ -80,6 +80,26 @@ COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_ar
 		);
 		$Discover_Owner->execute($Command_Owner_ID);
 		$Command_Owner = $Discover_Owner->fetchrow_array();
+
+		if ($Command_Owner eq '') {
+			my $Update_Owner = $DB_Connection->prepare("UPDATE `command_sets` SET
+				`owner_id` = ?,
+				`modified_by` = ?
+				WHERE `owner_id` = ?");
+			$Update_Owner->execute( '0', 'System', $Command_Owner_ID);
+
+			# Audit Log
+			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
+				`category`,
+				`method`,
+				`action`,
+				`username`
+			)
+			VALUES (
+				?, ?, ?, ?
+			)");
+			$Audit_Log_Submission->execute("D-Shell", "Modify", "The system claimed Command Set ID $DBID as its owner, Owner ID $Command_Owner_ID, appears to have been deleted.", 'System');
+		}
 	}
 
 	## / Discover owner
@@ -103,6 +123,7 @@ COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_ar
 	print FILE "#########################################################################\n";
 	print FILE "## $Command_Name [Command Set ID $DBID].\n";
 	print FILE "## Revision $Command_Revision.\n";
+	print FILE "## Owned by $Command_Owner.\n";
 	print FILE "## Modified $Last_Modified by $Modified_By.\n";
 	print FILE "##\n";
 	print FILE "## Has dependencies: $Command_Set_Dependencies\n";

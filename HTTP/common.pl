@@ -526,7 +526,6 @@ sub Git_Link {
 
 	my $Git_Bin_Path = git(); # This is the binary to Git on your system (typically /usr/bin/git).
 	my $Git_Directory = '../Storage/Git'; # This is the local repo location. You do not need a trailing slash.
-	#my $Git_Directory = '/home/ben/Git';
 
 	# Do not edit below this line.
 
