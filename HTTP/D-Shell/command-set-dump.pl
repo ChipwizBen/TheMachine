@@ -98,7 +98,7 @@ COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_ar
 			VALUES (
 				?, ?, ?, ?
 			)");
-			$Audit_Log_Submission->execute("D-Shell", "Modify", "The system claimed Command Sets belonging to Owner ID $Command_Owner_ID because they appear to have been deleted.", 'System');
+			$Audit_Log_Submission->execute("D-Shell", "Modify", "The system claimed Command Set ID $DBID as its owner, Owner ID $Command_Owner_ID, appears to have been deleted.", 'System');
 		}
 	}
 
