@@ -882,7 +882,7 @@ sub processor {
 	foreach my $Command (@Commands) {
 		$Command =~ s/\n//;
 		$Command =~ s/\r//;
-		my $Command_Status = $Command;
+		my $Command_Clean = $Command;
 
 		while ($Command =~ m/\*VAR/) {
 
@@ -940,7 +940,7 @@ sub processor {
 			?, ?, ?, NOW(), ?
 		)");
 	
-		$Update_Job_Status->execute($Parent_ID, $Command_Status, 'Currently Running...', $User_Name);
+		$Update_Job_Status->execute($Parent_ID, $Command_Clean, 'Currently Running...', $User_Name);
 		my $Job_Status_Update_ID = $DB_Connection->{mysql_insertid};
 	
 		my $Command_Output;
@@ -1156,7 +1156,9 @@ sub processor {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending '${Yellow}$Send${Green}'${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending '${Yellow}$Send${Green}'${Clear}\n";
 			}
-			$Command_Output = "'$Send' sent.";
+			$Command_Clean =~ s/\*SEND(.*)/$1/;
+			$Command_Clean =~ s/^\s//;
+			$Command_Output = "'$Command_Clean' sent.";
 			$Connected_Host->send($Send);
 			$Exit_Code = 0;
 		}
