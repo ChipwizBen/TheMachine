@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case);
@@ -55,6 +55,7 @@ my $Captured_Key_Passphrase;
 my %Captured_Runtime_Variables;
 	my $Runtime_Variables;
 my $On_Failure;
+my $No_Decode;
 
 GetOptions(
 	'H:s{1,}' => \@Hosts_List, # Set as string due to possibility of space seperation
@@ -76,7 +77,9 @@ GetOptions(
 	'runtime-variable=s%' => \%Captured_Runtime_Variables,
 	'f:s' => \$On_Failure,
 	'failure:s' => \$On_Failure,
-) or die("Option capture badness: $@\n");
+	'D' => \$No_Decode,
+	'no-dec' => \$No_Decode
+) or die("Fault with options: $@\n");
 
 $User_Trigger =~ s/MagicTagSpace/ /g;
 if (!$User_Trigger) {$User_Trigger = 'System'}
@@ -89,6 +92,8 @@ if (%Captured_Runtime_Variables) {
 		$Runtime_Variables = $Runtime_Variables . " -r '${Variable_Key}'='${Variable}'";
 	}
 }
+
+if ($No_Decode) {$No_Decode = '-D'} else {$No_Decode = ''}
 
 if ($Command_Set && @Hosts) {
 
@@ -140,6 +145,7 @@ if ($Command_Set && @Hosts) {
 			$SIG{CHLD} = 'IGNORE';
 			my $PID = fork();
 			if (defined $PID && $PID == 0) {
+				$DB_Connection = DB_Connection();
 				my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 					`category`,
 					`method`,
@@ -151,18 +157,18 @@ if ($Command_Set && @Hosts) {
 				)");
 				if ($Captured_User_Name && $Captured_Password) {
 					$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with username $Captured_User_Name.", $User_Trigger);
-					exec "./d-shell.pl -j $Command_Insert_ID -u $Captured_User_Name -P $Captured_Password $Runtime_Variables >> /dev/null 2>&1 &";
+					exec "./d-shell.pl -j $Command_Insert_ID $No_Decode -u $Captured_User_Name -P $Captured_Password $Runtime_Variables >> /dev/null 2>&1 &";
 					exit(0);
 				}
 				elsif ($Captured_Key && $Captured_Key_Lock) {
 					if ($Captured_Key_Passphrase) {
 						$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with key.", $User_Trigger);
-						exec "./d-shell.pl -j $Command_Insert_ID -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase $Runtime_Variables >> /dev/null 2>&1 &";
+						exec "./d-shell.pl -j $Command_Insert_ID $No_Decode -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase $Runtime_Variables >> /dev/null 2>&1 &";
 						exit(0);
 					}
 					else {
 						$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with key.", $User_Trigger);
-						exec "./d-shell.pl -j $Command_Insert_ID -k $Captured_Key -L $Captured_Key_Lock $Runtime_Variables >> /dev/null 2>&1 &";
+						exec "./d-shell.pl -j $Command_Insert_ID $No_Decode -k $Captured_Key -L $Captured_Key_Lock $Runtime_Variables >> /dev/null 2>&1 &";
 						exit(0);						
 					}
 
