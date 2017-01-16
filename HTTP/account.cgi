@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use Digest::SHA qw(sha512_hex);
 
-require 'common.pl';
+require './common.pl';
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -23,6 +23,10 @@ my $Confirm_Password = $CGI->param("Confirm_Password");
 
 my $Key_Name = $CGI->param("Key_Name");
 my $Key_Lock = $CGI->param("Key_Lock");
+	if ($Key_Lock) {
+		if ($Key_Lock =~ /^(.+)$/) {$Key_Lock = $1;}
+		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Key_Lock, $User_Name);}
+	}
 my $Key_User_Name = $CGI->param("Key_User_Name");
 my $Key_Passphrase = $CGI->param("Key_Passphrase");
 my $Private_Key = $CGI->param("Private_Key");
@@ -43,9 +47,9 @@ elsif ($Default_Key) {
 	&default_key;
 }
 
-require "header.cgi";
+require "./header.cgi";
 &html_output;
-require "footer.cgi";
+require "./footer.cgi";
 
 sub change_password {
 
@@ -56,7 +60,7 @@ sub change_password {
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /password-change.cgi\n\n";
+		print "Location: /account.cgi\n\n";
 		exit(0);
 	}
 	elsif ($Complexity_Check == 2) {
@@ -64,7 +68,7 @@ sub change_password {
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /password-change.cgi\n\n";
+		print "Location: /account.cgi\n\n";
 		exit(0);
 	}
 	elsif ($Complexity_Check == 3) {
@@ -72,7 +76,7 @@ sub change_password {
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /password-change.cgi\n\n";
+		print "Location: /account.cgi\n\n";
 		exit(0);
 	}
 	elsif ($Complexity_Check == 4) {
@@ -80,7 +84,7 @@ sub change_password {
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /password-change.cgi\n\n";
+		print "Location: /account.cgi\n\n";
 		exit(0);
 	}
 	elsif ($Complexity_Check == 5) {
@@ -88,7 +92,7 @@ sub change_password {
 		Password requirements are show on the <a href='system-status.cgi'>System Status</a> page.";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /password-change.cgi\n\n";
+		print "Location: /account.cgi\n\n";
 		exit(0);
 	}
 	### / Password Complexity Check ###
@@ -154,6 +158,7 @@ sub add_key {
 	my $New_Salt;
 	while (length $Key_Lock < 256) {
 		my $Salt = Salt(1);
+		$Salt = $Salt =~ /(.*)/;
 		$New_Salt = $New_Salt . $Salt;
 		$Key_Lock =~ s/\s//g;
 		$Key_Lock = $Key_Lock . $Salt;

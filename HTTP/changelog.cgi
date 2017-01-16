@@ -1,10 +1,10 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use HTML::Table;
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $Header = Header();
@@ -46,6 +46,7 @@ sub html_output {
 	$Table->addRow('', 'Fixed an issue that displayed resolved variables in commands which could include sensitive data.');
 	$Table->addRow('', 'Generated Command Set dumps now include owner tags.');
 	$Table->addRow('', 'Fixed a bug where if a Command Set owner was deleted the Command Set was not reassigned (now reassigned to System).');
+	$Table->addRow('', 'Enforced Taint Mode. Several changes made to support this.');
 	$Table->addRow('<hr />', '');
 
 	## Version 2.1.1
@@ -170,7 +171,7 @@ sub html_output {
           by default, but unzip is not.');
     $Table->addRow('', 'README file has been dropped in favor of new full system installation and management 
           documentation.');
-	$Table->addRow('', '$Remote_Sudoers default value in \'common.pl\' updated with new path to reflect new SFTP chroot 
+	$Table->addRow('', '$Remote_Sudoers default value in \'./common.pl\' updated with new path to reflect new SFTP chroot 
           recommendations, plus added option for relative paths.');
 	$Table->addRow('', 'Added an extra error handler for distribution file push failures.');
 	$Table->addRow('', 'Dropped sha1sum from system, as it duplicated tasks already performed by md5sum.');
@@ -181,7 +182,7 @@ sub html_output {
 	$Table->addRow('<hr />', '');
 
 	## Version 1.4.1
-	$Table->addRow('1.4.1', 'Offloaded the resolution of application paths to \'common.pl\' through `which` or manual 
+	$Table->addRow('1.4.1', 'Offloaded the resolution of application paths to \'./common.pl\' through `which` or manual 
           override to make it more system independent.');
 	$Table->addRow('', 'Bundled required non-core modules with package (for easier installation in offline 
           environments).');
@@ -194,7 +195,7 @@ sub html_output {
 	## Version 1.4.0
 	$Table->addRow('1.4.0', 'Sudoers Distribution system is now in place through \'distribution.pl\'. Individual private 
           keys, timeouts, users and remote sudoers file paths can now be specified per host.');
-	$Table->addRow('', 'Fail-safe Distribution default values are stored in \'common.pl\' so that non-administrative 
+	$Table->addRow('', 'Fail-safe Distribution default values are stored in \'./common.pl\' so that non-administrative 
           users cannot specify a remote host and overwrite an existing sudoers file, or SFTP to a 
           server using an existing key (depending on the defaults set).');
 	$Table->addRow('', 'A new Distribution Status page is available to administrative users at 
@@ -226,7 +227,7 @@ sub html_output {
 	$Table->addRow('', 'Some general interface changes to make things a bit tidier (particularly tables).');
 	$Table->addRow('', 'Added MD5 and SHA1 checksum to sudoers file.');
 	$Table->addRow('', 'Adjusted \'Sudoers Not Found\' to include links to referenced pages.');
-	$Table->addRow('', 'Added helpful descriptions to \'common.pl\' components.');
+	$Table->addRow('', 'Added helpful descriptions to \'./common.pl\' components.');
 	$Table->addRow('', 'Renamed \'user-management.cgi\' to \'account-management.cgi\' to avoid confusing system users with 
 	      sudo users. Updated \'header.cgi\' to reflect name change.');
 	$Table->addRow('', 'Enforced the reservation of the \'System\' user name.');
@@ -265,12 +266,12 @@ sub html_output {
 	## Version 1.0.3
 	$Table->addRow('1.0.3', 'Renamed from Sudoers Build System to Distributed Sudoers Management System to better describe 
 	      the system\'s purpose.');
-	$Table->addRow('', 'Modified \'login.cgi\', \'lockout.cgi\', \'header.cgi\' to pull name from new subroutine in \'common.pl\' 
+	$Table->addRow('', 'Modified \'login.cgi\', \'lockout.cgi\', \'header.cgi\' to pull name from new subroutine in \'./common.pl\' 
 	      so the name can be easily edited to fit more easily into different customer environments.');
-	$Table->addRow('', 'Added a short name (DSMS) subroutine to \'common.pl\'.');
+	$Table->addRow('', 'Added a short name (DSMS) subroutine to \'./common.pl\'.');
 	$Table->addRow('---', '');
 	## Version 1.0.2
-	$Table->addRow('1.0.2', 'Added version numbering system to this file (hello!) and to \'common.pl\'.');
+	$Table->addRow('1.0.2', 'Added version numbering system to this file (hello!) and to \'./common.pl\'.');
 	$Table->addRow('', 'Modified \'index.cgi\' to display version number.');
 	$Table->addRow('---', '');
 	## Version 1.0.1

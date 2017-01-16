@@ -1,11 +1,11 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use POSIX qw(strftime);
 use HTML::Table;
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $System_Name = System_Name();

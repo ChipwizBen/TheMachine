@@ -1,6 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
+#$ENV{'PATH'} = '/opt/TheMachine/http:/var/www/html:/bin:/usr/bin';
+delete $ENV{PATH};
 
 &Maintenance_Mode;
 
@@ -78,10 +80,41 @@ sub System_Log_File {
 
 } # sub System_Log_File
 
+sub Security_Notice {
+
+	my $Notice = $_[0];
+	my $Remote_Host = $_[1];
+	my $Script = $_[2];
+	my $Value = $_[3];
+	my $User_Name = $_[4];
+
+	# Audit Log
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+
+	$Audit_Log_Submission->execute("Security", $Notice, "Received tainted data ($Value) at $Script by $User_Name from $Remote_Host.", 'System');
+	#/ Audit Log
+
+	my ($CGI, $Session, $Cookie) = CGI();
+	my $Message_Red="Not accepting '$Value' for that. Submit a bug report if you think this may be a valid input.";
+	$Session->param('Message_Red', $Message_Red);
+	$Session->flush();
+	if ($ENV{HTTP_REFERER}) {print "Location: $ENV{HTTP_REFERER}\n\n";} else {print "Location: /index.cgi\n\n";}
+	exit(0);
+}
+
 sub Header {
 
 	my $Header;
-	if (-f 'header.cgi') {$Header = 'header.cgi';} else {$Header = '../header.cgi';}
+	if (-f "./header.cgi") {$Header = "./header.cgi";} else {$Header = "../header.cgi";}
 	return $Header;
 	
 } # sub Header
@@ -89,7 +122,7 @@ sub Header {
 sub Footer {
 
 	my $Footer;
-	if (-f 'footer.cgi') {$Footer = 'footer.cgi';} else {$Footer = '../footer.cgi';}
+	if (-f "./footer.cgi") {$Footer = "./footer.cgi";} else {$Footer = "../footer.cgi";}
 	return $Footer;
 	
 } # sub Footer
@@ -141,7 +174,7 @@ sub LDAP_Login {
 			timeout => $LDAP_Timeout,
 			start_tls => 1,
 			#filter => $LDAP_Filter,
-		) or die "Can't connect to LDAP server $LDAP_Server:$LDAP_Port with timeout $LDAP_Timeout seconds. $@";
+		) or return "Can't connect to LDAP server $LDAP_Server:$LDAP_Port with timeout $LDAP_Timeout seconds. $@";
 		my $Bind = $LDAP_Connection->bind(
 			$LDAP_User_Name_Prefixed,
 			password => $LDAP_Password,
@@ -799,7 +832,8 @@ sub CGI {
 				IdColName=>'id',
 				DataColName=>'session_data',
 				Handle=>$DB_Connection,
-				secure  =>  1
+				secure=>1,
+				Taint=>1
 			});
 			$Session->flush();
 		}
@@ -817,10 +851,9 @@ sub CGI {
 
 sub md5sum {
 
-	# Manually set the path to `md5sum` here, or just leave this as default and the system 
-	# will try to determine its location through `which md5sum --skip-alias`
+	# Manually set the path to `md5sum` here.
 
-	my $md5sum = `which md5sum --skip-alias`;
+	my $md5sum = '/bin/md5sum';
 
 	$md5sum =~ s/\n//g;
 	return $md5sum;
@@ -829,10 +862,9 @@ sub md5sum {
 
 sub cut {
 
-	# Manually set the path to `cut` here, or just leave this as default and the system 
-	# will try to determine its location through `which cut --skip-alias`
+	# Manually set the path to `cut` here.
 
-	my $cut = `which cut --skip-alias`;
+	my $cut = '/bin/cut';
 
 	$cut =~ s/\n//g;
 	return $cut;
@@ -841,10 +873,9 @@ sub cut {
 
 sub visudo {
 
-	# Manually set the path to `visudo` here, or just leave this as default and the system 
-	# will try to determine its location through `which visudo --skip-alias`
+	# Manually set the path to `visudo` here.
 
-	my $visudo = `which visudo --skip-alias`;
+	my $visudo = '/sbin/visudo';
 
 	$visudo =~ s/\n//g;
 	return $visudo;
@@ -853,10 +884,9 @@ sub visudo {
 
 sub cp {
 
-	# Manually set the path to `cp` here, or just leave this as default and the system 
-	# will try to determine its location through `which cp --skip-alias`
+	# Manually set the path to `cp` here.
 
-	my $cp = `which cp --skip-alias`;
+	my $cp = '/bin/cp';
 
 	$cp =~ s/\n//g;
 	return $cp;
@@ -865,10 +895,9 @@ sub cp {
 
 sub ls {
 
-	# Manually set the path to `ls` here, or just leave this as default and the system 
-	# will try to determine its location through `which ls --skip-alias`
+	# Manually set the path to `ls` here.
 
-	my $ls = `which ls --skip-alias`;
+	my $ls = '/bin/ls';
 
 	$ls =~ s/\n//g;
 	return $ls;
@@ -877,14 +906,9 @@ sub ls {
 
 sub sudo_grep {
 
-	# Manually set the path to `grep` here, or just leave this as default and the system 
-	# will try to determine its location through `which grep --skip-alias`
-	#
-	# Why sudo_grep and not grep? - grep is a function inside perl, but it doesn't give us 
-	# what we need, so we need to use the system's grep instead. If I name this subroutine 
-	# 'grep' it makes perl unhappy when I try to call it as grep().
+	# Manually set the path to `grep` here.
 
-	my $grep = `which grep --skip-alias`;
+	my $grep = '/bin/grep';
 
 	$grep =~ s/\n//g;
 	return $grep;
@@ -893,10 +917,9 @@ sub sudo_grep {
 
 sub head {
 
-	# Manually set the path to `head` here, or just leave this as default and the system 
-	# will try to determine its location through `which head --skip-alias`
+	# Manually set the path to `head` here.
 
-	my $head = `which head --skip-alias`;
+	my $head = '/bin/head';
 
 	$head =~ s/\n//g;
 	return $head;
@@ -905,10 +928,9 @@ sub head {
 
 sub nmap {
 
-	# Manually set the path to `nmap` here, or just leave this as default and the system 
-	# will try to determine its location through `which nmap --skip-alias`
+	# Manually set the path to `nmap` here.
 
-	my $nmap = `which nmap --skip-alias`;
+	my $nmap = '/usr/bin/nmap';
 
 	$nmap =~ s/\n//g;
 	return $nmap;
@@ -917,10 +939,9 @@ sub nmap {
 
 sub ps {
 
-	# Manually set the path to `ps` here, or just leave this as default and the system 
-	# will try to determine its location through `which ps --skip-alias`
+	# Manually set the path to `ps` here.
 
-	my $ps = `which ps --skip-alias`;
+	my $ps = '/bin/ps';
 
 	$ps =~ s/\n//g;
 	return $ps;
@@ -929,10 +950,9 @@ sub ps {
 
 sub wc {
 
-	# Manually set the path to `wc` here, or just leave this as default and the system 
-	# will try to determine its location through `which wc --skip-alias`
+	# Manually set the path to `wc` here.
 
-	my $wc = `which wc --skip-alias`;
+	my $wc = '/usr/bin/wc';
 
 	$wc =~ s/\n//g;
 	return $wc;
@@ -941,11 +961,9 @@ sub wc {
 
 sub git {
 
-	# Manually set the path to `git` here, or just leave this as default and the system 
-	# will try to determine its location through `which git --skip-alias`
+	# Manually set the path to `git` here.
 
-	#my $git = `which git --skip-alias`;
-	my $git = '/usr/bin/git';
+	my $git = '/bin/git';
 
 	$git =~ s/\n//g;
 	return $git;

@@ -1,11 +1,11 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use POSIX qw(strftime);
 use HTML::Table;
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $System_Name = System_Name();
@@ -14,6 +14,10 @@ my $Header = Header();
 my $Footer = Footer();
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
+
+my $User_Name = $Session->param("User_Name");
+my $User_ID = $Session->param("User_ID");
+my $User_DShell_Admin = $Session->param("User_DShell_Admin");
 
 my $Date_Time = strftime "%Y-%m-%d %H:%M:%S", localtime;
 
@@ -58,26 +62,59 @@ my $Revision_History = $CGI->param("Revision_History");
 	my $Diff_Previous = $CGI->param("Diff_Previous");
 
 my $Run_Command = $CGI->param("Run_Command");
+		if ($Run_Command) {
+			if ($Run_Command =~ /^([0-9]+)$/) {$Run_Command = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Run_Command, $User_Name);}
+		}
 	my $Add_Host_Type_Temp_New = $CGI->param("Add_Host_Type_Temp_New");
 	my $Add_Host_Group_Temp_New = $CGI->param("Add_Host_Group_Temp_New");
 	my $Add_Host_Temp_New = $CGI->param("Add_Host_Temp_New");
+		if ($Add_Host_Temp_New) {
+			if ($Add_Host_Temp_New =~ /^([0-9]+)$/) {$Add_Host_Temp_New = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Add_Host_Temp_New, $User_Name);}
+		}
 	my $Add_Host_Temp_Existing = $CGI->param("Add_Host_Temp_Existing");
+		if ($Add_Host_Temp_Existing) {
+			if ($Add_Host_Temp_Existing =~ /^([0-9\,\s]+)$/) {$Add_Host_Temp_Existing = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Add_Host_Temp_Existing, $User_Name);}
+		}
 	my $Delete_Host_Run_Entry_ID = $CGI->param("Delete_Host_Run_Entry_ID");
 	my $Run_Toggle_Add = $CGI->param("Run_Toggle_Add");
 	my $User_Name_Add = $CGI->param("User_Name_Add");
+		if ($User_Name_Add) {
+			if ($User_Name_Add =~ /^([0-9a-zA-Z\-\_]+)$/) {$User_Name_Add = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $User_Name_Add, $User_Name);}
+		}
 	my $Password_Add = $CGI->param("Password_Add");
+		if ($Password_Add) {
+			if ($Password_Add =~ /^(.+)$/) {$Password_Add = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Password_Add, $User_Name);}
+		}
 	my $On_Failure_Add = $CGI->param("On_Failure_Add");
+		if ($On_Failure_Add) {
+			if ($On_Failure_Add =~ /^([0-9]+)$/) {$On_Failure_Add = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $On_Failure_Add, $User_Name);}
+		}
 	my $SSH_Key = $CGI->param("SSH_Key");
+		if ($SSH_Key) {
+			if ($SSH_Key =~ /^([0-9]+)$/) {$SSH_Key = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $SSH_Key, $User_Name);}
+		}
 	my $Key_Lock_Phrase = $CGI->param("Key_Lock_Phrase");
+		if ($Key_Lock_Phrase) {
+			if ($Key_Lock_Phrase =~ /^(.+)$/) {$Key_Lock_Phrase = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Key_Lock_Phrase, $User_Name);}
+		}
 	my $Key_Passphrase = $CGI->param("Key_Passphrase");
+		if ($Key_Passphrase) {
+			if ($Key_Passphrase =~ /^(.+)$/) {$Key_Passphrase = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Key_Passphrase, $User_Name);}
+		}
 
 my $Run_Command_Final = $CGI->param("Run_Command_Final");
 
 my @Machine_Variables = $CGI->multi_param;
 
-my $User_Name = $Session->param("User_Name");
-my $User_ID = $Session->param("User_ID");
-my $User_DShell_Admin = $Session->param("User_DShell_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -1572,22 +1609,22 @@ sub run_command {
 	if ($Run_Toggle_Add) {
 		if ($Password_Add) {
 			my $Password = enc($Password_Add);
-			system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -u $User_Name_Add -P $Password -f $On_Failure_Add ${Command_Variable_Submission} -X ${Push_User_Name}");			
+			system("./job-receiver.pl -c ${Run_Command} -H '${Add_Host_Temp_Existing}' -u ${User_Name_Add} -P ${Password} -f ${On_Failure_Add} ${Command_Variable_Submission} -X ${Push_User_Name}");			
 		}
 		elsif ($SSH_Key) {
 			$Key_Lock_Phrase =~ s/\s//g;
 			my $Lock = enc($Key_Lock_Phrase);
 			if ($Key_Passphrase) {
 				my $Passphrase = enc($Key_Passphrase);
-				system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -k $SSH_Key -L $Lock -K $Passphrase -f $On_Failure_Add ${Command_Variable_Submission} -X ${Push_User_Name}");
+				system("./job-receiver.pl -c ${Run_Command} -H '${Add_Host_Temp_Existing}' -k ${SSH_Key} -L ${Lock} -K ${Passphrase} -f ${On_Failure_Add} ${Command_Variable_Submission} -X ${Push_User_Name}");
 			}
 			else {
-				system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -k $SSH_Key -L $Lock -f $On_Failure_Add ${Command_Variable_Submission} -X ${Push_User_Name}");
+				system("./job-receiver.pl -c ${Run_Command} -H '${Add_Host_Temp_Existing}' -k ${SSH_Key} -L ${Lock} -f ${On_Failure_Add} ${Command_Variable_Submission} -X ${Push_User_Name}");
 			}
 		}
 	}
 	else {
-		system("./job-receiver.pl -c $Run_Command -H '$Add_Host_Temp_Existing' -f $On_Failure_Add -X ${Push_User_Name}");
+		system("./job-receiver.pl -c ${Run_Command} -H '${Add_Host_Temp_Existing}' -f ${On_Failure_Add} -X ${Push_User_Name}");
 	}
 
 1;

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 
@@ -6,7 +6,7 @@ use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_I
 use HTML::Table;
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $Header = Header();

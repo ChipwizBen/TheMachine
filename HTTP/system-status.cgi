@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use Date::Parse qw(str2time);
 
-require 'common.pl';
+require './common.pl';
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 my $Header = Header();

@@ -1,19 +1,25 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 
-require 'common.pl';
+require './common.pl';
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
+
+my $User_Name = $Session->param("User_Name");
 
 my $Header = Header();
 my $Footer = Footer();
 my $Sudoers_Location = Sudoers_Location();
 	$Sudoers_Location =~ s/\.\.\///;
+	if ($Sudoers_Location =~ /^([0-9A-Za-z\-\_\/]+)$/) {$Sudoers_Location = $1;}
+	else {Security_Notice('Path', $ENV{'REMOTE_ADDR'}, $0, $Sudoers_Location, $User_Name);}
 my $md5sum = md5sum();
+	if ($md5sum =~ /^([0-9a-z\/]+)$/) {$md5sum = $1;}
+	else {Security_Notice('Path', $ENV{'REMOTE_ADDR'}, $0, $md5sum, $User_Name);}
 my $cut = cut();
-
-my $User_Name = $Session->param("User_Name");
+	if ($cut =~ /^([a-z\/]+)$/) {$cut = $1;}
+	else {Security_Notice('Path', $ENV{'REMOTE_ADDR'}, $0, $cut, $User_Name);}
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -28,7 +34,7 @@ sub html_output {
 
 my $Sudoers_Not_Found;
 open(SUDOERS, $Sudoers_Location) or $Sudoers_Not_Found = "Sudoers file not found at $Sudoers_Location (or the HTTP server does not have permission to read the file).
-Consider setting the sudoers file location in 'common.pl' or generating a sudoers file by running 'sudoers-build.pl'.
+Consider setting the sudoers file location in './common.pl' or generating a sudoers file by running 'sudoers-build.pl'.
 If this is your first time running this system, first create some <a href='sudoers-hosts.cgi'>Hosts</a>, <a href='sudoers-users.cgi'>Users</a> and <a href='sudoers-commands.cgi'>Commands</a> and then attach those to <a href='sudoers-rules.cgi'>Rules</a> before running 'sudoers-build.pl'.";
 
 my $MD5_Checksum;

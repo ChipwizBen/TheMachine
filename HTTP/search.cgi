@@ -1,10 +1,10 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use HTML::Table;
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 my $Header = Header();
 my $DB_Connection = DB_Connection();
@@ -19,15 +19,19 @@ if (!$User_Name) {
                  
 my $Search = $CGI->param("Search");
 my $Referer = $ENV{HTTP_REFERER};
-	#$Referer =~ s/^.*\/(.*\.cgi)/$1/i; # Removes string before filename
 	my $Server_Name = $ENV{HTTP_HOST};
-	$Referer =~ s/^.*\/$Server_Name(\/.*\.cgi)/$1/i; # Removes hostname
-	$Referer =~ s/(.*\.cgi)?.*/$1/i; # Removes arguments after ?
+	$Referer =~ s/^.*\/$Server_Name(\/.*\.cgi)/$1/i;
+	$Referer =~ s/(.*\.cgi)?.*/$1/i;
 
 
 if (($Referer eq '') || ($Referer eq 'search.cgi')) {
-	$Referer="index.cgi";
+	$Referer = './index.cgi';
 }
+if ($Referer !~ '^\.') {
+	$Referer =~ s/(.*)/.\/$1/;
+}
+
+if ($Referer =~ /^(\.\/.+)$/) {$Referer = $1;}
 
 if ($Search eq '') {
 	my $Message_Red="You did not provide a search input";
@@ -70,7 +74,7 @@ print <<ENDHTML;
 </div>
 </a>
 
-<h2 style="text-align: center; font-weight: bold;">$Referer Search Results for <span style="color: #00FF00;">$Search</span></h2>
+<h2 style="text-align: center; font-weight: bold;">Search Results for <span style="color: #00FF00;">$Search</span></h2>
 ENDHTML
 
 ### Host Groups
@@ -187,7 +191,7 @@ while ( my @Search = $Search_Command_Groups->fetchrow_array() ) {
 
 	$Table->addRow(
 	"$Counter",
-	"DSMS",
+	"IP",
 	"Command Group",
 	"$Name",
 	"$Active$Expires",
@@ -197,23 +201,20 @@ while ( my @Search = $Search_Command_Groups->fetchrow_array() ) {
 
 ### Hosts
 
-	my $Search_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`, `ip`, `expires`, `active`
+	my $Search_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`, `expires`, `active`
 		FROM `hosts`
 		WHERE `id` LIKE ?
 		OR `hostname` LIKE ?
-		OR `ip` LIKE ?
 	");
 	
-	$Search_Hosts->execute("%$Search%", "%$Search%", "%$Search%");
+	$Search_Hosts->execute("%$Search%", "%$Search%");
 
 while ( my @Search = $Search_Hosts->fetchrow_array() ) {
 	my $ID = $Search[0];
 	my $Name = $Search[1];
 		$Name =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-	my $IP = $Search[2];
-		$IP =~ s/(.*)($Search)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-	my $Expires = $Search[3];
-	my $Active = $Search[4];
+	my $Expires = $Search[2];
+	my $Active = $Search[3];
 
 	my $Expires_Epoch;
 	my $Today_Epoch = time;
@@ -232,7 +233,7 @@ while ( my @Search = $Search_Hosts->fetchrow_array() ) {
 	"$Counter",
 	"DSMS",
 	"Host",
-	"$Name ($IP)",
+	"$Name",
 	"$Active$Expires",
 	"<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
 	);

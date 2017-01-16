@@ -1,24 +1,33 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
-use HTML::Table;
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $Header = Header();
 my $Footer = Footer();
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
+
+my $User_Name = $Session->param("User_Name");
+my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
+
 my ($Distribution_Default_SFTP_Port,
 	$Distribution_Default_User,
 	$Distribution_Default_Key_Path, 
 	$Distribution_Default_Timeout,
 	$Distribution_Default_Remote_Sudoers) = Distribution_Defaults();
 my $Sudoers_Location = Sudoers_Location();
+	if ($Sudoers_Location =~ /^([0-9A-Za-z\-\_\/\.]+)$/) {$Sudoers_Location = $1;}
+	else {Security_Notice('Path', $ENV{'REMOTE_ADDR'}, $0, $Sudoers_Location, $User_Name);}
 my $md5sum = md5sum();
+	if ($md5sum =~ /^([0-9a-z\/]+)$/) {$md5sum = $1;}
+	else {Security_Notice('Path', $ENV{'REMOTE_ADDR'}, $0, $md5sum, $User_Name);}
 my $cut = cut();
+	if ($cut =~ /^([a-z\/]+)$/) {$cut = $1;}
+	else {Security_Notice('Path', $ENV{'REMOTE_ADDR'}, $0, $cut, $User_Name);}
 
 my $Edit_Host_Parameters = $CGI->param("Edit_Host_Parameters");
 
@@ -37,8 +46,6 @@ my $Edit_Host_Parameters_Post = $CGI->param("Edit_Host_Parameters_Post");
 	my $Host_Name_Edit = $CGI->param("Host_Name_Edit");
 	my $IP_Edit = $CGI->param("IP_Edit");
 
-my $User_Name = $Session->param("User_Name");
-my $User_DSMS_Admin = $Session->param("User_DSMS_Admin");
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";

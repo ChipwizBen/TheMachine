@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use Net::IP;
@@ -6,7 +6,7 @@ use Net::Ping::External qw(ping);
 use Parallel::ForkManager;
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $DB_Connection = DB_Connection();

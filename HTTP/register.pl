@@ -1,10 +1,10 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 
 use DBI;
 
-require 'common.pl';
+require './common.pl';
 
 my $DB_Connection = DB_Connection();
 

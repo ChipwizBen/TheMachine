@@ -1,10 +1,10 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 
 use DBI;
 
-require 'common.pl';
+require './common.pl';
 
 my $CGI = CGI->new;
 print "Content-Type: text/html\n\n";

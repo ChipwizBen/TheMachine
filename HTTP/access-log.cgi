@@ -1,9 +1,12 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use HTML::Table;
 
-require 'common.pl';
+my $Common_Config;
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
+require $Common_Config;
+
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -35,9 +38,9 @@ if ($User_Name_Filter eq '' || $User_Name_Filter eq 'All') {
 }
 
 
-require "header.cgi";
+require "./header.cgi";
 &html_output;
-require "footer.cgi";
+require "./footer.cgi";
 
 sub html_output {
 

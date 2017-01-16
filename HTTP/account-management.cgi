@@ -1,10 +1,10 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use Digest::SHA qw(sha512_hex);
 use HTML::Table;
 
-require 'common.pl';
+require './common.pl';
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -70,9 +70,9 @@ if ($User_Admin != 1) {
 }
 
 if ($Add_User) {
-	require "header.cgi";
+	require "./header.cgi";
 	&html_output;
-	require "footer.cgi";
+	require "./footer.cgi";
 	&html_add_user;
 }
 elsif ($User_Name_Add && $Password_Add && $Email_Add) {
@@ -84,9 +84,9 @@ elsif ($User_Name_Add && $Password_Add && $Email_Add) {
 	exit(0);
 }
 elsif ($Edit_User) {
-	require "header.cgi";
+	require "./header.cgi";
 	&html_output;
-	require "footer.cgi";
+	require "./footer.cgi";
 	&html_edit_user;
 }
 elsif ($Edit_User_Post) {
@@ -98,9 +98,9 @@ elsif ($Edit_User_Post) {
 	exit(0);
 }
 elsif ($Delete_User) {
-	require "header.cgi";
+	require "./header.cgi";
 	&html_output;
-	require "footer.cgi";
+	require "./footer.cgi";
 	&html_delete_user;
 }
 elsif ($Delete_User_Confirm) {
@@ -112,9 +112,9 @@ elsif ($Delete_User_Confirm) {
 	exit(0);
 }
 else {
-	require "header.cgi";
+	require "./header.cgi";
 	&html_output;
-	require "footer.cgi";
+	require "./footer.cgi";
 	exit(0);
 }
 

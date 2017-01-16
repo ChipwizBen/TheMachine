@@ -6,6 +6,7 @@
         - Fixed an issue that displayed resolved variables in commands which could include sensitive data.
         - Generated Command Set dumps now include owner tags.
         - Fixed a bug where if a Command Set owner was deleted the Command Set was not reassigned (now reassigned to System).
+        - Enforced Taint Mode. Several changes made to support this.
 2.1.1   - Fixed formatting on command line help outputs on job receiver and executor.
 2.1.0   - Fixed dropdown in Command Sets that didn't adhere to new owner display system.
         - Changed a few icons for clarity.
@@ -101,7 +102,7 @@
           by default, but unzip is not.
         - README file has been dropped in favor of new full system installation and management 
           documentation.
-        - $Remote_Sudoers default value in 'common.pl' updated with new path to reflect new SFTP chroot 
+        - $Remote_Sudoers default value in './common.pl' updated with new path to reflect new SFTP chroot 
           recommendations, plus added option for relative paths.
         - Added an extra error handler for distribution file push failures.
         - Dropped sha1sum from system, as it duplicated tasks already performed by md5sum.
@@ -110,7 +111,7 @@
         - Added a Maintenance Mode to facilitate installations and upgrades. Maintenance Mode is 
           controlled through common.pl.
 ----------------
-1.4.1:  - Offloaded the resolution of application paths to 'common.pl' through `which` or manual 
+1.4.1:  - Offloaded the resolution of application paths to './common.pl' through `which` or manual 
           override to make it more system independent.
         - Bundled required non-core modules with package (for easier installation in offline 
           environments).
@@ -120,7 +121,7 @@
         - Added fail-safe automatic restore for broken sudoers files with the latest stored valid one.
 1.4.0:  - Sudoers Distribution system is now in place through 'distribution.pl'. Individual private 
           keys, timeouts, users and remote sudoers file paths can now be specified per host.
-        - Fail-safe Distribution default values are stored in 'common.pl' so that non-administrative 
+        - Fail-safe Distribution default values are stored in './common.pl' so that non-administrative 
           users cannot specify a remote host and overwrite an existing sudoers file, or SFTP to a 
           server using an existing key (depending on the defaults set).
         - A new Distribution Status page is available to administrative users at 
@@ -147,7 +148,7 @@
         - Some general interface changes to make things a bit tidier (particularly tables).
         - Added MD5 and SHA1 checksum to sudoers file.
         - Adjusted 'Sudoers Not Found' to include links to referenced pages.
-        - Added helpful descriptions to 'common.pl' components.
+        - Added helpful descriptions to './common.pl' components.
         - Renamed 'user-management.cgi' to 'account-management.cgi' to avoid confusing system users with 
           sudo users. Updated 'header.cgi' to reflect name change.
         - Enforced the reservation of the 'System' user name.
@@ -174,10 +175,10 @@
 ----------------
 1.0.3:  - Renamed from Sudoers Build System to Distributed Sudoers Management System to better describe
           the system's purpose.
-        - Modified 'login.cgi', 'lockout.cgi', 'header.cgi' to pull name from new subroutine in 'common.pl' 
+        - Modified 'login.cgi', 'lockout.cgi', 'header.cgi' to pull name from new subroutine in './common.pl' 
           so the name can be easily edited to fit more easily into different customer environments.
-        - Added a short name (DSMS) subroutine to 'common.pl'.
-1.0.2:  - Added version numbering system to this file (hello!) and to 'common.pl'.
+        - Added a short name (DSMS) subroutine to './common.pl'.
+1.0.2:  - Added version numbering system to this file (hello!) and to './common.pl'.
         - Modified 'index.cgi' to display version number.
 1.0.1:  - Fixed SQL bug in 'sudoers-commands.cgi' which prevented Commands from being deleted.
 1.0.0:  - Initial release.

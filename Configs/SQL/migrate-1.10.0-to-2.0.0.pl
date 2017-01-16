@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 ## This script is meant to transfer your data from an old DSMS installation to a new deployment of The Machine.
 ## It does not include the audit or access log, distribution status or lock status.

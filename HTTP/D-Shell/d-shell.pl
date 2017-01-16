@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use Net::SSH::Expect;
@@ -6,7 +6,7 @@ use POSIX qw(strftime);
 use Getopt::Long qw(:config no_ignore_case);
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $System_Short_Name = System_Short_Name();
@@ -58,10 +58,10 @@ Options are:
 
 ${Green}Examples:
 	${Green}## Run a job
-	${Blue}./d-shell.pl -j 643 -u ben${Clear}
+	${Blue}$0 -j 643 -u ben${Clear}
 
 	${Green}## Run a job dependency
-	${Blue}./d-shell.pl -p 643 -c 542 -H 435 -d 2 -u ben${Clear}\n\n";
+	${Blue}$0 -p 643 -c 542 -H 435 -d 2 -u ben${Clear}\n\n";
 
 
 if (!@ARGV) {
@@ -124,6 +124,80 @@ GetOptions(
 	'passphrase:s' => \$Captured_Key_Passphrase
 ) or die("Option capture badness.\n");
 
+if ($Verbose) {
+	if ($Verbose =~ /^([0-1]+)$/) {$Verbose = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Verbose, $User_Name);}
+}
+if ($Very_Verbose) {
+	if ($Very_Verbose =~ /^([0-1]+)$/) {$Very_Verbose = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Very_Verbose, $User_Name);}
+}
+if ($Override) {
+	if ($Override =~ /^([0-1]+)$/) {$Override = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Override, $User_Name);}
+}
+if ($No_Decode) {
+	if ($No_Decode =~ /^([0-1])$/) {$No_Decode = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $No_Decode, $User_Name);}
+}
+if ($Discovered_Job_ID) {
+	if ($Discovered_Job_ID =~ /^([0-9]+)$/) {$Discovered_Job_ID = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Discovered_Job_ID, $User_Name);}
+}
+if ($Dependent_Command_Set_ID) {
+	if ($Dependent_Command_Set_ID =~ /^([0-9]+)$/) {$Dependent_Command_Set_ID = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Dependent_Command_Set_ID, $User_Name);}
+}
+if ($Captured_User_Name) {
+	if ($Captured_User_Name =~ /^([0-9a-zA-Z\-\_\s]+)$/) {$Captured_User_Name = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Name, $User_Name);}
+}
+if ($Parent_ID) {
+	if ($Parent_ID =~ /^([0-9]+)$/) {$Parent_ID = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Parent_ID, $User_Name);}
+}
+if ($Dependent_Command_Set_ID) {
+	if ($Dependent_Command_Set_ID =~ /^([0-9]+)$/) {$Dependent_Command_Set_ID = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Dependent_Command_Set_ID, $User_Name);}
+}
+if ($Dependent_Host_ID) {
+	if ($Dependent_Host_ID =~ /^([0-9]+)$/) {$Dependent_Host_ID = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Dependent_Host_ID, $User_Name);}
+}
+if ($Dependency_Chain_ID) {
+	if ($Dependency_Chain_ID =~ /^([0-9]+)$/) {$Dependency_Chain_ID = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Dependency_Chain_ID, $User_Name);}
+}
+if ($Captured_User_Password && !$No_Decode) {
+	if ($Captured_User_Password =~ /^([0-9a-zA-Z=]+)$/) {$Captured_User_Password = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Password, $User_Name);}
+}
+elsif ($Captured_User_Password && $No_Decode) {
+	if ($Captured_User_Password =~ /^([.+])$/) {$Captured_User_Password = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Password, $User_Name);}
+}
+if ($Captured_Key) {
+	if ($Captured_Key =~ /^([0-9]+)$/) {$Captured_Key = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key, $User_Name);}
+}
+if ($Captured_Key_Lock && !$No_Decode) {
+	if ($Captured_Key_Lock =~ /^([0-9a-zA-Z=]+)$/) {$Captured_Key_Lock = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Name);}
+}
+elsif ($Captured_Key_Lock && $No_Decode) {
+	if ($Captured_Key_Lock =~ /^([.+])$/) {$Captured_Key_Lock = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Name);}
+}
+if ($Captured_Key_Passphrase && !$No_Decode) {
+	if ($Captured_Key_Passphrase =~ /^([0-9a-zA-Z=]+)$/) {$Captured_Key_Passphrase = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Name);}
+}
+elsif ($Captured_Key_Passphrase && $No_Decode) {
+	if ($Captured_Key_Passphrase =~ /^([.+])$/) {$Captured_Key_Passphrase = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Name);}
+}
+
+
 if ($Verbose) {print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";}
 if ($Very_Verbose) {$Verbose = 1; print "${Red}## ${Green}Very Verbose is on (PID: $$).${Clear}\n";};
 if ($No_Decode) {print "${Red}## ${Green}Decode is off.${Clear}\n";}
@@ -149,11 +223,18 @@ if ($Captured_Key_Lock) {
 if ($Captured_Key_Passphrase) {
 	if (!$No_Decode) {$Key_Passphrase = dec($Captured_Key_Passphrase);} else {$Key_Passphrase = $Captured_Key_Passphrase;}
 }
+
+
 if (%Captured_Runtime_Variables) {
 	foreach my $Captured_Variable_Key (keys %Captured_Runtime_Variables) {
 
 		my $Variable_Key = $Captured_Variable_Key;
 		my $Variable_Value = $Captured_Runtime_Variables{$Captured_Variable_Key};
+
+		if ($Variable_Key =~ /^(.+)$/) {$Variable_Key = $1;}
+		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Name);}
+		if ($Variable_Value =~ /^([.+])$/) {$Variable_Value = $1;}
+		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
 
 		$Dependency_Runtime_Variables = $Dependency_Runtime_Variables . " -r '${Variable_Key}'='${Variable_Value}'";
 
@@ -1120,6 +1201,7 @@ sub processor {
 					$Command_Output =~ s/.*\r//g;
 					$Command_Output =~ s/\Q$Predictable_Prompt\E//g;
 					$Command_Output =~ s/^\n//g;
+					$Command_Output = 'Matched on: "' . $Command_Output . '"';
 					$Exit_Code = 0;
 				}
 				else {

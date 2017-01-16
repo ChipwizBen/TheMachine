@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use HTML::Table;
@@ -6,7 +6,7 @@ use Date::Parse qw(str2time);
 use POSIX qw(strftime);
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $Header = Header();
@@ -36,6 +36,37 @@ my @Machine_Variables = $CGI->multi_param;
 my $User_Name = $Session->param("User_Name");
 my $User_ID = $Session->param("User_ID");
 my $User_DShell_Admin = $Session->param("User_DShell_Admin");
+
+
+if ($Trigger_Job) {
+	if ($Trigger_Job =~ /^([0-9]+$)/) {$Trigger_Job = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Trigger_Job, $User_Name);}
+}
+if ($On_Failure) {
+	if ($On_Failure =~ /^([0-9]+$)/) {$On_Failure = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $On_Failure, $User_Name);}
+}
+if ($Captured_User_Name) {
+	if ($Captured_User_Name =~ /^([0-9a-zA-Z\-\_\s]+)$/) {$Captured_User_Name = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Name, $User_Name);}
+}
+if ($Captured_Password) {
+	if ($Captured_Password =~ /^(.+)$/) {$Captured_Password = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Password, $User_Name);}
+}
+if ($Captured_Key) {
+	if ($Captured_Key =~ /^([0-9]+)$/) {$Captured_Key = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key, $User_Name);}
+}
+if ($Captured_Key_Lock) {
+	if ($Captured_Key_Lock =~ /^(.+)$/) {$Captured_Key_Lock = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Name);}
+}
+if ($Captured_Key_Passphrase) {
+	if ($Captured_Key_Passphrase =~ /^(.+)$/) {$Captured_Key_Passphrase = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Name);}
+}
+
 
 if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
@@ -513,6 +544,12 @@ sub run_job {
 		if ($Variable_Name =~ m/^TMVar_/) {
 			my $Variable_Value = $CGI->param("$Variable_Name");
 			$Variable_Name =~ s/TMVar_//;
+
+			if ($Variable_Name =~ /^(.+)$/) {$Variable_Name = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Name, $User_Name);}
+			if ($Variable_Value =~ /^([.+])$/) {$Variable_Value = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
+
 			$Variable_Name = enc($Variable_Name, 3);
 			$Variable_Value = enc($Variable_Value, 3);
 			$Command_Variable_Submission = $Command_Variable_Submission . " -r '${Variable_Name}'='${Variable_Value}'";

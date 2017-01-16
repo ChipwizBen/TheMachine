@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use POSIX qw(strftime);
@@ -13,7 +13,6 @@ my $Version = Version();
 my $md5sum = md5sum();
 my $cut = cut();
 my $cp = cp();
-my $ls = ls();
 my $grep = sudo_grep();
 my $head = head();
 my $Owner = DNS_Owner_ID();

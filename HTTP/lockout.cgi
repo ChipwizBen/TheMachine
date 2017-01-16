@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use Digest::SHA qw(sha512_hex);
 
-require 'common.pl';
+require './common.pl';
 my $System_Name = System_Name();
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();

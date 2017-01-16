@@ -1,11 +1,11 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use Digest::SHA qw(sha512_hex);
 use MIME::Lite;
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $System_Name = System_Name();
@@ -114,6 +114,9 @@ sub ldap_login {
 			print "Location: /index.cgi\n\n";
 			exit(0);
 		}
+	}
+	elsif ($LDAP_Login =~ /^Can't connect/) {
+		$Login_Message = "Error: Could not communicate with authentication server.";
 	}
 	else {
 		$Login_Message = "Login Failed";

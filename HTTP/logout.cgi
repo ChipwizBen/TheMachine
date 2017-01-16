@@ -1,8 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 
-require 'common.pl';
+require './common.pl';
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 

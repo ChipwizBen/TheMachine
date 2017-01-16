@@ -4,7 +4,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case);
 
 my $Common_Config;
-if (-f 'common.pl') {$Common_Config = 'common.pl';} else {$Common_Config = '../common.pl';}
+if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
 require $Common_Config;
 
 my $System_Short_Name = System_Short_Name();
@@ -84,11 +84,65 @@ GetOptions(
 $User_Trigger =~ s/MagicTagSpace/ /g;
 if (!$User_Trigger) {$User_Trigger = 'System'}
 
+
+if ($Command_Set) {
+	if ($Command_Set =~ /^([0-9]+)$/) {$Command_Set = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Command_Set, $User_Trigger);}
+}
+if ($User_Trigger) {
+	if ($User_Trigger =~ /^([0-9a-zA-Z\-\_\s]+)$/) {$User_Trigger = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $User_Trigger, $User_Trigger);}
+}
+if ($Captured_User_Name) {
+	if ($Captured_User_Name =~ /^([0-9a-zA-Z\-\_\s]+)$/) {$Captured_User_Name = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Name, $User_Trigger);}
+}
+if ($No_Decode) {
+	if ($No_Decode =~ /^([0-1])$/) {$No_Decode = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $No_Decode, $User_Trigger);}
+}
+if ($Captured_Password && !$No_Decode) {
+	if ($Captured_Password =~ /^([0-9a-zA-Z=]+)$/) {$Captured_Password = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Password, $User_Trigger);}
+}
+elsif ($Captured_Password && $No_Decode) {
+	if ($Captured_Password =~ /^([.+])$/) {$Captured_Password = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Password, $User_Trigger);}
+}
+if ($Captured_Key) {
+	if ($Captured_Key =~ /^([0-9]+)$/) {$Captured_Key = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key, $User_Trigger);}
+}
+if ($Captured_Key_Lock && !$No_Decode) {
+	if ($Captured_Key_Lock =~ /^([0-9a-zA-Z=]+)$/) {$Captured_Key_Lock = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Trigger);}
+}
+elsif ($Captured_Key_Lock && $No_Decode) {
+	if ($Captured_Key_Lock =~ /^([.+])$/) {$Captured_Key_Lock = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Trigger);}
+}
+if ($Captured_Key_Passphrase && !$No_Decode) {
+	if ($Captured_Key_Passphrase =~ /^([0-9a-zA-Z=]+)$/) {$Captured_Key_Passphrase = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Trigger);}
+}
+elsif ($Captured_Key_Passphrase && $No_Decode) {
+	if ($Captured_Key_Passphrase =~ /^([.+])$/) {$Captured_Key_Passphrase = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Trigger);}
+}
+if ($On_Failure) {
+	if ($On_Failure =~ /^([0-9]+$)/) {$On_Failure = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $On_Failure, $User_Trigger);}
+}
+
 my @Hosts = split(/[\s,]+/,join(',' , @Hosts_List));
 
 if (%Captured_Runtime_Variables) {
 	foreach my $Variable_Key (keys %Captured_Runtime_Variables) {
+		if ($Variable_Key =~ /^(.+)$/) {$Variable_Key = $1;}
+		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Trigger);}
 		my $Variable = $Captured_Runtime_Variables{$Variable_Key};
+		if ($Variable =~ /^([.+])$/) {$Variable = $1;}
+		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable, $User_Trigger);}
 		$Runtime_Variables = $Runtime_Variables . " -r '${Variable_Key}'='${Variable}'";
 	}
 }
@@ -98,6 +152,9 @@ if ($No_Decode) {$No_Decode = '-D'} else {$No_Decode = ''}
 if ($Command_Set && @Hosts) {
 
 	foreach my $Host (@Hosts) {
+
+		if ($Host =~ /^([0-9]+)$/) {$Host = $1;}
+		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Host, $User_Trigger);}
 
 		my $Job_Submission = $DB_Connection->prepare("INSERT INTO `jobs` (
 		`host_id`,
