@@ -32,6 +32,7 @@ Options are:
 	${Blue}-k, --key\t\t ${Green}Pass the key ID used to connect to the server
 	${Blue}-f, --failure\t\t ${Green}Specify the on-failure behaviour (0 is continue, 1 is die)
 	${Blue}-r, --real-time-variable ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
+	${Blue}-J, --get-job-id ${Green}Spits out the Job ID of the just submitted job(s).
 
 ${Green}Examples:
 	${Green}## Ha! Yeah right. You shouldn't even BE here! Oh go on then, just this once, but only because I like you.
@@ -55,6 +56,7 @@ my $Captured_Key_Passphrase;
 my %Captured_Runtime_Variables;
 	my $Runtime_Variables;
 my $On_Failure;
+my $Output_Job_ID;
 my $No_Decode;
 
 GetOptions(
@@ -77,6 +79,8 @@ GetOptions(
 	'runtime-variable=s%' => \%Captured_Runtime_Variables,
 	'f:s' => \$On_Failure,
 	'failure:s' => \$On_Failure,
+	'J' => \$Output_Job_ID,
+	'get-job-id' => \$Output_Job_ID,
 	'D' => \$No_Decode,
 	'no-dec' => \$No_Decode
 ) or die("Fault with options: $@\n");
@@ -132,6 +136,10 @@ elsif ($Captured_Key_Passphrase && $No_Decode) {
 if ($On_Failure) {
 	if ($On_Failure =~ /^([0-9]+$)/) {$On_Failure = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $On_Failure, $User_Trigger);}
+}
+if ($Output_Job_ID) {
+	if ($Output_Job_ID =~ /^([0-1])$/) {$Output_Job_ID = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Output_Job_ID, $User_Trigger);}
 }
 
 my @Hosts = split(/[\s,]+/,join(',' , @Hosts_List));
@@ -198,6 +206,8 @@ if ($Command_Set && @Hosts) {
 		
 			$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Trigger started Job ID $Command_Insert_ID.", $User_Trigger);
 			# / Audit Log
+
+			if ($Output_Job_ID) {print "$Command_Insert_ID\n"}
 
 			$SIG{CHLD} = 'IGNORE';
 			my $PID = fork();
