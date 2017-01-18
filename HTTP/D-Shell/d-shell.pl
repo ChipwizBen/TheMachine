@@ -144,10 +144,6 @@ if ($Discovered_Job_ID) {
 	if ($Discovered_Job_ID =~ /^([0-9]+)$/) {$Discovered_Job_ID = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Discovered_Job_ID, $User_Name);}
 }
-if ($Dependent_Command_Set_ID) {
-	if ($Dependent_Command_Set_ID =~ /^([0-9]+)$/) {$Dependent_Command_Set_ID = $1;}
-	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Dependent_Command_Set_ID, $User_Name);}
-}
 if ($Captured_User_Name) {
 	if ($Captured_User_Name =~ /^([0-9a-zA-Z\-\_\s]+)$/) {$Captured_User_Name = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Name, $User_Name);}
@@ -173,7 +169,7 @@ if ($Captured_User_Password && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Password, $User_Name);}
 }
 elsif ($Captured_User_Password && $No_Decode) {
-	if ($Captured_User_Password =~ /^([.+])$/) {$Captured_User_Password = $1;}
+	if ($Captured_User_Password =~ /^(.+)$/) {$Captured_User_Password = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Password, $User_Name);}
 }
 if ($Captured_Key) {
@@ -185,7 +181,7 @@ if ($Captured_Key_Lock && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Name);}
 }
 elsif ($Captured_Key_Lock && $No_Decode) {
-	if ($Captured_Key_Lock =~ /^([.+])$/) {$Captured_Key_Lock = $1;}
+	if ($Captured_Key_Lock =~ /^(.+)$/) {$Captured_Key_Lock = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Name);}
 }
 if ($Captured_Key_Passphrase && !$No_Decode) {
@@ -193,7 +189,7 @@ if ($Captured_Key_Passphrase && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Name);}
 }
 elsif ($Captured_Key_Passphrase && $No_Decode) {
-	if ($Captured_Key_Passphrase =~ /^([.+])$/) {$Captured_Key_Passphrase = $1;}
+	if ($Captured_Key_Passphrase =~ /^(.+)$/) {$Captured_Key_Passphrase = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Name);}
 }
 
@@ -233,7 +229,7 @@ if (%Captured_Runtime_Variables) {
 
 		if ($Variable_Key =~ /^(.+)$/) {$Variable_Key = $1;}
 		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Name);}
-		if ($Variable_Value =~ /^([.+])$/) {$Variable_Value = $1;}
+		if ($Variable_Value =~ /^(.+)$/) {$Variable_Value = $1;}
 		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
 
 		$Dependency_Runtime_Variables = $Dependency_Runtime_Variables . " -r '${Variable_Key}'='${Variable_Value}'";
@@ -296,7 +292,12 @@ if (!$Captured_User_Password && !$Captured_Key) {
 	$User_Password = $Captured_User_Password;
 }
 else {
-	$User_Password = dec($Captured_User_Password);
+	if (!$No_Decode) {
+		$User_Password = dec($Captured_User_Password);
+	}
+	else {
+		$User_Password = $Captured_User_Password;
+	}
 }
 
 my $Host;

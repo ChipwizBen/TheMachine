@@ -49,6 +49,7 @@ sub html_output {
 	$Table->addRow('', 'Enforced Taint Mode. Several changes made to support this.');
 	$Table->addRow('', 'Added option to Job Receiver to output IDs of queued Jobs.');
 	$Table->addRow('', 'Fixed help output of Job Receiver.');
+	$Table->addRow('', 'Fixed a fault with Jobs triggering as public key auth if the decoder tried to decode an unencoded password.');
 	$Table->addRow('<hr />', '');
 
 	## Version 2.1.1
