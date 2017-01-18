@@ -47,6 +47,8 @@ sub html_output {
 	$Table->addRow('', 'Generated Command Set dumps now include owner tags.');
 	$Table->addRow('', 'Fixed a bug where if a Command Set owner was deleted the Command Set was not reassigned (now reassigned to System).');
 	$Table->addRow('', 'Enforced Taint Mode. Several changes made to support this.');
+	$Table->addRow('', 'Added option to Job Receiver to output IDs of queued Jobs.');
+	$Table->addRow('', 'Fixed help output of Job Receiver.');
 	$Table->addRow('<hr />', '');
 
 	## Version 2.1.1

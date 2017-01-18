@@ -32,7 +32,7 @@ Options are:
 	${Blue}-k, --key\t\t ${Green}Pass the key ID used to connect to the server
 	${Blue}-f, --failure\t\t ${Green}Specify the on-failure behaviour (0 is continue, 1 is die)
 	${Blue}-r, --real-time-variable ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
-	${Blue}-J, --get-job-id ${Green}Spits out the Job ID of the just submitted job(s).
+	${Blue}-J, --get-job-id\t ${Green}Spits out the Job ID of the just submitted job(s).
 
 ${Green}Examples:
 	${Green}## Ha! Yeah right. You shouldn't even BE here! Oh go on then, just this once, but only because I like you.
