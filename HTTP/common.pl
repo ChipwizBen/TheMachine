@@ -677,6 +677,23 @@ sub Git_Commit {
 
 } # sub Git_Commit
 
+sub VMware_Connection {
+
+	# These are the credentials used to connect to VMware's API. The usual SDK API address format is 
+	# https://vcenter-hostname/sdkvimService.wsdl but you can just supply https://vcenter-hostname and 
+	# the rest normally is calculated.
+
+	use VMware::VIRuntime;
+	
+	my $vSphere_Server = '';
+	my $vSphere_Username = '';
+	my $vSphere_Password = '';
+
+	my @VMware_Connection = ($vSphere_Server, $vSphere_Username, $vSphere_Password);
+	return @VMware_Connection;
+
+} # sub VMware_Connection
+
 sub Reverse_Proxy_Defaults {
 
 	# These are the default reverse proxy values for entries without custom parameters.

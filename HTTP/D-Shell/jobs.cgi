@@ -990,7 +990,19 @@ sub html_output {
 			$Status = 'Error';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
-		}		
+		}
+		elsif ($Status == 20) {
+			$Running_Command = 'This host could not be found in VMware to perform a snapshot operation. Mismatched hostname? Ejecting to safety.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
+		elsif ($Status == 21) {
+			$Running_Command = 'Something went wrong trying to perform a snapshot operation on this host.';
+			$Status = 'Error';
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+		}
 		elsif ($Status == 99) {
 			$Running_Command = 'My head fell off. I don\'t know why.';
 			$Status = 'Error';

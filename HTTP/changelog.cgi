@@ -47,6 +47,7 @@ sub html_output {
 	$Table->addRow('', 'Generated Command Set dumps now include owner tags.');
 	$Table->addRow('', 'Fixed a bug where if a Command Set owner was deleted the Command Set was not reassigned (now reassigned to System).');
 	$Table->addRow('', 'Enforced Taint Mode. Several changes made to support this.');
+	$Table->addRow('', 'Rewrote the snapshot system to use VMware\'s API. Added the ability to do restores and show snapshot trees.');
 	$Table->addRow('<hr />', '');
 
 	## Version 2.1.1
