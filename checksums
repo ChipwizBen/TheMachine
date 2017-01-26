@@ -1,4 +1,4 @@
-d051636d33fc63f64c5367956fb50883  ./changelog
+1e52899437ad03419e320b76576d4029  ./changelog
 82582ad79c85c01de6037bdf1dffb6a4  ./Configs/Permissions.sh
 d057c8db76913d95c0e460c7bdd98b27  ./Configs/Perl Modules/Net-LDAP-0.65.tar.gz
 1f0bcd24b64b50a29ad1cf997c2247e9  ./Configs/Perl Modules/Text-Diff-1.44.tar.gz
@@ -83,7 +83,7 @@ e687d7ef7898d67982ac64b3226796f1  ./HTTP/maintenance.cgi
 8dd7c59b58590843a206eff301bcc99d  ./HTTP/ReverseProxy/redirects.cgi
 120cad209352ab26883ac2ab26846383  ./HTTP/ReverseProxy/reverse-proxy-build.pl
 2ab01e452571848f12726e439de180df  ./HTTP/format.css
-a577a6886f4bfcaa4e07afa217e85bd0  ./HTTP/changelog.cgi
+579975ffca9cd1922e1a47d940a80663  ./HTTP/changelog.cgi
 4ec9fe5d1f7690e54f52d1e8ee172d22  ./HTTP/audit-log.cgi
 9eb4fb4551846573560c9cea8661c98d  ./HTTP/header.cgi
 31fd09ffd96f89726b99edfd330d192c  ./HTTP/Icinga/push-config.pl
@@ -119,10 +119,10 @@ ce174f424e4e52260c739837c96b0f23  ./HTTP/DSMS/sudoers-command-groups.cgi
 73e7941ad3f27126f2f3e457e847b070  ./HTTP/DSMS/sudoers-commands.cgi
 41cf185649780150113e2561974a142f  ./HTTP/D-Shell/jobs.cgi
 a62e14a6764663250ed751730db5b59e  ./HTTP/D-Shell/command-sets.cgi
-7c1d83304226c426eea549a008e7c59c  ./HTTP/D-Shell/d-shell.pl
+c4082fa32ac16752e000a27095f04a98  ./HTTP/D-Shell/d-shell.pl
 2291cef0407787783c7709a8136bcac6  ./HTTP/D-Shell/vmware-snapshot.pl
 d3af14daa0e32d58c92fc23b748f610f  ./HTTP/D-Shell/command-set-dump.pl
-bd4aeff10c0d45a34dc6fe43c9e2d389  ./HTTP/D-Shell/job-receiver.pl
+acd0e0e77d33dc72268dd7d832559e49  ./HTTP/D-Shell/job-receiver.pl
 71c225f2d8883bf5ddb358159c780d4b  ./HTTP/Storage/index.cgi
 87583c2b08babd0cc3fa6058bbd31ae0  ./HTTP/Storage/Git/index.cgi
 326623a4e674de354a29b652b5013846  ./HTTP/Storage/Git/ReverseProxy/index.cgi
