@@ -144,10 +144,6 @@ if ($Discovered_Job_ID) {
 	if ($Discovered_Job_ID =~ /^([0-9]+)$/) {$Discovered_Job_ID = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Discovered_Job_ID, $User_Name);}
 }
-if ($Dependent_Command_Set_ID) {
-	if ($Dependent_Command_Set_ID =~ /^([0-9]+)$/) {$Dependent_Command_Set_ID = $1;}
-	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Dependent_Command_Set_ID, $User_Name);}
-}
 if ($Captured_User_Name) {
 	if ($Captured_User_Name =~ /^([0-9a-zA-Z\-\_\s]+)$/) {$Captured_User_Name = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Name, $User_Name);}
@@ -173,7 +169,7 @@ if ($Captured_User_Password && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Password, $User_Name);}
 }
 elsif ($Captured_User_Password && $No_Decode) {
-	if ($Captured_User_Password =~ /^([.+])$/) {$Captured_User_Password = $1;}
+	if ($Captured_User_Password =~ /^(.+)$/) {$Captured_User_Password = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Password, $User_Name);}
 }
 if ($Captured_Key) {
@@ -185,7 +181,7 @@ if ($Captured_Key_Lock && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Name);}
 }
 elsif ($Captured_Key_Lock && $No_Decode) {
-	if ($Captured_Key_Lock =~ /^([.+])$/) {$Captured_Key_Lock = $1;}
+	if ($Captured_Key_Lock =~ /^(.+)$/) {$Captured_Key_Lock = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Name);}
 }
 if ($Captured_Key_Passphrase && !$No_Decode) {
@@ -193,7 +189,7 @@ if ($Captured_Key_Passphrase && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Name);}
 }
 elsif ($Captured_Key_Passphrase && $No_Decode) {
-	if ($Captured_Key_Passphrase =~ /^([.+])$/) {$Captured_Key_Passphrase = $1;}
+	if ($Captured_Key_Passphrase =~ /^(.+)$/) {$Captured_Key_Passphrase = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Name);}
 }
 

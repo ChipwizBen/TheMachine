@@ -7,7 +7,10 @@
         - Generated Command Set dumps now include owner tags.
         - Fixed a bug where if a Command Set owner was deleted the Command Set was not reassigned (now reassigned to System).
         - Enforced Taint Mode. Several changes made to support this.
-        - Rewrote the snapshot system to use VMware's API. Added the ability to do restores and show snapshot trees.
+        - Added option to Job Receiver to output IDs of queued Jobs.
+        - Fixed help output of Job Receiver.
+        - Fixed a fault with Jobs triggering as public key auth if the decoder tried to decode an unencoded password.
+		- Rewrote the snapshot system to use VMware's API. Added the ability to do restores and show snapshot trees.
 2.1.1   - Fixed formatting on command line help outputs on job receiver and executor.
 2.1.0   - Fixed dropdown in Command Sets that didn't adhere to new owner display system.
         - Changed a few icons for clarity.
