@@ -292,7 +292,12 @@ if (!$Captured_User_Password && !$Captured_Key) {
 	$User_Password = $Captured_User_Password;
 }
 else {
-	$User_Password = dec($Captured_User_Password);
+	if (!$No_Decode) {
+		$User_Password = dec($Captured_User_Password);
+	}
+	else {
+		$User_Password = $Captured_User_Password;
+	}
 }
 
 my $Host;
