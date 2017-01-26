@@ -34,10 +34,12 @@ Options are:
 	${Blue}-c, --count\t\t${Green}Counts the snapshots belonging to the VM, including those done by $System_Name.
 	${Blue}-S, --show\t\t${Green}Shows a tree list of all snapshots taken of a VM, including those done by $System_Name.
 	${Blue}-T, --tag\t\t${Green}Used with creating, deleting and reverting snapshots as a reference tag.
-	${Blue}-s, --snapshot\t\t${Green}Takes a snapshot of the listed hosts.
-	${Blue}-r, --remove\t\t${Green}Removes snapshots for listed hosts that were created by $System_Name.
+	${Blue}-s, --snapshot\t\t${Green}Takes a snapshot of the listed hosts. Combine with --tag to label the snapshot.
+	${Blue}-r, --remove\t\t${Green}When supplied with --tag, removes the snapshot matching the tag, otherwise snapshots taken
+				by The Machine that have no tag will be removed.
 	${Blue}-e, --erase\t\t${Green}Removes ALL snapshots for listed hosts.
-	${Blue}-R, --revert\t\t${Green}Revert a snapshot of a VM.
+	${Blue}-R, --revert\t\t${Green}Combine with --tag to revert to a specific snapshot, otherwise the VM will be reverted to
+				the current snapshot.
 	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug).
 	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes thread data.
 
@@ -287,8 +289,9 @@ sub erase_all_snapshots {
 	else {
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Delete ALL snapshots of ${Blue}$Host ${Green}completed successfully!${Clear}\n";
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}All snapshots of ${Blue}$Host ${Green}deleted successfully!${Clear}\n";
 		}
+		printf("%-15s %-5s", "$Host:", "All snapshots deleted successfully!\n");
 	}
 
 	Util::disconnect();
@@ -354,6 +357,7 @@ sub take_snapshot {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Disk snapshot of ${Blue}$Host ${Green}completed successfully!${Clear}\n";
 				}
+				printf("%-15s %-5s", "$Host:", "Disk snapshot created successfully with tag '$Snapshot_Tag'.\n");
 			}
 		}
 		else {
@@ -366,6 +370,7 @@ sub take_snapshot {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
 			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Memory snapshot of ${Blue}$Host ${Green}completed successfully!${Clear}\n";
 		}
+		printf("%-15s %-5s", "$Host:", "Memory snapshot created successfully with tag '$Snapshot_Tag'.\n");
 	}
 
 	Util::disconnect();
@@ -512,7 +517,6 @@ sub revert_snapshot {
 		else {
 			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Trying to revert to the current snapshot for ${Blue}$Host${Green}.${Clear}\n";
 		}
-		
 	}
 
 	if ($Snapshot_Tag) {
@@ -538,14 +542,15 @@ sub revert_snapshot {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverted ${Blue}$Host${Green} to the snapshot matching tag ${Yellow}$Snapshot_Tag${Green} successfully!${Clear}\n";
 				}
+				printf("%-15s %-5s", "$Host:", "Reverted successfully to the snapshot matching tag '$Snapshot_Tag'.\n");
 			}
-	
 		}
 		else {
 			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Pink}There does not appear to be any snapshots matching ${Yellow}$Snapshot_Tag${Pink} for ${Blue}$Host${Pink}.${Clear}\n";
 			}
+			printf("%-15s %-5s", "$Host:", "There does not appear to be any snapshots matching '$Snapshot_Tag'.\n");
 		}
 	}
 	else {
@@ -560,6 +565,7 @@ sub revert_snapshot {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverted ${Blue}$Host${Green} to the current snapshot successfully!${Clear}\n";
 			}
+			printf("%-15s %-5s", "$Host:", "Reverted to the current snapshot successfully!\n");
 		}
 	}
 

@@ -231,9 +231,9 @@ if (%Captured_Runtime_Variables) {
 		my $Variable_Key = $Captured_Variable_Key;
 		my $Variable_Value = $Captured_Runtime_Variables{$Captured_Variable_Key};
 
-		if ($Variable_Key =~ /^(.+)$/) {$Variable_Key = $1;}
+		if ($Variable_Key =~ /^([0-9a-zA-Z=\s]+)$/) {$Variable_Key = $1;}
 		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Name);}
-		if ($Variable_Value =~ /^([.+])$/) {$Variable_Value = $1;}
+		if ($Variable_Value =~ /^([0-9a-zA-Z=\s]+)$/) {$Variable_Value = $1;}
 		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
 
 		$Dependency_Runtime_Variables = $Dependency_Runtime_Variables . " -r '${Variable_Key}'='${Variable_Value}'";
@@ -510,7 +510,7 @@ sub host_connection {
 			my $Encrypted_Key = $Keys[2];
 			$User_Name = $Keys[3];
 
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found key $Key_Name [$User_Name]${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found key $Key_Name [$User_Name]${Clear}\n";
@@ -585,7 +585,7 @@ sub host_connection {
 	while (1) {
 
 		if ($User_Name && $User_Password) {
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting password login${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting password login${Clear}\n";
@@ -613,7 +613,7 @@ sub host_connection {
 
 				my $Discovered_Fingerprint = $SSH->match();
 				$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
@@ -622,7 +622,7 @@ sub host_connection {
 				# Fingerprint validity check
 				if (!$Previously_Recorded_Fingerprint) {
 
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
@@ -640,7 +640,7 @@ sub host_connection {
 				}
 				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
 
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
@@ -684,7 +684,7 @@ sub host_connection {
 			$Line = $SSH->read_line();
 			my $Password_Prompt = $SSH->waitfor(".*password.*", $Connection_Timeout, '-re');
 			if ($Password_Prompt) {
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
@@ -697,7 +697,7 @@ sub host_connection {
 			}
 		}
 		else {
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting key login${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting key login${Clear}\n";
@@ -723,7 +723,7 @@ sub host_connection {
 
 				my $Discovered_Fingerprint = $SSH->match();
 				$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
@@ -731,7 +731,7 @@ sub host_connection {
 				
 				# Fingerprint validity check
 				if (!$Previously_Recorded_Fingerprint) {
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
@@ -748,7 +748,7 @@ sub host_connection {
 				}
 				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
 
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
@@ -779,7 +779,7 @@ sub host_connection {
 
 			my $Key_Passphase_Trap = $SSH->waitfor("Enter passphrase for key", $Connection_Timeout, '-re');
 			if ($Key_Passphase_Trap) {
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found key passphrase prompt, sending passphrase${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found key passphrase prompt, sending passphrase${Clear}\n";
@@ -787,7 +787,7 @@ sub host_connection {
 				$SSH->send($Key_Passphrase);
 			}
 			else {
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Key passphrase prompt not found - perhaps this key doesn't have a passphrase${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Key passphrase prompt not found - perhaps this key doesn't have a passphrase${Clear}\n";
@@ -1027,7 +1027,7 @@ sub processor {
 		my $Command_Output;
 		my $Exit_Code;
 		if (($Command =~ /^#/) || ($Command eq undef)) {
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Skipping comment/empty line ${Blue}$Command${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Skipping comment/empty line ${Blue}$Command${Clear}\n";
 			}
@@ -1072,7 +1072,7 @@ sub processor {
 
 			if ($Pause !~ /^\d*$/) {
 
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Paused the Job indefinitely. You should manually resume this to continue.${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Paused the Job indefinitely. You should manually resume this to continue.${Clear}\n";
 				}
@@ -1098,7 +1098,7 @@ sub processor {
 			}
 			else {
 
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for ${Blue}$Pause ${Green}seconds${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for ${Blue}$Pause ${Green}seconds${Clear}\n";
 				}
@@ -1111,12 +1111,12 @@ sub processor {
 		elsif ($Command =~ /^\*VSNAPSHOT.*/) {
 			my $Snapshot = $Command;
 			$Snapshot =~ s/\*VSNAPSHOT (.*)/$1/;
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Performing a snapshot operation${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Performing a snapshot operation${Clear}\n";
 			}
-			elsif ($Snapshot eq 'COUNT') {
-				if ($Verbose == 1) {
+			if ($Snapshot eq 'COUNT') {
+				if ($Verbose) {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Counting snapshots${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Counting snapshots${Clear}\n";
 				}
@@ -1126,31 +1126,126 @@ sub processor {
 					$Command_Output = "There was an error counting snapshots. $Exit_Code";
 				}
 			}
-			elsif ($Snapshot eq 'TAKE') {
-				if ($Verbose == 1) {
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
+			elsif ($Snapshot eq 'SHOW') {
+				if ($Verbose) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshot tree${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshot tree${Clear}\n";
 				}
-				$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID`;
+				$Command_Output = `./vmware-snapshot.pl -S -i $Host_ID`;
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error showing the snapshot tree. $Exit_Code";
+				}
+			}
+			elsif ($Snapshot =~ /^TAKE/) {
+
+				my $Snapshot_Tag = $Snapshot;
+					if ($Snapshot_Tag =~ /^TAKE /) {
+						$Snapshot_Tag =~ s/^TAKE (.*)/$1/;
+					}
+					else {
+						$Snapshot_Tag = '';
+					}
+
+				if ($Snapshot_Tag) {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+					}
+					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}'`;
+				}
+				else {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
+					}
+					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID`;
+				}
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
 					$Command_Output = "There was an error taking a snapshot. $Exit_Code";
 				}
-				sleep 600;
 			}
-			elsif($Snapshot eq 'REMOVE') {
-				if ($Verbose == 1) {
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshots${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshots${Clear}\n";
+			elsif ($Snapshot =~ /^REVERT/) {
+
+				my $Snapshot_Tag = $Snapshot;
+					if ($Snapshot_Tag =~ /^REVERT /) {
+						$Snapshot_Tag =~ s/^REVERT (.*)/$1/;
+					}
+					else {
+						$Snapshot_Tag = '';
+					}
+
+				if ($Snapshot_Tag) {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+					}
+					$Command_Output = `./vmware-snapshot.pl -R -i $Host_ID -T '${Snapshot_Tag}'`;
 				}
-				$Command_Output = `./vmware-snapshot.pl -r -i $Host_ID`;
+				else {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting to the current snapshot${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting to the current snapshot${Clear}\n";
+					}
+					$Command_Output = `./vmware-snapshot.pl -R -i $Host_ID`;
+				}
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error reverting a snapshot. $Exit_Code";
+				}
+				else {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Host appears to have reverted to a previous snapshot. Establishing session again...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Host appears to have reverted to a previous snapshot. Establishing session again...${Clear}\n";
+					}
+					my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
+						`job_id`,
+						`command`,
+						`task_started`,
+						`modified_by`
+					)
+					VALUES (
+						?, ?, NOW(), ?
+					)");
+				
+					$Update_Job_Status->execute($Parent_ID, '### Host appears to have reverted to a previous snapshot. Establishing session again...', $User_Name);
+					my $Reboot_Type = 1;
+					$Connected_Host = &reboot_control($Host, $Host_ID, $Reboot_Type);
+				}
+			}
+			elsif($Snapshot =~ /^REMOVE/) {
+
+				my $Snapshot_Tag = $Snapshot;
+					if ($Snapshot_Tag =~ /^REMOVE /) {
+						$Snapshot_Tag =~ s/^REMOVE (.*)/$1/;
+					}
+					else {
+						$Snapshot_Tag = '';
+					}
+
+				if ($Snapshot_Tag) {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+					}
+					$Command_Output = `./vmware-snapshot.pl -r -i $Host_ID -T '${Snapshot_Tag}'`;
+				}
+				else {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing current snapshot taken by $System_Short_Name${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing current snapshot taken by $System_Short_Name${Clear}\n";
+					}
+					$Command_Output = `./vmware-snapshot.pl -r -i $Host_ID`;
+				}
+
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
 					$Command_Output = "There was an error removing $System_Short_Name snapshots. $Exit_Code";
 				}
 			}
 			elsif($Snapshot eq 'REMOVEALL') {
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots${Clear}\n";
 				}
@@ -1163,6 +1258,32 @@ sub processor {
 			else {
 				$Command_Output = "Found that you wanted to perform a snapshot operation. Couldn't determine exactly what. Perhaps you misspelt an option.";
 				$Exit_Code = 1;
+			}
+
+			my $Select_Failure_Action = $DB_Connection->prepare("SELECT `on_failure`
+				FROM `jobs`
+				WHERE `id` = ?
+			");
+			$Select_Failure_Action->execute($Parent_ID);
+			my ($On_Failure) = $Select_Failure_Action->fetchrow_array();
+
+			if ($Exit_Code != 0 && $On_Failure) {
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+				my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
+					`exit_code` = ?,
+					`output` = ?,
+					`task_ended` = NOW(),
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+				print "${Red}Snapshot operation failed.${Clear}\n";
+				print LOG "${Red}Snapshot operation failed.${Clear}\n";
+				$Connected_Host->close();
+				exit($Exit_Code);
 			}
 		}
 		elsif ($Command =~ /^\*WAITFOR.*/) {
@@ -1179,7 +1300,7 @@ sub processor {
 
 			if (!$Wait_Timeout_Override) {$Wait_Timeout_Override = $Wait_Timeout}
 
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Waiting for the prompt ${Yellow}$Wait_For_String ${Green}for ${Blue}$Wait_Timeout_Override ${Green}seconds${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Waiting for the prompt ${Yellow}$Wait_For_String ${Green}for ${Blue}$Wait_Timeout_Override ${Green}seconds${Clear}\n";
 			}
@@ -1188,7 +1309,7 @@ sub processor {
 				my $Line = $Connected_Host->read_line();
 				$Match = $Connected_Host->waitfor(".*$Wait_For_String.*", $Wait_Timeout_Override, '-re');
 				if ($Match) {
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						$Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found match for ${Yellow}$Wait_For_String${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found match for ${Yellow}$Wait_For_String${Clear}\n";
@@ -1234,7 +1355,7 @@ sub processor {
 			my $Send = $Command;
 			$Send =~ s/\*SEND(.*)/$1/;
 			$Send =~ s/^\s//;
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending '${Yellow}$Send${Green}'${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Sending '${Yellow}$Send${Green}'${Clear}\n";
 			}
@@ -1255,7 +1376,7 @@ sub processor {
 				$Command = "if [[ `id -u` -eq 0 ]]; then echo 'Already root'; else sudo su -; fi";
 			}
 
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Command${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Command${Clear}\n";
 				if ($Reboot_Required) {
@@ -1282,7 +1403,7 @@ sub processor {
 
 			my $Match;
 			if ($Reboot_Required) {
-			 	if ($Verbose == 1) {
+			 	if ($Verbose) {
 					$Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for a moment to watch for potential reboot...${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Pausing for a moment to watch for potential reboot...${Clear}\n";
@@ -1301,7 +1422,7 @@ sub processor {
 
 			if ($Reboot_Required) {
 				if ($Match) {
-				 	if ($Verbose == 1) {
+				 	if ($Verbose) {
 						$Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System is rebooting...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System is rebooting...${Clear}\n";
@@ -1324,7 +1445,7 @@ sub processor {
 					$Connected_Host = &reboot_control($Host, $Host_ID);
 				}
 				else {
-				 	if ($Verbose == 1) {
+				 	if ($Verbose) {
 						$Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System does not seem to be rebooting. Continuing...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System does not seem to be rebooting. Continuing...${Clear}\n";
@@ -1346,7 +1467,7 @@ sub processor {
 			$Command_Output =~ s/^\n//g;
 
 			if ($Match) {
-			 	if ($Verbose == 1) {
+			 	if ($Verbose) {
 					$Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found prompt. Continuing... ${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found prompt. Continuing... ${Clear}\n";
@@ -1658,8 +1779,7 @@ sub epic_failure {
 
 sub reboot_control {
 
-	my $Reboot_Host = $_[0];
-	my $Host_ID = $_[1];
+	my ($Reboot_Host, $Host_ID) = @_;
 	my $SSH;
 
 	if ($Verbose) {
@@ -1684,7 +1804,7 @@ sub reboot_control {
 			my $Encrypted_Key = $Keys[2];
 			$User_Name = $Keys[3];
 
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found key $Key_Name [$User_Name]${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found key $Key_Name [$User_Name]${Clear}\n";
@@ -1738,8 +1858,8 @@ sub reboot_control {
 		sleep 1;
 	
 		if ($Attempts >= 1200) {
-			print "Host did not recover after a reboot. Terminating the job.\n";
-			print LOG "Host did not recover after a reboot. Terminating the job.\n";
+			print "Host connection did not recover. Terminating the job.\n";
+			print LOG "Host connection did not recover. Terminating the job.\n";
 			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
 			`status` = ?,
 			`modified_by` = ?
@@ -1761,7 +1881,7 @@ sub reboot_control {
 	while (1) {
 
 		if ($User_Name && $User_Password) {
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting password login${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting password login${Clear}\n";
@@ -1788,7 +1908,7 @@ sub reboot_control {
 
 				my $Discovered_Fingerprint = $SSH->match();
 				$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
@@ -1796,7 +1916,7 @@ sub reboot_control {
 				
 				# Fingerprint validity check
 				if (!$Previously_Recorded_Fingerprint) {
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
@@ -1813,7 +1933,7 @@ sub reboot_control {
 				}
 				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
 
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
@@ -1846,7 +1966,7 @@ sub reboot_control {
 			$Line = $SSH->read_line();
 			my $Password_Prompt = $SSH->waitfor(".*password.*", $Reboot_Connection_Timeout, '-re');
 			if ($Password_Prompt) {
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
@@ -1860,7 +1980,7 @@ sub reboot_control {
 
 		}
 		else {
-			if ($Verbose == 1) {
+			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting key login${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting key login${Clear}\n";
@@ -1886,7 +2006,7 @@ sub reboot_control {
 
 				my $Discovered_Fingerprint = $SSH->match();
 				$Discovered_Fingerprint =~ s/.*key fingerprint is (.*)\./$1/g;
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found fingerprint ${Blue}$Discovered_Fingerprint${Clear}\n";
@@ -1894,7 +2014,7 @@ sub reboot_control {
 				
 				# Fingerprint validity check
 				if (!$Previously_Recorded_Fingerprint) {
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Previous fingerprint not found for ${Blue}$Host${Green}. Recording and proceeding...${Clear}\n";
@@ -1911,13 +2031,12 @@ sub reboot_control {
 				}
 				elsif ($Discovered_Fingerprint eq $Previously_Recorded_Fingerprint) {
 
-					if ($Verbose == 1) {
+					if ($Verbose) {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Fingerprint matches records, connecting...${Clear}\n";
 					}
 					$SSH->send('yes');
-
 				}
 				else {
 
@@ -1933,7 +2052,6 @@ sub reboot_control {
 					unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
 					exit(17);
 				}
-
 			}
 			else {
 				print "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
@@ -1942,7 +2060,7 @@ sub reboot_control {
 
 			my $Key_Passphase_Trap = $SSH->waitfor("Enter passphrase for key", $Wait_Timeout, '-re');
 			if ($Key_Passphase_Trap) {
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found key passphrase prompt, sending passphrase${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found key passphrase prompt, sending passphrase${Clear}\n";
@@ -1950,7 +2068,7 @@ sub reboot_control {
 				$SSH->send($Key_Passphrase);
 			}
 			else {
-				if ($Verbose == 1) {
+				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Key passphrase prompt not found - perhaps this key doesn't have a passphrase${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Key passphrase prompt not found - perhaps this key doesn't have a passphrase${Clear}\n";
@@ -2013,7 +2131,7 @@ sub reboot_control {
 	VALUES (
 		?, ?, ?, NOW(), ?
 	)");
-	$Update_Job_Status->execute($Parent_ID, "### System rebooted successfully. Will continue processing momentarily.", '', $User_Name);
+	$Update_Job_Status->execute($Parent_ID, "### Connection re-established successfully. Will continue processing momentarily.", '', $User_Name);
 
 	unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
 

@@ -138,10 +138,10 @@ my @Hosts = split(/[\s,]+/,join(',' , @Hosts_List));
 
 if (%Captured_Runtime_Variables) {
 	foreach my $Variable_Key (keys %Captured_Runtime_Variables) {
-		if ($Variable_Key =~ /^([0-9a-zA-Z=]+)$/) {$Variable_Key = $1;}
+		if ($Variable_Key =~ /^([0-9a-zA-Z=\s]+)$/) {$Variable_Key = $1;}
 		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Trigger);}
 		my $Variable = $Captured_Runtime_Variables{$Variable_Key};
-		if ($Variable =~ /^([0-9a-zA-Z=]+)$/) {$Variable = $1;}
+		if ($Variable =~ /^([0-9a-zA-Z=\s]+)$/) {$Variable = $1;}
 		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable, $User_Trigger);}
 		$Runtime_Variables = $Runtime_Variables . " -r '${Variable_Key}'='${Variable}'";
 	}

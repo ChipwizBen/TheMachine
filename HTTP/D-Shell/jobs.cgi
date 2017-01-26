@@ -547,7 +547,7 @@ sub run_job {
 
 			if ($Variable_Name =~ /^(.+)$/) {$Variable_Name = $1;}
 			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Name, $User_Name);}
-			if ($Variable_Value =~ /^([.+])$/) {$Variable_Value = $1;}
+			if ($Variable_Value =~ /^(.+)$/) {$Variable_Value = $1;}
 			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
 
 			$Variable_Name = enc($Variable_Name, 3);
