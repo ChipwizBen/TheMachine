@@ -348,7 +348,7 @@ sub allocation {
 					my $IP_Block_Limit_Integer_Final = $IP_Allocation_Limit_Final->intip();
 
 		if ($IP_Block_Limit_Integer < $IP_Block_Limit_Integer_Final) {
-			my $Message_Red="There are no more available blocks in $IP_Block for a $CIDR_Input notation. Either reduce the block size or use a different block";
+			my $Message_Red="There are no more available blocks in $IP_Block_Network for a $CIDR_Input notation. Either reduce the block size or use a different block";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
 			print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";

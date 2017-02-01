@@ -753,7 +753,7 @@ sub Password_Complexity_Check {
 	if ($Enforce_Complexity_Requirements !~ /Yes/i) {
 		return 0;
 	}
-	
+
 	my $Password = $_[0];
 
 
@@ -995,7 +995,7 @@ sub Version {
 
 	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
 
-	my $Version = '2.2.0';
+	my $Version = '2.2.1';
 	return $Version;
 
 } # sub Version

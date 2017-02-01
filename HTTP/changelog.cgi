@@ -37,6 +37,9 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.2.1
+	$Table->addRow('2.2.1', 'Fixed an issue with the IP allocation system reporting the wrong block when full.');
+
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');
 	$Table->addRow('', 'Added the ability to pause a Job indefinitely from within a Command Set.');
