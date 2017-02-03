@@ -1,4 +1,4 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 
 use strict;
 use POSIX qw(strftime);
@@ -13,7 +13,6 @@ my $Reverse_Proxy_Location = Reverse_Proxy_Location();
 	unlink glob "$Reverse_Proxy_Location/*.conf" or warn "Could not unlink $Reverse_Proxy_Location/*.conf";
 my $Proxy_Redirect_Location = Proxy_Redirect_Location();
 	unlink glob "$Proxy_Redirect_Location/*.conf" or warn "Could not unlink $Proxy_Redirect_Location/*.conf";
-#my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
 
 $| = 1;
 my $Override;
