@@ -39,6 +39,8 @@ sub html_output {
 
 	## Version 2.2.1
 	$Table->addRow('2.2.1', 'Fixed an issue with the IP allocation system reporting the wrong block when full.');
+	$Table->addRow('', 'Removed taint requirement from locally executed only scripts.');
+	$Table->addRow('', 'Fixed missing formatting for variables in Command Sets.');
 
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');

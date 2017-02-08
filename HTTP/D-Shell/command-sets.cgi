@@ -1908,10 +1908,11 @@ sub html_output {
 			$Command =~ s/>/&gt;/g;
 			$Command =~ s/  /&nbsp;&nbsp;/g;
 			$Command =~ s/\r/<br \/>/g;
-			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\-|]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
-			$Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
+			$Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)\$\=\*\@\:;]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
+			$Command =~ s/(\*[A-Z0-9]+\{.*?\})(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
+			$Command =~ s/(\*[A-Z0-9]+)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-			
+
 			my $Line_Count = $Command =~ tr/\n//;
 				$Line_Count++;
 		my $Command_Description = $Select_Command_Sets[3];
