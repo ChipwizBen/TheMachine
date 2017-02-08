@@ -77,6 +77,7 @@ my $Remove;
 my $Tag;
 my $Erase;
 my $Revert;
+my $Username;
 
 GetOptions(
 	't:i' => \$Threads,
@@ -99,6 +100,8 @@ GetOptions(
 	'erase' => \$Erase,
 	'R' => \$Revert,
 	'revert' => \$Revert,
+	'X:s' => \$Username,
+	'username:s' => \$Username,
 	'v' => \$Verbose,
 	'verbose' => \$Verbose,
 	'V' => \$Very_Verbose,
@@ -159,7 +162,6 @@ my $Fork = new Parallel::ForkManager($Threads);
 			}
 			elsif ($Snapshot) {
 				&take_snapshot($Host, $Tag);
-				&count_snapshot($Host);
 			}
 			elsif ($Revert) {
 				&revert_snapshot($Host, $Tag);
@@ -223,7 +225,10 @@ sub remove_snapshot {
 		else {
 			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
-				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Deleted a snapshot of ${Blue}$Host${Green} successfully!${Clear}\n";
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Deleted a snapshot of ${Blue}$Host${Green} matching ${Yellow}$Snapshot_Tag${Green} successfully!${Clear}\n";
+			}
+			else {
+				print "Deleted a snapshot of $Host matching '$Snapshot_Tag' successfully!\n";
 			}
 		}
 
@@ -232,6 +237,9 @@ sub remove_snapshot {
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
 			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Pink}There does not appear to be any snapshots matching ${Yellow}$Snapshot_Tag${Pink} for ${Blue}$Host${Pink}.${Clear}\n";
+		}
+		else {
+			print "There does not appear to be any snapshots matching '$Snapshot_Tag' for $Host.\n";
 		}
 	}
 
@@ -305,7 +313,13 @@ sub take_snapshot {
 	if (!$Snapshot_Tag) {$Snapshot_Tag = "$System_Name: $Host"} else {$Snapshot_Tag = "$System_Name: $Snapshot_Tag"}
 
 	my $Time_Date_Stamp = strftime "%Y-%m-%d %H:%M:%S", localtime;
-	my $Snapshot_Description = "Snapshot taken of $Host by $System_Name at $Time_Date_Stamp.";
+	my $Snapshot_Description;
+	if ($Username) {
+		$Snapshot_Description = "Snapshot taken of $Host by $Username on $System_Name at $Time_Date_Stamp.";
+	}
+	else {
+		$Snapshot_Description = "Snapshot taken of $Host by $System_Name at $Time_Date_Stamp.";
+	}
 	my $Include_Memory = 1;
 
 	my ($vSphere_Server, $vSphere_Username, $vSphere_Password) = VMware_Connection();
