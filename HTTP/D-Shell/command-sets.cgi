@@ -62,7 +62,7 @@ my $Revision_History = $CGI->param("Revision_History");
 	my $Diff_Previous = $CGI->param("Diff_Previous");
 
 my $Run_Command = $CGI->param("Run_Command");
-		if ($Run_Command) {
+		if ($Run_Command ne '') {
 			if ($Run_Command =~ /^([0-9]+)$/) {$Run_Command = $1;}
 			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Run_Command, $User_Name);}
 		}
@@ -91,7 +91,7 @@ my $Run_Command = $CGI->param("Run_Command");
 			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Password_Add, $User_Name);}
 		}
 	my $On_Failure_Add = $CGI->param("On_Failure_Add");
-		if ($On_Failure_Add) {
+		if ($On_Failure_Add ne '') {
 			if ($On_Failure_Add =~ /^([0-9]+)$/) {$On_Failure_Add = $1;}
 			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $On_Failure_Add, $User_Name);}
 		}
@@ -1577,14 +1577,40 @@ sub run_command {
 		exit(0);
 	}
 
+	my $Verbose = Verbose();
+	my $Paper_Trail = Paper_Trail();
+	if ($Verbose && $Paper_Trail) {
+		my $Subroutine = (caller(0))[3];
+		if ($Run_Command) {&System_Logger($Subroutine, "Run_Command=$Run_Command");}
+		if ($User_Name_Add) {&System_Logger($Subroutine, "User_Name_Add=$User_Name_Add");}
+		if ($Password_Add) {&System_Logger($Subroutine, "Password_Add=$Password_Add");}
+		if ($Add_Host_Temp_Existing) {&System_Logger($Subroutine, "Add_Host_Temp_Existing=$Add_Host_Temp_Existing");}
+		if ($SSH_Key) {&System_Logger($Subroutine, "SSH_Key=$SSH_Key");}
+		if ($Key_Lock_Phrase) {&System_Logger($Subroutine, "Key_Lock_Phrase=$Key_Lock_Phrase");}
+		if ($Key_Passphrase) {&System_Logger($Subroutine, "Key_Passphrase=$Key_Passphrase");}
+		if ($On_Failure_Add) {&System_Logger($Subroutine, "On_Failure_Add=$On_Failure_Add");}
+	}
+
 	my $Command_Variable_Submission;
 	foreach (@Machine_Variables) {
 		my $Variable_Name = $_;
 		if ($Variable_Name =~ m/^TMVar_/) {
 			my $Variable_Value = $CGI->param("$Variable_Name");
 			$Variable_Name =~ s/TMVar_//;
+			if ($Verbose && $Paper_Trail) {
+				my $Subroutine = (caller(0))[3];
+				if ($Variable_Name) {&System_Logger($Subroutine, "Variable_Name (pre enc)=$Variable_Name");}
+				if ($Variable_Value) {&System_Logger($Subroutine, "Variable_Value (pre enc)=$Variable_Value");}
+			}
 			$Variable_Name = enc($Variable_Name, 3);
 			$Variable_Value = enc($Variable_Value, 3);
+			$Variable_Name =~ s/=/#Equals#/g;
+			$Variable_Value =~ s/=/#Equals#/g;
+			if ($Verbose && $Paper_Trail) {
+				my $Subroutine = (caller(0))[3];
+				if ($Variable_Name) {&System_Logger($Subroutine, "Variable_Name (post enc)=$Variable_Name");}
+				if ($Variable_Value) {&System_Logger($Subroutine, "Variable_Value (post enc)=$Variable_Value");}
+			}
 			$Command_Variable_Submission = $Command_Variable_Submission . " -r '${Variable_Name}'='${Variable_Value}'";
 		}
 	}

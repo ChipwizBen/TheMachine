@@ -75,7 +75,7 @@ sub System_Log_File {
 
 	# This is the system log file. This is where some system log and paper trail entires go.
 
-	my $System_Log_File = '../Storage/System/System_Log';
+	my $System_Log_File = '../Storage/System/Log/System_Log';
 	return $System_Log_File;
 
 } # sub System_Log_File

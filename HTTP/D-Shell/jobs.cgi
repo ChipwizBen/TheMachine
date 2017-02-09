@@ -42,7 +42,7 @@ if ($Trigger_Job) {
 	if ($Trigger_Job =~ /^([0-9]+$)/) {$Trigger_Job = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Trigger_Job, $User_Name);}
 }
-if ($On_Failure) {
+if ($On_Failure ne '') {
 	if ($On_Failure =~ /^([0-9]+$)/) {$On_Failure = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $On_Failure, $User_Name);}
 }
@@ -552,6 +552,8 @@ sub run_job {
 
 			$Variable_Name = enc($Variable_Name, 3);
 			$Variable_Value = enc($Variable_Value, 3);
+			$Variable_Name =~ s/=/#Equals#/g;
+			$Variable_Value =~ s/=/#Equals#/g;
 			$Command_Variable_Submission = $Command_Variable_Submission . " -r '${Variable_Name}'='${Variable_Value}'";
 		}
 	}

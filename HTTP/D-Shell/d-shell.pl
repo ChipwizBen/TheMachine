@@ -227,15 +227,27 @@ if (%Captured_Runtime_Variables) {
 		my $Variable_Key = $Captured_Variable_Key;
 		my $Variable_Value = $Captured_Runtime_Variables{$Captured_Variable_Key};
 
-		if ($Variable_Key =~ /^([0-9a-zA-Z=\s]+)$/) {$Variable_Key = $1;}
-		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Name);}
-		if ($Variable_Value =~ /^([0-9a-zA-Z=\s]+)$/) {$Variable_Value = $1;}
-		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
+		if (!$No_Decode) {
+			if ($Variable_Key =~ /^([0-9a-zA-Z\#\s]+)$/) {$Variable_Key = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Name);}
+			if ($Variable_Value =~ /^([0-9a-zA-Z\#\s]+)$/) {$Variable_Value = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
+		}
+		else {
+			if ($Variable_Key =~ /^(.+)$/) {$Variable_Key = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Name);}
+			if ($Variable_Value =~ /^(.+)$/) {$Variable_Value = $1;}
+			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
+		}
 
 		$Dependency_Runtime_Variables = $Dependency_Runtime_Variables . " -r '${Variable_Key}'='${Variable_Value}'";
 
-		if (!$No_Decode) {$Variable_Key = dec($Variable_Key);}
-		if (!$No_Decode) {$Variable_Value = dec($Variable_Value);}
+		if (!$No_Decode) {
+			$Variable_Key =~ s/#Equals#/=/g;
+			$Variable_Value =~ s/#Equals#/=/g;
+			$Variable_Key = dec($Variable_Key);
+			$Variable_Value = dec($Variable_Value);
+		}
 
 		$Runtime_Variables{$Variable_Key} = $Variable_Value;
 
@@ -321,6 +333,14 @@ if ($Verbose && $Paper_Trail) {
 	if ($Captured_Key) {print "${Red}## ${Green}Caught Key ID ${Yellow}$Captured_Key${Clear}\n"}
 	if ($Captured_Key_Lock) {print "${Red}## ${Green}Caught Key Lock ${Yellow}$Captured_Key_Lock${Clear}\n"}
 	if ($Captured_Key_Passphrase) {print "${Red}## ${Green}Caught Key Passphrase ${Yellow}$Captured_Key_Passphrase${Clear}\n"}
+	if (%Captured_Runtime_Variables) {
+		my $CRTVs = scalar(keys %Captured_Runtime_Variables);
+		print "${Red}## ${Green}Caught $CRTVs Captured Runtime Variables:${Clear}\n\n";
+		foreach my $Variable_Key (keys %Captured_Runtime_Variables) {
+			print "${Green}CRTV: ${Yellow}$Variable_Key${Clear}\n"; 
+			print "${Green}Value: ${Yellow}" . $Captured_Runtime_Variables{$Variable_Key} . "${Clear}\n\n";
+		}
+	}
 	if (%Runtime_Variables) {
 		my $RTVs = scalar(keys %Runtime_Variables);
 		print "${Red}## ${Green}Caught $RTVs Runtime Variables:${Clear}\n\n";
@@ -340,9 +360,17 @@ if ($Verbose && $Paper_Trail) {
 	if ($Captured_Key) {print LOG "${Red}## ${Green}Caught Key ID ${Yellow}$Captured_Key${Clear}\n"}
 	if ($Captured_Key_Lock) {print LOG "${Red}## ${Green}Caught Key Lock ${Yellow}$Captured_Key_Lock${Clear}\n"}
 	if ($Captured_Key_Passphrase) {print LOG "${Red}## ${Green}Caught Key Passphrase ${Yellow}$Captured_Key_Passphrase${Clear}\n"}
+	if (%Captured_Runtime_Variables) {
+		my $CRTVs = scalar(keys %Captured_Runtime_Variables);
+		print LOG "\n${Red}## ${Green}Caught $CRTVs Runtime Variables:${Clear}\n\n";
+		foreach my $Variable_Key (keys %Captured_Runtime_Variables) {
+			print LOG "${Green}CRTV: ${Yellow}$Variable_Key${Clear}\n"; 
+			print LOG "${Green}Value: ${Yellow}" . $Captured_Runtime_Variables{$Variable_Key} . "${Clear}\n\n";
+		}
+	}
 	if (%Runtime_Variables) {
 		my $RTVs = scalar(keys %Runtime_Variables);
-		print LOG "${Red}## ${Green}Caught $RTVs Runtime Variables:${Clear}\n\n";
+		print LOG "${Red}## ${Green}Resolved $RTVs Runtime Variables:${Clear}\n\n";
 		foreach my $Variable_Key (keys %Runtime_Variables) {
 			print LOG "${Green}RTV: ${Yellow}$Variable_Key${Clear}\n"; 
 			print LOG "${Green}Value: ${Yellow}" . $Runtime_Variables{$Variable_Key} . "${Clear}\n\n";

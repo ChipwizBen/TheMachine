@@ -101,7 +101,7 @@ if ($Captured_User_Name) {
 	if ($Captured_User_Name =~ /^([0-9a-zA-Z\-\_\s]+)$/) {$Captured_User_Name = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_User_Name, $User_Trigger);}
 }
-if ($No_Decode) {
+if ($No_Decode ne '') {
 	if ($No_Decode =~ /^([0-1])$/) {$No_Decode = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $No_Decode, $User_Trigger);}
 }
@@ -110,7 +110,7 @@ if ($Captured_Password && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Password, $User_Trigger);}
 }
 elsif ($Captured_Password && $No_Decode) {
-	if ($Captured_Password =~ /^([.+])$/) {$Captured_Password = $1;}
+	if ($Captured_Password =~ /^(.+)$/) {$Captured_Password = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Password, $User_Trigger);}
 }
 if ($Captured_Key) {
@@ -122,7 +122,7 @@ if ($Captured_Key_Lock && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Trigger);}
 }
 elsif ($Captured_Key_Lock && $No_Decode) {
-	if ($Captured_Key_Lock =~ /^([.+])$/) {$Captured_Key_Lock = $1;}
+	if ($Captured_Key_Lock =~ /^(.+)$/) {$Captured_Key_Lock = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Lock, $User_Trigger);}
 }
 if ($Captured_Key_Passphrase && !$No_Decode) {
@@ -130,32 +130,67 @@ if ($Captured_Key_Passphrase && !$No_Decode) {
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Trigger);}
 }
 elsif ($Captured_Key_Passphrase && $No_Decode) {
-	if ($Captured_Key_Passphrase =~ /^([.+])$/) {$Captured_Key_Passphrase = $1;}
+	if ($Captured_Key_Passphrase =~ /^(.+)$/) {$Captured_Key_Passphrase = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Captured_Key_Passphrase, $User_Trigger);}
 }
-if ($On_Failure) {
+if ($On_Failure ne '') {
 	if ($On_Failure =~ /^([0-9]+$)/) {$On_Failure = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $On_Failure, $User_Trigger);}
 }
-if ($Output_Job_ID) {
+if ($Output_Job_ID ne '') {
 	if ($Output_Job_ID =~ /^([0-1])$/) {$Output_Job_ID = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Output_Job_ID, $User_Trigger);}
 }
 
 my @Hosts = split(/[\s,]+/,join(',' , @Hosts_List));
 
-if (%Captured_Runtime_Variables) {
+if (%Captured_Runtime_Variables && !$No_Decode) {
 	foreach my $Variable_Key (keys %Captured_Runtime_Variables) {
-		if ($Variable_Key =~ /^([0-9a-zA-Z=\s]+)$/) {$Variable_Key = $1;}
+		if ($Variable_Key =~ /^([0-9a-zA-Z#]+)$/) {$Variable_Key = $1;}
 		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Trigger);}
 		my $Variable = $Captured_Runtime_Variables{$Variable_Key};
-		if ($Variable =~ /^([0-9a-zA-Z=\s]+)$/) {$Variable = $1;}
+		if ($Variable =~ /^([0-9a-zA-Z#]+)$/) {$Variable = $1;}
 		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable, $User_Trigger);}
+		$Variable_Key =~ s/=/#Equals#/g;
+		$Variable =~ s/=/#Equals#/g;
+		$Runtime_Variables = $Runtime_Variables . " -r '${Variable_Key}'='${Variable}'";
+	}
+}
+if (%Captured_Runtime_Variables && $No_Decode) {
+	foreach my $Variable_Key (keys %Captured_Runtime_Variables) {
+		if ($Variable_Key =~ /^(.+)$/) {$Variable_Key = $1;}
+		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Key, $User_Trigger);}
+		my $Variable = $Captured_Runtime_Variables{$Variable_Key};
+		if ($Variable =~ /^(.+)$/) {$Variable = $1;}
+		else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable, $User_Trigger);}
+		$Variable_Key =~ s/=/#Equals#/g;
+		$Variable =~ s/=/#Equals#/g;
 		$Runtime_Variables = $Runtime_Variables . " -r '${Variable_Key}'='${Variable}'";
 	}
 }
 
 if ($No_Decode) {$No_Decode = '-D'} else {$No_Decode = ''}
+
+	my $Verbose = Verbose();
+	my $Paper_Trail = Paper_Trail();
+	if ($Verbose && $Paper_Trail) {
+		my $Subroutine = (caller(0))[3];
+		if ($User_Trigger) {&System_Logger($Subroutine, "User_Trigger=$User_Trigger");}
+		if ($Command_Set) {&System_Logger($Subroutine, "Command_Set=$Command_Set");}
+		if ($Captured_User_Name) {&System_Logger($Subroutine, "Captured_User_Name=$Captured_User_Name");}
+		if ($Captured_Password) {&System_Logger($Subroutine, "Captured_Password=$Captured_Password");}
+		if ($Captured_Key) {&System_Logger($Subroutine, "Captured_Key=$Captured_Key");}
+		if ($Captured_Key_Lock) {&System_Logger($Subroutine, "Captured_Key_Lock=$Captured_Key_Lock");}
+		if ($Captured_Key_Passphrase) {&System_Logger($Subroutine, "Captured_Key_Passphrase=$Captured_Key_Passphrase");}
+		if (%Captured_Runtime_Variables) {
+			my $CRTVs = scalar(keys %Captured_Runtime_Variables);
+			{&System_Logger($Subroutine, "### Captured Runtime Variables Follows...");}
+			foreach my $Variable_Key (keys %Captured_Runtime_Variables) {
+				&System_Logger($Subroutine, "Variable_Key=$Variable_Key");
+				&System_Logger($Subroutine, "Value=".$Captured_Runtime_Variables{$Variable_Key});
+			}
+		}
+	}
 
 if ($Command_Set && @Hosts) {
 
