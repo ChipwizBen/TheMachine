@@ -43,6 +43,8 @@ sub html_output {
 	$Table->addRow('', 'Fixed missing formatting for variables in Command Sets.');
 	$Table->addRow('', 'Added minor username tag for snapshot tracking.');
 	$Table->addRow('', 'Fixed a bug related to correctly capturing hashes where the key or value ended in \'=\'.');
+	$Table->addRow('', 'Fixed filter retention across pages.');
+	$Table->addRow('', 'Fixed some block size display issues for /32 blocks. (now correctly uses parent block for some values).');
 
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');

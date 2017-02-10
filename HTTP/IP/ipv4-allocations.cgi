@@ -417,52 +417,23 @@ my ($Allocation_Range_Error, $IP_Block) = @_;
 
 sub html_auto_block {
 
+print <<ENDHTML;
+
+<div id="wide-popup-box">
+<a href="/IP/ipv4-allocations.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">IPv4 Allocation</h3>
+
+<h4 align="center">Block Info</h4>
+ENDHTML
+
 my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = @_;
 
-my $Allocated_Block = new Net::IP::XS ($Final_Allocated_IP) || die (Net::IP::XS::Error);
-
-	my ($Block_Prefix,$CIDR)=Net::IP::XS::ip_splitprefix($Final_Allocated_IP);
-	my $Block_Version=$Allocated_Block->version();
-	my $Block_Type=$Allocated_Block->iptype();
-	my $Short_Format=$Allocated_Block->short();
-	my $Block_Addresses=$Allocated_Block->size();
-		my $Usable_Addresses=$Block_Addresses-2;
-			if ($Usable_Addresses < 1) {$Usable_Addresses = 'N/A'}
-	my $Decimal_Subnet=$Allocated_Block->mask();
-	my $Range_Min=$Allocated_Block->ip();
-	my $Range_Max=$Allocated_Block->last_ip();
-	my $Reverse_IP=$Allocated_Block->reverse_ip();
-	my $Hex_IP=$Allocated_Block->hexip();
-	my $Hex_Mask=$Allocated_Block->hexmask();
-	
-my $Usable_Range_Begin=$Allocated_Block->intip();
-	$Usable_Range_Begin=$Usable_Range_Begin+1;
-		my $Octet1=($Usable_Range_Begin/16777216)%256;
-		my $Octet2=($Usable_Range_Begin/65536)%256;
-		my $Octet3=($Usable_Range_Begin/256)%256;
-		my $Octet4=$Usable_Range_Begin%256;
-		$Usable_Range_Begin = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
-	
-my $Usable_Range_End=$Allocated_Block->last_ip();
-my $Allocated_Block_End = new Net::IP::XS ($Usable_Range_End) || die (Net::IP::XS::Error);
-	$Usable_Range_End=$Allocated_Block_End->intip();
-	$Usable_Range_End=$Usable_Range_End-1;
-		$Octet1=($Usable_Range_End/16777216)%256;
-		$Octet2=($Usable_Range_End/65536)%256;
-		$Octet3=($Usable_Range_End/256)%256;
-		$Octet4=$Usable_Range_End%256;
-		$Usable_Range_End = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
-
-my $Usable_Range;
-if ($Usable_Addresses < 2) {
-	$Usable_Range = 'N/A';
-}
-else {
-	$Usable_Range = $Usable_Range_Begin.' to '.$Usable_Range_End;;
-}
-
-
-
+my $Embedded = 1;
+&html_query_block($Final_Allocated_IP, $Parent_Block, $Embedded);
 
 if ($Add_Host_Temp_New) {
 	if ($Add_Host_Temp_Existing !~ m/^$Add_Host_Temp_New,/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New$/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New,/g) {
@@ -491,76 +462,8 @@ foreach my $Host (@Hosts) {
 	}
 }
 
+
 print <<ENDHTML;
-
-<div id="wide-popup-box">
-<a href="/IP/ipv4-allocations.cgi">
-<div id="blockclosebutton">
-</div>
-</a>
-
-<h3 align="center">IPv4 Allocation</h3>
-
-<h4 align="center">Block Info</h4>
-
-<table align="center" style="font-size: 12px;">
-	<tr>
-		<td style="text-align: right;">Parent Block</td>
-		<td style="text-align: left; color: #00FF00;">$IP_Block_Name ($Parent_Block)</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Allocated Block</td>
-		<td style="text-align: left; color: #00FF00;">$Final_Allocated_IP</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Block Version</td>
-		<td style="text-align: left; color: #00FF00;">IPv$Block_Version</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Block Type</td>
-		<td style="text-align: left; color: #00FF00;">$Block_Type</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Short Format</td>
-		<td style="text-align: left; color: #00FF00;">$Short_Format/$CIDR</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Decimal Mask</td>
-		<td style="text-align: left; color: #00FF00;">$Decimal_Subnet</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Network Address</td>
-		<td style="text-align: left; color: #00FF00;">$Range_Min</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Broadcast Address</td>
-		<td style="text-align: left; color: #00FF00;">$Range_Max</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Block Addresses</td>
-		<td style="text-align: left; color: #00FF00;">$Block_Addresses</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Usable Addresses</td>
-		<td style="text-align: left; color: #00FF00;">$Usable_Addresses</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Usable Range</td>
-		<td style="text-align: left; color: #00FF00;">$Usable_Range</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Reverse</td>
-		<td style="text-align: left; color: #00FF00;">$Reverse_IP</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Hex IP</td>
-		<td style="text-align: left; color: #00FF00;">$Hex_IP</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Hex Mask</td>
-		<td style="text-align: left; color: #00FF00;">$Hex_Mask</td>
-	</tr>
-</table>
 <hr width="50%">
 <h4 align="center">Host Assignment</h4>
 
@@ -1054,7 +957,7 @@ sub delete_block {
 
 sub html_query_block {
 
-my ($Block, $Parent) = @_;
+my ($Block, $Parent, $Embedded) = @_;
 
 my ($Block_Prefix, $Block_CIDR)=Net::IP::XS::ip_splitprefix($Block);
 
@@ -1106,6 +1009,7 @@ my $Block_Query_End = new Net::IP::XS ($Usable_Range_End) || die (Net::IP::XS::E
 		$Octet4=$Usable_Range_End%256;
 		$Usable_Range_End = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
 
+if (!$Embedded) {
 print <<ENDHTML;
 <body>
 
@@ -1116,13 +1020,14 @@ print <<ENDHTML;
 </a>
 <h3>Block Query</h3>
 ENDHTML
+}
 
 if ($Block_CIDR == 32) {print "<p>This is a /32 block, so its block values are calculated from its parent.</p>";}
 
 print <<ENDHTML;
 <table align="center" style="font-size: 12px;">
 	<tr>
-		<td style="text-align: right;">Queried Block</td>
+		<td style="text-align: right;">Block</td>
 		<td style="text-align: left; color: #00FF00;">$Block_Prefix/$CIDR</td>
 	</tr>
 	<tr>
@@ -1175,10 +1080,11 @@ print <<ENDHTML;
 	</tr>
 </table>
 
-
-</div>
-
 ENDHTML
+
+if (!$Embedded) {
+	print '</div>';
+}
 
 } # sub html_query_block
 

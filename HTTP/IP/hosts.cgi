@@ -190,6 +190,7 @@ ENDHTML
 	ORDER BY `type` ASC");
 	$Host_Type_Query->execute( );
 
+	print "<option value='0'>--Select a Host Type--</option>";
 	while ( (my $ID, my $Type) = my @Type_Query = $Host_Type_Query->fetchrow_array() )
 	{
 		print "<option value='$ID'>$Type</option>";
@@ -318,7 +319,6 @@ sub html_edit_host {
 
 	while ( my @DB_Host = $Select_Host->fetchrow_array() )
 	{
-
 		my $Host_Name_Extract = $DB_Host[0];
 		my $Type_Extract = $DB_Host[1];
 
@@ -373,6 +373,7 @@ ENDHTML
 	ORDER BY `type` ASC");
 	$Host_Type_Query->execute( );
 
+	print "<option value='0'>--Select a Host Type--</option>";
 	while ( (my $ID, my $Type) = my @Type_Query = $Host_Type_Query->fetchrow_array() )
 	{
 		if ($ID == $Type_Extract) {
