@@ -331,7 +331,7 @@ ENDHTML
 			}
 			print  "<tr align='right'>
 						<td style='text-align: left;' class='tooltip' text='Machine Variable:\n\t*VAR{$Variable_Key}\nAppears in: $Appears_In'>$Variable_Key</td>
-						<td colspan='4'><input type='text' name='TMVar_$Variable_Key' placeholder='' style='width:100%'></td>
+						<td colspan='4'><textarea name='TMVar_$Variable_Key' style='width:100%'></textarea></td>
 					</tr>
 			";
 		}
@@ -546,9 +546,7 @@ sub run_job {
 			$Variable_Name =~ s/TMVar_//;
 
 			if ($Variable_Name =~ /^(.+)$/) {$Variable_Name = $1;}
-			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Name, $User_Name);}
 			if ($Variable_Value =~ /^(.+)$/) {$Variable_Value = $1;}
-			else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Variable_Value, $User_Name);}
 
 			$Variable_Name = enc($Variable_Name, 3);
 			$Variable_Value = enc($Variable_Value, 3);

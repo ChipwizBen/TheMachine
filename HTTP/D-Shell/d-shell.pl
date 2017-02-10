@@ -1000,7 +1000,7 @@ sub processor {
 			$Machine_Variable =~ s/.*\*VAR\{(.*?)\}.*/$1/g;
 
 			my $Variable_Value = $Runtime_Variables{$Machine_Variable};
-
+			$Variable_Value =~ s/\r\n/\n/g;
 			$Command =~ s/\*VAR\{$Machine_Variable\}/$Variable_Value/;
 
 		}

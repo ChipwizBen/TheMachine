@@ -889,7 +889,7 @@ sub edit_command {
 		?, ?, ?, ?
 	)");
 
-	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name created a new revision (Rev. $Edit_Command_Revision) for $Command_Name_Edit (Command Set ID $Edit_Command, now ID $Command_Insert_ID). It is now recorded as $Command_Edit.", $User_Name);
+	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name created a new revision (Rev. $Edit_Command_Revision) for $Command_Name_Edit (Command Set ID $Edit_Command, now ID $Command_Insert_ID). It is now recorded as:\n $Command_Edit", $User_Name);
 	# / Audit Log (Command Set)
 
 	### Dependencies
@@ -1471,7 +1471,7 @@ ENDHTML
 			}
 			print  "<tr align='right' class='TableVariables' style='display: none;'>
 						<td style='text-align: left;' class='tooltip' text='Machine Variable:\n\t*VAR{$Variable_Key}\nAppears in: $Appears_In'>$Variable_Key</td>
-						<td colspan='4'><input type='text' name='TMVar_$Variable_Key' placeholder='' style='width:100%'></td>
+						<td colspan='4'><textarea name='TMVar_$Variable_Key' style='width:100%'></textarea></td>
 					</tr>
 			";
 		}
