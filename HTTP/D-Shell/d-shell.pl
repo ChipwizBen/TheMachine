@@ -1140,7 +1140,40 @@ sub processor {
 		elsif ($Command =~ /^\*VSNAPSHOT.*/) {
 			my $Snapshot = $Command;
 			$Snapshot =~ s/\*VSNAPSHOT (.*)/$1/;
-			if ($Verbose) {
+
+		 	if ($Verbose) {
+				$Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Checking that the system resides on VMware before performing a snapshot operation${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Checking that the system resides on VMware before performing a snapshot operation${Clear}\n";
+			}
+
+			$Connected_Host->send(' export HISTFILE=/dev/null');
+			$Connected_Host->send(" $Set_Predictable_Prompt");
+			$Connected_Host->send(' echo $PS1');
+			$Command_Output = $Connected_Host->read_all();
+			$Connected_Host->send(' cat /sys/class/dmi/id/sys_vendor');
+
+			eval { $Command_Output = $Connected_Host->read_all(); }; &epic_failure('VMware Detection Fault', $@, $Command_Output, $Job_Status_Update_ID) if $@;
+			$Command_Output =~ s/\e.*//g;
+			$Command_Output =~ s/\r//g;
+			$Command_Output =~ s/\n//g;
+			$Command_Output =~ s/\Q$Predictable_Prompt\E//g;
+
+			if ($Command_Output eq 'VMware, Inc.') {
+				if ($Verbose) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System appears to be a VMware VM${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System appears to be a VMware VM${Clear}\n";
+				}
+			}
+			else {
+				if ($Verbose) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System IS NOT a VMware VM, it is a $Command_Output system. Skipping snapshot operations.${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System IS NOT a VMware VM, it is a $Command_Output system. Skipping snapshot operations.${Clear}\n";
+				}
+				$Snapshot = 'NOTVMWARE';
+			}
+			
+			if ($Verbose && $Snapshot ne 'NOTVMWARE') {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Performing a snapshot operation${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Performing a snapshot operation${Clear}\n";
 			}
@@ -1181,7 +1214,7 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag} -X ${User_Name}'`;
+					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}' -X ${User_Name}`;
 				}
 				else {
 					if ($Verbose) {
@@ -1283,6 +1316,10 @@ sub processor {
 				if ($Exit_Code) {
 					$Command_Output = "There was an error removing all snapshots. $Exit_Code";
 				}
+			}
+			elsif($Snapshot eq 'NOTVMWARE') {
+				$Command_Output = "This is not a VMware host.";
+				$Exit_Code = 0;
 			}
 			else {
 				$Command_Output = "Found that you wanted to perform a snapshot operation. Couldn't determine exactly what. Perhaps you misspelt an option.";
@@ -1425,6 +1462,7 @@ sub processor {
 				$Connected_Host->send(" $Set_Predictable_Prompt");
 				# Trigger prompt display
 				$Connected_Host->send(' echo $PS1');
+				$Command_Output = $Connected_Host->read_all();
 			}
 
 			$Command =~ s/\*REBOOT/shutdown -r 1 'The Machine is rebooting this host in 1 minute.'/g;

@@ -5,6 +5,7 @@
         - Fixed a bug related to correctly capturing hashes where the key or value ended in '='.
         - Fixed some block size display issues for /32 blocks. (now correctly uses parent block for some values).
         - Fixed an issue passing multi-line variables when using a Windows based browser.
+        - Added some logic to determine if a system is a VM before performing a snapshot operation.
 2.2.0   - Added handler for incorrect use of *WAITFOR and *SEND together in the same command.
         - Added the ability to pause a Job indefinitely from within a Command Set.
         - Changed the licence from GPLv3 to AGPLv3.

@@ -46,6 +46,7 @@ sub html_output {
 	$Table->addRow('', 'Fixed filter retention across pages.');
 	$Table->addRow('', 'Fixed some block size display issues for /32 blocks. (now correctly uses parent block for some values).');
 	$Table->addRow('', 'Fixed an issue passing multi-line variables when using a Windows based browser.');
+	$Table->addRow('', 'Added some logic to determine if a system is a VM before performing a snapshot operation.');
 
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');
