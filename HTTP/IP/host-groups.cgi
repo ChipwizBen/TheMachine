@@ -1228,7 +1228,7 @@ sub html_output {
 		}
 
 		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Table->setCellClass ($Group_Row_Count, 4, 'tbrowdisabled');
+			$Table->setCellClass ($Group_Row_Count, 4, 'tbrowdarkgrey');
 		}
 
 	}

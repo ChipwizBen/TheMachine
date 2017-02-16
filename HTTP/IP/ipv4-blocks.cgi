@@ -928,7 +928,7 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 		$Table->setCellClass ($Row_Count, 10, 'tbrowyellow');
 	}
 	elsif ($Percent_Used <= 90) {
-		$Table->setCellClass ($Row_Count, 10, 'tbrowwarning');
+		$Table->setCellClass ($Row_Count, 10, 'tbrowdarkorange');
 	}
 	elsif ($Percent_Used > 90) {
 		$Table->setCellClass ($Row_Count, 10, 'tbrowred');

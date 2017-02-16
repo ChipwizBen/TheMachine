@@ -4084,7 +4084,7 @@ sub html_output {
 		}
 
 		if ($Rule_Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
-			$Table->setCellClass ($Rule_Row_Count, 11, 'tbrowdisabled');
+			$Table->setCellClass ($Rule_Row_Count, 11, 'tbrowdarkgrey');
 		}
 
 		if ($Rule_Active eq 'Yes') {

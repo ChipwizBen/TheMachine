@@ -132,6 +132,9 @@ sub html_output {
 		elsif ($Method_Clean eq 'Modify') {
 			$Table->setCellClass (-1, 3, 'tbroworange');
 		}
+		elsif ($Method_Clean eq 'View') {
+			$Table->setCellClass (-1, 3, 'tbrowdarkgrey');
+		}
 		elsif ($Method_Clean eq 'Deployment Succeeded') {
 			$Table->setCellClass (-1, 3, 'tbrowgreen');
 		}
@@ -152,6 +155,12 @@ sub html_output {
 		}
 		elsif ($Method_Clean eq 'Queue') {
 			$Table->setCellClass (-1, 3, 'tbrowyellow');
+		}
+		elsif ($Method_Clean eq 'Pause') {
+			$Table->setCellClass (-1, 3, 'tbrowyellow');
+		}
+		elsif ($Method_Clean eq 'Resume') {
+			$Table->setCellClass (-1, 3, 'tbrowgreen');
 		}
 		elsif ($Method_Clean eq 'Stop') {
 			$Table->setCellClass (-1, 3, 'tbrowred');

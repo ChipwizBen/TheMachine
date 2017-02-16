@@ -188,8 +188,8 @@ print <<ENDHTML;
 					</li>
 					<li><a href="/DSMS/sudoers-hosts.cgi">Sudo Hosts</a></li>
 					<li><a href="/DSMS/sudoers-users.cgi">Sudo Users</a></li>
-					<li><a href="/DSMS/sudoers-commands.cgi">Commands</a></li>
-					<li><a href="/DSMS/sudoers-rules.cgi">Rules</a></li>
+					<li><a href="/DSMS/sudoers-commands.cgi">Sudo Commands</a></li>
+					<li><a href="/DSMS/sudoers-rules.cgi">Sudo Rules</a></li>
 					<li><a href="/DSMS/distribution-status.cgi">Distribution Status</a></li>
 				</ul>
 			</li>

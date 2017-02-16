@@ -610,7 +610,7 @@ table {
 	color: #FFFFFF;
 	}
 
-.tbrowwarning {
+.tbrowdarkorange {
 	background-color: #FF6100;
 	color: #FFFFFF;
 	}
@@ -620,7 +620,7 @@ table {
 	color: #FFFFFF;
 	}
 	
-.tbrowdisabled {
+.tbrowdarkgrey {
 	background-color: #8F8F8F;
 	color: #FFFFFF;
 	}
