@@ -48,7 +48,7 @@ sub html_output {
 	$Table->addRow('', 'Fixed an issue passing multi-line variables when using a Windows based browser.');
 	$Table->addRow('', 'Added some logic to determine if a system is a VM before performing a snapshot operation.');
 	$Table->addRow('', 'Fixed some missing audit colours and standardised CSS colour names.');
-
+	$Table->addRow('', 'Fixed a bug where commands with HTML in them would display as HTML instead of raw command.');
 
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');

@@ -1930,6 +1930,7 @@ sub html_output {
 		my $Command_Name = $Select_Command_Sets[1];
 			$Command_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Command = $Select_Command_Sets[2];
+			$Command =~ s/&/&amp;/g;
 			$Command =~ s/</&lt;/g;
 			$Command =~ s/>/&gt;/g;
 			$Command =~ s/  /&nbsp;&nbsp;/g;

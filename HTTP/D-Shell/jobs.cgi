@@ -632,6 +632,7 @@ sub html_job_log {
 	{
 		$Row_Count++;
 		my $Command = $Entries[0];
+			$Command =~ s/&/&amp;/g;
 			$Command =~ s/</&lt;/g;
 			$Command =~ s/>/&gt;/g;
 			$Command =~ s/  /&nbsp;&nbsp;/g;
@@ -642,6 +643,7 @@ sub html_job_log {
 			$Command =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Exit_Code = $Entries[1];
 		my $Output = $Entries[2];
+			$Output =~ s/&/&amp;/g;
 			$Output =~ s/</&lt;/g;
 			$Output =~ s/>/&gt;/g;
 			$Output =~ s/  /&nbsp;&nbsp;/g;
@@ -840,7 +842,11 @@ sub html_output {
 			LIMIT 1"
 		);
 		$Select_Currently_Running_Command->execute($DBID);
-		my ($Held_Running_Command, $Held_Running_Started, $Held_Running_Ended) = $Select_Currently_Running_Command->fetchrow_array();
+		my ($Held_Running_Command_Pre_Filtered, $Held_Running_Started, $Held_Running_Ended) = $Select_Currently_Running_Command->fetchrow_array();
+			my $Held_Running_Command = substr( $Held_Running_Command_Pre_Filtered, 0, 60 );
+			if ($Held_Running_Command ne $Held_Running_Command_Pre_Filtered) {
+				$Held_Running_Command = $Held_Running_Command . '...';
+			}
 			$Held_Running_Command =~ s/(#{1,}[\s\w'"`,.!\?\/\\\&\-\(\)\$\=\*\@\:;]*)(.*)/<span style='color: #FFC600;'>$1<\/span>$2/g;
 			$Held_Running_Command =~ s/(\*[A-Z0-9]*)(\s*.*)/<span style='color: #FC64FF;'>$1<\/span>$2/g;
 
@@ -872,7 +878,7 @@ sub html_output {
 		my $Control_Button;
 		my $Kill_Button;
 		if ($Status == 0) {
-			$Running_Command = 'None, Job Complete.';
+			$Running_Command = 'Job Complete.';
 			$Status = 'Job Complete';
 			$Control_Button = '<img src="/resources/imgs/confirm.png" alt="Job Complete" >';
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
@@ -884,7 +890,7 @@ sub html_output {
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 2) {
-			$Running_Command = 'None, Processing Paused.';
+			$Running_Command = 'Processing Paused.';
 			$Status = 'Paused';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Resume_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
@@ -896,7 +902,7 @@ sub html_output {
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 4) {
-			$Running_Command = 'None, Job Pending.';
+			$Running_Command = 'Job Pending.';
 			$Status = 'Pending';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
@@ -932,7 +938,7 @@ sub html_output {
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 10) {
-			$Running_Command = $Held_Running_Command;
+			$Running_Command = 'Initialising connection. Standby...';
 			$Status = 'Starting';
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
 			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
