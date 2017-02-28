@@ -1932,6 +1932,7 @@ sub reboot_control {
 			`modified_by` = ?
 			WHERE `id` = ?");
 			$Update_Job->execute('14', $User_Name, $Parent_ID);
+			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
 			exit(14);
 		}
 
