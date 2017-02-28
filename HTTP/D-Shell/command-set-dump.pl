@@ -109,7 +109,7 @@ COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_ar
 	}
 
 	$Command =~ s/\*SUDO/if [[ `id -u` -eq 0 ]]; then echo 'Already root'; else sudo su -; fi/gi;
-	$Command =~ s/\*SEND\s*//gi;
+	$Command =~ s/\*SEND\s//gi;
 	$Command =~ s/\*REBOOT/reboot/gi;
 	$Command =~ s/\*PAUSE/sleep/gi;
 
