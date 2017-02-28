@@ -50,6 +50,7 @@ sub html_output {
 	$Table->addRow('', 'Fixed some missing audit colours and standardised CSS colour names.');
 	$Table->addRow('', 'Fixed a bug where commands with HTML in them would display as HTML instead of raw commands.');
 	$Table->addRow('', 'Fixed an issue where temporary files were not cleaned up if hosts did not recover from a controlled reboot.');
+	$Table->addRow('', 'Adjusted the Command Set Git push mechanism to substitute the *SUDO tag with a useful shell command.');
 
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');
