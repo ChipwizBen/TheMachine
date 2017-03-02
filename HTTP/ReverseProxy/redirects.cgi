@@ -13,6 +13,7 @@ my $Header = Header();
 my $Footer = Footer();
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
+my $Me = '/ReverseProxy/redirects.cgi';
 
 my $Add_Redirect = $CGI->param("Add_Redirect");
 	my $Server_Name_Add = $CGI->param("Server_Name_Add");
@@ -45,6 +46,8 @@ my $Delete_Redirect = $CGI->param("Delete_Redirect");
 my $Delete_Redirect_Confirm = $CGI->param("Delete_Redirect_Confirm");
 my $Redirect_Delete = $CGI->param("Redirect_Delete");
 
+my $View_Redirect = $CGI->param("View_Redirect");
+
 my $User_Name = $Session->param("User_Name");
 my $User_Reverse_Proxy_Admin = $Session->param("User_Reverse_Proxy_Admin");
 
@@ -55,6 +58,7 @@ if (!$User_Name) {
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
 my $Filter = $CGI->param("Filter");
+my $ID_Filter = $CGI->param("ID_Filter");
 
 if ($Rows_Returned eq '') {
 	$Rows_Returned='100';
@@ -65,7 +69,7 @@ if ($Add_Redirect) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -80,7 +84,7 @@ elsif ($Server_Name_Add && $Source_Add && $Destination_Add) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -88,7 +92,7 @@ elsif ($Server_Name_Add && $Source_Add && $Destination_Add) {
 		my $Message_Green="Redirect entry for $Server_Name_Add added successfully as ID $Redirect_ID";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 }
@@ -97,7 +101,7 @@ elsif ($Edit_Redirect) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -112,7 +116,7 @@ elsif ($Edit_Redirect_Post) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -120,7 +124,7 @@ elsif ($Edit_Redirect_Post) {
 		my $Message_Green="The Redirect entry for $Server_Name_Edit (ID $Edit_Redirect_Post) was edited successfully";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 }
@@ -129,7 +133,7 @@ elsif ($Delete_Redirect) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -144,7 +148,7 @@ elsif ($Delete_Redirect_Confirm) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -152,9 +156,15 @@ elsif ($Delete_Redirect_Confirm) {
 		my $Message_Green="The redirect entry for $Redirect_Delete was deleted successfully";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /ReverseProxy/redirects.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
+}
+elsif ($View_Redirect) {
+		require $Header;
+		&html_output;
+		require $Footer;
+		&html_view_redirect;
 }
 else {
 	require $Header;
@@ -169,14 +179,14 @@ sub html_add_redirect {
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="/ReverseProxy/redirects.cgi">
+<a href="$Me">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Redirect</h3>
 
-<form action='/ReverseProxy/redirects.cgi' name='Add_Redirect' method='post' >
+<form action='$Me' name='Add_Redirect' method='post' >
 
 <table align="center" width='90%'>
 	<tr>
@@ -264,6 +274,10 @@ sub add_redirect {
 
 sub html_edit_redirect {
 
+	my $Filter_URL;
+	if ($Filter) {$Filter_URL = "?Filter=$Filter"}
+	if ($ID_Filter) {$Filter_URL = "?ID_Filter=$ID_Filter"}
+
 	my $Select_Redirect = $DB_Connection->prepare("SELECT `server_name`, `port`, `redirect_source`,
 		`redirect_destination`, `transfer_log`, `error_log`
 		FROM `redirect`
@@ -284,14 +298,14 @@ sub html_edit_redirect {
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="/ReverseProxy/redirects.cgi">
+<a href="$Me$Filter_URL">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Edit Redirect</h3>
 
-<form action='/ReverseProxy/redirects.cgi' name='Edit_Redirect' method='post' >
+<form action='$Me' name='Edit_Redirect' method='post' >
 
 <table align="center" width='90%'>
 	<tr>
@@ -372,6 +386,10 @@ sub edit_redirect {
 
 sub html_delete_redirect {
 
+	my $Filter_URL;
+	if ($Filter) {$Filter_URL = "?Filter=$Filter"}
+	if ($ID_Filter) {$Filter_URL = "?ID_Filter=$ID_Filter"}
+
 	my $Select_Redirect = $DB_Connection->prepare("SELECT `server_name`, `port`, `redirect_source`, `redirect_destination`
 	FROM `redirect`
 	WHERE `id` = ?");
@@ -384,14 +402,14 @@ sub html_delete_redirect {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/ReverseProxy/redirects.cgi">
+<a href="$Me$Filter_URL">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Redirect</h3>
 
-<form action='/ReverseProxy/redirects.cgi' method='post' >
+<form action='$Me' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this redirect entry?</p>
 <table align = "center">
 	<tr>
@@ -458,6 +476,98 @@ sub delete_redirect {
 
 } # sub delete_redirect
 
+sub html_view_redirect {
+
+	my ($Default_Transfer_Log,
+		$Default_Error_Log) = Redirect_Defaults();
+
+	my $Server_Group_Query = $DB_Connection->prepare("SELECT `server_name`, `port`, `transfer_log`, `error_log`, `last_modified`, `modified_by`
+	FROM `redirect`
+	WHERE `id` = ?");
+	$Server_Group_Query->execute($View_Redirect);
+
+	while ( my @Server_Entry = $Server_Group_Query->fetchrow_array() )
+	{
+		my $Server_Name = $Server_Entry[0];
+		my $Port = $Server_Entry[1];
+		my $Transfer_Log = $Server_Entry[2];
+		my $Error_Log = $Server_Entry[3];
+		my $Last_Modified = $Server_Entry[4];
+		my $Modified_By = $Server_Entry[5];
+
+		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
+		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
+
+		my $ServerAliases;
+		my @ServerAliases = split(',', $Server_Name);
+		$Server_Name = shift @ServerAliases;
+		foreach my $Alias (@ServerAliases) {
+			$ServerAliases = $ServerAliases . "\n    ServerAlias              $Alias";
+		}
+		my $Server_Names = "ServerName               " . $Server_Name . $ServerAliases;
+
+		my $Server_Attribute_Query = $DB_Connection->prepare("SELECT `id`, `redirect_source`, `redirect_destination`, `last_modified`, `modified_by`
+		FROM `redirect`
+		WHERE (`server_name` LIKE ?
+			OR `server_name` LIKE ?
+			OR `server_name` LIKE ?
+			OR `server_name` LIKE ?
+			)
+		AND `port` = ?
+		ORDER BY `redirect_source` DESC");
+		$Server_Attribute_Query->execute($Server_Name, "$Server_Name,%", "%,$Server_Name", "%,$Server_Name,%", $Port);
+
+		my $ID_Group;
+		my $Redirect_Config;
+		while ( my @Redirect_Entry = $Server_Attribute_Query->fetchrow_array() )
+		{
+			my $ID = $Redirect_Entry[0];
+				$ID_Group = $ID_Group . $ID . ', '; 
+			my $Source = $Redirect_Entry[1];
+			my $Destination = $Redirect_Entry[2];
+			$Last_Modified = $Redirect_Entry[3];
+			$Modified_By = $Redirect_Entry[4];
+			
+	        $Redirect_Config = $Redirect_Config . "\n    ## Redirect ID $ID, last modified $Last_Modified by $Modified_By\n";
+	        $Redirect_Config = $Redirect_Config . "    Redirect                 $Source	$Destination\n";
+		}
+
+		my $Redirect_HTML = "
+<VirtualHost *:$Port>
+    $Server_Names
+$Redirect_Config
+    TransferLog              $Transfer_Log
+    ErrorLog                 $Error_Log
+</VirtualHost>
+";
+
+$Redirect_HTML =~ s/</&lt;/g;
+$Redirect_HTML =~ s/>/&gt;/g;
+$Redirect_HTML =~ s/\\n/<br>/g;
+
+my $Filter_URL;
+if ($Filter) {$Filter_URL = "?Filter=$Filter"}
+if ($ID_Filter) {$Filter_URL = "?ID_Filter=$ID_Filter"}
+
+
+print <<ENDHTML;
+
+<div id="wide-popup-box">
+<a href="$Me$Filter_URL">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h3 align="center">Config for Redirect ID $View_Redirect</h3>
+
+<pre style='text-align: left; padding-left:20px; white-space:pre-wrap; word-wrap:break-word;'><code>$Redirect_HTML</code></pre>
+
+</div>
+
+ENDHTML
+	}
+} #sub html_view_redirect
+
 sub html_output {
 
 	my $Table = new HTML::Table(
@@ -478,7 +588,7 @@ sub html_output {
 		my $Total_Rows = $Select_Redirect_Count->rows();
 
 
-	my $Select_Reverse_Proxies = $DB_Connection->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`,
+	my $Select_Redirects = $DB_Connection->prepare("SELECT `id`, `server_name`, `port`, `redirect_source`,
 		`redirect_destination`, `transfer_log`, `error_log`, `last_modified`, `modified_by`
 		FROM `redirect`
 		WHERE `id` LIKE ?
@@ -492,40 +602,62 @@ sub html_output {
 		LIMIT ?, ?"
 	);
 
-	$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%",  
+	if ($ID_Filter) {
+		$Select_Redirects->execute($ID_Filter, "", "", "",  
+		"", "", "", 0, $Rows_Returned);
+	}
+	else {
+		$Select_Redirects->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%",  
 		"%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
+	}
 
-	my $Rows = $Select_Reverse_Proxies->rows();
+	my $Rows = $Select_Redirects->rows();
 
-	$Table->addRow( "ID", "Server Name<br /><span style='color: #B6B600'>Server Alias</span>", "Port", "Source", "Destination", "Transfer Log", "Error Log", "Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->addRow( "ID", "Server Name<br /><span style='color: #B6B600'>Server Alias</span>", "Port", "Source", "Destination", "Transfer Log", "Error Log", "Last Modified", "Modified By", "View", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	while ( my @Select_Reverse_Proxies = $Select_Reverse_Proxies->fetchrow_array() )
+	while ( my @Select_Redirects = $Select_Redirects->fetchrow_array() )
 	{
 
-		my $DBID = $Select_Reverse_Proxies[0];
+		my $DBID = $Select_Redirects[0];
 			my $DBID_Clean = $DBID;
 			$DBID =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Server_Name = $Select_Reverse_Proxies[1];
+		my $Server_Name = $Select_Redirects[1];
 			$Server_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Port = $Select_Reverse_Proxies[2];
+		my $Port = $Select_Redirects[2];
 			$Port =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Source = $Select_Reverse_Proxies[3];
+		my $Source = $Select_Redirects[3];
 			$Source =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Destination = $Select_Reverse_Proxies[4];
+		my $Destination = $Select_Redirects[4];
 			$Destination =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Transfer_Log = $Select_Reverse_Proxies[5];
+		my $Transfer_Log = $Select_Redirects[5];
 			$Transfer_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Error_Log = $Select_Reverse_Proxies[6];
+		my $Error_Log = $Select_Redirects[6];
 			$Error_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Last_Modified = $Select_Reverse_Proxies[7];
-		my $Modified_By = $Select_Reverse_Proxies[8];
+		my $Last_Modified = $Select_Redirects[7];
+		my $Modified_By = $Select_Redirects[8];
 
 		my $ServerAliases;
 		my @ServerAliases = split(',', $Server_Name);
 		$Server_Name = shift @ServerAliases;
 		foreach my $Alias (@ServerAliases) {
 			$ServerAliases = $ServerAliases . "<br/>$Alias";
+		}
+
+		my $View;
+		my $Edit;
+		my $Delete;
+		if ($Filter || $ID_Filter) {
+			my $Filter_URL;
+			if ($Filter) {$Filter_URL = "Filter=$Filter"} else {$Filter_URL = "ID_Filter=$ID_Filter"}
+			$View = "<a href='$Me?View_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Redirect ID $DBID_Clean\" ></a>";
+			$Edit = "<a href='$Me?Edit_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Redirect ID $DBID_Clean\" ></a>";
+			$Delete = "<a href='$Me?Delete_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Redirect ID $DBID_Clean\" ></a>";
+		}
+		else {
+			$View = "<a href='$Me?View_Redirect=$DBID_Clean'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Redirect ID $DBID_Clean\" ></a>";
+			$Edit = "<a href='$Me?Edit_Redirect=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Redirect ID $DBID_Clean\" ></a>";
+			$Delete = "<a href='$Me?Delete_Redirect=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Redirect ID $DBID_Clean\" ></a>";
 		}
 
 		$Table->addRow(
@@ -538,8 +670,9 @@ sub html_output {
 			"$Error_Log",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/ReverseProxy/redirects.cgi?Edit_Redirect=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Redirect ID $DBID_Clean\" ></a>",
-			"<a href='/ReverseProxy/redirects.cgi?Delete_Redirect=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Redirect ID $DBID_Clean\" ></a>"
+			$View,
+			$Edit,
+			$Delete
 		);
 
 
@@ -550,20 +683,22 @@ sub html_output {
 	$Table->setColWidth(9, '110px');
 	$Table->setColWidth(10, '1px');
 	$Table->setColWidth(11, '1px');
+	$Table->setColWidth(12, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (8..11) {
+	for (8..12) {
 		$Table->setColAlign($_, 'center');
 	}
 
-
+my $Clear_Filter;
+if ($Filter) {$Clear_Filter = "<a href='$Me?Filter='>[Clear]</a>"}
 
 print <<ENDHTML;
 <table style="width:100%; border: solid 2px; border-color:#293E77; background-color:#808080;">
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/ReverseProxy/redirects.cgi' method='post' >
+			<form action='$Me' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -587,14 +722,14 @@ print <<ENDHTML;
 						Filter:
 					</td>
 					<td style="text-align: right;">
-						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Redirect" placeholder="Search">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Redirect" placeholder="Search"> $Clear_Filter
 					</td>
 				</tr>
 			</form>
 			</table>
 		</td>
 		<td align="center">
-			<form action='/ReverseProxy/redirects.cgi' method='post' >
+			<form action='$Me' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Redirect</span></td>
@@ -606,7 +741,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/ReverseProxy/redirects.cgi' method='post' >
+			<form action='$Me' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Redirect</span></td>

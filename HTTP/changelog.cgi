@@ -51,6 +51,10 @@ sub html_output {
 	$Table->addRow('', 'Fixed a bug where commands with HTML in them would display as HTML instead of raw commands.');
 	$Table->addRow('', 'Fixed an issue where temporary files were not cleaned up if hosts did not recover from a controlled reboot.');
 	$Table->addRow('', 'Adjusted the Command Set Git push mechanism to substitute the *SUDO tag with a useful shell command.');
+	$Table->addRow('', 'Fixed a greedy glob in the Command Set Dump process that was stripping spaces in some circumstances.');
+	$Table->addRow('', 'Added a missing view mode for Redirects.');
+	$Table->addRow('', 'Fixed some persistent filters for better usability when dealing with large numbers of redirects / reverse proxy entries.');
+	$Table->addRow('', 'Modified some logic to find server names within aliases when bundling redirects together.');
 
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');

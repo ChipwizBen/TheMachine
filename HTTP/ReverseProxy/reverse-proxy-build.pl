@@ -366,10 +366,14 @@ sub write_redirect {
 
 		my $Server_Attribute_Query = $DB_Connection->prepare("SELECT `id`, `redirect_source`, `redirect_destination`, `last_modified`, `modified_by`
 		FROM `redirect`
-		WHERE `server_name` = ?
+		WHERE (`server_name` LIKE ?
+			OR `server_name` LIKE ?
+			OR `server_name` LIKE ?
+			OR `server_name` LIKE ?
+			)
 		AND `port` = ?
 		ORDER BY `redirect_source` DESC");
-		$Server_Attribute_Query->execute($Server_Name, $Port);
+		$Server_Attribute_Query->execute($Server_Name, "$Server_Name,%", "%,$Server_Name", "%,$Server_Name,%", $Port);
 
 		my $ID_Group;
 		while ( my @Redirect_Entry = $Server_Attribute_Query->fetchrow_array() )

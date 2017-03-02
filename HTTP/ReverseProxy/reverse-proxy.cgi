@@ -11,6 +11,7 @@ my $Header = Header();
 my $Footer = Footer();
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
+my $Me = '/ReverseProxy/reverse-proxy.cgi';
 
 my $Add_Reverse_Proxy = $CGI->param("Add_Reverse_Proxy");
 	my $Server_Name_Add = $CGI->param("Server_Name_Add");
@@ -89,7 +90,7 @@ if (!$User_Name) {
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
 my $Filter = $CGI->param("Filter");
-
+my $ID_Filter = $CGI->param("ID_Filter");
 if ($Rows_Returned eq '') {
 	$Rows_Returned='100';
 }
@@ -99,7 +100,7 @@ if ($Add_Reverse_Proxy) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -114,7 +115,7 @@ elsif ($Server_Name_Add && $Source_Add && $Destination_Add) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -122,7 +123,7 @@ elsif ($Server_Name_Add && $Source_Add && $Destination_Add) {
 		my $Message_Green="Reverse proxy entry for $Server_Name_Add added successfully as ID $Reverse_Proxy_ID";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 }
@@ -131,7 +132,7 @@ elsif ($Edit_Reverse_Proxy) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -146,7 +147,7 @@ elsif ($Edit_Reverse_Proxy_Post) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -154,7 +155,7 @@ elsif ($Edit_Reverse_Proxy_Post) {
 		my $Message_Green="The Reverse Proxy entry for $Server_Name_Edit (ID $Edit_Reverse_Proxy_Post) was edited successfully";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 }
@@ -163,7 +164,7 @@ elsif ($Delete_Reverse_Proxy) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -178,7 +179,7 @@ elsif ($Delete_Reverse_Proxy_Confirm) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 	else {
@@ -186,7 +187,7 @@ elsif ($Delete_Reverse_Proxy_Confirm) {
 		my $Message_Green="The reverse proxy entry for $Reverse_Proxy_Delete was deleted successfully";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /ReverseProxy/reverse-proxy.cgi\n\n";
+		print "Location: $Me\n\n";
 		exit(0);
 	}
 }
@@ -209,7 +210,7 @@ sub html_add_reverse_proxy {
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="/ReverseProxy/reverse-proxy.cgi">
+<a href="$Me">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -257,7 +258,7 @@ function Enforce_SSL_Toggle(value) {
 //-->
 </SCRIPT>
 
-<form action='/ReverseProxy/reverse-proxy.cgi' name='Add_Reverse_Proxy' method='post' >
+<form action='$Me' name='Add_Reverse_Proxy' method='post' >
 
 <table align = "center">
 	<tr>
@@ -494,6 +495,10 @@ sub add_reverse_proxy {
 
 sub html_edit_reverse_proxy {
 
+	my $Filter_URL;
+	if ($Filter) {$Filter_URL = "?Filter=$Filter"}
+	if ($ID_Filter) {$Filter_URL = "?ID_Filter=$ID_Filter"}
+
 	my $Select_Reverse_Proxy = $DB_Connection->prepare("SELECT `server_name`, `proxy_pass_source`,
 		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
 		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,
@@ -555,7 +560,7 @@ sub html_edit_reverse_proxy {
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="/ReverseProxy/reverse-proxy.cgi">
+<a href="$Me$Filter_URL">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -603,7 +608,7 @@ function Enforce_SSL_Toggle(value) {
 //-->
 </SCRIPT>
 
-<form action='/ReverseProxy/reverse-proxy.cgi' name='Edit_Reverse_Proxy' method='post' >
+<form action='$Me' name='Edit_Reverse_Proxy' method='post' >
 
 <table align = "center">
 	<tr>
@@ -934,6 +939,10 @@ sub edit_reverse_proxy {
 
 sub html_delete_reverse_proxy {
 
+	my $Filter_URL;
+	if ($Filter) {$Filter_URL = "?Filter=$Filter"}
+	if ($ID_Filter) {$Filter_URL = "?ID_Filter=$ID_Filter"}
+
 	my $Select_Reverse_Proxy = $DB_Connection->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`
 	FROM `reverse_proxy`
 	WHERE `id` = ?");
@@ -946,14 +955,14 @@ sub html_delete_reverse_proxy {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/ReverseProxy/reverse-proxy.cgi">
+<a href="$Me$Filter_URL">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Reverse Proxy</h3>
 
-<form action='/ReverseProxy/reverse-proxy.cgi' method='post' >
+<form action='$Me' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this reverse proxy entry?</p>
 <table align = "center">
 	<tr>
@@ -1033,11 +1042,10 @@ sub html_view_reverse_proxy {
 	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
 	`permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
 	FROM `reverse_proxy`
-	WHERE `id` = ?
-	ORDER BY `server_name` ASC");
+	WHERE `id` = ?");
 	$Record_Query->execute($View_Reverse_Proxy);
 
-	my $Reverse_Proxy_Entry;
+	my $Reverse_Proxy_HTML;
 	while ( my @Proxy_Entry = $Record_Query->fetchrow_array() )
 	{
 		my $Server_Name = $Proxy_Entry[0];
@@ -1143,7 +1151,7 @@ sub html_view_reverse_proxy {
 				$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000"';
 			}
 
-			$Reverse_Proxy_Entry = "
+			$Reverse_Proxy_HTML = "
 <VirtualHost *:80>
     $Server_Names
     $Enforce_SSL_Header
@@ -1179,7 +1187,7 @@ sub html_view_reverse_proxy {
 "
 		}
 		else {
-			$Reverse_Proxy_Entry = "
+			$Reverse_Proxy_HTML = "
 <VirtualHost *:80>
     $Server_Names
 
@@ -1197,21 +1205,26 @@ sub html_view_reverse_proxy {
 		}
 	}
 
-$Reverse_Proxy_Entry =~ s/</&lt;/g;
-$Reverse_Proxy_Entry =~ s/>/&gt;/g;
-$Reverse_Proxy_Entry =~ s/\\n/<br>/g;
+$Reverse_Proxy_HTML =~ s/</&lt;/g;
+$Reverse_Proxy_HTML =~ s/>/&gt;/g;
+$Reverse_Proxy_HTML =~ s/\\n/<br>/g;
+
+my $Filter_URL;
+if ($Filter) {$Filter_URL = "?Filter=$Filter"}
+if ($ID_Filter) {$Filter_URL = "?ID_Filter=$ID_Filter"}
+
 
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="/ReverseProxy/reverse-proxy.cgi">
+<a href="$Me$Filter_URL">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Config for Reverse Proxy ID $View_Reverse_Proxy</h3>
 
-<pre style='text-align: left; padding-left:20px; white-space:pre-wrap; word-wrap:break-word;'><code>$Reverse_Proxy_Entry</code></pre>
+<pre style='text-align: left; padding-left:20px; white-space:pre-wrap; word-wrap:break-word;'><code>$Reverse_Proxy_HTML</code></pre>
 
 </div>
 
@@ -1262,8 +1275,15 @@ sub html_output {
 		LIMIT ?, ?"
 	);
 
-	$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
-		"%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
+	if ($ID_Filter) {
+		$Select_Reverse_Proxies->execute("%$ID_Filter%", "", "", "", "", "", 
+		"", "", "", 0, $Rows_Returned);
+	}
+	else {
+		$Select_Reverse_Proxies->execute("%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", "%$Filter%", 
+		"%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);		
+	}
+
 
 	my $Rows = $Select_Reverse_Proxies->rows();
 
@@ -1344,6 +1364,21 @@ sub html_output {
 		if ($Permitted_Cross_Domain_Policies) {$Permitted_Cross_Domain_Policies = 'X-Permitted-Cross-Domain-Policies: none'; $Headers = $Headers . $Permitted_Cross_Domain_Policies . '<br />'}
 		if ($Powered_By) {$Powered_By = 'X-Powered-By: unset'; $Headers = $Headers . $Powered_By . '<br />'}
 
+		my $View;
+		my $Edit;
+		my $Delete;
+		if ($Filter || $ID_Filter) {
+			my $Filter_URL;
+			if ($Filter) {$Filter_URL = "Filter=$Filter"} else {$Filter_URL = "ID_Filter=$ID_Filter"}
+			$View = "<a href='$Me?View_Reverse_Proxy=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Reverse Proxy ID $DBID_Clean\" ></a>";
+			$Edit = "<a href='$Me?Edit_Reverse_Proxy=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Reverse Proxy ID $DBID_Clean\" ></a>";
+			$Delete = "<a href='$Me?Delete_Reverse_Proxy=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Reverse Proxy ID $DBID_Clean\" ></a>";
+		}
+		else {
+			$View = "<a href='$Me?View_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Reverse Proxy ID $DBID_Clean\" ></a>";
+			$Edit = "<a href='$Me?Edit_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Reverse Proxy ID $DBID_Clean\" ></a>";
+			$Delete = "<a href='$Me?Delete_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Reverse Proxy ID $DBID_Clean\" ></a>";
+		}
 
 		$Table->addRow(
 			"$DBID",
@@ -1358,9 +1393,9 @@ sub html_output {
 			"$Enforce_SSL",
 			"$Custom_Attributes",
 			"$Last_Modified<br /><span style='color: #B6B600'>$Modified_By</span>",
-			"<a href='/ReverseProxy/reverse-proxy.cgi?View_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Reverse Proxy ID $DBID_Clean\" ></a>",
-			"<a href='/ReverseProxy/reverse-proxy.cgi?Edit_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Reverse Proxy ID $DBID_Clean\" ></a>",
-			"<a href='/ReverseProxy/reverse-proxy.cgi?Delete_Reverse_Proxy=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Reverse Proxy ID $DBID_Clean\" ></a>"
+			$View,
+			$Edit,
+			$Delete
 		);
 
 		if ($SSL_Certificate_File_Clean || $SSL_Certificate_Key_File_Clean || $SSL_CA_Certificate_File_Clean) {
@@ -1424,7 +1459,7 @@ sub html_output {
 			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 8, 'tbrowgreen');
 		}
 		elsif ($PFS eq 'N/A') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 8, 'tbrowdisabled');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 8, 'tbrowdarkgrey');
 		}
 		else {
 			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 8, 'tbrowred');
@@ -1434,7 +1469,7 @@ sub html_output {
 			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowgreen');
 		}
 		elsif ($RC4 eq 'N/A') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowdisabled');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowdarkgrey');
 		}
 		else {
 			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 9, 'tbrowred');
@@ -1447,7 +1482,7 @@ sub html_output {
 			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowgreen');
 		}
 		elsif ($Enforce_SSL eq 'N/A') {
-			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowdisabled');
+			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowdarkgrey');
 		}
 		else {
 			$Table->setCellClass ($Reverse_Proxy_Row_Count-2, 10, 'tbrowred');
@@ -1480,16 +1515,15 @@ sub html_output {
 	}
 
 
-
 print <<ENDHTML;
 <table style="width:100%; border: solid 2px; border-color:#293E77; background-color:#808080;">
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/ReverseProxy/reverse-proxy.cgi' method='post' >
+			<form action='$Me' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
-					<td style="text-align: right;">
+					<td style="text-align: left;">
 						<select name='Rows_Returned' onchange='this.form.submit()' style="width: 150px">
 ENDHTML
 
@@ -1501,6 +1535,9 @@ if ($Rows_Returned == 2500) {print "<option value=2500 selected>2500</option>";}
 if ($Rows_Returned == 5000) {print "<option value=5000 selected>5000</option>";} else {print "<option value=5000>5000</option>";}
 if ($Rows_Returned == 18446744073709551615) {print "<option value=18446744073709551615 selected>All</option>";} else {print "<option value=18446744073709551615>All</option>";}
 
+my $Clear_Filter;
+if ($Filter) {$Clear_Filter = "<a href='$Me?Filter='>[Clear]</a>"}
+
 print <<ENDHTML;
 						</select>
 					</td>
@@ -1509,15 +1546,15 @@ print <<ENDHTML;
 					<td style="text-align: right;">
 						Filter:
 					</td>
-					<td style="text-align: right;">
-						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Reverse Proxy" placeholder="Search">
+					<td style="text-align: left;">
+						<input type='search' name='Filter' style="width: 150px" maxlength='100' value="$Filter" title="Search Reverse Proxy" placeholder="Search"> $Clear_Filter
 					</td>
 				</tr>
 			</form>
 			</table>
 		</td>
 		<td align="center">
-			<form action='/ReverseProxy/reverse-proxy.cgi' method='post' >
+			<form action='$Me' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Reverse Proxy</span></td>
@@ -1529,7 +1566,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/ReverseProxy/reverse-proxy.cgi' method='post' >
+			<form action='$Me' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Reverse Proxy</span></td>
