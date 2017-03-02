@@ -843,7 +843,7 @@ sub html_output {
 		);
 		$Select_Currently_Running_Command->execute($DBID);
 		my ($Held_Running_Command_Pre_Filtered, $Held_Running_Started, $Held_Running_Ended) = $Select_Currently_Running_Command->fetchrow_array();
-			my $Held_Running_Command = substr( $Held_Running_Command_Pre_Filtered, 0, 60 );
+			my $Held_Running_Command = substr( $Held_Running_Command_Pre_Filtered, 0, 120 );
 			if ($Held_Running_Command ne $Held_Running_Command_Pre_Filtered) {
 				$Held_Running_Command = $Held_Running_Command . '...';
 			}
