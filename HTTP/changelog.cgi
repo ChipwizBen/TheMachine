@@ -40,6 +40,7 @@ sub html_output {
 	## Version 2.3.0
 	$Table->addRow('2.3.0', 'Fixed a bug where the D-Shell process would die if the SSH connection suddenly closed 
            after previously being open during the initial connection phase, including during a controlled reboot.');
+	$Table->addRow('', 'Fixed an issue where a random SSH termination wasn\'t correctly handled by the CDSF distribution process.');
 
 	## Version 2.2.1
 	$Table->addRow('2.2.1', 'Fixed an issue with the IP allocation system reporting the wrong block when full.');

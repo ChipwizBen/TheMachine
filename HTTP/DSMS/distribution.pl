@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 
@@ -311,14 +311,14 @@ HOST: while (my @Select_Hosts = $Select_Hosts->fetchrow_array() )
 		### / Connection
 
 		### Sudoers Push
-		$SFTP->put(
+		eval { $SFTP->put(
 			"$Sudoers_Location",
 			"$Remote_Sudoers",
 			best_effort => 1, # Not fatal if unable to set permissions and timestamp
 			copy_time => 1, # Timestamp remote sudoers
 			copy_perm => 0, # Do not copy permissions
 			atomic => 1) # Transfer to temp file first, then overwrite $Remote_Sudoers
-			or $Error = "Push Failed: " . $SFTP->error;
+		}; &failure("${Red}[Connection Died]${Clear}\n", "$Distribution_tmp_Location/$Host_or_Block", "$@ -- 'Push Failed: ' . $SFTP->error") if $@;
 
 		if ($SFTP->status == 0) {
 			if ($Verbose) {
@@ -445,7 +445,7 @@ sub fingerprint_verification {
 						my $Time_Stamp = strftime "%H:%M:%S", localtime;
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Testing connection to ${Pink}$Tested_Host_or_Block:$SFTP_Port${Green}.${Clear}\n";
 					}
-					my $SSH_Check=eval {`$nmap $Tested_Host_or_Block -PN -p $SFTP_Port 2>/dev/null | $grep -E 'open'`};
+					my $SSH_Check = eval {`$nmap $Tested_Host_or_Block -PN -p $SFTP_Port 2>/dev/null | $grep -E 'open'`};
 					if ($SSH_Check =~ /open/) {
 						if ($Verbose) {
 							my $Time_Stamp = strftime "%H:%M:%S", localtime;
