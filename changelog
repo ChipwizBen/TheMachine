@@ -1,3 +1,5 @@
+2.3.0   - Fixed a bug where the D-Shell process would die if the SSH connection suddenly closed after previously 
+          being open during the initial connection phase, including during a controlled reboot.
 2.2.1   - Fixed an issue with the IP allocation system reporting the wrong block when full.
         - Removed taint requirement from locally executed only scripts.
         - Fixed missing formatting for variables in Command Sets.
@@ -13,7 +15,7 @@
         - Fixed a greedy glob in the Command Set Dump process that was stripping spaces in some circumstances.
         - Added a missing view mode for Redirects.
         - Fixed some persistent filters for better usability when dealing with large numbers of redirects / reverse proxy entries.
-        - Modified some logic to find server names within aliases when bundling redirects together. 
+        - Modified some logic to find server names within aliases when bundling redirects together.
 2.2.0   - Added handler for incorrect use of *WAITFOR and *SEND together in the same command.
         - Added the ability to pause a Job indefinitely from within a Command Set.
         - Changed the licence from GPLv3 to AGPLv3.

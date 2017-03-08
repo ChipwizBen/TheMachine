@@ -585,7 +585,7 @@ sub host_connection {
 
 		$Attempts++;
 
-		$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
+		CONNECTION_DISCOVERY: $SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
 		sleep 1;
 	
 		if ($Attempts >= 10) {
@@ -636,7 +636,15 @@ sub host_connection {
 
 			# Fingerprint
 			my $Line = $SSH->read_line();
-			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+			my $Fingerprint_Prompt = eval { $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re'); };
+			if ($@) {
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					goto CONNECTION_DISCOVERY;
+				}
+			}
 
 			if ($Fingerprint_Prompt) {
 
@@ -746,7 +754,15 @@ sub host_connection {
 
 			# Fingerprint
 			my $Line = $SSH->read_line();
-			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re');
+			my $Fingerprint_Prompt = eval { $SSH->waitfor(".*key fingerprint is.*", $Connection_Timeout, '-re'); };
+			if ($@) {
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					goto CONNECTION_DISCOVERY;
+				}
+			}
 
 			if ($Fingerprint_Prompt) {
 
@@ -1915,7 +1931,7 @@ sub reboot_control {
 	my $Attempts;
 	while ($SSH_Check !~ /open/) {
 	
-		$Attempts++;
+		REBOOT_DISCOVERY: $Attempts++;
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
 			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempt ${Yellow}$Attempts${Green} at restarting SSH session... ${Clear}\n";
@@ -1970,7 +1986,15 @@ sub reboot_control {
 
 			# Fingerprint
 			my $Line = $SSH->read_line();
-			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Reboot_Connection_Timeout, '-re');
+			my $Fingerprint_Prompt = eval { $SSH->waitfor(".*key fingerprint is.*", $Reboot_Connection_Timeout, '-re'); };
+			if ($@) {
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					goto REBOOT_DISCOVERY;
+				}
+			}
 
 			if ($Fingerprint_Prompt) {
 
@@ -2068,7 +2092,15 @@ sub reboot_control {
 
 			# Fingerprint
 			my $Line = $SSH->read_line();
-			my $Fingerprint_Prompt = $SSH->waitfor(".*key fingerprint is.*", $Reboot_Connection_Timeout, '-re');
+			my $Fingerprint_Prompt = eval { $SSH->waitfor(".*key fingerprint is.*", $Reboot_Connection_Timeout, '-re'); };
+			if ($@) {
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					goto REBOOT_DISCOVERY;
+				}
+			}
 
 			if ($Fingerprint_Prompt) {
 

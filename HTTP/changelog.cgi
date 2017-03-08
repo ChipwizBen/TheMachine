@@ -37,6 +37,10 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.3.0
+	$Table->addRow('2.3.0', 'Fixed a bug where the D-Shell process would die if the SSH connection suddenly closed 
+           after previously being open during the initial connection phase, including during a controlled reboot.');
+
 	## Version 2.2.1
 	$Table->addRow('2.2.1', 'Fixed an issue with the IP allocation system reporting the wrong block when full.');
 	$Table->addRow('', 'Removed taint requirement from locally executed only scripts.');
@@ -112,7 +116,7 @@ sub html_output {
 
 	## Version 2.0.0
 	$Table->addRow('2.0.0', 'DSMS repurposed as The Machine. Now includes IP allocation, DNS management, reverse proxy 
-	management, sudoers management and Icinga management.');
+          management, sudoers management and Icinga management.');
 	$Table->addRow('<hr />', '');
 
 	## Version 1.10.0
