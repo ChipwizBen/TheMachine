@@ -39,11 +39,13 @@ sub html_output {
 
 	## Version 2.3.0
 	$Table->addRow('2.3.0', 'Fixed a bug where the D-Shell process would die if the SSH connection suddenly closed 
-           after previously being open during the initial connection phase, including during a controlled reboot.');
+          after previously being open during the initial connection phase, including during a controlled reboot.');
 	$Table->addRow('', 'Fixed an issue where a random SSH termination wasn\'t correctly handled by the CDSF distribution process.');
+	$Table->addRow('', 'Restored the previous Command Set ownership model from before 2.0.2 as the main reason for hidden commands 
+          (possible embedded private data in a Command Set) has been superseded by the functions provided by *VAR.');
 
 	## Version 2.2.1
-	$Table->addRow('2.2.1', 'Fixed an issue with the IP allocation system reporting the wrong block when full.');
+	$Table->addRow('2.2.1', 'Fixed an issue with the IP assignment system reporting the wrong block when full.');
 	$Table->addRow('', 'Removed taint requirement from locally executed only scripts.');
 	$Table->addRow('', 'Fixed missing formatting for variables in Command Sets.');
 	$Table->addRow('', 'Added minor username tag for snapshot tracking.');
@@ -116,7 +118,7 @@ sub html_output {
 	$Table->addRow('---', '');
 
 	## Version 2.0.0
-	$Table->addRow('2.0.0', 'DSMS repurposed as The Machine. Now includes IP allocation, DNS management, reverse proxy 
+	$Table->addRow('2.0.0', 'DSMS repurposed as The Machine. Now includes IP assignment, DNS management, reverse proxy 
           management, sudoers management and Icinga management.');
 	$Table->addRow('<hr />', '');
 
@@ -181,7 +183,7 @@ sub html_output {
 	$Table->addRow('', 'Made it possible to search for Rules using the Global Search tool.');
 	$Table->addRow('', 'Made Expired Users/Hosts/Commands/Rules display as Expired instead of only Active/Inactive 
           in the Global Search tool.');
-	$Table->addRow('', 'Fixed an array allocation bug where Commands searched for through the Global Search tool 
+	$Table->addRow('', 'Fixed an array assignment bug where Commands searched for through the Global Search tool 
           always returned as Active.');
     $Table->addRow('', 'Tidied up formatting for descriptions below Add and Edit boxes - unordered lists and padding 
           is now standard across all input boxes with multi-line descriptions. 2pc left and right 
