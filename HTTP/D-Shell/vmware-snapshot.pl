@@ -320,7 +320,6 @@ sub take_snapshot {
 	else {
 		$Snapshot_Description = "Snapshot taken of $Host by $System_Name at $Time_Date_Stamp.";
 	}
-	my $Include_Memory = 1;
 
 	my ($vSphere_Server, $vSphere_Username, $vSphere_Password) = VMware_Connection();
 	Util::connect($vSphere_Server, $vSphere_Username, $vSphere_Password);
@@ -344,7 +343,7 @@ sub take_snapshot {
 	eval {$VM->CreateSnapshot(
 			name => "$Snapshot_Tag",
 			description => "This is a memory snapshot. $Snapshot_Description",
-			memory => $Include_Memory,
+			memory => 1,
 			quiesce => 0);
 	};
 

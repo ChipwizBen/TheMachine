@@ -43,6 +43,7 @@ sub html_output {
 	$Table->addRow('', 'Fixed an issue where a random SSH termination wasn\'t correctly handled by the CDSF distribution process.');
 	$Table->addRow('', 'Restored the previous Command Set ownership model from before 2.0.2 as the main reason for hidden commands 
           (possible embedded private data in a Command Set) has been superseded by the functions provided by *VAR.');
+	$Table->addRow('', 'Added better handing for mid-login errors during D-Shell SSH initialisation.');
 
 	## Version 2.2.1
 	$Table->addRow('2.2.1', 'Fixed an issue with the IP assignment system reporting the wrong block when full.');
