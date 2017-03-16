@@ -44,6 +44,9 @@ sub html_output {
 	$Table->addRow('', 'Restored the previous Command Set ownership model from before 2.0.2 as the main reason for hidden commands 
           (possible embedded private data in a Command Set) has been superseded by the functions provided by *VAR.');
 	$Table->addRow('', 'Added better handing for mid-login errors during D-Shell SSH initialisation.');
+	$Table->addRow('', 'Changed the naming of IP allocations to IP assignments for compatibility with RIPE definitions..');
+	$Table->addRow('', 'Reduced value length from 45 to 18 for IP blocks in assignment DB.');
+	$Table->addRow('', 'Introduced IPv6 assignment system.');
 
 	## Version 2.2.1
 	$Table->addRow('2.2.1', 'Fixed an issue with the IP assignment system reporting the wrong block when full.');

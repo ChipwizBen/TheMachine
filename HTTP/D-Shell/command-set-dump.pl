@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+binmode(STDOUT, ":utf8");
 
 my $Common_Config;
 if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}

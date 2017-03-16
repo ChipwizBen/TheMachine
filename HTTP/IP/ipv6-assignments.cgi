@@ -19,11 +19,11 @@ my $CIDR_Input = $CGI->param("CIDR_Input");
 my $Reset = $CGI->param("Reset");
 my $Manual_Override = $CGI->param("Manual_Override");
 
-my $Final_Allocation = $CGI->param("Final_Allocation");
+my $Final_Assignment = $CGI->param("Final_Assignment");
 	my $Add_Host_Temp_New = $CGI->param("Add_Host_Temp_New");
 	my $Add_Host_Temp_Existing = $CGI->param("Add_Host_Temp_Existing");
 my $Final_Parent = $CGI->param("Final_Parent");
-my $Submit_Allocation = $CGI->param("Submit_Allocation");
+my $Submit_Assignment = $CGI->param("Submit_Assignment");
 
 my $Final_Block_Manual = $CGI->param("Final_Block_Manual");
 my $Location_Input_Manual = $CGI->param("Location_Input_Manual");
@@ -98,39 +98,39 @@ if ($Reset eq '1') {
 	$CIDR_Input='';
 	$Session->param('CIDR_Input', $CIDR_Input);
 	$Session->flush();
-	print "Location: /IP/ipv4-allocations.cgi\n\n";
+	print "Location: /IP/ipv6-assignments.cgi\n\n";
 	exit(0);
 }
-elsif ($Location_Input && !$Submit_Allocation) {
+elsif ($Location_Input && !$Submit_Assignment) {
 	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 	else {
-		my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = &allocation;
+		my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = &assignment;
 		require $Header;
 		&html_output;
 		require $Footer;
 		&html_auto_block ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP);
 	}
 }
-elsif ($Submit_Allocation) {
+elsif ($Submit_Assignment) {
 	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 	else {
-	&add_block;
-		my $Message_Green="$Final_Allocation successfully allocated.";
+		my ($Assignment_ID, $Assigned_Address) = &add_block($Final_Assignment);
+		my $Message_Green="$Assigned_Address successfully allocated as IPv6 Assignment ID $Assignment_ID.";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 }
@@ -139,16 +139,15 @@ elsif ($Final_Block_Manual && $Location_Input_Manual) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 	else {
-		$Final_Allocation = $Final_Block_Manual;
-		&add_block;
-		my $Message_Orange="$Final_Allocation successfully allocated manually. No sanity checks were done.";
+		my ($Assignment_ID, $Assigned_Address) = &add_block($Final_Block_Manual);
+		my $Message_Orange="$Final_Assignment successfully allocated manually. No sanity checks were done.";
 		$Session->param('Message_Orange', $Message_Orange);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 }
@@ -157,7 +156,7 @@ elsif ($Edit_Block) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -172,7 +171,7 @@ elsif ($Block_Edit) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -180,7 +179,7 @@ elsif ($Block_Edit) {
 		my $Message_Green="$Host_Counter hosts added to Block $Block_Edit_Block (ID $Block_Edit).";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 }
@@ -189,7 +188,7 @@ elsif ($Delete_Block) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -204,7 +203,7 @@ elsif ($Delete_Block_Confirm) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 	else {
@@ -212,7 +211,7 @@ elsif ($Delete_Block_Confirm) {
 		my $Message_Green="$Block_Delete deleted successfully";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 }
@@ -236,10 +235,10 @@ else {
 }
 
 
-sub allocation {
+sub assignment {
 
 	my $Discover_Allocatable_Blocks = $DB_Connection->prepare("SELECT `ip_block_name`, `ip_block`, `ip_block_description`, `range_for_use`, `range_for_use_subnet`
-	FROM `ipv4_blocks`
+	FROM `ipv6_blocks`
 	WHERE `id` = ?");
 
 	$Discover_Allocatable_Blocks->execute($Location_Input);
@@ -256,176 +255,208 @@ sub allocation {
 			$IP_Block = $Range_For_Use;
 		}
 
-		my $IP_Allocation_Limit_Collection = new Net::IP::XS ($IP_Block) or die(&allocation_error(Net::IP::XS::Error, $IP_Block));
-			my $IP_Block_Network = $IP_Allocation_Limit_Collection->ip();
-			my $IP_Block_Limit = $IP_Allocation_Limit_Collection->last_ip();
-				my $IP_Allocation_Limit_Execution = new Net::IP::XS ($IP_Block_Limit) or die(&allocation_error(Net::IP::XS::Error, $IP_Block_Limit));
-					my $IP_Block_Limit_Integer = $IP_Allocation_Limit_Execution->intip();
+		my $IP_Assignment_Limit_Collection = new Net::IP::XS ($IP_Block) or die(&assignment_error(Net::IP::XS::Error, $IP_Block));
+			my $IP_Block_Network = $IP_Assignment_Limit_Collection->ip();
+			my $IP_Block_Limit = $IP_Assignment_Limit_Collection->last_ip();
+				my $IP_Assignment_Limit_Execution = new Net::IP::XS ($IP_Block_Limit) or die(&assignment_error(Net::IP::XS::Error, $IP_Block_Limit));
+					my $IP_Block_Limit_Integer = $IP_Assignment_Limit_Execution->intip();
 
 		my $Final_Block;
 		my $Rows = 1;
 		my $Counter = 0;
 		LOOP: while ($Counter != $Rows) {
 			
-			$IP_Block =~ s/\/..?//;
+			$IP_Block =~ s/\/..?.?//;
 
 			my $IP_Block_Check_Cycle = $DB_Connection->prepare("SELECT `ip_block`
-				FROM `ipv4_allocations`
+				FROM `ipv6_assignments`
 				ORDER BY `ip_block` ASC");
 			$IP_Block_Check_Cycle->execute();
 			$Rows = $IP_Block_Check_Cycle->rows();
 
-			while ( my @Block_DB_Output = $IP_Block_Check_Cycle->fetchrow_array() )
-			{
-
-				my $Network_Block = $Block_DB_Output[0];
-
-				my $IP_Block_For_Allocation = "$IP_Block$CIDR_Input";
-				if ($Range_For_Use ne '') {
-					$IP_Block_For_Allocation = $IP_Block;
-				}
-
-				my $IP_Allocation = new Net::IP::XS($IP_Block_For_Allocation) or die(&allocation_error(Net::IP::XS::Error, $IP_Block_For_Allocation));
-					my $Proposed_IP = $IP_Allocation->ip();
-				my $IP_Allocation_Check = new Net::IP::XS($Network_Block) or die(&allocation_error(Net::IP::XS::Error, $Network_Block));
-
-				my $Overlap_Check = $IP_Allocation->overlaps($IP_Allocation_Check);
-
-				if (not defined($Overlap_Check))
-				{
-					my $Message_Red="Problem with IP range $Overlap_Check, it is not properly defined.";
-					$Session->param('Message_Red', $Message_Red);
-					$Session->flush();
-					print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
-					exit(0);
-				}
-				elsif ($Proposed_IP eq $IP_Block_Network || $Proposed_IP eq $IP_Block_Limit) {
-					$Counter = '0';
-					$Final_Block = '';
-					$IP_Block = &increase_octets($IP_Block);
-					goto LOOP;
-				}
-				elsif ( $Overlap_Check == $IP_IDENTICAL )
-				{
-					$Counter = '0';
-					$Final_Block = '';
-					$IP_Block = &increase_octets($IP_Block);
-					goto LOOP;
-				}
-				elsif ( $Overlap_Check == $IP_A_IN_B_OVERLAP )
-				{
-					$Counter = '0';
-					$Final_Block = '';
-					$IP_Block = &increase_octets($IP_Block);
-					goto LOOP;
-				}
-				elsif ( $Overlap_Check == $IP_B_IN_A_OVERLAP )
-				{			
-					$Counter = '0';
-					$Final_Block = '';
-					$IP_Block = &increase_octets($IP_Block);
-					goto LOOP;
-				}
-				elsif ( $Overlap_Check == $IP_PARTIAL_OVERLAP )
-				{
-					$Counter = '0';
-					$Final_Block = '';
-					$IP_Block = &increase_octets($IP_Block);
-					goto LOOP;
-				}
-				elsif ( $Overlap_Check == $IP_NO_OVERLAP )
-				{
-					$Counter++;
-					$Final_Block = $IP_Block_For_Allocation;
-				}
+			if (!$Rows) {
+				$Final_Block = "$IP_Block$CIDR_Input";
 			}
-		};
+			else {
+				
+				while ( my @Block_DB_Output = $IP_Block_Check_Cycle->fetchrow_array() )
+				{
+	
+					my $Network_Block = $Block_DB_Output[0];
+	
+					my $IP_Block_For_Assignment = "$IP_Block$CIDR_Input";
+					if ($Range_For_Use ne '') {
+						$IP_Block_For_Assignment = $IP_Block;
+					}
 
+					# Have to use Net::IPv6Addr to determine the network, as Net::IP is too strict to take arbitrary IP values
+					use Net::IPv6Addr;
+					my ($Arbitary_Network_Block, $Arbitary_Network_Block_Mask) = Net::IPv6Addr::ipv6_parse($IP_Block_For_Assignment);
+	
+	my $IP_Assignment = new Net::IP::XS ($Arbitary_Network_Block.'/'.$Arbitary_Network_Block_Mask) || die (Net::IP::XS::Error);
+	#my $Int_IP = $Block_Query->intip() or die(&assignment_error("Block Integer Generation ( $Block ):".Net::IP::XS::Error));
 
-		my $Final_IP_Allocation = new Net::IP::XS ($Final_Block) or die(&allocation_error(Net::IP::XS::Error, $Final_Block));
-			my $IP_Block_Limit_Final = $Final_IP_Allocation->last_ip();
-				my $IP_Allocation_Limit_Final = new Net::IP::XS ($IP_Block_Limit_Final) or die(&allocation_error(Net::IP::XS::Error, $IP_Block_Limit_Final));
-					my $IP_Block_Limit_Integer_Final = $IP_Allocation_Limit_Final->intip();
+					#my $IP_Assignment = new Net::IP::XS($IP_Block_For_Assignment) or die(&assignment_error("Proposed Assignment ( $IP_Block_For_Assignment ):".Net::IP::XS::Error));
+						my $Proposed_IP = $IP_Assignment->ip();
+					my $IP_Assignment_Check = new Net::IP::XS($Network_Block) or die(&assignment_error("Existing Assignment Check ( $Network_Block ):".Net::IP::XS::Error));
+	
+					my $Overlap_Check = $IP_Assignment->overlaps($IP_Assignment_Check);
+	
+					if (not defined($Overlap_Check))
+					{
+						my $Message_Red="Problem with IP range $Overlap_Check, it is not properly defined.";
+						$Session->param('Message_Red', $Message_Red);
+						$Session->flush();
+						print "Location: /IP/ipv6-assignments.cgi?Reset=1\n\n";
+						exit(0);
+					}
+					elsif ($Proposed_IP eq $IP_Block_Network || $Proposed_IP eq $IP_Block_Limit) {
+						$Counter = '0';
+						$Final_Block = '';
+						$IP_Block = &increase_octets($IP_Block);
+						goto LOOP;
+					}
+					elsif ( $Overlap_Check == $IP_IDENTICAL )
+					{
+						$Counter = '0';
+						$Final_Block = '';
+						$IP_Block = &increase_octets($IP_Block);
+						goto LOOP;
+					}
+					elsif ( $Overlap_Check == $IP_A_IN_B_OVERLAP )
+					{
+						$Counter = '0';
+						$Final_Block = '';
+						$IP_Block = &increase_octets($IP_Block);
+						goto LOOP;
+					}
+					elsif ( $Overlap_Check == $IP_B_IN_A_OVERLAP )
+					{			
+						$Counter = '0';
+						$Final_Block = '';
+						$IP_Block = &increase_octets($IP_Block);
+						goto LOOP;
+					}
+					elsif ( $Overlap_Check == $IP_PARTIAL_OVERLAP )
+					{
+						$Counter = '0';
+						$Final_Block = '';
+						$IP_Block = &increase_octets($IP_Block);
+						goto LOOP;
+					}
+					elsif ( $Overlap_Check == $IP_NO_OVERLAP )
+					{
+						$Counter++;
+						$Final_Block = $IP_Block_For_Assignment;
+					}
+				}
+			};
+		}
+
+		my $Final_IP_Assignment = new Net::IP::XS ($Final_Block) or die(&assignment_error("Final IP Assignment Check ( $Final_Block ):".Net::IP::XS::Error));
+			my $IP_Block_Limit_Final = $Final_IP_Assignment->last_ip();
+				my $IP_Assignment_Limit_Final = new Net::IP::XS ($IP_Block_Limit_Final) or die(&assignment_error("Final IP Limit Check ( $Final_Block ):".Net::IP::XS::Error));
+					my $IP_Block_Limit_Integer_Final = $IP_Assignment_Limit_Final->intip();
 
 		if ($IP_Block_Limit_Integer < $IP_Block_Limit_Integer_Final) {
 			my $Message_Red="There are no more available blocks in $IP_Block_Network for a $CIDR_Input notation. Either reduce the block size or use a different block";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
+			print "Location: /IP/ipv6-assignments.cgi?Reset=1\n\n";
 			exit(0);
 		}
 
-		my $Usable_Addresses = $Final_IP_Allocation->size();
+		my $Usable_Addresses = $Final_IP_Assignment->size();
 			$Usable_Addresses = $Usable_Addresses-2;
-		my $Block_Subnet = $Final_IP_Allocation->mask();
-		my  $Range_Min = $Final_IP_Allocation->ip();
-		my $Range_Max = $Final_IP_Allocation->last_ip();
+		my $Block_Subnet = $Final_IP_Assignment->mask();
+		my  $Range_Min = $Final_IP_Assignment->ip();
+		my $Range_Max = $Final_IP_Assignment->last_ip();
 
 		if ($Range_For_Use) {
 			$Block_Subnet = $Range_For_Use_Subnet;
 		}
 
-		my @Final_Allocation = ($IP_Block_Name, $Parent_Block, $Final_Block);
-		return @Final_Allocation;
+		my @Final_Assignment = ($IP_Block_Name, $Parent_Block, $Final_Block);
+		return @Final_Assignment;
 		
 	}
 
-} # sub allocation
+} # sub assignment
 
 sub increase_octets {
 
-my ($IP_Block) = @_;
+	my ($Block) = @_;
 
-my $Add_CIDR_Loop;
-if ($CIDR_Input eq '/32') {$Add_CIDR_Loop = 1};
-if ($CIDR_Input eq '/31') {$Add_CIDR_Loop = 2};
-if ($CIDR_Input eq '/30') {$Add_CIDR_Loop = 4};
-if ($CIDR_Input eq '/29') {$Add_CIDR_Loop = 8};
-if ($CIDR_Input eq '/28') {$Add_CIDR_Loop = 16};
-if ($CIDR_Input eq '/27') {$Add_CIDR_Loop = 32};
-if ($CIDR_Input eq '/26') {$Add_CIDR_Loop = 64};
-if ($CIDR_Input eq '/25') {$Add_CIDR_Loop = 128};
-if ($CIDR_Input eq '/24') {$Add_CIDR_Loop = 256};
+	my ($Block_Prefix, $CIDR) = Net::IP::XS::ip_splitprefix("${Block}${CIDR_Input}") or die(&assignment_error("Initial Block Octet Parse ( ${Block}${CIDR_Input} ):".Net::IP::XS::Error));
 
-my $IP_Allocation = new Net::IP::XS ($IP_Block) or die(&allocation_error(Net::IP::XS::Error, $IP_Block));
-
-	$IP_Block = $IP_Allocation->intip();
-	$IP_Block = $IP_Block+$Add_CIDR_Loop;
+	# Have to use Net::IPv6Addr to determine the network, as Net::IP is too strict to take arbitrary IP values
+	use Net::IPv6Addr;
+	my ($Network_Block, $Network_Block_Mask) = Net::IPv6Addr::ipv6_parse($Block_Prefix, $CIDR);
 	
-		my $Octet1=($IP_Block/16777216)%256;
-		my $Octet2=($IP_Block/65536)%256;
-		my $Octet3=($IP_Block/256)%256;
-		my $Octet4=$IP_Block%256;
-		$IP_Block = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
+	my $Block_Query = new Net::IP::XS ($Network_Block.'/'.$Network_Block_Mask) || die (Net::IP::XS::Error);
+	my $Int_IP = $Block_Query->intip() or die(&assignment_error("Block Integer Generation ( $Block ):".Net::IP::XS::Error));
 
-	return $IP_Block;
+	my $CIDR_Limit = 128;
+	my $Total_IPs_In_Block = 1;
+
+	my $CIDR_Value = $CIDR;
+		$CIDR_Value =~ s/\\//;
+	while ($CIDR_Value ne $CIDR_Limit) {
+		
+		if ($Total_IPs_In_Block eq 1) {
+			$Total_IPs_In_Block++;
+		}
+		else {
+			$Total_IPs_In_Block = $Total_IPs_In_Block * 2;
+		}
+		$CIDR_Limit--;
+	}
+
+	$Int_IP = $Int_IP + $Total_IPs_In_Block;
+
+	my $Hex_IP = Math::BigInt->new("$Int_IP")->as_hex;
+
+	$Hex_IP =~ s/^0x//;
+	my @Hex_Array = ( $Hex_IP =~ m/..../g );
+		my $Hex0 = "$Hex_Array[0]";
+		my $Hex1 = "$Hex_Array[1]";
+		my $Hex2 = "$Hex_Array[2]";
+		my $Hex3 = "$Hex_Array[3]";
+		my $Hex4 = "$Hex_Array[4]";
+		my $Hex5 = "$Hex_Array[5]";
+		my $Hex6 = "$Hex_Array[6]";
+		my $Hex7 = "$Hex_Array[7]";
+	my $Proposed_IP = $Hex0.":".$Hex1.":".$Hex2.":".$Hex3.":".$Hex4.":".$Hex5.":".$Hex6.":".$Hex7."/$CIDR";
+
+#	$Proposed_IP = new Net::IP::XS ($Proposed_IP) or die(&assignment_error("Short Increase Octets ( $Proposed_IP ):".Net::IP::XS::Error));
+	return $Proposed_IP;
 
 } # sub increase_octets
 
-sub allocation_error {
+sub assignment_error {
 
-my ($Allocation_Range_Error, $IP_Block) = @_;
+my ($Error, $IP_Block) = @_;
+if ($IP_Block) {$IP_Block = "<br/>--------------- You must select a CIDR that fits within the boundaries of $IP_Block ---------------"}
 
-	my $Message_Red="CRITICAL ERROR: You specified a CIDR that spills over the edge of the boundary<br/>
-	Error Details: $Allocation_Range_Error<br/>
-	--------------- You must select a CIDR that fits within the boundaries of $IP_Block ---------------";
+	my $Message_Red="Error: You specified a CIDR that spills over the edge of the boundary<br/>
+	Error Details: ${Error}${IP_Block}";
 	$Session->param('Message_Red', $Message_Red);
 	$Session->flush();
-	print "Location: /IP/ipv4-allocations.cgi?Reset=1\n\n";
+	print "Location: /IP/ipv6-assignments.cgi?Reset=1\n\n";
 	exit(0);
-} # sub allocation_error
+} # sub assignment_error
 
 sub html_auto_block {
 
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="/IP/ipv4-allocations.cgi">
+<a href="/IP/ipv6-assignments.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">IPv4 Allocation</h3>
+<h3 align="center">IPv6 Assignment</h3>
 
 <h4 align="center">Block Info</h4>
 ENDHTML
@@ -467,7 +498,7 @@ print <<ENDHTML;
 <hr width="50%">
 <h4 align="center">Host Assignment</h4>
 
-<form action='ipv4-allocations.cgi' method='post'>
+<form action='ipv6-assignments.cgi' method='post'>
 <table align="center" style="font-size: 12px;">
 	<tr>
 		<td>Assign to Host(s)</td>
@@ -529,11 +560,11 @@ print <<ENDHTML;
 	<input type='hidden' name='CIDR_Input' value='$CIDR_Input'>
 </form>
 
-<form action='ipv4-allocations.cgi' method='post'>
+<form action='ipv6-assignments.cgi' method='post'>
 	<input type='hidden' name='Add_Host_Temp_Existing' value='$Add_Host_Temp_Existing'>
-	<input type='hidden' name='Final_Allocation' value='$Final_Allocated_IP'>
+	<input type='hidden' name='Final_Assignment' value='$Final_Allocated_IP'>
 	<input type='hidden' name='Final_Parent' value='$Parent_Block'>
-	<input type='submit' name='Submit_Allocation' value='Allocate Block'>
+	<input type='submit' name='Submit_Assignment' value='Allocate Block'>
 </form>
 
 ENDHTML
@@ -542,11 +573,19 @@ ENDHTML
 
 sub add_block {
 
+	my $Assigned_Block = $_[0];
+		my $Assigned_IP = $Assigned_Block;
+			$Assigned_IP =~ s/^(.*)\/.*/$1/;
+	my $Assigned_CIDR = $Assigned_Block;
+			$Assigned_CIDR =~ s/^.*\/(..?.?)/$1/;
+	my $Assigned_Address = Net::IP::XS::ip_compress_address($Assigned_IP, 6);
+		$Assigned_Address = $Assigned_Address . '/' . $Assigned_CIDR;
+
 	### Existing Block Check
 	my $Existing_Block_Check = $DB_Connection->prepare("SELECT `id`
-		FROM `ipv4_allocations`
+		FROM `ipv6_assignments`
 		WHERE `ip_block` = ?");
-		$Existing_Block_Check->execute($Final_Allocation);
+		$Existing_Block_Check->execute($Assigned_Address);
 		my $Existing_Blocks = $Existing_Block_Check->rows();
 
 	if ($Existing_Blocks > 0)  {
@@ -555,15 +594,15 @@ sub add_block {
 		{
 			$Existing_ID = $Select_Block[0];
 		}
-		my $Message_Red="Block: $Final_Allocation already exists as ID: $Existing_ID";
+		my $Message_Red="Block: $Assigned_Address already exists as ID: $Existing_ID";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /IP/ipv4-allocations.cgi\n\n";
+		print "Location: /IP/ipv6-assignments.cgi\n\n";
 		exit(0);
 	}
 	### / Existing Block Check
 
-	my $Block_Insert = $DB_Connection->prepare("INSERT INTO `ipv4_allocations` (
+	my $Block_Insert = $DB_Connection->prepare("INSERT INTO `ipv6_assignments` (
 		`ip_block`,
 		`parent_block`,
 		`modified_by`
@@ -574,7 +613,7 @@ sub add_block {
 
 	if ($Location_Input_Manual) {$Final_Parent = $Location_Input_Manual}
 
-	$Block_Insert->execute($Final_Allocation, $Final_Parent, $User_Name);
+	$Block_Insert->execute($Assigned_Address, $Final_Parent, $User_Name);
 
 	my $Block_Insert_ID = $DB_Connection->{mysql_insertid};
 
@@ -584,7 +623,7 @@ sub add_block {
 	my $Host_Counter = 0;
 	foreach my $Host (@Host) {
 		$Host_Counter++;
-		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv6_assignments` (
 			`host`,
 			`ip`
 		)
@@ -607,20 +646,20 @@ sub add_block {
 		?, ?, ?, ?
 	)");
 
-	if ($Final_Block_Manual) {$Final_Block_Manual = ' This was a manual allocation.'} 
+	if ($Final_Block_Manual) {$Final_Block_Manual = ' This was a manual assignment.'} 
 
-	$Audit_Log_Submission->execute("IP", "Add", "$User_Name allocated $Final_Allocation. The system assigned it Block ID $Block_Insert_ID. $Host_Counter hosts were assigned to the block.$Final_Block_Manual", $User_Name);
+	$Audit_Log_Submission->execute("IP", "Add", "$User_Name allocated $Assigned_Address. The system assigned it IPv6 Assignment ID $Block_Insert_ID. $Host_Counter hosts were assigned to the block.$Final_Block_Manual", $User_Name);
 
 	# / Audit Log
 
-	return($Block_Insert_ID);
+	return($Block_Insert_ID, $Assigned_Address);
 
 } # sub add_block
 
 sub html_edit_block {
 
 	my $Block_Query = $DB_Connection->prepare("SELECT `ip_block`, `parent_block`
-	FROM `ipv4_allocations`
+	FROM `ipv6_assignments`
 	WHERE `id` LIKE ?");
 
 	$Block_Query->execute($Edit_Block);
@@ -628,7 +667,7 @@ sub html_edit_block {
 	my ($Block_Extract, $Block_Parent_Extract) = $Block_Query->fetchrow_array();
 
 	my $Associated_Host_Links = $DB_Connection->prepare("SELECT `host`
-	FROM `lnk_hosts_to_ipv4_allocations`
+	FROM `lnk_hosts_to_ipv6_assignments`
 	WHERE `ip` LIKE ?");
 
 	$Associated_Host_Links->execute($Edit_Block);
@@ -664,7 +703,7 @@ sub html_edit_block {
 		$Edit_Host_Temp_Existing !~ m/,$Edit_Host_Temp_New,/g) {
 	
 			my $Select_Links = $DB_Connection->prepare("SELECT `id`
-				FROM `lnk_hosts_to_ipv4_allocations`
+				FROM `lnk_hosts_to_ipv6_assignments`
 				WHERE `ip` = ?
 				AND `host` = ? "
 			);
@@ -703,15 +742,15 @@ sub html_edit_block {
 print <<ENDHTML;
 
 <div id="wide-popup-box">
-<a href="/IP/ipv4-allocations.cgi">
+<a href="/IP/ipv6-assignments.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Edit Block ID $Edit_Block</h3>
+<h3 align="center">Edit IPv6 Assignment ID $Edit_Block</h3>
 <h4 align="center">Existing Block Associations</h4>
 
-<form action='/IP/ipv4-allocations.cgi' method='post' >
+<form action='/IP/ipv6-assignments.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -732,7 +771,7 @@ print <<ENDHTML;
 
 <h4 align="center">Associate More Hosts</h4>
 
-<form action='ipv4-allocations.cgi' method='post'>
+<form action='ipv6-assignments.cgi' method='post'>
 <table align="center" style="font-size: 12px;">
 	<tr>
 		<td>
@@ -790,7 +829,7 @@ print <<ENDHTML;
 	<input type='hidden' name='Edit_Block' value='$Edit_Block'>
 </form>
 
-<form action='ipv4-allocations.cgi' method='post'>
+<form action='ipv6-assignments.cgi' method='post'>
 <input type='hidden' name='Block_Edit_Block' value='$Block_Extract'>
 <input type='hidden' name='Edit_Host_Temp_Existing' value='$Edit_Host_Temp_Existing'>
 <input type='hidden' name='Block_Edit' value="$Edit_Block">
@@ -812,7 +851,7 @@ sub edit_block {
 	my $Host_Counter = 0;
 	foreach my $Host (@Host) {
 		$Host_Counter++;
-		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
+		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv6_assignments` (
 			`host`,
 			`ip`
 		)
@@ -835,7 +874,7 @@ sub edit_block {
 		?, ?, ?, ?
 	)");
 	
-	$Audit_Log_Submission->execute("IP", "Modify", "$User_Name added $Host_Counter new hosts to Block ID $Block_Edit.", $User_Name);
+	$Audit_Log_Submission->execute("IP", "Modify", "$User_Name added $Host_Counter new hosts to IPv6 Assignment ID $Block_Edit.", $User_Name);
 
 	# / Audit Log
 
@@ -846,7 +885,7 @@ sub edit_block {
 
 sub html_delete_block {
 	my $Select_Block = $DB_Connection->prepare("SELECT `ip_block`, `parent_block`
-	FROM `ipv4_allocations`
+	FROM `ipv6_assignments`
 	WHERE `id` = ?");
 
 	$Select_Block->execute($Delete_Block);
@@ -858,7 +897,7 @@ sub html_delete_block {
 		my $Block_Parent_Extract = $DB_Block[1];
 
 		my $Select_Block_Links = $DB_Connection->prepare("SELECT `host`
-			FROM `lnk_hosts_to_ipv4_allocations`
+			FROM `lnk_hosts_to_ipv6_assignments`
 			WHERE `ip` = ?");
 		$Select_Block_Links->execute($Delete_Block);
 	
@@ -880,15 +919,15 @@ sub html_delete_block {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/IP/ipv4-allocations.cgi">
+<a href="/IP/ipv6-assignments.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Delete Allocation</h3>
+<h3 align="center">Delete Assignment</h3>
 
-<form action='/IP/ipv4-allocations.cgi' method='post' >
-<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this allocation?</p>
+<form action='/IP/ipv6-assignments.cgi' method='post' >
+<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this assignment?</p>
 <p>The parent block and hosts associated with this block will not be deleted.</p>
 <table align = "center">
 	<tr>
@@ -922,13 +961,12 @@ sub delete_block {
 
 	# Audit Log
 	my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
-		FROM `ipv4_allocations`
+		FROM `ipv6_assignments`
 		WHERE `id` = ?");
 
 	$Select_Blocks->execute($Delete_Block_Confirm);
 
-	while (( my $Block ) = $Select_Blocks->fetchrow_array() )
-	{
+	while ( my $Block = $Select_Blocks->fetchrow_array() ) {
 		my $DB_Connection = DB_Connection();
 		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
 			`category`,
@@ -939,96 +977,79 @@ sub delete_block {
 		VALUES (
 			?, ?, ?, ?
 		)");
-		$Audit_Log_Submission->execute("IP", "Delete", "$User_Name deleted $Block (Block ID $Delete_Block_Confirm).", $User_Name);
+		$Audit_Log_Submission->execute("IP", "Delete", "$User_Name deleted $Block (IPv6 Assignment ID $Delete_Block_Confirm).", $User_Name);
 	}
 	# / Audit Log
 
-	my $Delete_Block = $DB_Connection->prepare("DELETE from `ipv4_allocations`
+	my $Delete_Block = $DB_Connection->prepare("DELETE from `ipv6_assignments`
 		WHERE `id` = ?");
-	
+
 	$Delete_Block->execute($Delete_Block_Confirm);
 
-	my $Delete_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_allocations`
+	my $Delete_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv6_assignments`
 		WHERE `ip` = ?");
-	
+
 	$Delete_Associations->execute($Delete_Block_Confirm);
 
 } # sub delete_block
 
 sub html_query_block {
 
-my ($Block, $Parent, $Embedded) = @_;
+	my ($Block, $Parent, $Embedded) = @_;
 
-my ($Block_Prefix, $Block_CIDR)=Net::IP::XS::ip_splitprefix($Block);
+	my ($Block_Prefix, $Block_CIDR) = Net::IP::XS::ip_splitprefix($Block);
 
-my $Parent_Prefix;
-my $Parent_CIDR;
-if ($Parent) {
-	($Parent_Prefix, $Parent_CIDR)=Net::IP::XS::ip_splitprefix($Parent);
-}
+	my $Parent_Prefix;
+	my $Parent_CIDR;
+	if ($Parent) {
+		($Parent_Prefix, $Parent_CIDR) = Net::IP::XS::ip_splitprefix($Parent);
+	}
 
-my $CIDR;
-if ($Block_CIDR == 32 && $Parent) {$CIDR = $Parent_CIDR} else {$CIDR = $Block_CIDR}
+	my $CIDR;
+	if ($Block_CIDR == 128 && $Parent) {$CIDR = $Parent_CIDR} else {$CIDR = $Block_CIDR}
 
+	# Have to use Net::IPv6Addr to determine the network, as Net::IP is too strict to take arbitrary IP values
+	use Net::IPv6Addr;
+	my ($Network_Block, $Network_Block_Mask) = Net::IPv6Addr::ipv6_parse($Block) or die (&assignment_error("Query Block Normalise ( ${$Block_Prefix}${$CIDR} ):".Net::IP::XS::Error));
 
-# Have to use Net::IPv4Addr to determine the network, as Net::IP is too strict to take arbitrary IP values
-use Net::IPv4Addr;
-my ($Network_Block, $Network_Block_Mask) = Net::IPv4Addr::ipv4_network( $Block_Prefix, $CIDR);
+	my $Block_Query = new Net::IP::XS ($Network_Block.'/'.$Network_Block_Mask) || die (Net::IP::XS::Error);
 
-
-my $Block_Query = new Net::IP::XS ($Network_Block.'/'.$Network_Block_Mask) || die (Net::IP::XS::Error);
-
-	my $Block_Version=$Block_Query->version();
-	my $Block_Type=$Block_Query->iptype();
-	my $Short_Format=$Block_Query->short();
-	my $Block_Addresses=$Block_Query->size();
-		my $Usable_Addresses=$Block_Addresses-2;
+	my $Block_Version = $Block_Query->version();
+	my $Block_Type = $Block_Query->iptype();
+	my $Short_Format = $Block_Query->short();
+	my $Long_Format = $Block_Query->ip();
+	my $Block_Addresses = $Block_Query->size();
+		my $Usable_Addresses = $Block_Addresses-2;
 			if ($Usable_Addresses < 1) {$Usable_Addresses = 'N/A'}
-	my $Decimal_Subnet=$Block_Query->mask();
-	my $Range_Min=$Block_Query->ip();
-	my $Range_Max=$Block_Query->last_ip();
-	my $Reverse_IP=$Block_Query->reverse_ip();
-	my $Hex_IP=$Block_Query->hexip();
-	my $Hex_Mask=$Block_Query->hexmask();
-	
-my $Usable_Range_Begin=$Block_Query->intip();
-	$Usable_Range_Begin=$Usable_Range_Begin+1;
-		my $Octet1=($Usable_Range_Begin/16777216)%256;
-		my $Octet2=($Usable_Range_Begin/65536)%256;
-		my $Octet3=($Usable_Range_Begin/256)%256;
-		my $Octet4=$Usable_Range_Begin%256;
-		$Usable_Range_Begin = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
-	
-my $Usable_Range_End=$Block_Query->last_ip();
-my $Block_Query_End = new Net::IP::XS ($Usable_Range_End) || die (Net::IP::XS::Error);
-	$Usable_Range_End=$Block_Query_End->intip();
-	$Usable_Range_End=$Usable_Range_End-1;
-		$Octet1=($Usable_Range_End/16777216)%256;
-		$Octet2=($Usable_Range_End/65536)%256;
-		$Octet3=($Usable_Range_End/256)%256;
-		$Octet4=$Usable_Range_End%256;
-		$Usable_Range_End = $Octet1 . "." . $Octet2 . "." . $Octet3 . "." . $Octet4;
+	my $Decimal_Subnet = $Block_Query->mask();
+	my $Range_Min = $Block_Query->ip();
+		my $Short_Range_Min = new Net::IP::XS ($Range_Min) || die (Net::IP::XS::Error);
+		my $Range_Min_Short = $Short_Range_Min->short(); 
+	my $Range_Max = $Block_Query->last_ip();
+		my $Short_Range_Max = new Net::IP::XS ($Range_Max) || die (Net::IP::XS::Error);
+		my $Range_Max_Short = $Short_Range_Max->short();
+	my $Reverse_IP = $Block_Query->reverse_ip();
+	my $Hex_IP = $Block_Query->hexip();
+	my $Hex_Mask = $Block_Query->hexmask();
 
-if (!$Embedded) {
+	if (!$Embedded) {
 print <<ENDHTML;
-<body>
-
 <div id="small-popup-box">
-<a href="ipv4-allocations.cgi">
+<a href="ipv6-assignments.cgi">
 <div id="blockclosebutton"> 
 </div>
 </a>
-<h3>Block Query</h3>
+<h3>Block Query $Block_Prefix $CIDR</h3>
 ENDHTML
-}
+	}
 
-if ($Block_CIDR == 32) {print "<p>This is a /32 block, so its block values are calculated from its parent.</p>";}
+	if ($Block_CIDR == 128) {print "<p>This is a /128 block, so its block values are calculated from its parent.</p>";}
 
-print <<ENDHTML;
+	print <<ENDHTML;
 <table align="center" style="font-size: 12px;">
 	<tr>
 		<td style="text-align: right;">Block</td>
-		<td style="text-align: left; color: #00FF00;">$Block_Prefix/$CIDR</td>
+		<td style="text-align: left; color: #00FF00;">$Block</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Block Version</td>
@@ -1043,6 +1064,10 @@ print <<ENDHTML;
 		<td style="text-align: left; color: #00FF00;">$Short_Format/$CIDR</td>
 	</tr>
 	<tr>
+		<td style="text-align: right;">Long Format</td>
+		<td style="text-align: left; color: #00FF00;">$Long_Format/$CIDR</td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Decimal Mask</td>
 		<td style="text-align: left; color: #00FF00;">$Decimal_Subnet</td>
 	</tr>
@@ -1051,8 +1076,16 @@ print <<ENDHTML;
 		<td style="text-align: left; color: #00FF00;">$Range_Min</td>
 	</tr>
 	<tr>
+		<td style="text-align: right;">Short Network Address</td>
+		<td style="text-align: left; color: #00FF00;">$Range_Min_Short</td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Broadcast Address</td>
 		<td style="text-align: left; color: #00FF00;">$Range_Max</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Short Broadcast Address</td>
+		<td style="text-align: left; color: #00FF00;">$Range_Max_Short</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Block Addresses</td>
@@ -1061,10 +1094,6 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">Usable Addresses</td>
 		<td style="text-align: left; color: #00FF00;">$Usable_Addresses</td>
-	</tr>
-	<tr>
-		<td style="text-align: right;">Usable Range</td>
-		<td style="text-align: left; color: #00FF00;">$Usable_Range_Begin to $Usable_Range_End</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Reverse</td>
@@ -1082,9 +1111,9 @@ print <<ENDHTML;
 
 ENDHTML
 
-if (!$Embedded) {
-	print '</div>';
-}
+	if (!$Embedded) {
+		print '</div>';
+	}
 
 } # sub html_query_block
 
@@ -1103,12 +1132,12 @@ my $Table = new HTML::Table(
 );
 
 my $Select_Block_Count = $DB_Connection->prepare("SELECT COUNT(*)
-	FROM `ipv4_allocations`");
+	FROM `ipv6_assignments`");
 	$Select_Block_Count->execute();
 	my $Total_Rows = $Select_Block_Count->fetchrow_array();
 
 my $Select_Blocks = $DB_Connection->prepare("SELECT `id`, `ip_block`, `parent_block`, `last_modified`, `modified_by`
-	FROM `ipv4_allocations`
+	FROM `ipv6_assignments`
 		WHERE `id` LIKE ?
 		OR `ip_block` LIKE ?
 		OR `parent_block` LIKE ?
@@ -1125,7 +1154,7 @@ else {
 my $Rows = $Select_Blocks->rows();
 
 $Table->addRow( "ID", 
-"IP/Block<a href='/IP/ipv4-allocations.cgi?Order_By=$Order_By_Block&Filter=$Filter'>$Block_IP_Arrow</a>", 
+"IP/Block<a href='/IP/ipv6-assignments.cgi?Order_By=$Order_By_Block&Filter=$Filter'>$Block_IP_Arrow</a>", 
 "Associated Hosts", "Parent Block", "Floating", "Last Modified", "Modified By", "Edit", "Delete" );
 $Table->setRowClass (1, 'tbrow1');
 
@@ -1150,7 +1179,7 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 	my $Modified_By = $Select_Blocks[4];
 
 	my $Select_Host_Links = $DB_Connection->prepare("SELECT `host`
-		FROM `lnk_hosts_to_ipv4_allocations`
+		FROM `lnk_hosts_to_ipv6_assignments`
 		WHERE `ip` = ?");
 	$Select_Host_Links->execute($ID);
 
@@ -1174,17 +1203,18 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 	if ($Floating > 1) {$Floating = 'Yes'} else {$Floating = 'No'}
 	$Hosts =~ s/,&nbsp;$//;
 	$Table->addRow( $ID, 
-	"<a href='/IP/ipv4-allocations.cgi?Query_Block=$Block_Extract&Query_Parent=$Parent_Block_Extract'>$Block</a>",
+	"<a href='/IP/ipv6-assignments.cgi?Query_Block=$Block_Extract&Query_Parent=$Parent_Block_Extract'>$Block</a>",
 	$Hosts,
-	"<a href='/IP/ipv4-blocks.cgi?Filter=$Parent_Block_Extract'>$Parent_Block</a>", 
+	"<a href='/IP/ipv6-blocks.cgi?Filter=$Parent_Block_Extract'>$Parent_Block</a>", 
 	$Floating, $Last_Modified, $Modified_By,
-	"<a href='/IP/ipv4-allocations.cgi?Edit_Block=$ID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
-	"<a href='/IP/ipv4-allocations.cgi?Delete=$ID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>"
+	"<a href='/IP/ipv6-assignments.cgi?Edit_Block=$ID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
+	"<a href='/IP/ipv6-assignments.cgi?Delete=$ID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>"
 	);
 
 	if ($Floating eq 'Yes') {
 		$Table->setCellClass ($Row_Count, 5, 'tbroworange');
-	} else {
+	}
+	else {
 		$Table->setCellClass ($Row_Count, 5, 'tbrowgreen');
 	}
 
@@ -1206,7 +1236,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/IP/ipv4-allocations.cgi' method='post' >
+			<form action='/IP/ipv6-assignments.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1237,49 +1267,51 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/IP/ipv4-allocations.cgi' method='post' >
+			<form action='/IP/ipv6-assignments.cgi' method='post' >
 			<table>
 				<tr>
-					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Allocation</span></td>
+					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Assignment</span></td>
 				</tr>
 				<tr>
 					<td>
-						<form action='ipv4-allocations.cgi' method='post'>	
+						<form action='ipv6-assignments.cgi' method='post'>	
 							<select name='Location_Input'>
 ENDHTML
 
 		my $Location_Retreive = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
-		FROM `ipv4_blocks`
+		FROM `ipv6_blocks`
 		ORDER BY `ip_block_name` ASC");
-		
+
 		$Location_Retreive->execute( );
-		
+
 		while ( my @DB_Output = $Location_Retreive->fetchrow_array() )
 		{
 			my $IP_Block_ID = $DB_Output[0];
 			my $IP_Block_Name = $DB_Output[1];
 			my $IP_Block_Description = $DB_Output[2];
 			my $IP_Block = $DB_Output[3];
-		
+
 			print "<option value='$IP_Block_ID'>$IP_Block_Name [$IP_Block] $IP_Block_Description</option>";
-		
+
 		}
 print <<ENDHTML;
 							</select>
-	
+
 							<select name='CIDR_Input'>
-								<option value='/32' selected>/32</option>
-								<option value='/31'>/31</option>
-								<option value='/30'>/30</option>
-								<option value='/29'>/29</option>
-								<option value='/28'>/28</option>
-								<option value='/27'>/27</option>
-								<option value='/26'>/26</option>
-								<option value='/25'>/25</option>
-								<option value='/24'>/24</option>
-								<option value='/23'>/23</option>
+ENDHTML
+
+	for (my $i=128; $i >= 32; $i--) {
+		if ($i == 128) {
+			print "<option value='/$i' selected>/$i</option>";
+		}
+		else {
+			print "<option value='/$i'>/$i</option>";
+		}
+	}
+
+print <<ENDHTML;
 							</select>
-	
+
 							<input type=submit name='ok' value='Allocate Block'>
 						</td>
 					</tr>
@@ -1287,12 +1319,12 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<a href="ipv4-allocations.cgi?Manual_Override=1"><span style="color: #FF8A00;">Switch to Manual Allocation Mode</span></a>
+			<a href="ipv6-assignments.cgi?Manual_Override=1"><span style="color: #FF8A00;">Switch to Manual Assignment Mode</span></a>
 		</td>
 	</tr>
 </table>
 
-<p style="font-size:14px; font-weight:bold;">IPv4 Allocations | Blocks Displayed: $Rows of $Total_Rows</p>
+<p style="font-size:14px; font-weight:bold;">IPv6 Assignments | Blocks Displayed: $Rows of $Total_Rows</p>
 
 $Table
 
@@ -1306,9 +1338,9 @@ sub html_output_manual {
 print <<ENDHTML;
 
 <div id="full-page-block">
-<h2 style='text-align:center;'>IPv4 Manual Allocation</h2>
+<h2 style='text-align:center;'>IPv6 Manual Assignment</h2>
 
-<form action='ipv4-allocations.cgi' method='post'>
+<form action='ipv6-assignments.cgi' method='post'>
 <table align = "center">
 	<tr>
 		<td style="font-size: 16px; text-align: center; color: #FF0000;">
@@ -1317,22 +1349,22 @@ print <<ENDHTML;
 	</tr>
 </table>
 
-<h4 style='text-align:center; color: #00FF00;'><a href='ipv4-allocations.cgi'>Click here to switch back to Automatic Allocation Mode</a></h4>
+<h4 style='text-align:center; color: #00FF00;'><a href='ipv6-assignments.cgi'>Click here to switch back to Automatic Assignment Mode</a></h4>
 
 <table align = "center">
 	<tr>
 		<td style="font-size: 16px; text-align: center; color: #FF0000;">
-			It is possible to create duplicate or overlapping allocations here if you're not careful.
+			It is possible to create duplicate or overlapping assignments if you're not careful.
 		</td>
 	</tr>
 	<tr>
 		<td style="font-size: 16px; text-align: center; color: #FF0000;">
-			It is possible to create allocations outside of the defined ranges here if you're not careful.
+			It is possible to create assignments outside of the defined ranges if you're not careful.
 		</td>
 	</tr>
 	<tr>
 		<td style="font-size: 16px; text-align: center; color: #FF0000;">
-			There's also an audit log so everybody will know it was you that broke all the internets. And you'll become a meme.
+			There's also an audit log so everybody will know it was you that broke all the internets. You'll become a meme.
 		</td>
 	</tr>
 </table>
@@ -1349,7 +1381,7 @@ print <<ENDHTML;
 ENDHTML
 
 		my $Location_Retreive = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block_description`, `ip_block`
-		FROM `ipv4_blocks`
+		FROM `ipv6_blocks`
 		ORDER BY `ip_block_name` ASC");
 		
 		$Location_Retreive->execute( );
@@ -1373,7 +1405,7 @@ print <<ENDHTML;
 			Usable CIDR Notated Block:
 		</td>
 		<td>
-			<input type='text' name='Final_Block_Manual' placeholder='192.168.0.0/32' required>
+			<input type='text' name='Final_Block_Manual' placeholder='2001:2::123/128' required>
 		</td>
 	</tr>
 </table>
@@ -1381,7 +1413,7 @@ print <<ENDHTML;
 <table align="center">
 	<tr>
 		<td>
-			<div style="text-align: center"><input type=submit name='Internal' value='Submit'></div>
+			<div style="text-align: center"><input type=submit value='Submit'></div>
 		</td>
 	</tr>
 </table>

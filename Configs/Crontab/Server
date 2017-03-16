@@ -7,8 +7,8 @@
 # Command Set Dump
 */11 * * * * root cd /opt/TheMachine/http/D-Shell/ >> /opt/TheMachine/logs/Cron-CommandSetDump.log 2>&1 && ./command-set-dump.pl >> /opt/TheMachine/logs/Cron-CommandSetDump.log 2>&1
 
-# IP Allocation Block Capacity Check
-00 * * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockCount.log 2>&1 && ./ip-allocation-counter.pl >> /opt/TheMachine/logs/Cron-IPBlockCount.log 2>&1
+# IP Assignment Block Capacity Check
+00 * * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockCount.log 2>&1 && ./ip-assignment-counter.pl >> /opt/TheMachine/logs/Cron-IPBlockCount.log 2>&1
 
 # IP Block Sweep
 00 01 * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockSweep.log 2>&1 && ./ipv4-ping-sweep.pl >> /opt/TheMachine/logs/Cron-IPBlockSweep.log 2>&1

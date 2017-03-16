@@ -84,7 +84,7 @@ sub set_the_machine_flags {
 	}
 
 	$DB_TheMachine->do("ALTER TABLE `TheMachine`.`lnk_hosts_groups_to_hosts` $Column;");
-	$DB_TheMachine->do("ALTER TABLE `TheMachine`.`lnk_hosts_to_ipv4_allocations` $Column;");
+	$DB_TheMachine->do("ALTER TABLE `TheMachine`.`lnk_hosts_to_ipv4_assignments` $Column;");
 
 } # sub set_the_machine_flags
 

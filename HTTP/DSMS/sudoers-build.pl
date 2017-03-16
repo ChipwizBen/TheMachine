@@ -239,23 +239,23 @@ sub write_host_groups {
 					if (!$DHCP_Extract) {
 						## Block discovery
 						my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
-							FROM `lnk_hosts_to_ipv4_allocations`
+							FROM `lnk_hosts_to_ipv4_assignments`
 							WHERE `host` = ?");
 						$Select_Block_Links->execute($Host_ID);
 			
 						while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
 						
 							my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
-								FROM `ipv4_allocations`
+								FROM `ipv4_assignments`
 								WHERE `id` = ?");
 							$Select_Blocks->execute($Block_ID);
 						
 							while (my $Block = $Select_Blocks->fetchrow_array() ) {
 						
-								my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
-									FROM `lnk_hosts_to_ipv4_allocations`
+								my $Count_Block_Assignments = $DB_Connection->prepare("SELECT `id`
+									FROM `lnk_hosts_to_ipv4_assignments`
 									WHERE `ip` = ?");
-								$Count_Block_Allocations->execute($Block_ID);
+								$Count_Block_Assignments->execute($Block_ID);
 						
 								$Blocks = $Block . ", " . $Blocks;
 							}
@@ -591,23 +591,23 @@ sub create_host_rule_groups {
 			if (!$DHCP_Extract) {
 				## Block discovery
 				my $Select_Block_Links = $DB_Connection->prepare("SELECT `ip`
-					FROM `lnk_hosts_to_ipv4_allocations`
+					FROM `lnk_hosts_to_ipv4_assignments`
 					WHERE `host` = ?");
 				$Select_Block_Links->execute($Host_ID);
 	
 				while (my $Block_ID = $Select_Block_Links->fetchrow_array() ) {
 				
 					my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
-						FROM `ipv4_allocations`
+						FROM `ipv4_assignments`
 						WHERE `id` = ?");
 					$Select_Blocks->execute($Block_ID);
 				
 					while (my $Block = $Select_Blocks->fetchrow_array() ) {
 				
-						my $Count_Block_Allocations = $DB_Connection->prepare("SELECT `id`
-							FROM `lnk_hosts_to_ipv4_allocations`
+						my $Count_Block_Assignments = $DB_Connection->prepare("SELECT `id`
+							FROM `lnk_hosts_to_ipv4_assignments`
 							WHERE `ip` = ?");
-						$Count_Block_Allocations->execute($Block_ID);
+						$Count_Block_Assignments->execute($Block_ID);
 				
 						$Blocks = $Block . ', ' . $Blocks;
 					}

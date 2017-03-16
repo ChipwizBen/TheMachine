@@ -183,7 +183,7 @@ textarea:focus {
 	}
 
 #strip-image {
-	background: #fff url(/resources/imgs/strip.jpg) no-repeat 0 0;
+	background: #fff url(/resources/imgs/strip.png) no-repeat 0 0;
 	background-color: #293E77;
 	background-position:center;
 	height: 90px;

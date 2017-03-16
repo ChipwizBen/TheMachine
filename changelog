@@ -4,6 +4,9 @@
         - Restored the previous Command Set ownership model from before 2.0.2 as the main reason for hidden commands 
           (possible embedded private data in a Command Set) has been superseded by the functions provided by *VAR.
         - Added better handing for mid-login errors during D-Shell SSH initialisation.
+        - Changed the naming of IP allocations to IP assignments for compatibility with RIPE definitions.
+        - Reduced value length from 45 to 18 for IP blocks in assignment DB.
+        - Introduced IPv6 assignment system.
 2.2.1   - Fixed an issue with the IP allocation system reporting the wrong block when full.
         - Removed taint requirement from locally executed only scripts.
         - Fixed missing formatting for variables in Command Sets.

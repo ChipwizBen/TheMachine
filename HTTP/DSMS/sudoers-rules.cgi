@@ -267,8 +267,8 @@ sub html_add_rule {
 my $Date = strftime "%Y-%m-%d", localtime;
 
 ### Temp Selection Filters
-	# *_Temp_Existing are existing temporary allocations from the last refresh. This is basically a list of 'new' elements that have not yet been committed to the database.
-	# *_Temp_Existing_New are new temporary allocations from the last refresh. These are added to the *_Temp_Existing variable below to form a single list for each element.
+	# *_Temp_Existing are existing temporary assignments from the last refresh. This is basically a list of 'new' elements that have not yet been committed to the database.
+	# *_Temp_Existing_New are new temporary assignments from the last refresh. These are added to the *_Temp_Existing variable below to form a single list for each element.
 	# The list is a comma separated array, which is parsed when adding to the database.
 
 if ($Add_Host_Group_Temp_New) {

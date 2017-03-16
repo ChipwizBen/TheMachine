@@ -333,13 +333,13 @@ CREATE TABLE `hosts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `ipv4_allocations`
+-- Table structure for table `ipv4_assignments`
 --
 
-DROP TABLE IF EXISTS `ipv4_allocations`;
+DROP TABLE IF EXISTS `ipv4_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ipv4_allocations` (
+CREATE TABLE `ipv4_assignments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ip_block` varchar(45) NOT NULL,
   `parent_block` varchar(45) NOT NULL,
@@ -452,13 +452,13 @@ CREATE TABLE `lnk_host_groups_to_hosts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `lnk_hosts_to_ipv4_allocations`
+-- Table structure for table `lnk_hosts_to_ipv4_assignments`
 --
 
-DROP TABLE IF EXISTS `lnk_hosts_to_ipv4_allocations`;
+DROP TABLE IF EXISTS `lnk_hosts_to_ipv4_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_hosts_to_ipv4_allocations` (
+CREATE TABLE `lnk_hosts_to_ipv4_assignments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `host` int(11) NOT NULL,
   `ip` int(11) NOT NULL,

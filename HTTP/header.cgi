@@ -130,8 +130,9 @@ print <<ENDHTML;
 					<li><a href="/IP/host-groups.cgi">Host Groups</a></li>
 					<li><a href="/IP/hosts.cgi">Hosts</a></li>
 					<li><a href="/IP/ipv4-blocks.cgi">IPv4 Blocks</a></li>
-					<li><a href="/IP/ipv4-allocations.cgi">IPv4 Allocations</a></li>
-					<li><a href="/IP/ipv6-allocations.cgi">#IPv6 Allocations (todo)</a></li>
+					<li><a href="/IP/ipv6-blocks.cgi">IPv6 Blocks</a></li>
+					<li><a href="/IP/ipv4-assignments.cgi">IPv4 Assignments</a></li>
+					<li><a href="/IP/ipv6-assignments.cgi">IPv6 Assignments</a></li>
 				</ul>
 			</li>
 

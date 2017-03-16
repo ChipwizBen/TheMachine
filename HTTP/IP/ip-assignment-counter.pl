@@ -27,10 +27,10 @@ sub quick_loop {
 		my $IP_Block_Name = $DB_Block_Output[1];
 		my $IP_Block = $DB_Block_Output[2];
 
-		my $IP_Allocation_Limit_Collection = new Net::IP::XS ($IP_Block) or die(print Net::IP::XS::Error);
-			my $IP_Block_Limit=$IP_Allocation_Limit_Collection->last_ip();
-				my $IP_Allocation_Limit_Execution = new Net::IP::XS ($IP_Block_Limit) or die(print Net::IP::XS::Error);
-					my $IP_Block_Limit_Integer = $IP_Allocation_Limit_Execution->intip();
+		my $IP_Assignment_Limit_Collection = new Net::IP::XS ($IP_Block) or die(print Net::IP::XS::Error);
+			my $IP_Block_Limit=$IP_Assignment_Limit_Collection->last_ip();
+				my $IP_Assignment_Limit_Execution = new Net::IP::XS ($IP_Block_Limit) or die(print Net::IP::XS::Error);
+					my $IP_Block_Limit_Integer = $IP_Assignment_Limit_Execution->intip();
 
 		my $Out_Of_Range_Blocks=0;
 		my $Error_Blocks=0;
@@ -46,7 +46,7 @@ sub quick_loop {
 		$CIDR_Input = $IP_Block;
 			$CIDR_Input =~ s/(^.*\/)(..?$)/$2/;
 
-		my $IP_Allocation = new Net::IP::XS ($IP_Block) or die(print Net::IP::XS::Error);
+		my $IP_Assignment = new Net::IP::XS ($IP_Block) or die(print Net::IP::XS::Error);
 
 		my $IP=$IP_Block;
 
@@ -55,10 +55,10 @@ sub quick_loop {
 			$IP =~ s/\/..?$//;
 			$IP = $IP . "/" . $CIDR_Input;
 
-			$IP_Allocation = new Net::IP::XS ($IP) or die(print Net::IP::XS::Error);
+			$IP_Assignment = new Net::IP::XS ($IP) or die(print Net::IP::XS::Error);
 
 				my $Select_IP = $DB_Connection->prepare("SELECT `ip_block`
-					FROM `ipv4_allocations`
+					FROM `ipv4_assignments`
 					WHERE `ip_block` = '$IP'");
 
 				$Select_IP->execute();
@@ -78,7 +78,7 @@ sub quick_loop {
 					$Out_Of_Range_Blocks++;
 				}
 
-				$IP = $IP_Allocation->intip();
+				$IP = $IP_Assignment->intip();
 				$IP = $IP+$Add_CIDR_Loop;
 			
 				if (($IP > $IP_Block_Limit_Integer) && ($CIDR_Input < 32)) {

@@ -56,14 +56,14 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 			print "Got a response from $IP_To_Ping...\n";
 			$DB_Connection = DB_Connection();
 			my $DB_Check = $DB_Connection->prepare("SELECT `id`
-				FROM `ipv4_allocations`
+				FROM `ipv4_assignments`
 				WHERE `ip_block` = ?");
 			$DB_Check->execute("$IP_To_Ping/32");
 			my $Rows = $DB_Check->rows();
 
 			if ($Rows == 0) {
 
-				my $Block_Insert = $DB_Connection->prepare("INSERT INTO `ipv4_allocations` (
+				my $Block_Insert = $DB_Connection->prepare("INSERT INTO `ipv4_assignments` (
 					`ip_block`,
 					`parent_block`,
 					`modified_by`
@@ -92,7 +92,7 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 					if ($Host_Rows > 0)	{
 
 						my $Host_ID = $Host_Exists_Check->fetchrow_array();
-						my $Host_Link_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
+						my $Host_Link_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_assignments` (
 							`host`,
 							`ip`
 						)
@@ -119,7 +119,7 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 					
 						my $Host_Insert_ID = $DB_Connection->{mysql_insertid};
 		
-						my $Host_Link_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_allocations` (
+						my $Host_Link_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_assignments` (
 							`host`,
 							`ip`
 						)
