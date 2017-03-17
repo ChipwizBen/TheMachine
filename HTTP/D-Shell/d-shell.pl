@@ -1315,14 +1315,14 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -r -i $Host_ID -T '${Snapshot_Tag}'`;
+					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID -T '${Snapshot_Tag}'`;
 				}
 				else {
 					if ($Verbose) {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing current snapshot taken by $System_Short_Name${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing current snapshot taken by $System_Short_Name${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -r -i $Host_ID`;
+					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID`;
 				}
 
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};

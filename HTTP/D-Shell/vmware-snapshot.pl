@@ -35,7 +35,7 @@ Options are:
 	${Blue}-S, --show\t\t${Green}Shows a tree list of all snapshots taken of a VM, including those done by $System_Name.
 	${Blue}-T, --tag\t\t${Green}Used with creating, deleting and reverting snapshots as a reference tag.
 	${Blue}-s, --snapshot\t\t${Green}Takes a snapshot of the listed hosts. Combine with --tag to label the snapshot.
-	${Blue}-r, --remove\t\t${Green}When supplied with --tag, removes the snapshot matching the tag, otherwise snapshots taken
+	${Blue}-d, --delete\t\t${Green}When supplied with --tag, removes the snapshot matching the tag, otherwise snapshots taken
 				by The Machine that have no tag will be removed.
 	${Blue}-e, --erase\t\t${Green}Removes ALL snapshots for listed hosts.
 	${Blue}-R, --revert\t\t${Green}Combine with --tag to revert to a specific snapshot, otherwise the VM will be reverted to
@@ -51,7 +51,7 @@ ${Green}Examples:
 	${Blue}$0 --revert -H server01 --tag 'My Snapshot'
 
 	${Green}## Delete the server01 snapshot tagged 'My Snapshot'
-	${Blue}$0 --remove -H server01 --tag 'My Snapshot'
+	${Blue}$0 --delete -H server01 --tag 'My Snapshot'
 
 	${Green}## Remove ALL snapshots for server01/02/03
 	${Blue}$0 --erase -H server01 server02 server03
@@ -92,8 +92,8 @@ GetOptions(
 	'show' => \$Show,
 	's' => \$Snapshot,
 	'snapshot' => \$Snapshot,
-	'r' => \$Remove,
-	'remove' => \$Remove,
+	'd' => \$Remove,
+	'delete' => \$Remove,
 	'T:s' => \$Tag,
 	'tag:s' => \$Tag,
 	'e' => \$Erase,

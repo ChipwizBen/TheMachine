@@ -110,11 +110,11 @@ elsif ($Location_Input && !$Submit_Assignment) {
 		exit(0);
 	}
 	else {
-		my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = &assignment;
+		my ($IP_Block_Name, $Parent_Block, $Final_Assignd_IP) = &assignment;
 		require $Header;
 		&html_output;
 		require $Footer;
-		&html_auto_block ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP);
+		&html_auto_block ($IP_Block_Name, $Parent_Block, $Final_Assignd_IP);
 	}
 }
 elsif ($Submit_Assignment) {
@@ -127,7 +127,7 @@ elsif ($Submit_Assignment) {
 	}
 	else {
 		my ($Assignment_ID, $Assigned_Address) = &add_block($Final_Assignment);
-		my $Message_Green="$Assigned_Address successfully allocated as IPv6 Assignment ID $Assignment_ID.";
+		my $Message_Green="$Assigned_Address successfully assigned as IPv6 Assignment ID $Assignment_ID.";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
 		print "Location: /IP/ipv6-assignments.cgi\n\n";
@@ -144,7 +144,7 @@ elsif ($Final_Block_Manual && $Location_Input_Manual) {
 	}
 	else {
 		my ($Assignment_ID, $Assigned_Address) = &add_block($Final_Block_Manual);
-		my $Message_Orange="$Final_Assignment successfully allocated manually. No sanity checks were done.";
+		my $Message_Orange="$Final_Assignment successfully assigned manually. No sanity checks were done.";
 		$Session->param('Message_Orange', $Message_Orange);
 		$Session->flush();
 		print "Location: /IP/ipv6-assignments.cgi\n\n";
@@ -461,10 +461,10 @@ print <<ENDHTML;
 <h4 align="center">Block Info</h4>
 ENDHTML
 
-my ($IP_Block_Name, $Parent_Block, $Final_Allocated_IP) = @_;
+my ($IP_Block_Name, $Parent_Block, $Final_Assignd_IP) = @_;
 
 my $Embedded = 1;
-&html_query_block($Final_Allocated_IP, $Parent_Block, $Embedded);
+&html_query_block($Final_Assignd_IP, $Parent_Block, $Embedded);
 
 if ($Add_Host_Temp_New) {
 	if ($Add_Host_Temp_Existing !~ m/^$Add_Host_Temp_New,/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New$/g && $Add_Host_Temp_Existing !~ m/,$Add_Host_Temp_New,/g) {
@@ -562,9 +562,9 @@ print <<ENDHTML;
 
 <form action='ipv6-assignments.cgi' method='post'>
 	<input type='hidden' name='Add_Host_Temp_Existing' value='$Add_Host_Temp_Existing'>
-	<input type='hidden' name='Final_Assignment' value='$Final_Allocated_IP'>
+	<input type='hidden' name='Final_Assignment' value='$Final_Assignd_IP'>
 	<input type='hidden' name='Final_Parent' value='$Parent_Block'>
-	<input type='submit' name='Submit_Assignment' value='Allocate Block'>
+	<input type='submit' name='Submit_Assignment' value='Assign Block'>
 </form>
 
 ENDHTML
@@ -648,7 +648,7 @@ sub add_block {
 
 	if ($Final_Block_Manual) {$Final_Block_Manual = ' This was a manual assignment.'} 
 
-	$Audit_Log_Submission->execute("IP", "Add", "$User_Name allocated $Assigned_Address. The system assigned it IPv6 Assignment ID $Block_Insert_ID. $Host_Counter hosts were assigned to the block.$Final_Block_Manual", $User_Name);
+	$Audit_Log_Submission->execute("IP", "Add", "$User_Name assigned $Assigned_Address. The system assigned it IPv6 Assignment ID $Block_Insert_ID. $Host_Counter hosts were assigned to the block.$Final_Block_Manual", $User_Name);
 
 	# / Audit Log
 
@@ -1312,7 +1312,7 @@ ENDHTML
 print <<ENDHTML;
 							</select>
 
-							<input type=submit name='ok' value='Allocate Block'>
+							<input type=submit name='ok' value='Assign Block'>
 						</td>
 					</tr>
 				</table>
