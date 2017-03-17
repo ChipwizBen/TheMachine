@@ -45,4 +45,12 @@ CREATE TABLE `ipv6_assignments` (
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 
+CREATE TABLE `TheMachine`.`job_queue` (
+  `job_id` INT NOT NULL,
+  `override` INT(1) NOT NULL DEFAULT 0,
+  `last_modified` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`job_id`),
+  UNIQUE INDEX `job_id_UNIQUE` (`job_id` ASC));
+
+
 

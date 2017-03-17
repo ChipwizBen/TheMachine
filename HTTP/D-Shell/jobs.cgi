@@ -30,6 +30,7 @@ my $Captured_Key_Passphrase = $CGI->param("Captured_Key_Passphrase");
 my $Pause_Job = $CGI->param("Pause_Job");
 my $Stop_Job = $CGI->param("Stop_Job");
 my $Resume_Job = $CGI->param("Resume_Job");
+my $Prioritise_Job = $CGI->param("Prioritise_Job");
 
 my @Machine_Variables = $CGI->multi_param;
 
@@ -163,12 +164,36 @@ elsif ($Resume_Job) {
 	}
 	else {
 		&resume_job;
-		if ($Resume_Job eq 'All') {
+		if ($Resume_Job eq 'ALL') {
 			my $Message_Green = "All Jobs resumed.";
 			$Session->param('Message_Green', $Message_Green);
 		}
 		else {
 			my $Message_Green = "Job ID $Resume_Job resumed.";
+			$Session->param('Message_Green', $Message_Green);
+		}
+		$Session->flush();
+		undef $Trigger_Job;
+		print $CGI->redirect(-url=>'/D-Shell/jobs.cgi');
+		exit(0);
+	}
+}
+elsif ($Prioritise_Job) {
+	if ($User_DShell_Admin != 1) {
+		my $Message_Red = 'You do not have sufficient privileges to do that.';
+		$Session->param('Message_Red', $Message_Red);
+		$Session->flush();
+		print "Location: /D-Shell/jobs.cgi\n\n";
+		exit(0);
+	}
+	else {
+		&prioritise_job;
+		if ($Prioritise_Job eq 'ALL') {
+			my $Message_Green = "All Jobs prioritised.";
+			$Session->param('Message_Green', $Message_Green);
+		}
+		else {
+			my $Message_Green = "Job ID $Prioritise_Job prioritised for processing.";
 			$Session->param('Message_Green', $Message_Green);
 		}
 		$Session->flush();
@@ -521,6 +546,45 @@ sub resume_job {
 
 } # sub resume_job
 
+sub prioritise_job {
+
+	# Audit Log
+	my $DB_Connection = DB_Connection();
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+
+	if ($Prioritise_Job eq 'ALL') {
+		$Audit_Log_Submission->execute("D-Shell", "Prioritise", "$User_Name prioritised all jobs.", $User_Name);
+	}
+	else {
+		$Audit_Log_Submission->execute("D-Shell", "Prioritise", "$User_Name prioritised Job ID $Prioritise_Job.", $User_Name);
+	}
+	
+
+	# / Audit Log
+
+	if ($Prioritise_Job eq 'ALL') {
+		my $Update_Queue = $DB_Connection->prepare("UPDATE `job_queue` SET
+			`override` = 1
+			WHERE `override` = 0");
+		$Update_Queue->execute();
+	}
+	else {
+		my $Update_Queue = $DB_Connection->prepare("UPDATE `job_queue` SET
+			`override` = 1
+			WHERE `job_id` = ?");
+		$Update_Queue->execute($Prioritise_Job);
+	}
+
+} # sub prioritise_job
+
 sub run_job {
 
 	# Audit Log
@@ -746,6 +810,13 @@ sub html_output {
 		$Select_Paused_Job_Count->execute( );
 		my $Total_Paused_Jobs = $Select_Paused_Job_Count->rows();
 
+	my $Select_Queued_Job_Count = $DB_Connection->prepare("SELECT `job_id` FROM `job_queue`");
+		$Select_Queued_Job_Count->execute();
+		my $Total_Queued_Jobs = $Select_Queued_Job_Count->rows();
+	my $Select_Queued_Priority_Job_Count = $DB_Connection->prepare("SELECT `job_id` FROM `job_queue` WHERE `override` = 1");
+		$Select_Queued_Priority_Job_Count->execute();
+		my $Total_Priority_Jobs = $Select_Queued_Priority_Job_Count->rows();
+
 	my $Select_Jobs = $DB_Connection->prepare("SELECT `jobs`.`id`, `hosts`.`hostname`, `host_id`, `command_set_id`, `command_sets`.`name`, `on_failure`, `status`, `jobs`.`last_modified`, `jobs`.`modified_by`
 		FROM `jobs`
 		LEFT JOIN `hosts`
@@ -852,7 +923,7 @@ sub html_output {
 
 		### / Discover Currently Running Command
 
-		if ($Status == 1 || $Status == 10) {
+		if ($Status == 1 || $Status == 10 || $Status == 22) {
 			my $Processing = `$ps aux | $grep 'JobID $DBID' | $grep -v grep | $wc -l`;
 			my $Now_Epoch = time;
 			if ($Held_Running_Started) {
@@ -872,6 +943,8 @@ sub html_output {
 					`modified_by` = ?
 					WHERE `id` = ?");
 				$Update_Job->execute($Status, $User_Name, $DBID);
+				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+				$Delete_Queue_Entry->execute($DBID);
 			}
 		}
 
@@ -1009,6 +1082,24 @@ sub html_output {
 			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
 			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
+		elsif ($Status == 22) {
+			my $Queue_Query = $DB_Connection->prepare("SELECT `job_id`, `override`
+				FROM `job_queue`
+				ORDER BY `last_modified`,`job_id` ASC");
+			$Queue_Query->execute();
+			my $Total_Queued_Jobs = $Queue_Query->rows();
+			my $Queue_Position_Count = 0;
+			while (my ($Queue_Job_ID, $Queue_Override) = $Queue_Query->fetchrow_array()) {
+				$Queue_Position_Count++;
+				if ($Queue_Job_ID eq $DBID) {
+					my $DShell_Queue_Execution_Cap = DShell_Queue_Execution_Cap();
+					$Running_Command = "This Job is queued at position $Queue_Position_Count of $Total_Queued_Jobs. The concurrent Job execution cap is $DShell_Queue_Execution_Cap Jobs.";
+					$Status = 'Queued';
+					$Control_Button = "<a href='/D-Shell/jobs.cgi?Prioritise_Job=$DBID'><img src=\"/resources/imgs/cog-animation-small.gif\" alt=\"Prioratise Job ID $DBID\" ></a>";
+					$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+				}
+			}
+		}
 		elsif ($Status == 99) {
 			$Running_Command = 'My head fell off. I don\'t know why.';
 			$Status = 'Error';
@@ -1058,6 +1149,7 @@ sub html_output {
 		if ($Status eq 'Paused') {$Table->setCellClass ($Job_Row_Count, 6, 'tbroworange');}
 		if ($Status eq 'Pending') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowgrey');}
 		if ($Status eq 'Error') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowred');}
+		if ($Status eq 'Queued') {$Table->setCellClass ($Job_Row_Count, 6, 'tbrowpurple');}
 
 	}
 
@@ -1119,8 +1211,11 @@ print <<ENDHTML;
 		<td align="right" style="font-size:14px;">
 			$Total_Running_Jobs currently running jobs.<br />
 			$Total_Paused_Jobs currently paused jobs.<br />
+			$Total_Queued_Jobs jobs in queue.<br />
+			$Total_Priority_Jobs priority jobs.<br />
 			Pause all running jobs <a href='/D-Shell/jobs.cgi?Pause_Job=ALL'><img src=\"/resources/imgs/pause.png\" alt=\"Pause all Jobs\" ></a><br />
 			Resume all paused jobs <a href='/D-Shell/jobs.cgi?Resume_Job=ALL'><img src=\"/resources/imgs/forward.png\" alt=\"Resume all paused Jobs\" ></a><br />
+			Prioritise all jobs <a href='/D-Shell/jobs.cgi?Prioritise_Job=ALL'><img src=\"/resources/imgs/cog.png\" alt=\"Prioritise all queued Jobs\" ></a><br />
 		</td>
 	</tr>
 </table>

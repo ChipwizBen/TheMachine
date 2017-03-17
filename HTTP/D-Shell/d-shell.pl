@@ -22,6 +22,7 @@ my $grep = sudo_grep();
 my $Override = 0;
 my $No_Decode;
 my $Wait_Timeout = DShell_WaitFor_Timeout();
+my $DShell_Queue_Execution_Cap = DShell_Queue_Execution_Cap();
 my $Retry_Count = 0;
 my $Max_Retry_Count = 10;
 my $Connection_Timeout = 5;
@@ -51,10 +52,11 @@ Options are:
 	${Blue}-d, --dependency-chain\t ${Green}Pass the dependency chain ID (only used with dependencies)
 	${Blue}-u, --user\t\t ${Green}Pass the user that'll execute the job on the remote system (only used without keys)
 	${Blue}-k, --key\t\t ${Green}Pass the key ID used to connect to the server
-	${Blue}-r, --real-time-variable ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
+	${Blue}-r, --runtime-variable ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
 	${Blue}-v, --verbose\t\t ${Green}Turns on verbose output (useful for debug)
 	${Blue}-V, --very-verbose\t ${Green}Same as verbose, but also includes _LOTS_ of debug (I did warn you)
 	${Blue}--override\t\t ${Green}Override the lock for Complete or Stopped jobs
+	${Blue}--high-priority\t\t ${Green}Queues the Job but ignores the position and executes immediately
 
 ${Green}Examples:
 	${Green}## Run a job
@@ -91,6 +93,7 @@ my $Captured_Key_Lock;
 	my $Key_Lock;
 my $Captured_Key_Passphrase;
 	my $Key_Passphrase;
+my $High_Priority;
 
 GetOptions(
 	'v' => \$Verbose,
@@ -121,7 +124,8 @@ GetOptions(
 	'L:s' => \$Captured_Key_Lock,
 	'lock:s' => \$Captured_Key_Lock,
 	'K:s' => \$Captured_Key_Passphrase,
-	'passphrase:s' => \$Captured_Key_Passphrase
+	'passphrase:s' => \$Captured_Key_Passphrase,
+	'high-priority' => \$High_Priority
 ) or die("Option capture badness.\n");
 
 if ($Verbose) {
@@ -378,6 +382,77 @@ if ($Verbose && $Paper_Trail) {
 	}
 }
 
+if ($Verbose) {
+	my $Time_Stamp = strftime "%H:%M:%S", localtime;
+	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Queuing myself for execution. Execution cap is ${Yellow}$DShell_Queue_Execution_Cap${Green} concurrent jobs.${Clear}\n";
+	print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Queuing myself for execution. Execution cap is ${Yellow}$DShell_Queue_Execution_Cap${Green} concurrent jobs.${Clear}\n";
+}
+
+if (!$High_Priority) {$High_Priority = 0}
+my $Queue_Submission = $DB_Connection->prepare("REPLACE INTO `job_queue` (
+	`job_id`,
+	`override`
+)
+VALUES (
+	?, ?
+)");
+$Queue_Submission->execute($Parent_ID, $High_Priority);
+
+my $Execution_Ready;
+while ($Execution_Ready ne 'GO') {
+	my $Queue_Query = $DB_Connection->prepare("SELECT `job_id`, `override`
+		FROM `job_queue`
+		ORDER BY `last_modified`,`job_id` ASC");
+	$Queue_Query->execute();
+	my $Total_Queued_Jobs = $Queue_Query->rows();
+	
+	my $Queue_Position_Count = 0;
+	while (my ($Queue_Job_ID, $Queue_Override) = $Queue_Query->fetchrow_array()) {
+		$Queue_Position_Count++;
+		if ($Queue_Job_ID eq $Parent_ID) {
+			if ($Queue_Override) {
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Pink}High Priority job - executing now.${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Pink}High Priority job - executing now.${Clear}\n";
+				}
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute('10', $Parent_ID);
+				$Execution_Ready = 'GO';
+				last;
+			}
+			if ($Queue_Position_Count <= $DShell_Queue_Execution_Cap) {
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}I am position ${Yellow}$Queue_Position_Count${Green} of ${Yellow}$Total_Queued_Jobs${Green} in the queue - executing now.${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}I am position ${Yellow}$Queue_Position_Count${Green} of ${Yellow}$Total_Queued_Jobs${Green} in the queue - executing now.${Clear}\n";
+				}
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute('10', $Parent_ID);
+				$Execution_Ready = 'GO';
+				last;
+			}
+			else {
+				if ($Verbose) {
+					my $Time_Stamp = strftime "%H:%M:%S", localtime;
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}I am position ${Yellow}$Queue_Position_Count${Green} of ${Yellow}$Total_Queued_Jobs${Green} in the queue. Waiting for my turn...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}I am position ${Yellow}$Queue_Position_Count${Green} of ${Yellow}$Total_Queued_Jobs${Green} in the queue. Waiting for my turn...${Clear}\n";
+				}
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute('22', $Parent_ID);
+				sleep 3;
+				last;
+			}
+		}
+	}
+}
+
 if (!$Dependent_Command_Set_ID && $Discovered_Job_ID) {
 	print "\n${Green}Starting Job ID ${Blue}$Discovered_Job_ID${Green}...${Clear}\n";
 		print LOG "\n${Green}Starting Job ID ${Blue}$Discovered_Job_ID${Green}...${Clear}\n";
@@ -405,6 +480,8 @@ elsif ($Dependent_Command_Set_ID && !$Discovered_Job_ID) {
 else {
 	print "${Red}## Did you read the manual or help text? Shitting pants and exiting (PID: $$).${Clear}\n";
 	print LOG "${Red}## Did you read the manual or help text? Shitting pants and exiting (PID: $$).${Clear}\n";
+	my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+	$Delete_Queue_Entry->execute($Discovered_Job_ID);
 	exit(1);
 }
 close LOG;
@@ -426,6 +503,8 @@ sub job_discovery {
 	if ($Job_Exists == 0) {
 		print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} was not found.${Clear}\n";
 		print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} was not found.${Clear}\n";
+		my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+		$Delete_Queue_Entry->execute($Discovered_Job_ID);
 		exit(0);
 	}
 	if ($Status == 10) {
@@ -450,6 +529,8 @@ sub job_discovery {
 		else {
 			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed (Status $Status). Override is NOT enabled, so we won't run it again! Exiting...${Clear}\n";
 			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} has already completed (Status $Status). Override is NOT enabled, so we won't run it again! Exiting...${Clear}\n";
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit(0);
 		}
 	}
@@ -466,6 +547,8 @@ sub job_discovery {
 		else {
 			print "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running (Status $Status). Override is NOT enabled, so we won't run a second copy! Exiting...${Clear}\n";
 			print LOG "${Yellow}Job ID ${Blue}$Job_ID${Yellow} is already running (Status $Status). Override is NOT enabled, so we won't run a second copy! Exiting...${Clear}\n";
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit(0);
 		}
 	}
@@ -597,6 +680,8 @@ sub host_connection {
 			WHERE `id` = ?");
 			$Update_Job->execute('5', $User_Name, $Parent_ID);
 			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit(5);
 		}
 
@@ -696,6 +781,8 @@ sub host_connection {
 					`modified_by` = ?
 					WHERE `id` = ?");
 					$Update_Job->execute('17', $User_Name, $Parent_ID);
+					my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+					$Delete_Queue_Entry->execute($Discovered_Job_ID);
 					exit(17);
 				}
 				else {
@@ -708,6 +795,8 @@ sub host_connection {
 					`modified_by` = ?
 					WHERE `id` = ?");
 					$Update_Job->execute('5', $User_Name, $Parent_ID);
+					my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+					$Delete_Queue_Entry->execute($Discovered_Job_ID);
 					exit(5);
 				}
 
@@ -813,6 +902,8 @@ sub host_connection {
 					WHERE `id` = ?");
 					$Update_Job->execute('17', $User_Name, $Parent_ID);
 					unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+					my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+					$Delete_Queue_Entry->execute($Discovered_Job_ID);
 					exit(17);
 				}
 
@@ -862,6 +953,8 @@ sub host_connection {
 			WHERE `id` = ?");
 			$Update_Job->execute('6', $User_Name, $Parent_ID);
 			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit(6);
 		}
 
@@ -887,6 +980,8 @@ sub host_connection {
 		WHERE `id` = ?");
 		$Update_Job->execute('5', $User_Name, $Parent_ID);
 		unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+		my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+		$Delete_Queue_Entry->execute($Discovered_Job_ID);
 		exit(5);
 	}
 
@@ -935,6 +1030,8 @@ sub processor {
 			else {
 				print "${Red}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Red} execution complete. Exit code was $System_Exit_Code. Exiting :-(${Clear}\n";
 				print LOG "${Red}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Red} execution complete. Exit code was $System_Exit_Code. Exiting :-()${Clear}\n";
+				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit(1);
 			}
 		}
@@ -963,6 +1060,8 @@ sub processor {
 			else {
 				print "${Red}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Red} execution failed. Exit code was $System_Exit_Code. Exiting :-(${Clear}\n";
 				print LOG "${Red}Dependency Chain ID ${Blue}$Dependency_Chain_ID${Red} execution failed. Exit code was $System_Exit_Code. Exiting :-(${Clear}\n";
+				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit(1);
 			}
 		}
@@ -1055,6 +1154,8 @@ sub processor {
 				print LOG "${Red}Job killed by $Query_Modified_By. Terminating job.${Clear}\n";
 				my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
 				print LOG "Job killed at $End_Time by $Query_Modified_By.";
+				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit(3);
 			}
 		}
@@ -1116,6 +1217,8 @@ sub processor {
 				`modified_by` = ?
 				WHERE `id` = ?");
 			$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit($Exit_Code);
 		}
 		elsif ($Command =~ /^\*PAUSE.*/) {
@@ -1373,6 +1476,8 @@ sub processor {
 				print "${Red}Snapshot operation failed.${Clear}\n";
 				print LOG "${Red}Snapshot operation failed.${Clear}\n";
 				$Connected_Host->close();
+				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit($Exit_Code);
 			}
 		}
@@ -1438,6 +1543,8 @@ sub processor {
 				print "${Red}No match for '$Wait_For_String' after $Wait_Timeout_Override seconds. Bailing out!${Clear}\n";
 				print LOG "${Red}No match for '$Wait_For_String' after $Wait_Timeout_Override seconds. Bailing out!${Clear}\n";
 				$Connected_Host->close();
+				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit($Exit_Code);
 			}
 		}
@@ -1593,6 +1700,8 @@ sub processor {
 					`modified_by` = ?
 					WHERE `id` = ?");
 				$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit($Exit_Code);
 			}
 
@@ -1639,6 +1748,8 @@ sub processor {
 							`modified_by` = ?
 							WHERE `id` = ?");
 						$Update_Job->execute('11', $User_Name, $Parent_ID);
+						my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+						$Delete_Queue_Entry->execute($Discovered_Job_ID);
 						exit($Exit_Code);
 					}
 				}
@@ -1683,6 +1794,8 @@ sub processor {
 		$Update_Job_Status->execute($Parent_ID, "### Main job ($Command_Name) complete.\n", '', $User_Name);
 		my $End_Time = strftime "%H:%M:%S %d/%m/%Y", localtime;
 		print LOG "Job completed at $End_Time.\n";
+		my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+		$Delete_Queue_Entry->execute($Discovered_Job_ID);
 	}
 	else {
 		my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
@@ -1864,6 +1977,8 @@ sub epic_failure {
 		print LOG "Job died in unhandled circumstance at $Location.\n";
 	}
 
+	my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+	$Delete_Queue_Entry->execute($Discovered_Job_ID);
 	exit($Exit_Code);
 
 } # sub epic_failure
@@ -1957,6 +2072,8 @@ sub reboot_control {
 			WHERE `id` = ?");
 			$Update_Job->execute('14', $User_Name, $Parent_ID);
 			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit(14);
 		}
 
@@ -2053,6 +2170,8 @@ sub reboot_control {
 					WHERE `id` = ?");
 					$Update_Job->execute('17', $User_Name, $Parent_ID);
 					unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+					my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+					$Delete_Queue_Entry->execute($Discovered_Job_ID);
 					exit(17);
 				}
 
@@ -2158,6 +2277,8 @@ sub reboot_control {
 					WHERE `id` = ?");
 					$Update_Job->execute('17', $User_Name, $Parent_ID);
 					unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+					my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+					$Delete_Queue_Entry->execute($Discovered_Job_ID);
 					exit(17);
 				}
 			}
@@ -2207,6 +2328,8 @@ sub reboot_control {
 			WHERE `id` = ?");
 			$Update_Job->execute('6', $User_Name, $Parent_ID);
 			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit(6);
 		}
 	
@@ -2232,6 +2355,8 @@ sub reboot_control {
 		WHERE `id` = ?");
 		$Update_Job->execute('5', $User_Name, $Parent_ID);
 		unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+		my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+		$Delete_Queue_Entry->execute($Discovered_Job_ID);
 		exit(5);
 	}
 

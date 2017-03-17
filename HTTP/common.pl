@@ -530,6 +530,15 @@ sub DShell_WaitFor_Timeout {
 
 } # sub DShell_WaitFor_Timeout
 
+sub DShell_Queue_Execution_Cap {
+
+	# The default number of threads available to D-Shell. If more jobs are submitted than this they will be queued until previous jobs have finished processing. The queue is first in, first out.
+
+	my $DShell_Queue_Execution_Cap = 10;
+	return $DShell_Queue_Execution_Cap;
+
+} # sub DShell_Queue_Execution_Cap
+
 sub DB_Connection {
 
 	# This is your database's connection information.

@@ -31,8 +31,9 @@ Options are:
 	${Blue}-P, --password\t\t ${Green}Password for the remote host(s)
 	${Blue}-k, --key\t\t ${Green}Pass the key ID used to connect to the server
 	${Blue}-f, --failure\t\t ${Green}Specify the on-failure behaviour (0 is continue, 1 is die)
-	${Blue}-r, --real-time-variable ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
+	${Blue}-r, --runtime-variable ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
 	${Blue}-J, --get-job-id\t ${Green}Spits out the Job ID of the just submitted job(s).
+	${Blue}--high-priority\t\t ${Green}Queues the Job but ignores the position and executes immediately (assuming you've also passed parameters to run)
 
 ${Green}Examples:
 	${Green}## Ha! Yeah right. You shouldn't even BE here! Oh go on then, just this once, but only because I like you.
@@ -58,6 +59,7 @@ my %Captured_Runtime_Variables;
 my $On_Failure;
 my $Output_Job_ID;
 my $No_Decode;
+my $High_Priority;
 
 GetOptions(
 	'H:s{1,}' => \@Hosts_List, # Set as string due to possibility of space seperation
@@ -82,7 +84,8 @@ GetOptions(
 	'J' => \$Output_Job_ID,
 	'get-job-id' => \$Output_Job_ID,
 	'D' => \$No_Decode,
-	'no-dec' => \$No_Decode
+	'no-dec' => \$No_Decode,
+	'high-priority' => \$High_Priority
 ) or die("Fault with options: $@\n");
 
 $User_Trigger =~ s/MagicTagSpace/ /g;
@@ -141,6 +144,10 @@ if ($Output_Job_ID ne '') {
 	if ($Output_Job_ID =~ /^([0-1])$/) {$Output_Job_ID = $1;}
 	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $Output_Job_ID, $User_Trigger);}
 }
+if ($High_Priority ne '') {
+	if ($High_Priority =~ /^([0-1])$/) {$High_Priority = $1;}
+	else {Security_Notice('Input Data', $ENV{'REMOTE_ADDR'}, $0, $High_Priority, $User_Trigger);}
+}
 
 my @Hosts = split(/[\s,]+/,join(',' , @Hosts_List));
 
@@ -170,6 +177,7 @@ if (%Captured_Runtime_Variables && $No_Decode) {
 }
 
 if ($No_Decode) {$No_Decode = '-D'} else {$No_Decode = ''}
+if ($High_Priority) {$High_Priority = '--high-priority'} else {$High_Priority = ''}
 
 	my $Verbose = Verbose();
 	my $Paper_Trail = Paper_Trail();
@@ -182,6 +190,7 @@ if ($No_Decode) {$No_Decode = '-D'} else {$No_Decode = ''}
 		if ($Captured_Key) {&System_Logger($Subroutine, "Captured_Key=$Captured_Key");}
 		if ($Captured_Key_Lock) {&System_Logger($Subroutine, "Captured_Key_Lock=$Captured_Key_Lock");}
 		if ($Captured_Key_Passphrase) {&System_Logger($Subroutine, "Captured_Key_Passphrase=$Captured_Key_Passphrase");}
+		if ($High_Priority) {&System_Logger($Subroutine, "High_Priority=$High_Priority");}
 		if (%Captured_Runtime_Variables) {
 			my $CRTVs = scalar(keys %Captured_Runtime_Variables);
 			{&System_Logger($Subroutine, "### Captured Runtime Variables Follows...");}
@@ -259,18 +268,18 @@ if ($Command_Set && @Hosts) {
 				)");
 				if ($Captured_User_Name && $Captured_Password) {
 					$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with username $Captured_User_Name.", $User_Trigger);
-					exec "./d-shell.pl -j $Command_Insert_ID $No_Decode -u $Captured_User_Name -P $Captured_Password $Runtime_Variables >> /dev/null 2>&1 &";
+					exec "./d-shell.pl -j $Command_Insert_ID $No_Decode $High_Priority -u $Captured_User_Name -P $Captured_Password $Runtime_Variables >> /dev/null 2>&1 &";
 					exit(0);
 				}
 				elsif ($Captured_Key && $Captured_Key_Lock) {
 					if ($Captured_Key_Passphrase) {
 						$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with key.", $User_Trigger);
-						exec "./d-shell.pl -j $Command_Insert_ID $No_Decode -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase $Runtime_Variables >> /dev/null 2>&1 &";
+						exec "./d-shell.pl -j $Command_Insert_ID $No_Decode $High_Priority -k $Captured_Key -L $Captured_Key_Lock -K $Captured_Key_Passphrase $Runtime_Variables >> /dev/null 2>&1 &";
 						exit(0);
 					}
 					else {
 						$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with key.", $User_Trigger);
-						exec "./d-shell.pl -j $Command_Insert_ID $No_Decode -k $Captured_Key -L $Captured_Key_Lock $Runtime_Variables >> /dev/null 2>&1 &";
+						exec "./d-shell.pl -j $Command_Insert_ID $No_Decode $High_Priority -k $Captured_Key -L $Captured_Key_Lock $Runtime_Variables >> /dev/null 2>&1 &";
 						exit(0);						
 					}
 

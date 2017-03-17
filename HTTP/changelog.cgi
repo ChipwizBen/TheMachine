@@ -48,6 +48,7 @@ sub html_output {
 	$Table->addRow('', 'Reduced value length from 45 to 18 for IP blocks in assignment DB.');
 	$Table->addRow('', 'Introduced IPv6 assignment system.');
 	$Table->addRow('', 'Changed snapshot delete CLI tag from -r to -d to reduce the risk of mixing up with -R (restore).');
+	$Table->addRow('', 'Implemented Job queuing system.');
 
 	## Version 2.2.1
 	$Table->addRow('2.2.1', 'Fixed an issue with the IP assignment system reporting the wrong block when full.');
