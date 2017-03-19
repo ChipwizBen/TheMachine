@@ -1,4 +1,4 @@
-37898729f7e27ecefc6e395cfdb8ba94  ./changelog
+1d7a21c993707849b6ff90224b8a79b1  ./changelog
 82582ad79c85c01de6037bdf1dffb6a4  ./Configs/Permissions.sh
 d057c8db76913d95c0e460c7bdd98b27  ./Configs/Perl Modules/Net-LDAP-0.65.tar.gz
 1f0bcd24b64b50a29ad1cf997c2247e9  ./Configs/Perl Modules/Text-Diff-1.44.tar.gz
@@ -22,10 +22,11 @@ a6a3eb16fba86c836b5b3f55865ddce1  ./Configs/Perl Modules/Parallel-ForkManager-1.
 ae24eb86442e34d9ef6c8f3e4deac968  ./Configs/Perl Modules/HTML-Table-2.08a.tar.gz
 7f8983aaeb92a0ba77eca8bca6d8d43a  ./Configs/Perl Modules/CGI-Session-4.48.tar.gz
 1ce0be2fd863b6c794997d609b22e72f  ./Configs/Perl Modules/CGI-4.04.tar.gz
-4bd4c425be6654225be30fa2a2fb0f23  ./Configs/SQL/migrate-1.10.0-to-2.0.0.pl
+ecd6d3eec1db50f669c4d0475277a495  ./Configs/SQL/migrate-1.10.0-to-2.0.0.pl
 c5531fe947987f87be8ed0bb1c3987bb  ./Configs/SQL/my.cnf
-c085145ec17d34336ad260ab4fa42ae0  ./Configs/SQL/FullSchema.sql
-d456d7bee8d2db143f5e218f9ff67dcf  ./Configs/Crontab/Server
+4712b14be2f22c6d20dc59a59cd9d52f  ./Configs/SQL/update-2.2.x-to-2.3.0.sql
+27ae3aa5cc2532dae7a85557871a61e9  ./Configs/SQL/FullSchema.sql
+235b5fa49fb81c87882956e7bed78fce  ./Configs/Crontab/Server
 ced6179e0c8f03f66e70570cbe856356  ./Configs/Crontab/Client (DSMS)
 2cf071f3c110530f6de9f9b079c8745f  ./Configs/OS Limits/etc-security-limits.conf
 edbf6a7e9c9a80d19ec164cf82ba3ed9  ./HTTP/logout.cgi
@@ -33,17 +34,19 @@ edbf6a7e9c9a80d19ec164cf82ba3ed9  ./HTTP/logout.cgi
 18bcaf955675820930e2ce9edba066aa  ./HTTP/favicon.ico
 31652dad784ec26ea493f9f2defdbf68  ./HTTP/account-management.cgi
 71c225f2d8883bf5ddb358159c780d4b  ./HTTP/IP/index.cgi
-41ca32b267828d42344011ce6b21c216  ./HTTP/IP/hosts.cgi
-e10bdc57857a4cb048e97bb93e452d13  ./HTTP/IP/ip-allocation-counter.pl
+63483b92e2f599ab52ee106ab339fe33  ./HTTP/IP/hosts.cgi
+018c682813e1609055329ad24823b290  ./HTTP/IP/ipv6-blocks.cgi
+8d4cf193e7e8e93e65592194ce013046  ./HTTP/IP/ip-assignment-counter.pl
 93b44435bd4a1a482208bef5dace41d5  ./HTTP/IP/host-types.cgi
-7007ce9cc30e5053e0b92f14f3e54922  ./HTTP/IP/ipv4-blocks.cgi
-50e61fd44268e65dd97ea07ce1c1b156  ./HTTP/IP/ipv4-ping-sweep.pl
-cb764e3667454cb1e8c05fb2296e523c  ./HTTP/IP/ipv4-allocations.cgi
+37a9dd2210bf4f2900ffd390ff3d0ed4  ./HTTP/IP/ipv4-blocks.cgi
+b8688c91bc48a427b05246810f98ddd5  ./HTTP/IP/ipv4-ping-sweep.pl
+e3fe59d51d5f326279d8c65a40ef07cd  ./HTTP/IP/ipv4-assignments.cgi
+263b70e51aa6104d8b2f29d56a1a1dd1  ./HTTP/IP/ipv6-assignments.cgi
 0d6d3ff03aba8748409caa5ec9a375c9  ./HTTP/IP/host-groups.cgi
 e49e1722ad69a7571b30f2090c8ec25c  ./HTTP/system-status.cgi
 19e60759e578c3ffbaaf3c116471b337  ./HTTP/lockout.cgi
 71c225f2d8883bf5ddb358159c780d4b  ./HTTP/resources/index.cgi
-c37b65e27463c2e41a790c53bfb0efa2  ./HTTP/resources/The_Machine_Manual.pdf
+d40b61ca92f7ef85ce5fe03bcf568a45  ./HTTP/resources/The_Machine_Manual.pdf
 452653c8d20f9b7b827bfef025430204  ./HTTP/resources/imgs/message.png
 49483b150a6787cbc1df427adb9c10ca  ./HTTP/resources/imgs/edit.png
 e9eca13d22934bb31e2ce9f2ec892f26  ./HTTP/resources/imgs/diff.png
@@ -51,22 +54,27 @@ e9eca13d22934bb31e2ce9f2ec892f26  ./HTTP/resources/imgs/diff.png
 87583c2b08babd0cc3fa6058bbd31ae0  ./HTTP/resources/imgs/index.cgi
 b3dba428ad19042b9ff17a1677695200  ./HTTP/resources/imgs/add-note.png
 1ceb49ca7e6d8fa44417a08afd9d17d7  ./HTTP/resources/imgs/back.png
+e819f1d2af0a3740ed5720303964c97d  ./HTTP/resources/imgs/strip.png
 326623a4e674de354a29b652b5013846  ./HTTP/resources/imgs/buttons/index.cgi
 2123075e7118e7e928936495eed0cc4a  ./HTTP/resources/imgs/buttons/close-hover.png
 3454418f1d1fe485532f0f6e8e2b1f70  ./HTTP/resources/imgs/buttons/nav.jpg
 d89d7cba7b30045d971384a6c6659515  ./HTTP/resources/imgs/buttons/nav2.jpg
 f3fd0c19b645cdde3972ed7ceb98d75b  ./HTTP/resources/imgs/buttons/close.png
-b36835c575d1416774d3f7d2d940609d  ./HTTP/resources/imgs/templates/TheMachine.svg
-a1f21b4d23bdb1eda5fa422f42942ed5  ./HTTP/resources/imgs/templates/strip.xcf
+fd2fef5d21bea35ebd1ef7f20827a4ca  ./HTTP/resources/imgs/templates/TheMachine.png
+ffbae5311b5e98ff53a49dfa8af183be  ./HTTP/resources/imgs/templates/TheMachine.svg
+a80d799bc2d82357b266f5b568f7c899  ./HTTP/resources/imgs/templates/strip.xcf
 1c6e222701353cc018e6fb8501a41136  ./HTTP/resources/imgs/grey.png
+257604103331386d65222ecf71f2e15a  ./HTTP/resources/imgs/cog-animation-small.gif
 e1fe9fc21208238410790e5fb48e369b  ./HTTP/resources/imgs/confirm.png
+beceb01c2ca4241a07ccace69f653f34  ./HTTP/resources/imgs/cog-big.png
 3efb74b4a83db828a34a07d01ebee3e4  ./HTTP/resources/imgs/terminal.png
 ea7b2a82fce453991bf6a5c437ecdd0f  ./HTTP/resources/imgs/red.png
+9c9601a964cf4d4d8cbdaebe04c2cd1b  ./HTTP/resources/imgs/cog.png
 cd1bdc14ef8c48f75b5c404bf78978d0  ./HTTP/resources/imgs/loading.gif
 7a41980ec9ef4c4cce31dcdf8c90666c  ./HTTP/resources/imgs/green.png
 617340305cc57665c499017bd5028ac5  ./HTTP/resources/imgs/view-notes.png
 f510664b7c378d0417d09976de81ce8b  ./HTTP/resources/imgs/linked.png
-42973e849156ac84c816663039d3a00d  ./HTTP/resources/imgs/strip.jpg
+68468870d09d6865a70f8321f0516361  ./HTTP/resources/imgs/cog-animation-big.gif
 aa91657ae1a45dc8f5092b2e1116448b  ./HTTP/resources/imgs/clock.png
 e987f1da07a44882feb9bac5ddaf0fca  ./HTTP/resources/imgs/graph.png
 dff0e5db07d658ef63f1efa2e70929da  ./HTTP/resources/imgs/history.png
@@ -76,17 +84,17 @@ b83147d62c6d442d40b166be3f97453e  ./HTTP/resources/imgs/confirm-dim.png
 ddd8bacea242524302523bd1d08698aa  ./HTTP/resources/imgs/pause.png
 e40ec2161fe7993196f23c8a07346306  ./HTTP/resources/jquery.min-2.1.1.js
 85b464d9ab7d9dc64861d92baa56013a  ./HTTP/footer.cgi
-860fb58f0dad20a1bf42ec0c69d237f1  ./HTTP/common.pl
+64d388fff8de238ba5b7d618bb251a67  ./HTTP/common.pl
 da1ca90c51e5ff7f4cb0976bc8c499ac  ./HTTP/login.cgi
 e687d7ef7898d67982ac64b3226796f1  ./HTTP/maintenance.cgi
 71c225f2d8883bf5ddb358159c780d4b  ./HTTP/ReverseProxy/index.cgi
 d15fb1bd754832bb0a1506e3a52f16a8  ./HTTP/ReverseProxy/reverse-proxy.cgi
 698be5f46685f36164197afdcec9ee7e  ./HTTP/ReverseProxy/redirects.cgi
 f35c5686e3a2e6e70094c2e36ffe3fb4  ./HTTP/ReverseProxy/reverse-proxy-build.pl
-0eb41032835cc8b392de7b281d044aa6  ./HTTP/format.css
-eb2deca11061dd9cb63b4e1d00b0fe8e  ./HTTP/changelog.cgi
+b9642ba13bc224ce380b1a628d45041f  ./HTTP/format.css
+1a6558a0584dec86a663d0153502c267  ./HTTP/changelog.cgi
 c0ccfbb3509e77ebff6b3f00561ebaef  ./HTTP/audit-log.cgi
-cdaedc57ed77423f884bdb426712616c  ./HTTP/header.cgi
+e43c96d04b61c64aec84c4280eb8850f  ./HTTP/header.cgi
 31fd09ffd96f89726b99edfd330d192c  ./HTTP/Icinga/push-config.pl
 71c225f2d8883bf5ddb358159c780d4b  ./HTTP/Icinga/index.cgi
 0c94637f5a7ff012c87f105a43dcaf41  ./HTTP/Icinga/icinga-host-templates.cgi
@@ -107,23 +115,23 @@ dccc42b0d0bfbb0d7628409e90602c1a  ./HTTP/register.pl
 bb719c1c1b3c9f5e918827ac74d0f35f  ./HTTP/DNS/zone-records.cgi
 668627fdfc33268668f0eb6a7bf1b93c  ./HTTP/DNS/dns-build.pl
 4d6a0af945514b3cecaec3a436f0d447  ./HTTP/DNS/domains.cgi
-946f0e1b03f90f55c038f6756603227a  ./HTTP/DSMS/distribution.pl
+2dc8bf2d6f421c21f6955e981358b73b  ./HTTP/DSMS/distribution.pl
 71c225f2d8883bf5ddb358159c780d4b  ./HTTP/DSMS/index.cgi
-3a251f37bd4e2a6e9c49f9d861d07d68  ./HTTP/DSMS/sudoers-build.pl
-a5f9d179114fa9415258df83d96b95d2  ./HTTP/DSMS/sudoers-rules.cgi
+40236ce4d901f101a7934e61c9902ed5  ./HTTP/DSMS/sudoers-build.pl
+87a2795f8c1128f9e517d6d4d2f56e33  ./HTTP/DSMS/sudoers-rules.cgi
 53c0d98c7f04155afddea60bdd923ab0  ./HTTP/DSMS/distribution-status.cgi
-ca4d6e18e8ac0191297a8c266e66c872  ./HTTP/DSMS/sudoers-hosts.cgi
+927a858071b020e3afdf81fbecdaebe8  ./HTTP/DSMS/sudoers-hosts.cgi
 3a7ef918cf36e8adab52f76a5c741f06  ./HTTP/DSMS/sudoers-command-groups.cgi
 2b20bbfcd4abc8d2684cf55baab5b7bc  ./HTTP/DSMS/environmental-defaults
 c07e85b7ea651063151c2ffd7fe8eb0c  ./HTTP/DSMS/sudoers-user-groups.cgi
 aa211ca117366de4efc6d7d5b58315fd  ./HTTP/DSMS/sudoers-users.cgi
 fb75969e482e086c20fbbac9348356d9  ./HTTP/DSMS/sudoers-commands.cgi
-19cbc1dea49ca9e73f701611c9f06e60  ./HTTP/D-Shell/jobs.cgi
-d29e956496f050152537f955b63175f3  ./HTTP/D-Shell/command-sets.cgi
-dec3e8c5f338e28a6f4868e4091dd67d  ./HTTP/D-Shell/d-shell.pl
-8bfd089f6fba1af2658ad952799cb613  ./HTTP/D-Shell/vmware-snapshot.pl
-8549bebfa331f81ff16cebeba58ed5d5  ./HTTP/D-Shell/command-set-dump.pl
-e67c7e8c7f069110638f6153555c6463  ./HTTP/D-Shell/job-receiver.pl
+89045bc87d8d19d6d9837dfa071bb3b7  ./HTTP/D-Shell/jobs.cgi
+5251ea863fee88767d9d43d3086e8d7d  ./HTTP/D-Shell/command-sets.cgi
+b04937f9cb91e9eef90493582527c168  ./HTTP/D-Shell/d-shell.pl
+9f655bd37b3314ce96ca2e9dfad37fcc  ./HTTP/D-Shell/vmware-snapshot.pl
+ddf861b47303481d6b553543e5c220c9  ./HTTP/D-Shell/command-set-dump.pl
+138da1f4a1ffad8d6e37a781e482a21e  ./HTTP/D-Shell/job-receiver.pl
 71c225f2d8883bf5ddb358159c780d4b  ./HTTP/Storage/index.cgi
 87583c2b08babd0cc3fa6058bbd31ae0  ./HTTP/Storage/Git/index.cgi
 326623a4e674de354a29b652b5013846  ./HTTP/Storage/Git/ReverseProxy/index.cgi
@@ -143,6 +151,6 @@ e67c7e8c7f069110638f6153555c6463  ./HTTP/D-Shell/job-receiver.pl
 326623a4e674de354a29b652b5013846  ./HTTP/Storage/D-Shell/Job-Log/index.cgi
 326623a4e674de354a29b652b5013846  ./HTTP/Storage/D-Shell/tmp/index.cgi
 25cd294668f0f324e06d930c58d4681c  ./HTTP/access-log.cgi
-c37b65e27463c2e41a790c53bfb0efa2  ./Docs/The Machine Manual.pdf
+d40b61ca92f7ef85ce5fe03bcf568a45  ./Docs/The Machine Manual.pdf
 32dc9054d2b8b67b664f45b930407dd5  ./LICENSE
 ab9784299e1aa8bb0fa1d3dbf2eaf6e8  ./checksum-build.sh
