@@ -39,6 +39,8 @@ sub html_output {
 
 	## Version 2.3.1
 	$Table->addRow('2.3.1', 'Shifted audit log calls into a separate routine.');
+	$Table->addRow('', 'Fixed audit tag colour for prioritise action.');
+	$Table->addRow('---', '');
 
 	## Version 2.3.0
 	$Table->addRow('2.3.0', 'Fixed a bug where the D-Shell process would die if the SSH connection suddenly closed 
@@ -52,6 +54,7 @@ sub html_output {
 	$Table->addRow('', 'Introduced IPv6 assignment system.');
 	$Table->addRow('', 'Changed snapshot delete CLI tag from -r to -d to reduce the risk of mixing up with -R (restore).');
 	$Table->addRow('', 'Implemented Job queuing system.');
+	$Table->addRow('<hr />', '');
 
 	## Version 2.2.1
 	$Table->addRow('2.2.1', 'Fixed an issue with the IP assignment system reporting the wrong block when full.');
@@ -71,6 +74,7 @@ sub html_output {
 	$Table->addRow('', 'Added a missing view mode for Redirects.');
 	$Table->addRow('', 'Fixed some persistent filters for better usability when dealing with large numbers of redirects / reverse proxy entries.');
 	$Table->addRow('', 'Modified some logic to find server names within aliases when bundling redirects together.');
+	$Table->addRow('---', '');
 
 	## Version 2.2.0
 	$Table->addRow('2.2.0', 'Added handler for incorrect use of *WAITFOR and *SEND together in the same command.');
@@ -89,7 +93,7 @@ sub html_output {
 	$Table->addRow('<hr />', '');
 
 	## Version 2.1.1
-	$Table->addRow('2.1.0', 'Fixed formatting on command line help outputs on job receiver and executor.');
+	$Table->addRow('2.1.1', 'Fixed formatting on command line help outputs on job receiver and executor.');
 	$Table->addRow('---', '');
 
 	## Version 2.1.0

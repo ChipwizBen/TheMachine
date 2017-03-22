@@ -157,6 +157,9 @@ sub html_output {
 		elsif ($Method_Clean eq 'Stop') {
 			$Table->setCellClass (-1, 3, 'tbrowred');
 		}
+		elsif ($Method_Clean eq 'Prioritise') {
+			$Table->setCellClass (-1, 3, 'tbroworange');
+		}
 	}
 
 	$Table->setColWidth(1, '1px');
