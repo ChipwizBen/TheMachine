@@ -195,15 +195,7 @@ sub add_host_type {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Host Types", "Add", "$User_Name added $Host_Type_Add. The system assigned it Host Type ID $Host_Type_Insert_ID.", $User_Name);
 	# / Audit Log
@@ -269,15 +261,7 @@ sub edit_host_type {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Host Types", "Modify", "$User_Name modified domain ID $Edit_Host_Type_Post. It is now recorded as $Host_Type_Edit.", $User_Name);
 	# / Audit Log
@@ -342,15 +326,7 @@ sub delete_host_type {
 
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("Host Types", "Delete", "$User_Name deleted host type $Host_Type_Extract, ID $Delete_Host_Type_Confirm.", $User_Name);
 

@@ -194,15 +194,7 @@ sub add_domain {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Domains", "Add", "$User_Name added $Domain_Add. The system assigned it Domain ID $Domain_Insert_ID.", $User_Name);
 	# / Audit Log
@@ -268,15 +260,7 @@ sub edit_domain {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Domains", "Modify", "$User_Name modified domain ID $Edit_Domain_Post. It is now recorded as $Domain_Edit.", $User_Name);
 	# / Audit Log
@@ -340,15 +324,7 @@ sub delete_domain {
 	{
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("Domains", "Delete", "$User_Name deleted $Domain_Extract, domain ID $Delete_Domain_Confirm.", $User_Name);
 

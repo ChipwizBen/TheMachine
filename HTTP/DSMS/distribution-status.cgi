@@ -261,15 +261,7 @@ sub edit_host_parameters {
 	);
 
 	# Audit Log
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Distribution", "Modify", "$User_Name modified Host ID $Edit_Host_Parameters_Post. The new entry is recorded as Port: $SFTP_Port_Edit, User: $User_Edit, Key Path: $Key_Path_Edit, Timeout: $Timeout_Edit seconds and Remote Sudoers Path: $Remote_Sudoers_Path_Edit.", $User_Name);
 	# / Audit Log
@@ -281,15 +273,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /distribution-status.cgi/) {
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 	
 		$Audit_Log_Submission->execute("Distribution", "View", "$User_Name accessed Distribution Status.", $User_Name);
 	}

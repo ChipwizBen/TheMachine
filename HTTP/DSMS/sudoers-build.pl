@@ -853,15 +853,7 @@ sub record_audit {
 
 	my $Result = $_[0];
 
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	my $MD5_New_Checksum = `$md5sum $Sudoers_Location | $cut -d ' ' -f 1`;
 		$MD5_New_Checksum =~ s/\s//g;

@@ -1045,15 +1045,7 @@ sub add_rule {
 	if ($NOEXEC_Add) {$NOEXEC_Add = 'NOEXEC'} else {$NOEXEC_Add = 'EXEC'}
 	
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	if ($ALL_Hosts) {
 			$Audit_Log_Submission->execute("Rules", "Add", "$User_Name added $Rule_Name_Add (to be run as $Run_As_Add, with the $NOPASSWD_Add and $NOEXEC_Add flags), set it $Active_Add and to $Expires_Date_Add. ALL hosts are attached to this rule. The system assigned it Rule ID $Rule_Insert_ID.", $User_Name);
@@ -1075,15 +1067,7 @@ sub add_rule {
 
 		# Audit Log
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 	
 		$Audit_Log_Submission->execute("Rules", "Approve", "$User_Name Approved their own rule: $Rule_Name_Add [Rule ID $Rule_Insert_ID].", $User_Name);
 		# / Audit Log
@@ -1115,18 +1099,7 @@ sub add_rule {
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added Host Group $Name [Host Group ID $Host_Group] to Rule $Rule_Name_Add [Rule ID $Rule_Insert_ID]", $User_Name);
 		}
 		# / Audit Log
@@ -1158,18 +1131,7 @@ sub add_rule {
 		while ( (my $Name) = $Select_Host->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added Host $Name [Host ID $Host] to Rule $Rule_Name_Add [Rule ID $Rule_Insert_ID]", $User_Name);
 		}
 		# / Audit Log
@@ -1201,18 +1163,7 @@ sub add_rule {
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added User Group $Name [User Group ID $User_Group] to Rule $Rule_Name_Add [Rule ID $Rule_Insert_ID]", $User_Name);
 		}
 		# / Audit Log
@@ -1244,18 +1195,7 @@ sub add_rule {
 		while ( (my $Name) = $Select_User->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added User $Name [User ID $User] to Rule $Rule_Name_Add [Rule ID $Rule_Insert_ID]", $User_Name);
 		}
 		# / Audit Log
@@ -1287,18 +1227,7 @@ sub add_rule {
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added Command Group $Name [Command Group ID $Command_Group] to Rule $Rule_Name_Add [Rule ID $Rule_Insert_ID]", $User_Name);
 		}
 		# / Audit Log
@@ -1331,18 +1260,7 @@ sub add_rule {
 		while ( (my $Name) = $Select_Command->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added Command $Name [Command ID $Command] to Rule $Rule_Name_Add [Rule ID $Rule_Insert_ID]", $User_Name);
 		}
 		# / Audit Log
@@ -2474,15 +2392,7 @@ sub edit_rule {
 	if ($NOEXEC_Edit) {$NOEXEC_Edit = 'NOEXEC'} else {$NOEXEC_Edit = 'EXEC'}
 	
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	if ($ALL_Hosts) {
 		$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name edited $Rule_Name_Edit [Rule ID $Edit_Rule] (to be run as $Run_As_Edit, with the $NOPASSWD_Edit and $NOEXEC_Edit flags), set it $Active_Edit and to $Expires_Date_Edit. ALL hosts are attached to this rule.", $User_Name);
@@ -2518,15 +2428,7 @@ sub edit_rule {
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added Host Group $Name [Host Group ID $Host_Group] to Rule $Rule_Name_Edit [Rule ID $Edit_Rule]", $User_Name);
 		}
 		# / Audit Log
@@ -2558,15 +2460,7 @@ sub edit_rule {
 		while ( (my $Name) = $Select_Host->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added Host $Name [Host ID $Host] to Rule $Rule_Name_Add [Rule ID $Edit_Rule]", $User_Name);
 		}
 		# / Audit Log
@@ -2598,15 +2492,7 @@ sub edit_rule {
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added User Group $Name [User Group ID $User_Group] to Rule $Rule_Name_Edit [Rule ID $Edit_Rule]", $User_Name);
 		}
 		# / Audit Log
@@ -2638,18 +2524,7 @@ sub edit_rule {
 		while ( (my $Name) = $Select_User->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added User $Name [User ID $User] to Rule $Rule_Name_Add [Rule ID $Edit_Rule]", $User_Name);
 		}
 		# / Audit Log
@@ -2681,18 +2556,7 @@ sub edit_rule {
 		while ( (my $Name) = $Select_Group->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added Command Group $Name [Command Group ID $Command_Group] to Rule $Rule_Name_Edit [Rule ID $Edit_Rule]", $User_Name);
 		}
 		# / Audit Log
@@ -2725,15 +2589,7 @@ sub edit_rule {
 		while ( (my $Name) = $Select_Command->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Modify", "$User_Name added Command $Name [Command ID $Command] to Rule $Rule_Name_Add [Rule ID $Edit_Rule]", $User_Name);
 		}
 		# / Audit Log
@@ -2812,15 +2668,7 @@ sub delete_rule {
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name deleted Rule ID $Delete_Rule_Confirm. The deleted entry's last values were $Rule_Name, run as $Run_As with flags $NOPASSWD and $NOEXEC, set $Active and $Expires.", $User_Name);
 	}
 	# / Audit Log
@@ -2900,15 +2748,7 @@ if ($Delete_Host_Group_ID) {
 		while (( my $Name ) = $Select_Item->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed Host Group $Name [Host Group ID $Delete_Host_Group_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 			# / Audit Log
 	
@@ -2927,15 +2767,7 @@ if ($Delete_Host_Group_ID) {
 		$Update_Rule->execute($User_Name, $Delete_Rule_Item_ID);
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed ALL Hosts and Host Groups from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 		# / Audit Log
 
@@ -2970,15 +2802,7 @@ if ($Delete_Host_ID) {
 		while (( my $Name ) = $Select_Item->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed Host $Name [Host ID $Delete_Host_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 			# / Audit Log
 			my $Message_Green="Host $Name [Host ID $Delete_Host_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
@@ -2996,15 +2820,7 @@ if ($Delete_Host_ID) {
 		$Update_Rule->execute($User_Name, $Delete_Rule_Item_ID);
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed ALL Hosts and Host Groups from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 		# / Audit Log
 
@@ -3035,18 +2851,7 @@ if ($Delete_User_Group_ID) {
 	while (( my $Name ) = $Select_Item->fetchrow_array() )
 	{
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?,
-			?,
-			?,
-			?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed User Group $Name [User Group ID $Delete_User_Group_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 
 		my $Message_Green="User Group $Name [User Group ID $Delete_User_Group_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
@@ -3078,18 +2883,7 @@ if ($Delete_User_ID) {
 	while (( my $Name ) = $Select_Item->fetchrow_array() )
 	{
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?,
-			?,
-			?,
-			?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed User $Name [User ID $Delete_User_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 
 		my $Message_Green="User $Name [User ID $Delete_User_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
@@ -3121,18 +2915,7 @@ if ($Delete_Command_Group_ID) {
 	while (( my $Name ) = $Select_Item->fetchrow_array() )
 	{
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?,
-			?,
-			?,
-			?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed Command Group $Name [Command Group ID $Delete_Command_Group_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 
 		my $Message_Green="Command Group $Name [Command Group ID $Delete_Command_Group_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
@@ -3164,18 +2947,7 @@ if ($Delete_Command_ID) {
 	while (( my $Name ) = $Select_Item->fetchrow_array() )
 	{
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?,
-			?,
-			?,
-			?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("Rules", "Delete", "$User_Name removed Command $Name [Command ID $Delete_Command_ID] from Rule $Rule [Rule ID $Delete_Rule_Item_ID]", $User_Name);
 
 		my $Message_Green="Command $Name [Command ID $Delete_Command_ID] removed from $Rule [Rule ID $Delete_Rule_Item_ID] successfully";
@@ -3215,18 +2987,7 @@ sub approve_rule {
 
 			# Audit Log
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 		
 			$Audit_Log_Submission->execute("Rules", "Approve", "$User_Name Approved $Name [Rule ID $Approve_Rule_ID].", $User_Name);
 			# / Audit Log

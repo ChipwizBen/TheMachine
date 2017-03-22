@@ -46,15 +46,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /audit-log.cgi/) {
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 	
 		$Audit_Log_Submission->execute("Audit Log", "View", "$User_Name accessed the Audit Log.", $User_Name);
 	}

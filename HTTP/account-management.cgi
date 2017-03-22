@@ -438,15 +438,7 @@ sub add_user {
 
 	my $Account_Insert_ID = $DB_Connection->{mysql_insertid};
 
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Account Management", "Add",
 		"$User_Name added a new system account as Account ID $Account_Insert_ID: $User_Name_Add ($Email_Add). $User_Name_Add $Admin_Add, $Approver_Add, $Requires_Approval_Add and $Lockout_Add. $User_Name_Add $IP_Admin_Add, $Icinga_Admin_Add, $DShell_Admin_Add, $DNS_Admin_Add, $Reverse_Proxy_Admin_Add and $DSMS_Admin_Add.", $User_Name);
@@ -989,15 +981,7 @@ sub edit_user {
 		if ($Requires_Approval_Edit == 1) {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules require approval"} else {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules do not require approval"}
 		if ($Lockout_Edit == 1) {$Lockout_Edit = "$User_Name_Edit is locked out"} else {$Lockout_Edit = "$User_Name_Edit is not locked out"}
 
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("Account Management", "Modify",
 			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, $DShell_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit and $DSMS_Admin_Edit. $User_Name also changed $User_Name_Edit"."'s "."password.", $User_Name);
@@ -1049,15 +1033,7 @@ sub edit_user {
 		if ($Requires_Approval_Edit == 1) {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules require approval"} else {$Requires_Approval_Edit = "$User_Name_Edit"."'s "."Rules do not require approval"}
 		if ($Lockout_Edit == 1) {$Lockout_Edit = "$User_Name_Edit is locked out"} else {$Lockout_Edit = "$User_Name_Edit is not locked out"}
 
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("Account Management", "Modify",
 			"$User_Name edited a system account with Account ID $Edit_User_Post: $User_Name_Edit ($Email_Edit). $User_Name_Edit $Admin_Edit, $Approver_Edit, $Requires_Approval_Edit and $Lockout_Edit. $User_Name_Edit $IP_Admin_Edit, $Icinga_Admin_Edit, $DShell_Admin_Edit, $DNS_Admin_Edit, $Reverse_Proxy_Admin_Edit and $DSMS_Admin_Edit. $User_Name_Edit"."'s "."password was not changed.", $User_Name);
@@ -1152,15 +1128,7 @@ sub delete_user {
 		if ($Requires_Approval_Extract) {$Requires_Approval_Extract = "$User_Name_Extract"."'s "."Rules required approval"} else {$Requires_Approval_Extract = "$User_Name_Extract"."'s "."Rules did not require approval"}
 		if ($Lockout_Extract) {$Lockout_Extract = "$User_Name_Extract was locked out"} else {$Lockout_Extract = "$User_Name_Extract was not locked out"}
 
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 	
 		$Audit_Log_Submission->execute("Account Management", "Delete", "$User_Name deleted a system account with Account ID $Delete_User_Confirm: $User_Name_Extract ($Email_Extract). $User_Name_Extract $Admin_Extract, $Approver_Extract, $Requires_Approval_Extract and $Lockout_Extract.", $User_Name);
 	}
@@ -1178,15 +1146,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /account-management.cgi/) {
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		
 		$Audit_Log_Submission->execute("Account Management", "View", "$User_Name accessed Account Management.", $User_Name);
 	}

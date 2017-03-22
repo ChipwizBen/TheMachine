@@ -292,15 +292,7 @@ sub add_host {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Hosts", "Add", "$User_Name added $Host_Name_Add. The system assigned it Host ID $Host_Insert_ID.", $User_Name);
 
@@ -479,15 +471,7 @@ sub edit_host {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Hosts", "Modify", "$User_Name modified Host ID $Edit_Host_Post. The new entry is recorded as $Host_Name_Edit.", $User_Name);
 	# / Audit Log
@@ -578,15 +562,7 @@ sub delete_host {
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		if ($Rules_Revoked > 0) {
 			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted Host ID $Delete_Host_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);

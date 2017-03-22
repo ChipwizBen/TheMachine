@@ -255,15 +255,7 @@ sub add_redirect {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Redirect", "Add", "$User_Name added an entry from $Source_Add to $Destination_Add for $Server_Name_Add on port $Port_Add. The system assigned it Redirect ID $Redirect_Insert_ID.", $User_Name);
 	# / Audit Log
@@ -368,15 +360,7 @@ sub edit_redirect {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Redirect", "Modify", "$User_Name modified Redirect ID $Edit_Redirect_Post. 
 	It is now recorded as server $Server_Name_Edit (port $Port_Edit), with a source of $Source_Edit and destination of $Destination_Edit.", $User_Name);
@@ -453,15 +437,7 @@ sub delete_redirect {
 	{
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("Redirect", "Delete", "$User_Name deleted the redirect entry for $Server_Name, 
 		with a source of $Redirect_Source and destination of $Redirect_Destination. The Redirect ID was $Delete_Redirect_Confirm.", $User_Name);

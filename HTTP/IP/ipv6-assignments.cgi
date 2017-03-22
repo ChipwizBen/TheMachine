@@ -636,15 +636,7 @@ sub add_block {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	if ($Final_Block_Manual) {$Final_Block_Manual = ' This was a manual assignment.'} 
 
@@ -864,15 +856,7 @@ sub edit_block {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("IP", "Modify", "$User_Name added $Host_Counter new hosts to IPv6 Assignment ID $Block_Edit.", $User_Name);
 
@@ -968,15 +952,7 @@ sub delete_block {
 
 	while ( my $Block = $Select_Blocks->fetchrow_array() ) {
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("IP", "Delete", "$User_Name deleted $Block (IPv6 Assignment ID $Delete_Block_Confirm).", $User_Name);
 	}
 	# / Audit Log

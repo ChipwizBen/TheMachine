@@ -59,15 +59,7 @@ sub html_output {
 	my $Referer = $ENV{HTTP_REFERER};
 
 	if ($Referer !~ /system-status.cgi/) {
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 	
 		$Audit_Log_Submission->execute("System Status", "View", "$User_Name accessed System Status.", $User_Name);
 	}

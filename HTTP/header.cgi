@@ -84,10 +84,11 @@ print <<ENDHTML;
 <!DOCTYPE html>
 <head>
 	<title>$System_Name</title>
-	<link rel="stylesheet" type="text/css" href="$CSS_Config" media= "screen" title ="$System_Name CSS"/>
+	<link rel="stylesheet" type="text/css" href="$CSS_Config" media="screen" title ="$System_Name CSS"/>
 	<!--[if IE]>
 		<META HTTP-EQUIV=REFRESH CONTENT="0; URL=http://getfirefox.com">
 	<![endif]-->
+	<link rel="icon" href="/resources/imgs/cog-animation-small.gif">
 </head>
 <body>
 	<!-- Strip/Buttons/White BKG -->
@@ -137,7 +138,7 @@ print <<ENDHTML;
 			</li>
 
 
-<!--
+
 
 			<li><a href="/#"><span>&nbsp; Icinga</span></a>
 				<ul>
@@ -158,7 +159,7 @@ print <<ENDHTML;
 				</ul>
 			</li>
 
--->
+
 
 			<li><a href="/#"><span>&nbsp; D-Shell</span></a>
 				<ul>

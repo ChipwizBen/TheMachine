@@ -90,15 +90,7 @@ sub Security_Notice {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Security", $Notice, "Received tainted data ($Value) at $Script by $User_Name from $Remote_Host.", 'System');
 	#/ Audit Log
@@ -669,15 +661,7 @@ sub Git_Commit {
 		eval { $Git_Link->commit(qw/ --message /, "$Message", qw/ --author /, "$Author <$Email>", qw/ --date /, "$Date", qw/ -- /, "$File"); }; #print "Broke at git commit $File: $@\n" if $@;
 
 
-#		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-#			`category`,
-#			`method`,
-#			`action`,
-#			`username`
-#		)
-#		VALUES (
-#			?, ?, ?, ?
-#		)");
+#		my $Audit_Log_Submission = Audit_Log_Submission();
 #		$Audit_Log_Submission->execute("Git", "Commit", "Committed $Message", "$Author");
 
 	}
@@ -1018,6 +1002,23 @@ sub Server_Hostname {
 	return $Hostname;
 
 } # sub Server_Hostname
+
+sub Audit_Log_Submission {
+
+	my $DB_Connection = DB_Connection;
+	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
+		`category`,
+		`method`,
+		`action`,
+		`username`
+	)
+	VALUES (
+		?, ?, ?, ?
+	)");
+
+	return $Audit_Log_Submission;
+	
+} # sub Audit_Log_Submission
 
 sub Block_Discovery {
 

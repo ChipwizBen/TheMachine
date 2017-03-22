@@ -447,15 +447,7 @@ sub pause_job {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	if ($Pause_Job eq 'ALL') {
 		$Audit_Log_Submission->execute("D-Shell", "Pause", "$User_Name paused all Jobs.", $User_Name);
@@ -486,15 +478,7 @@ sub stop_job {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("D-Shell", "Stop", "$User_Name killed Job ID $Stop_Job.", $User_Name);
 	# / Audit Log
@@ -511,15 +495,7 @@ sub resume_job {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	if ($Resume_Job eq 'ALL') {
 		$Audit_Log_Submission->execute("D-Shell", "Resume", "$User_Name resumed all Jobs.", $User_Name);
@@ -550,15 +526,7 @@ sub prioritise_job {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	if ($Prioritise_Job eq 'ALL') {
 		$Audit_Log_Submission->execute("D-Shell", "Prioritise", "$User_Name prioritised all jobs.", $User_Name);
@@ -589,15 +557,7 @@ sub run_job {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Name started Job ID $Trigger_Job.", $User_Name);
 	# / Audit Log

@@ -509,15 +509,7 @@ sub add_command {
 
 	# Audit Log (Command Set)
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("D-Shell", "Add", "$User_Name added $Command_Name_Add. The system assigned it Command ID $Command_Insert_ID.", $User_Name);
 	# / Audit Log (Command Set)
@@ -550,18 +542,7 @@ sub add_command {
 		while ( (my $Name) = $Select_Command_Set->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("D-Shell", "Add", "$User_Name added Command Set $Name [ID $Dependency] as a dependency of $Command_Name_Add [Command Set ID $Command_Insert_ID]", $User_Name);
 		}
 		# / Audit Log
@@ -861,15 +842,7 @@ sub edit_command {
 
 # Audit Log (Command Set)
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name created a new revision (Rev. $Edit_Command_Revision) for $Command_Name_Edit (Command Set ID $Edit_Command, now ID $Command_Insert_ID). It is now recorded as:\n $Command_Edit", $User_Name);
 	# / Audit Log (Command Set)
@@ -908,18 +881,7 @@ sub edit_command {
 		while ( (my $Name) = $Select_Command_Set->fetchrow_array() )
 		{
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?,
-				?,
-				?,
-				?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("D-Shell", "Modify", "$User_Name modified $Command_Name_Edit [Command Set ID $Command_Insert_ID] to have the dependency $Name [Command Set ID $Dependency].", $User_Name);
 		}
 		# / Audit Log
@@ -1016,15 +978,7 @@ sub delete_command {
 	{
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("D-Shell", "Delete", "$User_Name deleted Command Set $Command_Name [Rev. $Command_Revision], Command Set ID $Delete_Command_Confirm.", $User_Name);
 
@@ -1570,15 +1524,7 @@ sub run_command {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("D-Shell", "Queue", "$User_Name queued a job.", $User_Name);
 	# / Audit Log

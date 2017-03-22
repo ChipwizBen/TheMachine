@@ -365,15 +365,7 @@ sub add_record {
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Records", "Add", "$User_Name added $Record_Type_Add record for $Record_Source_Add to $Record_Target_Add, set it $Active_Add and to $Expires_Date_Add. The system assigned it Record ID $Record_Insert_ID.", $User_Name);
 	# / Audit Log
@@ -637,15 +629,7 @@ sub edit_record {
 	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
 
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Records", "Modify", "$User_Name modified record ID $Edit_Record_Post, $Record_Type_Add record for $Record_Source_Edit to $Record_Target_Edit, set it $Active_Edit and to $Expires_Date_Edit.", $User_Name);
 	# / Audit Log
@@ -729,15 +713,7 @@ sub delete_record {
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("Records", "Delete", "$User_Name deleted record ID $Delete_Record_Confirm. The deleted entry's last values were Type: $Type, Source: $Source, Target: $Target, set $Active and $Expires.", $User_Name);
 

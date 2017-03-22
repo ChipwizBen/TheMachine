@@ -308,18 +308,7 @@ sub add_user {
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?,
-		?,
-		?,
-		?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Users", "Add", "$User_Name added $User_Name_Add, set it $Active_Add and to $Expires_Date_Add. The system assigned it User ID $User_Insert_ID.", $User_Name);
 	# / Audit Log
@@ -497,15 +486,7 @@ sub edit_user {
 	if ($Active_Edit) {$Active_Edit = 'Active'} else {$Active_Edit = 'Inactive'}
 
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	if ($Rules_Revoked > 0) {
 		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified User ID $Edit_User_Post, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
@@ -599,15 +580,7 @@ sub delete_user {
 		if ($Active) {$Active = 'Active'} else {$Active = 'Inactive'}
 	
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		if ($Rules_Revoked > 0) {
 			$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name deleted User ID $Delete_User_Confirm, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);

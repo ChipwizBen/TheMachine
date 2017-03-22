@@ -37,6 +37,9 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.3.1
+	$Table->addRow('2.3.1', 'Shifted audit log calls into a separate routine.');
+
 	## Version 2.3.0
 	$Table->addRow('2.3.0', 'Fixed a bug where the D-Shell process would die if the SSH connection suddenly closed 
           after previously being open during the initial connection phase, including during a controlled reboot.');

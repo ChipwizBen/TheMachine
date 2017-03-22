@@ -408,15 +408,7 @@ sub add_block {
 
 	my $Block_Insert_ID = $DB_Connection->{mysql_insertid};
 
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("IP", "Add", "$User_Name added $Block_Name_Add ($Block_Network_Add$Block_CIDR_Add). The system assigned it IPv4 Block ID $Block_Insert_ID.", $User_Name);
 
@@ -626,15 +618,7 @@ sub edit_block {
 		$Gateway_Edit, $Range_For_Use, $Range_For_Use_Subnet_Edit, $DNS_1_Edit, $DNS_2_Edit, $NTP_1_Edit, 
 		$NTP_2_Edit, $User_Name, $Block_Edit);
 
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("IP", "Modify", "$User_Name modified $Block_Name_Edit ($Block_Network_Edit$Block_CIDR_Edit).", $User_Name);
 
@@ -702,15 +686,7 @@ sub delete_block {
 	while (( my $Block_Name, my $IP ) = $Select_Blocks->fetchrow_array() )
 	{
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 		$Audit_Log_Submission->execute("IP", "Delete", "$User_Name deleted $Block_Name (IPv4 Block ID $Delete_Block_Confirm).", $User_Name);
 	}
 	# / Audit Log

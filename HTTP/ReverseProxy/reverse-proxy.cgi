@@ -476,15 +476,7 @@ sub add_reverse_proxy {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Reverse Proxy", "Add", "$User_Name added an entry from $Source_Add to $Destination_Add for $Server_Name_Add. The system assigned it Reverse Proxy ID $Reverse_Proxy_Insert_ID.", $User_Name);
 	# / Audit Log
@@ -921,15 +913,7 @@ sub edit_reverse_proxy {
 
 	# Audit Log
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Reverse Proxy", "Modify", "$User_Name modified Reverse Proxy ID $Edit_Reverse_Proxy_Post. 
 	It is now recorded as server $Server_Name_Edit, with a source of $Source_Edit and destination of $Destination_Edit.", $User_Name);
@@ -1006,15 +990,7 @@ sub delete_reverse_proxy {
 	{
 
 		my $DB_Connection = DB_Connection();
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("Reverse Proxy", "Delete", "$User_Name deleted the proxy entry for $Server_Name, 
 		with a source of $Proxy_Pass_Source and destination of $Proxy_Pass_Destination. The Reverse Proxy ID was $Delete_Reverse_Proxy_Confirm.", $User_Name);

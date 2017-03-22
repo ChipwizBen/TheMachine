@@ -454,18 +454,7 @@ sub add_group {
 	}
 
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?,
-		?,
-		?,
-		?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Host Groups", "Add", "$User_Name added $Group_Name_Add and set it $Active_Add and to $Expires_Date_Add. $Host_Count hosts were attached$Hosts_Attached. The system assigned it Host Group ID $Group_Insert_ID.", $User_Name);
 	# / Audit Log
@@ -889,15 +878,7 @@ sub edit_group {
 	}
 
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	if ($Rules_Revoked > 0) {
 		$Audit_Log_Submission->execute("Rules", "Revoke", "$User_Name modified Host Group ID $Edit_Group, which caused the revocation of $Rules_Revoked Rules to protect the integrity of remote systems.", $User_Name);
@@ -998,15 +979,7 @@ sub delete_group {
 	}
 
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Host Groups", "Delete", "$User_Name deleted Host Group ID $Delete_Group_Confirm. The deleted entry's last values were $Group_Name and set $Active. It had $Hosts_Attached", $User_Name);
 
@@ -1041,15 +1014,7 @@ sub delete_host {
 	my $Hostname = $Select_Hosts->fetchrow_array();
 	
 	my $DB_Connection = DB_Connection();
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 
 	$Audit_Log_Submission->execute("Host Groups", "Delete", "$User_Name removed $Hostname [Host ID $Delete_Host_ID] from Host Group $Delete_Host_From_Group_Name [Host Group ID $Delete_Host_From_Group_ID].", $User_Name);
 

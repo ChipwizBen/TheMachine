@@ -104,15 +104,7 @@ sub add_host {
 
 	# Audit Log
 
-	my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-	)
-	VALUES (
-		?, ?, ?, ?
-	)");
+	my $Audit_Log_Submission = Audit_Log_Submission();
 	
 	$Audit_Log_Submission->execute("Hosts", "Add", "The auto-registration system added $Host_Name_Add, set it Active and to not expire. The system assigned it Host ID $Host_Insert_ID.", $User_Name);
 	$Audit_Log_Submission->execute("Distribution", "Add", "The auto-registration system added $Host_Name_Add [Host ID $Host_Insert_ID] to the sudoers distribution system and assigned it default parameters.", $User_Name);

@@ -90,15 +90,7 @@ COMMAND_SET: while ( my @Select_Command_Sets = $Select_Command_Sets->fetchrow_ar
 			$Update_Owner->execute( '0', 'System', $Command_Owner_ID);
 
 			# Audit Log
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 			$Audit_Log_Submission->execute("D-Shell", "Modify", "The system claimed Command Sets belonging to Owner ID $Command_Owner_ID because they appear to have been deleted.", 'System');
 		}
 	}

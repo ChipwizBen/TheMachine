@@ -223,30 +223,14 @@ if ($Command_Set && @Hosts) {
 		$Job_Submission->execute($Host, $Command_Set, $On_Failure, "4", $User_Trigger);
 		my $Command_Insert_ID = $DB_Connection->{mysql_insertid};
 
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-		`category`,
-		`method`,
-		`action`,
-		`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 
 		$Audit_Log_Submission->execute("D-Shell", "Receive", "The job scheduler received a job to run command set ID $Command_Set on host ID $Host.", $User_Trigger);
 
 		if ($Command_Insert_ID) {
 			# Audit Log
 			my $DB_Connection = DB_Connection();
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 		
 			$Audit_Log_Submission->execute("D-Shell", "Run", "$User_Trigger started Job ID $Command_Insert_ID.", $User_Trigger);
 			# / Audit Log
@@ -257,15 +241,7 @@ if ($Command_Set && @Hosts) {
 			my $PID = fork();
 			if (defined $PID && $PID == 0) {
 				$DB_Connection = DB_Connection();
-				my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-					`category`,
-					`method`,
-					`action`,
-					`username`
-				)
-				VALUES (
-					?, ?, ?, ?
-				)");
+				my $Audit_Log_Submission = Audit_Log_Submission();
 				if ($Captured_User_Name && $Captured_Password) {
 					$Audit_Log_Submission->execute("D-Shell", "Run", "Job ID $Command_Insert_ID triggered with username $Captured_User_Name.", $User_Trigger);
 					exec "./d-shell.pl -j $Command_Insert_ID $No_Decode $High_Priority -u $Captured_User_Name -P $Captured_Password $Runtime_Variables >> /dev/null 2>&1 &";

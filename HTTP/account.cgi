@@ -124,15 +124,7 @@ sub change_password {
 		elsif (($Old_Password eq $Password) && ($New_Password ne '') && ($New_Password eq $Confirm_Password)) {
 
 			# Audit Log
-			my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-				`category`,
-				`method`,
-				`action`,
-				`username`
-			)
-			VALUES (
-				?, ?, ?, ?
-			)");
+			my $Audit_Log_Submission = Audit_Log_Submission();
 		
 			$Audit_Log_Submission->execute("Account Management", "Modify", "$User_Name changed their own password.", $User_Name);
 			#/ Audit Log
@@ -214,15 +206,7 @@ sub delete_key {
 	if ($User_Name_Extract eq '') {$User_Name_Extract = 'nobody'}
 	if ($User_Name_Extract ne $User_Name) {
 
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 	
 		$Audit_Log_Submission->execute("Account Management", "Delete", "$User_Name tried to delete a key belonging to $User_Name_Extract. You've been rumbled.", 'System');
 
@@ -254,15 +238,7 @@ sub default_key {
 	if ($User_Name_Extract eq '') {$User_Name_Extract = 'nobody'}
 	if ($User_Name_Extract ne $User_Name) {
 
-		my $Audit_Log_Submission = $DB_Connection->prepare("INSERT INTO `audit_log` (
-			`category`,
-			`method`,
-			`action`,
-			`username`
-		)
-		VALUES (
-			?, ?, ?, ?
-		)");
+		my $Audit_Log_Submission = Audit_Log_Submission();
 	
 		$Audit_Log_Submission->execute("Account Management", "Modify", "$User_Name tried to default a key belonging to $User_Name_Extract. You've been rumbled.", 'System');
 
