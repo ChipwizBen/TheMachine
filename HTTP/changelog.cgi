@@ -40,6 +40,7 @@ sub html_output {
 	## Version 2.3.1
 	$Table->addRow('2.3.1', 'Shifted audit log calls into a separate routine.');
 	$Table->addRow('', 'Fixed audit tag colour for prioritise action.');
+	$Table->addRow('', 'Made IPv4 discovery a bit smarter for DHCP hosts, changed hostnames or IP addresses and floating addresses.');
 	$Table->addRow('---', '');
 
 	## Version 2.3.0

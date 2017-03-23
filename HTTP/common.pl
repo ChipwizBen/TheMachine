@@ -543,7 +543,7 @@ sub DB_Connection {
 	my $DB_User = '';
 	my $DB_Password = '';
 
-	my $DB_Connection = DBI->connect ("DBI:mysql:database=$DB_Name:host=$DB_Host:port=$DB_Port",
+	my $DB_Connection = DBI->connect("DBI:mysql:database=$DB_Name:host=$DB_Host:port=$DB_Port",
 		$DB_User,
 		$DB_Password,
 		{mysql_enable_utf8 => 1})

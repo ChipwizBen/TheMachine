@@ -33,8 +33,10 @@ ${Green}$System_Name version $Version
 
 Options are:
 	${Blue}-t, --threads\t\t${Green}Sets the number of threads to use for sweeping. Default is 256.
-	${Blue}-b, --block-ids\t\t${Green}A list of block IDs to sweep, comma or space seperated.
+	${Blue}-b, --block-id\t\t${Green}A specific block ID to sweep.
 	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug).
+	${Blue}-V, --very-verbose\t\t${Green}Turns on very verbose output (useful for debug).
+	${Blue}-h, --help\t\t${Green}This help.
 
 ${Green}Examples:
 	${Green}## Sweep block IDs 4, 12 and 6
@@ -43,54 +45,56 @@ ${Green}Examples:
 	${Green}## Sweep all blocks with verbose output on, limit to 20 threads
 	${Blue}$0 -v -t 20${Clear}\n\n";
 
-
-if (!@ARGV) {
-	print $Help;
-	exit(0);
-}
-
-my @Block_IDs;
+my $Block_ID;
 my $Threads;
 my $Verbose;
+my $Very_Verbose;
+my $Help_Option;
 
 GetOptions(
 	't:i' => \$Threads,
 	'threads:i' => \$Threads,
-	'b:s{1,}' => \@Block_IDs, # Set as string due to possibility of space seperation
-	'block-ids:s{1,}' => \@Block_IDs, # Set as string due to possibility of space seperation
+	'b:s' => \$Block_ID, # Set as string due to possibility of space seperation
+	'block-id:s' => \$Block_ID, # Set as string due to possibility of space seperation
 	'v' => \$Verbose,
 	'verbose' => \$Verbose,
+	'V' => \$Verbose,
+	'very-verbose' => \$Verbose,
+	'h' => \$Help_Option,
+	'help' => \$Help_Option,
 ) or die("Fault with options: $@\n");
 
+if ($Very_Verbose) {$Verbose = 1}
 
-if (!$Threads) {$Threads = 256}
+if ($Help_Option) {
+	print $Help;
+	exit(0);
+}
+
+if (!$Threads) {$Threads = 64}
 if ($Verbose) {
 	my $Time_Stamp = strftime "%H:%M:%S", localtime;
 	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Verbose mode on.${Clear}\n";
 	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Threads set to $Threads.${Clear}\n";
 }
 
-my @IPv4_Block_Query_Output;
-if (@Block_IDs) {
-	foreach my $Block_ID (@Block_IDs) {
-		my $IPv4_Block_Query = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block`
-		FROM `ipv4_blocks`
-		ORDER BY `ip_block_name`
-		WHERE `id` = ?");
-		$IPv4_Block_Query->execute($Block_ID);
-		push @IPv4_Block_Query_Output, $IPv4_Block_Query->fetchrow_array();
-	}
+my $IPv4_Block_Query;
+if ($Block_ID) {
+	$IPv4_Block_Query = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block`
+	FROM `ipv4_blocks`
+	WHERE `id` = ?");
+	$IPv4_Block_Query->execute($Block_ID);
 }
 else {
-	my $IPv4_Block_Query = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block`
+	$IPv4_Block_Query = $DB_Connection->prepare("SELECT `id`, `ip_block_name`, `ip_block`
 	FROM `ipv4_blocks`
 	ORDER BY `ip_block_name`");
 	$IPv4_Block_Query->execute();
-	@IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array();
 }
 
+while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
+{
 
-while (@IPv4_Block_Query_Output) {
 	my $Parent_Block_ID = $IPv4_Block_Query_Output[0];
 	my $Parent_Block_Name = $IPv4_Block_Query_Output[1];
 	my $Parent_Block_IP = $IPv4_Block_Query_Output[2];
@@ -123,7 +127,7 @@ while (@IPv4_Block_Query_Output) {
 		#print "Checking $IP_To_Ping...\n";
 
 		if (($Ping_Result) && ($IP_To_Ping ne $Range_Min) && ($IP_To_Ping ne $Range_Max)) {
-			if ($Verbose) {
+			if ($Very_Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Got a response from ${Blue}$IP_To_Ping${Green}.${Clear}\n";
 			}
@@ -132,7 +136,7 @@ while (@IPv4_Block_Query_Output) {
 				FROM `ipv4_assignments`
 				WHERE `ip_block` = ?");
 			$DB_Check->execute("$IP_To_Ping/32");
-			my $Assignment_ID = $DB_Check->fetchrow_array();
+			my $Existing_Block_ID = $DB_Check->fetchrow_array();
 			my $Rows = $DB_Check->rows();
 
 			if ($Rows == 0) {
@@ -153,36 +157,47 @@ while (@IPv4_Block_Query_Output) {
 					}
 					else {
 						my $Block_Insert_ID = &block_insert($IP_To_Ping, $Parent_Block_IP);
-						&host_insert($Block_Insert_ID, $Host_Name_Resolution);
+						if ($Host_Name_Resolution && $Host_Name_Resolution ne 'Error') {
+							my $Host_ID = &host_insert($Host_Name_Resolution, $IP_To_Ping);
+							&host_ip_join($Block_Insert_ID, $Host_ID, $Host_Name_Resolution, $IP_To_Ping);
+						}
+						else {
+							if ($Verbose) {
+								my $Time_Stamp = strftime "%H:%M:%S", localtime;
+								print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Blue}$IP_To_Ping${Red} not joined to a host due to a lookup error.${Clear}\n";
+							}							
+						}
 					}
 				}
 			}
 			else {
 				my $Host_Name_Resolution = &dns_lookup($IP_To_Ping);
-				my $DHCP = &dhcp_lookup($Host_Name_Resolution);
-				if ($DHCP) {
-
-					my $Delete_Block = $DB_Connection->prepare("DELETE from `ipv4_assignments`
-						WHERE `id` = ?");
-					$Delete_Block->execute($Assignment_ID);
-
-					my $Delete_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_assignments`
-						WHERE `ip` = ?");
-					$Delete_Associations->execute($Assignment_ID);
-
-					if ($Verbose) {
-						my $Time_Stamp = strftime "%H:%M:%S", localtime;
-						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Deleted ${Blue}$IP_To_Ping${Green} becuase ${Yellow}$Host_Name_Resolution${Green} is listed as a DHCP host.${Clear}\n";
+				if ($Host_Name_Resolution ne 'Error') {
+					my $DHCP = &dhcp_lookup($Host_Name_Resolution);
+					if ($DHCP) {
+	
+						my $Delete_Block = $DB_Connection->prepare("DELETE from `ipv4_assignments`
+							WHERE `id` = ?");
+						$Delete_Block->execute($Existing_Block_ID);
+	
+						my $Delete_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_assignments`
+							WHERE `ip` = ?");
+						$Delete_Associations->execute($Existing_Block_ID);
+	
+						if ($Verbose) {
+							my $Time_Stamp = strftime "%H:%M:%S", localtime;
+							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Deleted ${Blue}$IP_To_Ping${Green} becuase ${Yellow}$Host_Name_Resolution${Green} is listed as a DHCP host.${Clear}\n";
+						}
+						my $Audit_Log_Submission = Audit_Log_Submission();
+						$Audit_Log_Submission->execute("IP", "Delete", "System deleted $IP_To_Ping (ID: $Existing_Block_ID) because $Host_Name_Resolution is listed as a DHCP host.", 'System');
 					}
-					my $Audit_Log_Submission = Audit_Log_Submission();
-					$Audit_Log_Submission->execute("IP", "Delete", "System deleted $IP_To_Ping (ID: $Assignment_ID) because $Host_Name_Resolution is listed as a DHCP host.", 'System');
 				}
 				else {
 
 					my $Changed_Assignment_Check_Link = $DB_Connection->prepare("SELECT `host`
 					FROM `lnk_hosts_to_ipv4_assignments`
 					WHERE `ip` = ?");
-					$Changed_Assignment_Check_Link->execute($Assignment_ID);
+					$Changed_Assignment_Check_Link->execute($Existing_Block_ID);
 					my $Existing_Database_Host_ID = $Changed_Assignment_Check_Link->fetchrow_array();
 
 					my $Changed_Assignment_Check_Hostname = $DB_Connection->prepare("SELECT `hostname`
@@ -193,18 +208,51 @@ while (@IPv4_Block_Query_Output) {
 
 					if ($Existing_Database_Host ne $Host_Name_Resolution) {
 
-						my $Delete_Old_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_assignments`
+						my $Floating_IP_Check = $DB_Connection->prepare("SELECT `host`
+						FROM `lnk_hosts_to_ipv4_assignments`
 						WHERE `ip` = ?");
-						$Delete_Old_Associations->execute($Assignment_ID);
+						$Floating_IP_Check->execute($Existing_Block_ID);
+						my $Floating_IP_Count = $Floating_IP_Check->rows();
 
-						if ($Verbose) {
-							my $Time_Stamp = strftime "%H:%M:%S", localtime;
-							print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Changed the association of ${Blue}$IP_To_Ping${Green} from ${Yellow}$Existing_Database_Host${Green} to ${Yellow}$Host_Name_Resolution${Green}.${Clear}\n";
+						if ($Floating_IP_Count > 1) {
+							if ($Verbose) {
+								my $Time_Stamp = strftime "%H:%M:%S", localtime;
+								print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found ${Pink}$Floating_IP_Count${Green} existing associations of ${Blue}$IP_To_Ping${Green}. Assuming floating, ignoring.${Clear}\n";
+							}
 						}
-						my $Audit_Log_Submission = Audit_Log_Submission();
-						$Audit_Log_Submission->execute("IP", "Modify", "System changed the association of $IP_To_Ping from $Existing_Database_Host to $Host_Name_Resolution.", 'System');
-
-
+						elsif ($Host_Name_Resolution && $Host_Name_Resolution ne 'Error') {
+							my $Delete_Old_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_assignments`
+							WHERE `ip` = ?");
+							$Delete_Old_Associations->execute($Existing_Block_ID);
+	
+							my $Host_Exists_Check = $DB_Connection->prepare("SELECT `id`
+								FROM `hosts`
+								WHERE `hostname` = ?");
+							$Host_Exists_Check->execute($Host_Name_Resolution);
+	
+							my $Host_ID = $Host_Exists_Check->fetchrow_array();
+	
+							if (!$Host_ID) {
+								$Host_ID = &host_insert($Host_Name_Resolution, $IP_To_Ping);
+								&host_ip_join($Existing_Block_ID, $Host_ID, $Host_Name_Resolution, $IP_To_Ping);
+							}
+							else {
+								&host_ip_join($Existing_Block_ID, $Host_ID, $Host_Name_Resolution, $IP_To_Ping);
+							}
+	
+							if ($Verbose) {
+								my $Time_Stamp = strftime "%H:%M:%S", localtime;
+								print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Changed the association of ${Blue}$IP_To_Ping${Green} from ${Yellow}$Existing_Database_Host${Green} to ${Yellow}$Host_Name_Resolution${Green}.${Clear}\n";
+							}
+							my $Audit_Log_Submission = Audit_Log_Submission();
+							$Audit_Log_Submission->execute("IP", "Modify", "System changed the association of $IP_To_Ping from $Existing_Database_Host to $Host_Name_Resolution.", 'System');
+						}
+						else {
+							if ($Verbose) {
+								my $Time_Stamp = strftime "%H:%M:%S", localtime;
+								print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Fault with lookup on ${Blue}$IP_To_Ping${Red}.${Clear}\n";
+							}
+						}
 					}
 				}
 			}
@@ -232,8 +280,11 @@ sub block_insert {
 	my $Block_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
+	if ($Verbose) {
+		my $Time_Stamp = strftime "%H:%M:%S", localtime;
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Blue}$Block${Green} was found and was previously unregistered. It is assumed to be a /32. The system assigned it Block ID ${Pink}$Block_Insert_ID${Green}.${Clear}\n";
+	}
 	my $Audit_Log_Submission = Audit_Log_Submission();
-	
 	$Audit_Log_Submission->execute("IP", "Add", "$Block was found and was previously unregistered. It is assumed to be a /32. The system assigned it Block ID $Block_Insert_ID.", 'System');
 
 	return $Block_Insert_ID;
@@ -242,80 +293,92 @@ sub block_insert {
 
 sub host_insert {
 
-	my ($Block_Insert_ID, $Host_Name_Resolution) = @_;
+	my ($Host_Name_Resolution, $IP_To_Ping) = @_;
 
-	my $Host_Exists_Check = $DB_Connection->prepare("SELECT `id`
-		FROM `hosts`
-		WHERE `hostname` = ?");
-	$Host_Exists_Check->execute($Host_Name_Resolution);
-	my $Host_Rows = $Host_Exists_Check->rows();
-
-	if ($Host_Rows > 0)	{
+	my $Was_Added;
+	if ($Host_Name_Resolution) {
+		my $Host_Exists_Check = $DB_Connection->prepare("SELECT `id`
+			FROM `hosts`
+			WHERE `hostname` = ?");
+		$Host_Exists_Check->execute($Host_Name_Resolution);
 
 		my $Host_ID = $Host_Exists_Check->fetchrow_array();
-		my $Host_Link_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_assignments` (
-			`host`,
-			`ip`
-		)
-		VALUES (
-			?, ?
-		)");
+
+		if (!$Host_ID) {
+			my $Host_Insert = $DB_Connection->prepare("INSERT INTO `hosts` (
+				`hostname`,
+				`modified_by`
+			)
+			VALUES (
+				?, ?
+			)");
 		
-		$Host_Link_Insert->execute($Host_ID, $Block_Insert_ID);
+			$Host_Insert->execute($Host_Name_Resolution, "System");
+			$Host_ID = $DB_Connection->{mysql_insertid};
+			$Was_Added = ", ${Yellow}$Host_Name_Resolution${Green} was added (ID: ${Pink}$Host_ID${Green})";
+		}
 
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Blue}$IP_To_Ping/32${Green} was attached to ${Yellow}$Host_Name_Resolution${Green}.${Clear}\n";
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Blue}$IP_To_Ping${Green} was found resolving to ${Yellow}$Host_Name_Resolution${Green}${Was_Added}.${Clear}\n";
 		}
-		my $Audit_Log_Submission = Audit_Log_Submission();
-		$Audit_Log_Submission->execute("IP", "Modify", "$IP_To_Ping/32 was attached to $Host_Name_Resolution.", 'System');
-
-		print "Adding $Host_Name_Resolution ($IP_To_Ping), BID: $Block_Insert_ID HID: $Host_ID\n";
-
-	}
-	elsif ($Host_Name_Resolution) {
-
-		my $Host_Insert = $DB_Connection->prepare("INSERT INTO `hosts` (
-			`hostname`,
-			`modified_by`
-		)
-		VALUES (
-			?, ?
-		)");
-	
-		$Host_Insert->execute($Host_Name_Resolution, "System");
-	
-		my $Host_Insert_ID = $DB_Connection->{mysql_insertid};
-
-		my $Host_Link_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_assignments` (
-			`host`,
-			`ip`
-		)
-		VALUES (
-			?, ?
-		)");
-		
-		$Host_Link_Insert->execute($Host_Insert_ID, $Block_Insert_ID);
-		if ($Verbose) {
-			my $Time_Stamp = strftime "%H:%M:%S", localtime;
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}$Host_Name_Resolution${Green} (ID: ${Pink}$Host_Insert_ID${Green}) was added and attached to ${Blue}$IP_To_Ping/32${Green}.${Clear}\n";
+		if ($Was_Added) {
+			my $Audit_Log_Submission = Audit_Log_Submission();
+			$Audit_Log_Submission->execute("Hosts", "Add", "$IP_To_Ping was found resolving to $Host_Name_Resolution, $Host_Name_Resolution was added as Host ID $Host_ID.", 'System');
 		}
-		my $Audit_Log_Submission = Audit_Log_Submission();
-		$Audit_Log_Submission->execute("Hosts", "Add", "$Host_Name_Resolution (ID: $Host_Insert_ID) was added and attached to $IP_To_Ping/32.", 'System');
-
-		print "Adding $Host_Name_Resolution ($IP_To_Ping), BID: $Block_Insert_ID HID: $Host_Insert_ID\n";
-
+		return $Host_ID;
 	}
 
 } # sub host_insert
 
+sub host_ip_join {
+
+	my ($Block_Insert_ID, $Host_Insert_ID, $Host_Name_Resolution, $IP_To_Ping) = @_;
+
+	my $Host_Link_Insert = $DB_Connection->prepare("INSERT INTO `lnk_hosts_to_ipv4_assignments` (
+		`host`,
+		`ip`
+	)
+	VALUES (
+		?, ?
+	)");
+	
+	$Host_Link_Insert->execute($Host_Insert_ID, $Block_Insert_ID);
+
+	if ($Verbose) {
+		my $Time_Stamp = strftime "%H:%M:%S", localtime;
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Blue}$IP_To_Ping/32${Green} was attached to ${Yellow}$Host_Name_Resolution${Green}.${Clear}\n";
+	}
+	my $Audit_Log_Submission = Audit_Log_Submission();
+	$Audit_Log_Submission->execute("IP", "Modify", "$IP_To_Ping/32 was attached to $Host_Name_Resolution.", 'System');
+
+} # sub host_ip_join
+
 sub dns_lookup {
 
 	my $IP_To_Ping = $_[0];
+	my $Host_Name_Resolution_WC = `nslookup $IP_To_Ping $DNS_Server \| grep -v nameserver \| cut -f 2 \| grep name \| cut -f 2 -d '=' \| sed 's/ //' \| sed 's/\.\$//' \| wc -l`;
+		$Host_Name_Resolution_WC =~ s/\n.*//;
+		$Host_Name_Resolution_WC =~ s/\r.*//;
 	my $Host_Name_Resolution = `nslookup $IP_To_Ping $DNS_Server \| grep -v nameserver \| cut -f 2 \| grep name \| cut -f 2 -d '=' \| sed 's/ //' \| sed 's/\.\$//'`;
+	my $Host_Name_Resolution_EC = `nslookup $IP_To_Ping $DNS_Server > /dev/null 2>&1; echo $?`;
+		$Host_Name_Resolution_EC =~ s/\n.*//;
+		$Host_Name_Resolution_EC =~ s/\r.*//;
+
+	if ($Host_Name_Resolution_WC > 1) {
+		print "Error! According to DNS server $DNS_Server, $IP_To_Ping has $Host_Name_Resolution_WC hostnames:\n$Host_Name_Resolution";
+		return 'Error';
+	}
+	elsif ($Host_Name_Resolution_EC) {
+		print "Error! Lookup failed for $Host_Name_Resolution. (EC: $Host_Name_Resolution_EC)\n";
+		return 'Error';
+		
+	}
+	else {
 		$Host_Name_Resolution =~ s/\n.*//;
 		$Host_Name_Resolution =~ s/\r.*//;
-	return $Host_Name_Resolution;
+		return $Host_Name_Resolution;
+	}
 
 } # sub dns_lookup
 
@@ -331,9 +394,9 @@ sub dhcp_lookup {
 	
 		my $Host_DHCP_Check = $DB_Connection->prepare("SELECT `dhcp`
 			FROM `host_attributes`
-			WHERE `id` = ?");
+			WHERE `host_id` = ?");
 		$Host_DHCP_Check->execute($Host_ID);
-		my $Host_DHCP = $Host_ID_Check->fetchrow_array();
+		my $Host_DHCP = $Host_DHCP_Check->fetchrow_array();
 
 	return $Host_DHCP;
 
@@ -392,3 +455,5 @@ sub overlap_check {
 	return 0;
 
 } # sub overlap_check
+
+1;

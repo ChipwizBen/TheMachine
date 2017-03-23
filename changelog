@@ -1,5 +1,6 @@
 2.3.1   - Shifted audit log calls into a separate routine.
         - Fixed audit tag colour for prioritise action.
+        - Made IPv4 discovery a bit smarter for DHCP hosts, changed hostnames or IP addresses and floating addresses.
 2.3.0   - Fixed a bug where the D-Shell process would die if the SSH connection suddenly closed after previously 
           being open during the initial connection phase, including during a controlled reboot.
         - Fixed an issue where a random SSH termination wasn't correctly handled by the CDSF distribution process.
