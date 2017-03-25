@@ -6,7 +6,7 @@ use DBI;
 use POSIX qw(strftime);
 use Net::SFTP::Foreign;
 use Net::SSH::Expect;
-use Getopt::Long qw(:config no_ignore_case);
+use Getopt::Long qw(:config no_auto_abbrev no_ignore_case_always);
 
 my $Common_Config;
 if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}

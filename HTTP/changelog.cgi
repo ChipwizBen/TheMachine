@@ -41,6 +41,9 @@ sub html_output {
 	$Table->addRow('2.3.1', 'Shifted audit log calls into a separate routine.');
 	$Table->addRow('', 'Fixed audit tag colour for prioritise action.');
 	$Table->addRow('', 'Made IPv4 discovery a bit smarter for DHCP hosts, changed hostnames or IP addresses and floating addresses.');
+	$Table->addRow('', 'Snapshot reverts are now capped at 1 thread unless forcefully overridden.');
+	$Table->addRow('', 'Snapshot reverts now prompt for confirmation before reverting any number of systems, including just one.');
+	$Table->addRow('', 'Snapshot reverts now have a cancel grace timer that cannot be turned off for any overrides.');
 	$Table->addRow('---', '');
 
 	## Version 2.3.0

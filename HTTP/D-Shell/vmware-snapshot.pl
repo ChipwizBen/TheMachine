@@ -3,7 +3,7 @@
 use strict;
 use Parallel::ForkManager;
 use POSIX qw(strftime);
-use Getopt::Long qw(:config no_ignore_case);
+use Getopt::Long qw(:config no_auto_abbrev no_ignore_case_always);
 
 my $Common_Config;
 if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
@@ -39,7 +39,8 @@ Options are:
 				by The Machine that have no tag will be removed.
 	${Blue}-e, --erase\t\t${Green}Removes ALL snapshots for listed hosts.
 	${Blue}-R, --revert\t\t${Green}Combine with --tag to revert to a specific snapshot, otherwise the VM will be reverted to
-				the current snapshot.
+				the current snapshot. Note that reverts are capped at one thread for safety, unless combined with --override.
+	${Blue}--override\t\t${Green}Used for overriding the thread cap on reverts.
 	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug).
 	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes thread data.
 
@@ -77,6 +78,8 @@ my $Remove;
 my $Tag;
 my $Erase;
 my $Revert;
+	my $Yes;
+	my $Override;
 my $Username;
 
 GetOptions(
@@ -102,6 +105,8 @@ GetOptions(
 	'revert' => \$Revert,
 	'X:s' => \$Username,
 	'username:s' => \$Username,
+	'y' => \$Yes,
+	'override' => \$Override,
 	'v' => \$Verbose,
 	'verbose' => \$Verbose,
 	'V' => \$Very_Verbose,
@@ -110,12 +115,46 @@ GetOptions(
 
 @Hosts = split(/[\s,]+/,join(',' , @Hosts));
 if (!$Threads) {$Threads = scalar(keys @Hosts);}
+if ($Revert && !$Override) {$Threads = 1}
 
 if ($Very_Verbose) {$Verbose = 1}
 if ($Verbose) {
 	my $Time_Stamp = strftime "%H:%M:%S", localtime;
 	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Verbose mode on.${Clear}\n";
-	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Threads set to $Threads.${Clear}\n";
+	if ($Revert && !$Override) {
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Revert requested - threads capped at ${Yellow}$Threads${Green}.${Clear}\n";
+	}
+	elsif ($Revert && $Override) {
+		print "${Red}##\n";
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Pink}Revert thread override requested - thread cap set to ${Yellow}$Threads${Pink}.${Clear}\n";
+		print "${Red}##${Clear}\n";
+	}
+	else {
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Threads set to ${Yellow}$Threads${Green}.${Clear}\n";
+	}
+}
+
+if ($Revert && !$Yes) {
+	use Term::ReadKey;
+	print "You are about to perform a snapshot REVERT operation. Confirm [y/n]: ";
+	$Yes = <STDIN>;
+		$Yes =~ s/\n//g;
+		$Yes =~ s/\r//g;
+	if ($Yes ne 'y') {print "Not without confirmation. Exiting.\n"; exit(0);};
+}
+if ($Revert && $Override) {
+	print "Revert thread override detected. (CTRL + C to cancel)...\n\n";
+	print "Continuing in... 5\r";
+	sleep 1;
+	print "Continuing in... 4\r";
+	sleep 1;
+	print "Continuing in... 3\r";
+	sleep 1;
+	print "Continuing in... 2\r";
+	sleep 1;
+	print "Continuing in... 1\r";
+	sleep 1;
+	print "Reverting snapshots...\r";
 }
 
 my $Fork = new Parallel::ForkManager($Threads);

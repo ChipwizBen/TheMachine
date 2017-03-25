@@ -3,7 +3,7 @@
 use strict;
 use Net::SSH::Expect;
 use POSIX qw(strftime);
-use Getopt::Long qw(:config no_ignore_case);
+use Getopt::Long qw(:config no_auto_abbrev no_ignore_case_always);
 
 my $Common_Config;
 if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
@@ -1370,14 +1370,14 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -R -i $Host_ID -T '${Snapshot_Tag}'`;
+					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID -T '${Snapshot_Tag}'`;
 				}
 				else {
 					if ($Verbose) {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting to the current snapshot${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting to the current snapshot${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -R -i $Host_ID`;
+					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID`;
 				}
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
