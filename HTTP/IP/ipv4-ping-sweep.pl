@@ -9,7 +9,7 @@ use Net::IP::XS qw($IP_NO_OVERLAP
 use Net::Ping::External qw(ping);
 use Parallel::ForkManager;
 use POSIX qw(strftime);
-use Getopt::Long qw(:config no_ignore_case);
+use Getopt::Long qw(:config no_auto_abbrev no_ignore_case_always);
 
 my $Common_Config;
 if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
@@ -58,8 +58,8 @@ GetOptions(
 	'block-id:s' => \$Block_ID, # Set as string due to possibility of space seperation
 	'v' => \$Verbose,
 	'verbose' => \$Verbose,
-	'V' => \$Verbose,
-	'very-verbose' => \$Verbose,
+	'V' => \$Very_Verbose,
+	'very-verbose' => \$Very_Verbose,
 	'h' => \$Help_Option,
 	'help' => \$Help_Option,
 ) or die("Fault with options: $@\n");
@@ -124,7 +124,10 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 			timeout => 2
 		);
 
-		#print "Checking $IP_To_Ping...\n";
+		if ($Very_Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Checking ${Blue}$IP_To_Ping${Green}.${Clear}\n";
+		}
 
 		if (($Ping_Result) && ($IP_To_Ping ne $Range_Min) && ($IP_To_Ping ne $Range_Max)) {
 			if ($Very_Verbose) {
@@ -191,73 +194,73 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 						my $Audit_Log_Submission = Audit_Log_Submission();
 						$Audit_Log_Submission->execute("IP", "Delete", "System deleted $IP_To_Ping (ID: $Existing_Block_ID) because $Host_Name_Resolution is listed as a DHCP host.", 'System');
 					}
-				}
-				else {
-
-					my $Changed_Assignment_Check_Link = $DB_Connection->prepare("SELECT `host`
-					FROM `lnk_hosts_to_ipv4_assignments`
-					WHERE `ip` = ?");
-					$Changed_Assignment_Check_Link->execute($Existing_Block_ID);
-					my $Existing_Database_Host_ID = $Changed_Assignment_Check_Link->fetchrow_array();
-
-					my $Changed_Assignment_Check_Hostname = $DB_Connection->prepare("SELECT `hostname`
-					FROM `hosts`
-					WHERE `id` = ?");
-					$Changed_Assignment_Check_Hostname->execute($Existing_Database_Host_ID);
-					my $Existing_Database_Host = $Changed_Assignment_Check_Hostname->fetchrow_array();
-
-					if ($Existing_Database_Host ne $Host_Name_Resolution) {
-
-						my $Floating_IP_Check = $DB_Connection->prepare("SELECT `host`
+					else {
+	
+						my $Changed_Assignment_Check_Link = $DB_Connection->prepare("SELECT `host`
 						FROM `lnk_hosts_to_ipv4_assignments`
 						WHERE `ip` = ?");
-						$Floating_IP_Check->execute($Existing_Block_ID);
-						my $Floating_IP_Count = $Floating_IP_Check->rows();
-
-						if ($Floating_IP_Count > 1) {
-							if ($Verbose) {
-								my $Time_Stamp = strftime "%H:%M:%S", localtime;
-								print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found ${Pink}$Floating_IP_Count${Green} existing associations of ${Blue}$IP_To_Ping${Green}. Assuming floating, ignoring.${Clear}\n";
-							}
-						}
-						elsif ($Host_Name_Resolution && $Host_Name_Resolution ne 'Error') {
-							my $Delete_Old_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_assignments`
+						$Changed_Assignment_Check_Link->execute($Existing_Block_ID);
+						my $Existing_Database_Host_ID = $Changed_Assignment_Check_Link->fetchrow_array();
+	
+						my $Changed_Assignment_Check_Hostname = $DB_Connection->prepare("SELECT `hostname`
+						FROM `hosts`
+						WHERE `id` = ?");
+						$Changed_Assignment_Check_Hostname->execute($Existing_Database_Host_ID);
+						my $Existing_Database_Host = $Changed_Assignment_Check_Hostname->fetchrow_array();
+	
+						if ($Existing_Database_Host ne $Host_Name_Resolution) {
+	
+							my $Floating_IP_Check = $DB_Connection->prepare("SELECT `host`
+							FROM `lnk_hosts_to_ipv4_assignments`
 							WHERE `ip` = ?");
-							$Delete_Old_Associations->execute($Existing_Block_ID);
+							$Floating_IP_Check->execute($Existing_Block_ID);
+							my $Floating_IP_Count = $Floating_IP_Check->rows();
 	
-							my $Host_Exists_Check = $DB_Connection->prepare("SELECT `id`
-								FROM `hosts`
-								WHERE `hostname` = ?");
-							$Host_Exists_Check->execute($Host_Name_Resolution);
-	
-							my $Host_ID = $Host_Exists_Check->fetchrow_array();
-	
-							if (!$Host_ID) {
-								$Host_ID = &host_insert($Host_Name_Resolution, $IP_To_Ping);
-								&host_ip_join($Existing_Block_ID, $Host_ID, $Host_Name_Resolution, $IP_To_Ping);
+							if ($Floating_IP_Count > 1) {
+								if ($Verbose) {
+									my $Time_Stamp = strftime "%H:%M:%S", localtime;
+									print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found ${Pink}$Floating_IP_Count${Green} existing associations of ${Blue}$IP_To_Ping${Green}. Assuming floating, ignoring.${Clear}\n";
+								}
+							}
+							elsif ($Host_Name_Resolution && $Host_Name_Resolution ne 'Error') {
+								my $Delete_Old_Associations = $DB_Connection->prepare("DELETE from `lnk_hosts_to_ipv4_assignments`
+								WHERE `ip` = ?");
+								$Delete_Old_Associations->execute($Existing_Block_ID);
+		
+								my $Host_Exists_Check = $DB_Connection->prepare("SELECT `id`
+									FROM `hosts`
+									WHERE `hostname` = ?");
+								$Host_Exists_Check->execute($Host_Name_Resolution);
+		
+								my $Host_ID = $Host_Exists_Check->fetchrow_array();
+		
+								if (!$Host_ID) {
+									$Host_ID = &host_insert($Host_Name_Resolution, $IP_To_Ping);
+									&host_ip_join($Existing_Block_ID, $Host_ID, $Host_Name_Resolution, $IP_To_Ping);
+								}
+								else {
+									&host_ip_join($Existing_Block_ID, $Host_ID, $Host_Name_Resolution, $IP_To_Ping);
+								}
+		
+								if ($Verbose) {
+									my $Time_Stamp = strftime "%H:%M:%S", localtime;
+									print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Changed the association of ${Blue}$IP_To_Ping${Green} from ${Yellow}$Existing_Database_Host${Green} to ${Yellow}$Host_Name_Resolution${Green}.${Clear}\n";
+								}
+								my $Audit_Log_Submission = Audit_Log_Submission();
+								$Audit_Log_Submission->execute("IP", "Modify", "System changed the association of $IP_To_Ping from $Existing_Database_Host to $Host_Name_Resolution.", 'System');
 							}
 							else {
-								&host_ip_join($Existing_Block_ID, $Host_ID, $Host_Name_Resolution, $IP_To_Ping);
-							}
-	
-							if ($Verbose) {
-								my $Time_Stamp = strftime "%H:%M:%S", localtime;
-								print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Changed the association of ${Blue}$IP_To_Ping${Green} from ${Yellow}$Existing_Database_Host${Green} to ${Yellow}$Host_Name_Resolution${Green}.${Clear}\n";
-							}
-							my $Audit_Log_Submission = Audit_Log_Submission();
-							$Audit_Log_Submission->execute("IP", "Modify", "System changed the association of $IP_To_Ping from $Existing_Database_Host to $Host_Name_Resolution.", 'System');
-						}
-						else {
-							if ($Verbose) {
-								my $Time_Stamp = strftime "%H:%M:%S", localtime;
-								print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Fault with lookup on ${Blue}$IP_To_Ping${Red}.${Clear}\n";
+								if ($Verbose) {
+									my $Time_Stamp = strftime "%H:%M:%S", localtime;
+									print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Fault with lookup on ${Blue}$IP_To_Ping${Red}.${Clear}\n";
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-    	$Ping_Fork->finish;
+		$Ping_Fork->finish;
 	}
 	$Ping_Fork->wait_all_children;
 }
