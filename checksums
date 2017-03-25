@@ -1,4 +1,4 @@
-083ffe5af8b8fecf740abd08b8b2f64f  ./changelog
+17914c5190ad37a1379988f220655403  ./changelog
 82582ad79c85c01de6037bdf1dffb6a4  ./Configs/Permissions.sh
 d057c8db76913d95c0e460c7bdd98b27  ./Configs/Perl Modules/Net-LDAP-0.65.tar.gz
 1f0bcd24b64b50a29ad1cf997c2247e9  ./Configs/Perl Modules/Text-Diff-1.44.tar.gz
@@ -92,7 +92,7 @@ e687d7ef7898d67982ac64b3226796f1  ./HTTP/maintenance.cgi
 326934f15a560990e70c7daf6b72c149  ./HTTP/ReverseProxy/redirects.cgi
 f35c5686e3a2e6e70094c2e36ffe3fb4  ./HTTP/ReverseProxy/reverse-proxy-build.pl
 62d2c0f6ba944083ee79445c652431f9  ./HTTP/format.css
-c14c51f4274ceeda4341fe3eb5a1658b  ./HTTP/changelog.cgi
+b70392f6f201511e77d35ee54de0ad43  ./HTTP/changelog.cgi
 9023d44f619ef7b5f9368fd67b3f6a54  ./HTTP/audit-log.cgi
 346f18777678d7e7c73d381d6953919f  ./HTTP/header.cgi
 31fd09ffd96f89726b99edfd330d192c  ./HTTP/Icinga/push-config.pl

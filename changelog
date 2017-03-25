@@ -3,7 +3,7 @@
         - Made IPv4 discovery a bit smarter for DHCP hosts, changed hostnames or IP addresses and floating addresses.
         - Snapshot reverts are now capped at 1 thread unless forcefully overridden.
         - Snapshot reverts now prompt for confirmation before reverting any number of systems, including just one.
-        - Snapshot reverts now have a cancel grace timer that cannot be turned off for any overrides.
+        - Snapshot reverts now have a cancellation grace timer that cannot be turned off for any overrides.
 2.3.0   - Fixed a bug where the D-Shell process would die if the SSH connection suddenly closed after previously 
           being open during the initial connection phase, including during a controlled reboot.
         - Fixed an issue where a random SSH termination wasn't correctly handled by the CDSF distribution process.
