@@ -57,6 +57,7 @@ Options are:
 	${Blue}-V, --very-verbose\t ${Green}Same as verbose, but also includes _LOTS_ of debug (I did warn you)
 	${Blue}--override\t\t ${Green}Override the lock for Complete or Stopped jobs
 	${Blue}--high-priority\t\t ${Green}Queues the Job but ignores the position and executes immediately
+	${Blue}--no-colour\t\t ${Green}Strips colour from verbose output
 
 ${Green}Examples:
 	${Green}## Run a job
@@ -94,6 +95,7 @@ my $Captured_Key_Lock;
 my $Captured_Key_Passphrase;
 	my $Key_Passphrase;
 my $High_Priority;
+my $No_Colour;
 
 GetOptions(
 	'v' => \$Verbose,
@@ -125,8 +127,18 @@ GetOptions(
 	'lock:s' => \$Captured_Key_Lock,
 	'K:s' => \$Captured_Key_Passphrase,
 	'passphrase:s' => \$Captured_Key_Passphrase,
-	'high-priority' => \$High_Priority
-) or die("Option capture badness.\n");
+	'high-priority' => \$High_Priority,
+	'no-colour' => \$No_Colour
+) or die("Fault with options: $@\n");
+
+if ($No_Colour) {
+	undef $Green;
+	undef $Yellow;
+	undef $Red;
+	undef $Pink;
+	undef $Blue;
+	undef $Clear;
+}
 
 if ($Verbose) {
 	if ($Verbose =~ /^([0-1]+)$/) {$Verbose = $1;}
@@ -1008,11 +1020,11 @@ sub processor {
 	
 	while ( my $Command_Set_Dependency_ID = $Discover_Dependencies->fetchrow_array() ) {
 		$Dependency_Chain_ID++;
-		my ($Control_Switches, $Verbose_Switch, $Very_Verbose_Switch, $Decode_Switch);
-		if ($Verbose) {$Verbose_Switch = 'v'; $Control_Switches = $Control_Switches . $Verbose_Switch;}
-		if ($Very_Verbose) {$Very_Verbose_Switch = 'V'; $Control_Switches = $Control_Switches . $Very_Verbose_Switch;}
-		if ($No_Decode) {$Decode_Switch = 'D'; $Control_Switches = $Control_Switches . $Decode_Switch;}
-		if ($Control_Switches) {$Control_Switches = '-' . $Control_Switches;}
+		my ($Control_Switches, $Verbose_Switch, $Very_Verbose_Switch, $Decode_Switch, $No_Colour_Switch);
+		if ($Verbose) {$Verbose_Switch = '-v '; $Control_Switches = $Control_Switches . $Verbose_Switch;}
+		if ($Very_Verbose) {$Very_Verbose_Switch = '-V '; $Control_Switches = $Control_Switches . $Very_Verbose_Switch;}
+		if ($No_Decode) {$Decode_Switch = '-D '; $Control_Switches = $Control_Switches . $Decode_Switch;}
+		if ($No_Colour) {$No_Colour_Switch = '--no-colour '; $Control_Switches = $Control_Switches . $No_Colour_Switch;}
 		print "${Green}I've discovered that Command Set ID ${Blue}$Process_Command_Set_ID${Green} is dependent on Command Set ID ${Blue}$Command_Set_Dependency_ID${Green}. Processing Command Set ID ${Blue}$Command_Set_Dependency_ID${Green} as dependency ${Blue}$Dependency_Chain_ID${Green}. ${Clear}\n";
 			print LOG "${Green}I've discovered that Command Set ID ${Blue}$Process_Command_Set_ID${Green} is dependent on Command Set ID ${Blue}$Command_Set_Dependency_ID${Green}. Processing Command Set ID ${Blue}$Command_Set_Dependency_ID${Green} as dependency ${Blue}$Dependency_Chain_ID${Green}. ${Clear}\n";
 

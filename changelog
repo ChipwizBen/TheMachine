@@ -1,3 +1,4 @@
+2.3.2   - Added the option to strip colour from verbose output to aid viewing in a non-CLI context, such as HTML.
 2.3.1   - Shifted audit log calls into a separate routine.
         - Fixed audit tag colour for prioritise action.
         - Made IPv4 discovery a bit smarter for DHCP hosts, changed hostnames or IP addresses and floating addresses.

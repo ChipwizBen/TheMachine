@@ -33,6 +33,7 @@ my $Override;
 my $Verbose;
 my $Help;
 my $Custom_Host;
+my $No_Colour;
 
 GetOptions(
 	'v' => \$Verbose,
@@ -41,13 +42,23 @@ GetOptions(
 	'H:s' => \$Custom_Host,
 	'host:s' => \$Custom_Host,
 	'h' => \$Help,
-	'help' => \$Help
-) or die("Option capture failure.\n");
+	'help' => \$Help,
+	'no-colour' => \$No_Colour
+) or die("Fault with options: $@\n");
+
+if ($No_Colour) {
+	undef $Green;
+	undef $Yellow;
+	undef $Red;
+	undef $Pink;
+	undef $Blue;
+	undef $Clear;
+}
 
 if ($Verbose) {print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";}
 if ($Custom_Host) {print "${Red}## ${Green}Using custom host ${Yellow}$Custom_Host${Green} only.${Clear}\n";}
 if ($Help) {
-	print "\nOptions are:\n\t--override\tOverrides any database lock\n\t-v, --verbose\tTurns on verbose output\n\n";
+	print "\nOptions are:\n\t--override\tOverrides any database lock\n\t-v, --verbose\tTurns on verbose output\n\t--no-colour\tStrips colour from verbose output\n\n";
 	exit(0);
 }
 

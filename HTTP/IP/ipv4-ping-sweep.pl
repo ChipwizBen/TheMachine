@@ -50,6 +50,7 @@ my $Threads;
 my $Verbose;
 my $Very_Verbose;
 my $Help_Option;
+my $No_Colour;
 
 GetOptions(
 	't:i' => \$Threads,
@@ -62,7 +63,17 @@ GetOptions(
 	'very-verbose' => \$Very_Verbose,
 	'h' => \$Help_Option,
 	'help' => \$Help_Option,
+	'no-colour' => \$No_Colour
 ) or die("Fault with options: $@\n");
+
+if ($No_Colour) {
+	undef $Green;
+	undef $Yellow;
+	undef $Red;
+	undef $Pink;
+	undef $Blue;
+	undef $Clear;
+}
 
 if ($Very_Verbose) {$Verbose = 1}
 

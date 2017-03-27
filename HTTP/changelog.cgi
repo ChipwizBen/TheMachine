@@ -37,6 +37,10 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.3.2
+	$Table->addRow('2.3.2', 'Added the option to strip colour from verbose output to aid viewing in a non-CLI context, such as HTML.');
+	$Table->addRow('---', '');
+
 	## Version 2.3.1
 	$Table->addRow('2.3.1', 'Shifted audit log calls into a separate routine.');
 	$Table->addRow('', 'Fixed audit tag colour for prioritise action.');

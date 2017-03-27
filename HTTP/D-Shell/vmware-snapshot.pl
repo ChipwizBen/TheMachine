@@ -43,6 +43,7 @@ Options are:
 	${Blue}--override\t\t${Green}Used for overriding the thread cap on reverts.
 	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug).
 	${Blue}-V, --very-verbose\t${Green}Same as verbose, but also includes thread data.
+	${Blue}--no-colour\t\t ${Green}Strips colour from verbose output
 
 ${Green}Examples:
 	${Green}## Snapshot server01 and tag it with 'My Snapshot' with verbose output turned on
@@ -81,6 +82,7 @@ my $Revert;
 	my $Yes;
 	my $Override;
 my $Username;
+my $No_Colour;
 
 GetOptions(
 	't:i' => \$Threads,
@@ -111,7 +113,17 @@ GetOptions(
 	'verbose' => \$Verbose,
 	'V' => \$Very_Verbose,
 	'very-verbose' => \$Very_Verbose,
+	'no-colour' => \$No_Colour
 ) or die("Fault with options: $@\n");
+
+if ($No_Colour) {
+	undef $Green;
+	undef $Yellow;
+	undef $Red;
+	undef $Pink;
+	undef $Blue;
+	undef $Clear;
+}
 
 @Hosts = split(/[\s,]+/,join(',' , @Hosts));
 if (!$Threads) {$Threads = scalar(keys @Hosts);}
