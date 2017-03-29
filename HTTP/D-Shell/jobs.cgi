@@ -489,6 +489,9 @@ sub stop_job {
 		WHERE `id` = ?");
 	$Update_Job->execute( '3', $User_Name, $Stop_Job);
 
+	my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+	$Delete_Queue_Entry->execute($Stop_Job);
+
 } # sub stop_job
 
 sub resume_job {
