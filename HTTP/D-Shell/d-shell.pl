@@ -678,9 +678,9 @@ sub host_connection {
 	my $Attempts;
 	while ($SSH_Check !~ /open/) {
 
-		$Attempts++;
+		CONNECTION_DISCOVERY: $Attempts++;
 
-		CONNECTION_DISCOVERY: $SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
+		$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
 		sleep 1;
 	
 		if ($Attempts >= 10) {
@@ -739,8 +739,8 @@ sub host_connection {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
-					goto CONNECTION_DISCOVERY;
 				}
+				goto CONNECTION_DISCOVERY;
 			}
 
 			if ($Fingerprint_Prompt) {
@@ -861,8 +861,8 @@ sub host_connection {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
-					goto CONNECTION_DISCOVERY;
 				}
+				goto CONNECTION_DISCOVERY;
 			}
 
 			if ($Fingerprint_Prompt) {
@@ -950,8 +950,8 @@ sub host_connection {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again...${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again...${Clear}\n";
-				goto CONNECTION_DISCOVERY;
 			}
+			goto CONNECTION_DISCOVERY;
 		}
 
 		last if $Hello =~ m/uid/;
