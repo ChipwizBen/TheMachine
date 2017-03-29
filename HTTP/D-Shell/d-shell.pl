@@ -419,7 +419,9 @@ while ($Execution_Ready ne 'GO') {
 		ORDER BY `last_modified`,`job_id` ASC");
 	$Queue_Query->execute();
 	my $Total_Queued_Jobs = $Queue_Query->rows();
-	
+
+	sleep 3; # Hack fix for race condition when queuing many jobs at once and more jobs execute than the limit allows
+
 	my $Queue_Position_Count = 0;
 	while (my ($Queue_Job_ID, $Queue_Override) = $Queue_Query->fetchrow_array()) {
 		$Queue_Position_Count++;
