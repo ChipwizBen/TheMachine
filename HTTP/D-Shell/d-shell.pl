@@ -29,6 +29,8 @@ my $Connection_Timeout = 5;
 my $Reboot_Retry_Count = 0;
 my $Reboot_Max_Retry_Count = 20;
 my $Reboot_Connection_Timeout = 5;
+my $Max_Attempts = 10;
+my $Reboot_Max_Attempts = 1200;
 
 $0 = 'D-Shell';
 $| = 1;
@@ -683,7 +685,7 @@ sub host_connection {
 		$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
 		sleep 1;
 	
-		if ($Attempts >= 10) {
+		if ($Attempts >= $Max_Attempts) {
 			print "Unresolved host, no route to host or SSH not responding. Terminating the job.\n";
 			print LOG "Unresolved host, no route to host or SSH not responding. Terminating the job.\n";
 			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
@@ -737,8 +739,8 @@ sub host_connection {
 			if ($@) {
 				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
 				}
 				goto CONNECTION_DISCOVERY;
 			}
@@ -859,8 +861,8 @@ sub host_connection {
 			if ($@) {
 				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
 				}
 				goto CONNECTION_DISCOVERY;
 			}
@@ -948,8 +950,8 @@ sub host_connection {
 		if ($@) {
 			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
-				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again...${Clear}\n";
-				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again...${Clear}\n";
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
 			}
 			goto CONNECTION_DISCOVERY;
 		}
@@ -2075,7 +2077,7 @@ sub reboot_control {
 		$SSH_Check=`$nmap $Reboot_Host -PN -p ssh | $grep -E 'open'`;
 		sleep 1;
 	
-		if ($Attempts >= 1200) {
+		if ($Attempts >= $Reboot_Max_Attempts) {
 			print "Host connection did not recover. Terminating the job.\n";
 			print LOG "Host connection did not recover. Terminating the job.\n";
 			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
@@ -2127,8 +2129,8 @@ sub reboot_control {
 			if ($@) {
 				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
 					goto REBOOT_DISCOVERY;
 				}
 			}
@@ -2235,8 +2237,8 @@ sub reboot_control {
 			if ($@) {
 				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again...${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
 					goto REBOOT_DISCOVERY;
 				}
 			}
@@ -2323,8 +2325,8 @@ sub reboot_control {
 		if ($@) {
 			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
-				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again...${Clear}\n";
-				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again...${Clear}\n";
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
 				goto REBOOT_DISCOVERY;
 			}
 		}
