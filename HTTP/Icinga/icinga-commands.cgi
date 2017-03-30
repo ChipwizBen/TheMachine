@@ -8,6 +8,7 @@ if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '
 require $Common_Config;
 
 my $Header = Header();
+my $Footer = Footer();
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
@@ -77,6 +78,7 @@ elsif ($Command_Add && $Command_Add) {
 elsif ($Edit_Command) {
 	require $Header;
 	&html_output;
+	require $Footer;
 	&html_edit_command;
 }
 elsif ($Command_Edit_Post) {
@@ -90,6 +92,7 @@ elsif ($Command_Edit_Post) {
 elsif ($Delete_Command) {
 	require $Header;
 	&html_output;
+	require $Footer;
 	&html_delete_command;
 }
 elsif ($Command_Delete_Post) {
@@ -103,16 +106,19 @@ elsif ($Command_Delete_Post) {
 elsif ($Display_Config) {
 	require $Header;
 	&html_output;
+	require $Footer;
 	&html_display_config;
 }
 elsif ($Show_Linked) {
 	require $Header;
 	&html_output;
+	require $Footer;
 	&html_show_linked;
 }
 else {
 	require $Header;
 	&html_output;
+	require $Footer;
 }
 
 
@@ -162,10 +168,10 @@ ENDHTML
 sub add_command {
 
 	my $Command_Insert_Check = $DB_Connection->prepare("SELECT `id`, `command_line`
-	FROM `nagios_command`
-	WHERE `command_name` = '$Command_Add'");
+	FROM `icinga2_command`
+	WHERE `command_name` = ?");
 
-	$Command_Insert_Check->execute( );
+	$Command_Insert_Check->execute($Command_Add);
 	my $Command_Rows = $Command_Insert_Check->rows();
 
 	if ($Command_Rows) {
@@ -184,7 +190,7 @@ sub add_command {
 		}
 	}
 	else {
-		my $Command_Insert = $DB_Connection->prepare("INSERT INTO `nagios_command` (
+		my $Command_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_command` (
 			`id`,
 			`command_name`,
 			`command_line`,
@@ -198,10 +204,10 @@ sub add_command {
 			?,
 			?,
 			NOW(),
-			'$User_Name'
+			?
 		)");
 
-		$Command_Insert->execute($Command_Add, $Command_Line_Add, $Active_Add);
+		$Command_Insert->execute($Command_Add, $Command_Line_Add, $Active_Add, $User_Name);
 	}
 
 } # sub add_command
@@ -209,9 +215,9 @@ sub add_command {
 sub html_edit_command {
 
 	my $Select_Command = $DB_Connection->prepare("SELECT `command_name`, `command_line`, `active`
-	FROM `nagios_command`
-	WHERE `id` = '$Edit_Command'");
-	$Select_Command->execute( );
+	FROM `icinga2_command`
+	WHERE `id` = ?");
+	$Select_Command->execute($Edit_Command);
 	
 	while ( my @DB_Command = $Select_Command->fetchrow_array() )
 	{
@@ -279,11 +285,11 @@ ENDHTML
 sub edit_command {
 
 	my $Command_Insert_Check = $DB_Connection->prepare("SELECT `id`, `command_line`
-	FROM `nagios_command`
-	WHERE `command_name` = '$Command_Edit'
-	AND `id` != '$Command_Edit_Post'");
+	FROM `icinga2_command`
+	WHERE `command_name` = ?
+	AND `id` != ?");
 
-	$Command_Insert_Check->execute( );
+	$Command_Insert_Check->execute($Command_Edit, $Command_Edit_Post);
 	my $Command_Rows = $Command_Insert_Check->rows();
 
 	if ($Command_Rows) {
@@ -303,7 +309,7 @@ sub edit_command {
 	}
 	else {
 
-		my $Command_Update = $DB_Connection->prepare("UPDATE `nagios_command` SET
+		my $Command_Update = $DB_Connection->prepare("UPDATE `icinga2_command` SET
 			`command_name` = ?,
 			`command_line` = ?,
 			`active` = ?,
@@ -320,13 +326,13 @@ sub edit_command {
 sub html_delete_command {
 
 	my $Select_Command = $DB_Connection->prepare("SELECT `command_name`, `command_line`
-	FROM `nagios_command`
-	WHERE `id` = '$Delete_Command'");
-	$Select_Command->execute( );
-	
+	FROM `icinga2_command`
+	WHERE `id` = ?");
+	$Select_Command->execute($Delete_Command);
+
 	while ( my @DB_Command = $Select_Command->fetchrow_array() )
 	{
-	
+
 		my $Command_Extract = $DB_Command[0];
 		my $Command_Line_Extract = $DB_Command[1];
 
@@ -369,15 +375,17 @@ ENDHTML
 
 sub delete_command {
 
-	$DB_Connection->do("DELETE from `nagios_command`
-				WHERE `id` = '$Command_Delete_Post'");
+	my $Delete = $DB_Connection->prepare("DELETE from `icinga2_command`
+	WHERE `id` = ?");
+	
+	$Delete->execute($Command_Delete_Post);
 
 } # sub delete_command
 
 sub html_display_config {
 
 	my $Select_Command = $DB_Connection->prepare("SELECT `command_name`, `command_line`, `active`, `last_modified`, `modified_by`
-	FROM `nagios_command`
+	FROM `icinga2_command`
 	WHERE `id` = ?");
 	$Select_Command->execute($Display_Config);
 	
@@ -451,7 +459,7 @@ sub html_show_linked {
 	my $Command_Name;
 	my $Command_Description;
 	my $Select_Command_Name = $DB_Connection->prepare("SELECT `command_name`
-	FROM `nagios_command`
+	FROM `icinga2_command`
 	WHERE `id` = ?");
 	
 		$Select_Command_Name->execute($Show_Linked);
@@ -462,25 +470,25 @@ sub html_show_linked {
 		}
 
 	my $Table = new HTML::Table(
-                            -cols=>5,
-                            -align=>'center',
-                            -rules=>'all',
-                            -border=>0,
-                            -bgcolor=>'25aae1',
-                            -evenrowclass=>'tbeven',
-                            -oddrowclass=>'tbodd',
-                            -class=>'statustable',
-                            -width=>'80%',
-                            -spacing=>0,
-                            -padding=>1 );
+		-cols=>5,
+		-align=>'center',
+		-rules=>'all',
+		-border=>0,
+		-bgcolor=>'25aae1',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-class=>'statustable',
+		-width=>'80%',
+		-spacing=>0,
+		-padding=>1 );
 
 	$Table->addRow ( "Service ID", "Name", "Description", "Active Service?", "View Service" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Select_Service_Name = $DB_Connection->prepare("SELECT `id`, `config_name`, `service_description`, `active`
 	FROM `icinga_service`
-	WHERE `check_command` LIKE '$Show_Linked!%'");
-	$Select_Service_Name->execute();
+	WHERE `check_command` LIKE ?");
+	$Select_Service_Name->execute("$Show_Linked!%");
 
 		while ( my @DB_Service = $Select_Service_Name->fetchrow_array() )
 		{
@@ -536,12 +544,12 @@ sub html_output {
 	$Table->addRow ( "ID", "Name", "Command", "Active", "Last Modified", "Modified By", "Linked", "View Config", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Commands_Count = $DB_Connection->prepare("SELECT `id` FROM `nagios_command`");
+	my $Select_Commands_Count = $DB_Connection->prepare("SELECT `id` FROM `icinga2_command`");
 		$Select_Commands_Count->execute( );
 		my $Total_Rows = $Select_Commands_Count->rows();	
 
 	my $Select_Commands = $DB_Connection->prepare("SELECT `id`, `command_name`, `command_line`, `active`, `last_modified`, `modified_by`
-	FROM `nagios_command`
+	FROM `icinga2_command`
 	WHERE (`id` LIKE ?
 	OR `command_name` LIKE ?
 	OR `command_line` LIKE ?)
@@ -574,8 +582,8 @@ sub html_output {
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='/Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='/Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'>$Name</a>",
+			$ID_Extract_Display,
+			$Name,
 			$Command_Extract,
 			$Active_Extract,
 			$Last_Modified_Extract,
@@ -661,7 +669,7 @@ print <<ENDHTML;
 ENDHTML
 
 						my $Command_List_Query = $DB_Connection->prepare("SELECT `id`, `command_name`
-						FROM `nagios_command`
+						FROM `icinga2_command`
 						ORDER BY `command_name` ASC");
 						$Command_List_Query->execute( );
 						
@@ -675,6 +683,7 @@ print <<ENDHTML;
 					</td>
 				</tr>
 			</table>
+			</form>
 		</td>
 	</tr>
 </table>

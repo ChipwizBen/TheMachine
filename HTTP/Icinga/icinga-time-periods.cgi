@@ -180,7 +180,7 @@ ENDHTML
 sub add_time_period {
 
 	my $Time_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
-	FROM `nagios_timeperiod`
+	FROM `icinga2_timeperiod`
 	WHERE `timeperiod_name` = '$Time_Add'");
 
 	$Time_Insert_Check->execute( );
@@ -202,7 +202,7 @@ sub add_time_period {
 		}
 	}
 	else {
-		my $Time_Insert = $DB_Connection->prepare("INSERT INTO `nagios_timeperiod` (
+		my $Time_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_timeperiod` (
 			`id`,
 			`timeperiod_name`,
 			`alias`,
@@ -237,7 +237,7 @@ sub add_time_period {
 			if ($Day_Count eq 6) {$Day = 'friday'};
 			if ($Day_Count eq 7) {$Day = 'saturday'};
 			if ($_ ne undef) {
-				my $Time_Definition_Insert = $DB_Connection->prepare("INSERT INTO `nagios_timedefinition` (
+				my $Time_Definition_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_timedefinition` (
 					`id`,
 					`tipId`,
 					`definition`,
@@ -265,7 +265,7 @@ sub add_time_period {
 sub html_edit_time_period {
 
 	my $Select_Time = $DB_Connection->prepare("SELECT `timeperiod_name`, `alias`, `active`
-	FROM `nagios_timeperiod`
+	FROM `icinga2_timeperiod`
 	WHERE `id` = '$Edit_Time'");
 	$Select_Time->execute( );
 	
@@ -333,7 +333,7 @@ ENDHTML
 sub edit_time_period {
 
 	my $Time_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
-	FROM `nagios_timeperiod`
+	FROM `icinga2_timeperiod`
 	WHERE `timeperiod_name` = '$Time_Edit'
 	AND `id` != '$Time_Edit_Post'");
 
@@ -357,7 +357,7 @@ sub edit_time_period {
 	}
 	else {
 
-		my $Time_Update = $DB_Connection->prepare("UPDATE `nagios_timeperiod` SET
+		my $Time_Update = $DB_Connection->prepare("UPDATE `icinga2_timeperiod` SET
 			`timeperiod_name` = ?,
 			`alias` = ?,
 			`active` = ?,
@@ -374,7 +374,7 @@ sub edit_time_period {
 sub html_delete_time_period {
 
 	my $Select_Time = $DB_Connection->prepare("SELECT `timeperiod_name`, `alias`
-	FROM `nagios_timeperiod`
+	FROM `icinga2_timeperiod`
 	WHERE `id` = '$Delete_Time'");
 	$Select_Time->execute( );
 	
@@ -423,9 +423,9 @@ ENDHTML
 
 sub delete_time_period {
 
-	my $Delete = $DB_Connection->prepare("DELETE from `nagios_timeperiod` WHERE `id` = ?");
+	my $Delete = $DB_Connection->prepare("DELETE from `icinga2_timeperiod` WHERE `id` = ?");
 		$Delete->execute($Time_Delete_Post);
-	$Delete = $DB_Connection->prepare("DELETE from `nagios_timedefinition` WHERE `tipId` = ?");
+	$Delete = $DB_Connection->prepare("DELETE from `icinga2_timedefinition` WHERE `tipId` = ?");
 		$Delete->execute($Time_Delete_Post);
 
 } # sub delete_time_period
@@ -433,7 +433,7 @@ sub delete_time_period {
 sub html_display_config {
 
 	my $Select_Time = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`, `active`, `last_modified`, `modified_by`
-	FROM `nagios_timeperiod`
+	FROM `icinga2_timeperiod`
 	WHERE `id` = ?");
 	$Select_Time->execute($Display_Config);
 	
@@ -448,7 +448,7 @@ sub html_display_config {
 		my $Modified_By_Extract = $DB_Time[5];
 
 		my $Select_Definitions = $DB_Connection->prepare("SELECT `definition`, `range`
-		FROM `nagios_timedefinition`
+		FROM `icinga2_timedefinition`
 		WHERE `tipId` LIKE ?");
 		
 		$Select_Definitions->execute($Time_ID_Extract);
@@ -609,12 +609,12 @@ sub html_output {
 	$Table->addRow ( "ID", "Name", "Alias", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Active", "Last Modified", "Modified By", "View Config", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Times_Count = $DB_Connection->prepare("SELECT `id` FROM `nagios_timeperiod`");
+	my $Select_Times_Count = $DB_Connection->prepare("SELECT `id` FROM `icinga2_timeperiod`");
 		$Select_Times_Count->execute( );
 		my $Total_Rows = $Select_Times_Count->rows();
 
 	my $Select_Times = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`, `active`, `last_modified`, `modified_by`
-	FROM `nagios_timeperiod`
+	FROM `icinga2_timeperiod`
 	WHERE (`id` LIKE '%$Filter%'
 	OR `timeperiod_name` LIKE '%$Filter%'
 	OR `alias` LIKE '%$Filter%')
@@ -645,7 +645,7 @@ sub html_output {
 		my $Modified_By_Extract = $DB_Time[5];
 
 		my $Select_Definitions = $DB_Connection->prepare("SELECT `definition`, `range`
-		FROM `nagios_timedefinition`
+		FROM `icinga2_timedefinition`
 		WHERE `tipId` LIKE ?");
 		
 		$Select_Definitions->execute($ID_Extract);
@@ -772,7 +772,7 @@ print <<ENDHTML;
 ENDHTML
 
 						my $Time_Period_List_Query = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`
-						FROM `nagios_timeperiod`
+						FROM `icinga2_timeperiod`
 						ORDER BY `timeperiod_name` ASC");
 						$Time_Period_List_Query->execute( );
 						

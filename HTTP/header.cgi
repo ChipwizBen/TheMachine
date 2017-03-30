@@ -137,9 +137,6 @@ print <<ENDHTML;
 				</ul>
 			</li>
 
-
-
-<!--
 			<li><a href="/#"><span>&nbsp; Icinga</span></a>
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
@@ -158,8 +155,6 @@ print <<ENDHTML;
 					<li><a href="/Icinga/icinga-time-periods.cgi">Time Periods</a></li>
 				</ul>
 			</li>
--->
-
 
 			<li><a href="/#"><span>&nbsp; D-Shell</span></a>
 				<ul>

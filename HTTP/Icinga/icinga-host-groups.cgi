@@ -154,7 +154,7 @@ ENDHTML
 sub add_group {
 
 	my $Group_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
-	FROM `nagios_hostgroup`
+	FROM `icinga2_hostgroup`
 	WHERE `hostgroup_name` = '$Group_Add'");
 
 	$Group_Insert_Check->execute( );
@@ -176,7 +176,7 @@ sub add_group {
 		}
 	}
 	else {
-		my $Group_Insert = $DB_Connection->prepare("INSERT INTO `nagios_hostgroup` (
+		my $Group_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_hostgroup` (
 			`id`,
 			`hostgroup_name`,
 			`alias`,
@@ -201,7 +201,7 @@ sub add_group {
 sub html_edit_group {
 
 	my $Select_Group = $DB_Connection->prepare("SELECT `hostgroup_name`, `alias`, `active`
-	FROM `nagios_hostgroup`
+	FROM `icinga2_hostgroup`
 	WHERE `id` = '$Edit_Group'");
 	$Select_Group->execute( );
 	
@@ -269,7 +269,7 @@ ENDHTML
 sub edit_group {
 
 	my $Group_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
-	FROM `nagios_hostgroup`
+	FROM `icinga2_hostgroup`
 	WHERE `hostgroup_name` = '$Group_Edit'
 	AND `id` != '$Group_Edit_Post'");
 
@@ -293,7 +293,7 @@ sub edit_group {
 	}
 	else {
 
-		my $Group_Update = $DB_Connection->prepare("UPDATE `nagios_hostgroup` SET
+		my $Group_Update = $DB_Connection->prepare("UPDATE `icinga2_hostgroup` SET
 			`hostgroup_name` = ?,
 			`alias` = ?,
 			`active` = ?,
@@ -310,7 +310,7 @@ sub edit_group {
 sub html_delete_group {
 
 	my $Select_Group = $DB_Connection->prepare("SELECT `hostgroup_name`, `alias`
-	FROM `nagios_hostgroup`
+	FROM `icinga2_hostgroup`
 	WHERE `id` = '$Delete_Group'");
 	$Select_Group->execute( );
 	
@@ -359,7 +359,7 @@ ENDHTML
 
 sub delete_group {
 
-	$DB_Connection->do("DELETE from `nagios_hostgroup`
+	$DB_Connection->do("DELETE from `icinga2_hostgroup`
 				WHERE `id` = '$Group_Delete_Post'");
 
 } # sub delete_group
@@ -368,7 +368,7 @@ sub html_display_config {
 
 	my $Members;
 	my $Select_Group = $DB_Connection->prepare("SELECT `hostgroup_name`, `alias`, `active`, `last_modified`, `modified_by`
-	FROM `nagios_hostgroup`
+	FROM `icinga2_hostgroup`
 	WHERE `id` = ?");
 	$Select_Group->execute($Display_Config);
 	
@@ -382,7 +382,7 @@ sub html_display_config {
 		my $Modified_By_Extract = $DB_Group[4];
 
 		my $Select_Members = $DB_Connection->prepare("SELECT `idMaster`
-		FROM `nagios_lnkHostToHostgroup`
+		FROM `icinga2_lnkHostToHostgroup`
 		WHERE `idSlave` = ?");
 		$Select_Members->execute($Display_Config);
 		
@@ -391,7 +391,7 @@ sub html_display_config {
 			my $idMaster = $DB_Members[0];
 			
 			my $Select_Member_Names = $DB_Connection->prepare("SELECT `host_name`
-			FROM `nagios_host`
+			FROM `icinga2_host`
 			WHERE `id` = ?");
 			$Select_Member_Names->execute($idMaster);
 
@@ -481,12 +481,12 @@ sub html_output {
 	$Table->addRow ( "ID", "Name", "Alias", "Active", "Last Modified", "Modified By", "View Config", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Groups_Count = $DB_Connection->prepare("SELECT `id` FROM `nagios_hostgroup`");
+	my $Select_Groups_Count = $DB_Connection->prepare("SELECT `id` FROM `icinga2_hostgroup`");
 		$Select_Groups_Count->execute( );
 		my $Total_Rows = $Select_Groups_Count->rows();
 
 	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `hostgroup_name`, `alias`, `active`, `last_modified`, `modified_by`
-	FROM `nagios_hostgroup`
+	FROM `icinga2_hostgroup`
 	WHERE (`id` LIKE '%$Filter%'
 	OR `hostgroup_name` LIKE '%$Filter%'
 	OR `alias` LIKE '%$Filter%')
