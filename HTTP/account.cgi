@@ -150,7 +150,8 @@ sub add_key {
 	my $New_Salt;
 	while (length $Key_Lock < 256) {
 		my $Salt = Salt(1);
-		$Salt = $Salt =~ /(.*)/;
+		$Salt =~ /(.*)/;
+		if ($Salt =~ /^(.+)$/) {$Salt = $1;}
 		$New_Salt = $New_Salt . $Salt;
 		$Key_Lock =~ s/\s//g;
 		$Key_Lock = $Key_Lock . $Salt;
