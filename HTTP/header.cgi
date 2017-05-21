@@ -110,7 +110,7 @@ print <<ENDHTML;
 
 	<div id="buttons">
 		<ul id="navigation">
-			<li><a href="/index.cgi"><span>&nbsp; Home</span></a>
+			<li><a href="/index.cgi"><span>Home</span></a>
 				<ul>
 					<li><a href="/account.cgi">My Account</a></li>
 					<li><a href="/#">Management <b style="float:right;">></b></a>
@@ -125,7 +125,7 @@ print <<ENDHTML;
 					<li><a href="/resources/The_Machine_Manual.pdf">System Manual</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; IP</span></a>
+			<li><a href="/#"><span>IP</span></a>
 				<ul>
 					<li><a href="/IP/host-types.cgi">Host Types</a></li>
 					<li><a href="/IP/host-groups.cgi">Host Groups</a></li>
@@ -137,7 +137,7 @@ print <<ENDHTML;
 				</ul>
 			</li>
 
-			<li><a href="/#"><span>&nbsp; Icinga</span></a>
+			<li><a href="/#"><span>Icinga</span></a>
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
 						<ul>
@@ -156,25 +156,25 @@ print <<ENDHTML;
 				</ul>
 			</li>
 
-			<li><a href="/#"><span>&nbsp; D-Shell</span></a>
+			<li><a href="/#"><span>D-Shell</span></a>
 				<ul>
 					<li><a href="/D-Shell/command-sets.cgi">Command Sets</a></li>
 					<li><a href="/D-Shell/jobs.cgi">Jobs</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; DNS</span></a>
+			<li><a href="/#"><span>DNS</span></a>
 				<ul>
 					<li><a href="/DNS/domains.cgi">Domains</a></li>
 					<li><a href="/DNS/zone-records.cgi">Zone Records</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; Reverse Proxy</span></a>
+			<li><a href="/#"><span>Reverse Proxy</span></a>
 				<ul>
 					<li><a href="/ReverseProxy/reverse-proxy.cgi">Reverse Proxy</a></li>
 					<li><a href="/ReverseProxy/redirects.cgi">Redirects</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; DSMS</span></a>
+			<li><a href="/#"><span>DSMS</span></a>
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
 						<ul>
