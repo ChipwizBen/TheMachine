@@ -3,6 +3,7 @@
 use strict;
 #$ENV{'PATH'} = '/opt/TheMachine/http:/var/www/html:/bin:/usr/bin';
 delete $ENV{PATH};
+use lib '/opt/TheMachine/Modules';
 
 &Maintenance_Mode;
 
@@ -132,7 +133,7 @@ sub LDAP_Login {
 
 	# These are the connection parameters for LDAP / Active Directory. If you disable this, the system will use internal authentication.
 
-	my $LDAP_Enabled = 'On'; # Set this to 'Off' to disable LDAP/AD authentication
+	my $LDAP_Enabled = 'Off'; # Set this to 'Off' to disable LDAP/AD authentication
 
 	my $LDAP_Server = '';
 	my $LDAP_Port = 389;
@@ -676,7 +677,8 @@ sub VMware_Connection {
 	# https://vcenter-hostname/sdkvimService.wsdl but you can just supply https://vcenter-hostname and 
 	# the rest normally is calculated.
 
-	use VMware::VIRuntime;
+	# If you are using the VMware API to control snapshots, uncomment the next line.
+	#use VMware::VIRuntime;
 	
 	my $vSphere_Server = '';
 	my $vSphere_Username = '';
