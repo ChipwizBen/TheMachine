@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules/);
-use lib qw(../resources/modules/);
+use lib qw(resources/modules);
+use lib qw(../resources/modules);
 use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);

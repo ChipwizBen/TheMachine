@@ -1,8 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules/);
-use lib qw(../resources/modules/);
+use lib qw(resources/modules);
+use lib qw(../resources/modules);
 use Date::Parse qw(str2time);
 
 require './common.pl';

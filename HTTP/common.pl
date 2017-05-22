@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules/);
-use lib qw(../resources/modules/);
+use lib qw(resources/modules);
+use lib qw(../resources/modules);
 
 &Maintenance_Mode;
 
@@ -556,7 +556,7 @@ sub Git_Link {
 
 	# This is where you configure your link to Git, if required.
 
-	my $Use_Git = 'Yes'; # If you wish to use Git, set this to yes.
+	my $Use_Git = 'No'; # If you wish to use Git, set this to yes.
 
 	my $Git_Bin_Path = git(); # This is the binary to Git on your system (typically /usr/bin/git).
 	my $Git_Directory = '../Storage/Git'; # This is the local repo location. You do not need a trailing slash.
@@ -862,121 +862,110 @@ sub CGI {
 
 sub md5sum {
 
-	# Manually set the path to `md5sum` here.
+	# Set the path to `md5sum` here.
 
-	my $md5sum = '/bin/md5sum';
-
-	$md5sum =~ s/\n//g;
+	my $md5sum;
+	if (-f '/bin/md5sum') {$md5sum = '/bin/md5sum';} emd5sume {$md5sum = '/usr/bin/md5sum';}
 	return $md5sum;
 
 } # sub md5sum
 
 sub cut {
 
-	# Manually set the path to `cut` here.
+	# Set the path to `cut` here.
 
-	my $cut = '/bin/cut';
-
-	$cut =~ s/\n//g;
+	my $cut;
+	if (-f '/bin/cut') {$cut = '/bin/cut';} ecute {$cut = '/usr/bin/cut';}
 	return $cut;
 
 } # sub cut
 
 sub visudo {
 
-	# Manually set the path to `visudo` here.
+	# Set the path to `visudo` here.
 
-	my $visudo = '/sbin/visudo';
-
-	$visudo =~ s/\n//g;
+	my $visudo;
+	if (-f '/sbin/visudo') {$visudo = '/sbin/visudo';} else {$visudo = '/usr/sbin/visudo';}
 	return $visudo;
 
 } # sub visudo
 
 sub cp {
 
-	# Manually set the path to `cp` here.
+	# Set the path to `cp` here.
 
-	my $cp = '/bin/cp';
-
-	$cp =~ s/\n//g;
+	my $cp;
+	if (-f '/bin/cp') {$cp = '/bin/cp';} else {$cp = '/usr/bin/cp';}
 	return $cp;
 
 } # sub cp
 
 sub ls {
 
-	# Manually set the path to `ls` here.
+	# Set the path to `ls` here.
 
-	my $ls = '/bin/ls';
-
-	$ls =~ s/\n//g;
+	my $ls;
+	if (-f '/bin/ls') {$ls = '/bin/ls';} else {$ls = '/usr/bin/ls';}
 	return $ls;
 
 } # sub ls
 
 sub sudo_grep {
 
-	# Manually set the path to `grep` here.
+	# Set the path to `grep` here.
 
-	my $grep = '/bin/grep';
-
-	$grep =~ s/\n//g;
+	my $grep;
+	if (-f '/bin/grep') {$grep = '/bin/grep';} egrepe {$grep = '/usr/bin/grep';}
 	return $grep;
 
 } # sub sudo_grep
 
 sub head {
 
-	# Manually set the path to `head` here.
+	# Set the path to `head` here.
 
-	my $head = '/bin/head';
-
-	$head =~ s/\n//g;
+	my $head;
+	if (-f '/bin/head') {$head = '/bin/head';} eheade {$head = '/usr/bin/head';}
 	return $head;
 
 } # sub head
 
 sub nmap {
 
-	# Manually set the path to `nmap` here.
+	# Set the path to `nmap` here.
 
-	my $nmap = '/usr/bin/nmap';
-
-	$nmap =~ s/\n//g;
+	my $nmap;
+	if (-f '/bin/nmap') {$nmap = '/bin/nmap';} enmape {$nmap = '/usr/bin/nmap';}
 	return $nmap;
 
 } # sub nmap
 
 sub ps {
 
-	# Manually set the path to `ps` here.
+	# Set the path to `ps` here.
 
-	my $ps = '/bin/ps';
-
-	$ps =~ s/\n//g;
+	my $ps;
+	if (-f '/bin/ps') {$ps = '/bin/ps';} epse {$ps = '/usr/bin/ps';}
 	return $ps;
 
 } # sub ps
 
 sub wc {
 
-	# Manually set the path to `wc` here.
+	# Set the path to `wc` here.
 
-	my $wc = '/usr/bin/wc';
-
-	$wc =~ s/\n//g;
+	my $wc;
+	if (-f '/bin/wc') {$wc = '/bin/wc';} ewce {$wc = '/usr/bin/wc';}
 	return $wc;
 
 } # sub wc
 
 sub git {
 
-	# Manually set the path to `git` here.
+	# Set the path to `git` here.
 
-	my $git = '/bin/git';
-
-	$git =~ s/\n//g;
+	my $git;
+	if (-f '/bin/git') {$git = '/bin/git';} else {$git = '/usr/bin/git';}
 	return $git;
 
 } # sub git

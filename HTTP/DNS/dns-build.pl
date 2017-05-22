@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules/);
-use lib qw(../resources/modules/);
+use lib qw(resources/modules);
+use lib qw(../resources/modules);
 use POSIX qw(strftime);
 
 require '../common.pl';

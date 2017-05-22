@@ -1,3 +1,5 @@
+TRUNCATE `TheMachine`.`cgi_sessions`;
+
 ALTER TABLE `TheMachine`.`nagios_hosttemplate` 
 RENAME TO  `TheMachine`.`icinga2_hosttemplate`;
 
@@ -15,6 +17,9 @@ RENAME TO  `TheMachine`.`icinga2_lnkHostToHosttemplate`;
 
 ALTER TABLE `TheMachine`.`nagios_timeperiod` 
 RENAME TO  `TheMachine`.`icinga2_timeperiod`;
+
+ALTER TABLE `TheMachine`.`nagios_timedefinition`
+RENAME TO  `TheMachine`.`icinga2_timedefinition`;
 
 ALTER TABLE `TheMachine`.`nagios_lnkHostToContactgroup` 
 RENAME TO  `TheMachine`.`icinga2_lnkHostToContactgroup`;
@@ -39,6 +44,12 @@ RENAME TO  `TheMachine`.`icinga2_lnkContactToCommandService`;
 
 ALTER TABLE `TheMachine`.`nagios_hostgroup` 
 RENAME TO  `TheMachine`.`icinga2_hostgroup`;
+
+ALTER TABLE `TheMachine`.`nagios_lnkHostToHostgroup` 
+RENAME TO  `TheMachine`.`icinga2_lnkHostToHostgroup`;
+
+ALTER TABLE `TheMachine`.`nagios_lnkHosttemplateToHostgroup` 
+RENAME TO  `TheMachine`.`icinga2_lnkHosttemplateToHostgroup`;
 
 ALTER TABLE `TheMachine`.`nagios_servicegroup` 
 RENAME TO  `TheMachine`.`icinga2_servicegroup`;
@@ -84,4 +95,8 @@ RENAME TO  `TheMachine`.`icinga2_lnkServicetemplateToHost`;
 
 ALTER TABLE `TheMachine`.`nagios_lnkServicetemplateToServicetemplate` 
 RENAME TO  `TheMachine`.`icinga2_lnkServicetemplateToServicetemplate`;
+
+ALTER TABLE `TheMachine`.`hosts` 
+CHANGE COLUMN `expires` `expires` DATE NULL ;
+
 
