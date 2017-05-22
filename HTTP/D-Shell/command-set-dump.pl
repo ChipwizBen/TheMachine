@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
 use strict;
+use lib qw(resources/modules/);
+use lib qw(../resources/modules/);
 binmode(STDOUT, ":utf8");
 
 my $Common_Config;

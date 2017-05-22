@@ -1,7 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(/opt/TheMachine/resources/modules/);
+use lib qw(resources/modules/);
+use lib qw(../resources/modules/);
 
 &Maintenance_Mode;
 
@@ -998,7 +999,8 @@ sub Server_Hostname {
 	# Don't touch this unless you want to trick the system into believing it isn't who it thinks 
 	# it is. Only useful in load balanced situations.
 
-	my $Hostname = `hostname`;
+	use Sys::Hostname;
+	my $Hostname = hostname;
 	return $Hostname;
 
 } # sub Server_Hostname

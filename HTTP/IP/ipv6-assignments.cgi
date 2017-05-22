@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(resources/modules/);
+use lib qw(../resources/modules/);
 
 use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_IN_A_OVERLAP $IP_IDENTICAL);
 use HTML::Table;
