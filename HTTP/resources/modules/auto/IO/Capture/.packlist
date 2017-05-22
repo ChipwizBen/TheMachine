@@ -1,0 +1,10 @@
+/usr/local/man/man3/IO::Capture.3pm
+/usr/local/man/man3/IO::Capture::Overview.3pm
+/usr/local/man/man3/IO::Capture::Stderr.3pm
+/usr/local/man/man3/IO::Capture::Stdout.3pm
+/usr/local/man/man3/IO::Capture::Tie_STDx.3pm
+/usr/local/share/perl/5.22.1/IO/Capture.pm
+/usr/local/share/perl/5.22.1/IO/Capture/Overview.pod
+/usr/local/share/perl/5.22.1/IO/Capture/Stderr.pm
+/usr/local/share/perl/5.22.1/IO/Capture/Stdout.pm
+/usr/local/share/perl/5.22.1/IO/Capture/Tie_STDx.pm
