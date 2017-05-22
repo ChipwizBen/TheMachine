@@ -1,9 +1,7 @@
 #!/usr/bin/perl -T
 
 use strict;
-#$ENV{'PATH'} = '/opt/TheMachine/http:/var/www/html:/bin:/usr/bin';
-delete $ENV{PATH};
-use lib '/opt/TheMachine/Modules';
+use lib qw(/opt/TheMachine/resources/modules/);
 
 &Maintenance_Mode;
 
