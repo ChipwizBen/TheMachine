@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 
 my $Common_Config;
@@ -1783,10 +1783,10 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga-hosts.cgi?Host_Notes=$ID_Extract'><img src=\"/resources/imgs/add-note.png\" alt=\"View/Edit Notes for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-hosts.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-hosts.cgi?Edit_Host=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-hosts.cgi?Delete_Host=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-hosts.cgi?Host_Notes=$ID_Extract'><img src=\"/Resources/Images/add-note.png\" alt=\"View/Edit Notes for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-hosts.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-hosts.cgi?Edit_Host=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-hosts.cgi?Delete_Host=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		for (10 .. 16) {

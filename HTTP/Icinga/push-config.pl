@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use POSIX qw(strftime);
 
 my $Common_Config;

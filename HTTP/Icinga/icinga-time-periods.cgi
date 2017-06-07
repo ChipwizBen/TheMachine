@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 
 my $Common_Config;
@@ -686,9 +686,9 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga-time-periods.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-time-periods.cgi?Edit_Time=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-time-periods.cgi?Delete_Time=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-time-periods.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-time-periods.cgi?Edit_Time=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-time-periods.cgi?Delete_Time=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		if ($Sunday eq undef) {$Table->setCellClass ($User_Row_Count, 4, 'tbroworange')}

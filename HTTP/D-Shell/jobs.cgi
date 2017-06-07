@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
@@ -918,134 +918,134 @@ sub html_output {
 		if ($Status == 0) {
 			$Running_Command = 'Job Complete.';
 			$Status = 'Job Complete';
-			$Control_Button = '<img src="/resources/imgs/confirm.png" alt="Job Complete" >';
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
+			$Control_Button = '<img src="/Resources/Images/confirm.png" alt="Job Complete" >';
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 1) {
 			$Running_Command = $Held_Running_Command;
 			$Status = 'Running';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
-			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/Resources/Images/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/Resources/Images/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 2) {
 			$Running_Command = 'Processing Paused.';
 			$Status = 'Paused';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Resume_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Resume_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/Resources/Images/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 3) {
 			$Running_Command = 'This job was killed manually.';
 			$Status = 'Killed';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 4) {
 			$Running_Command = 'Job Pending.';
 			$Status = 'Pending';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/Resources/Images/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 5) {
 			$Running_Command = 'Job Failed! Connection timeout, network or host resolution problems are the most likely causes. Try running it manually.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 6) {
 			$Running_Command = 'Job Failed! Bad credentials are the most likely cause. Try running it manually.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 7) {
 			$Running_Command = 'Job Failed! Bailed out on unmatched WAITFOR. Check the log for what appeared.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 8) {
 			$Running_Command = 'Execution Failed! User Name not caught.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 9) {
 			$Running_Command = 'Execution Failed! Password not caught.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Disabled\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Disabled\" >";
 		}
 		elsif ($Status == 10) {
 			$Running_Command = 'Initialising connection. Standby...';
 			$Status = 'Starting';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/resources/imgs/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
-			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Pause_Job=$DBID'><img src=\"/Resources/Images/pause.png\" alt=\"Pause Job ID $DBID\" ></a>";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/Resources/Images/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 		elsif ($Status == 11) {
 			$Running_Command = 'On failure set to kill. Failure condition met - job killed.';
 			$Status = 'Killed';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 12) {
 			$Running_Command = 'Lost the remote prompt. Command timeout, SSH connection died or the Job was terminated by the system.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 13) {
 			$Running_Command = 'Died during startup.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 14) {
 			$Running_Command = 'Server didn\'t come back after a controlled reboot.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 15) {
 			$Running_Command = 'Failed to decrypt SSH key. Wrong key unlock password?';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 16) {
 			$Running_Command = 'You cannot specify both interactive and key credentials, pick one.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 17) {
 			$Running_Command = 'Fingerprint mismatch with database. Clear or modify the recorded fingerprint for the host.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 18) {
 			$Running_Command = 'Job died unexpectedly. It looks like the process was terminated on the system.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 19) {
 			$Running_Command = 'Incorrect use of *WAITFOR and *SEND together. Job died.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 20) {
 			$Running_Command = 'This host could not be found in VMware to perform a snapshot operation. Mismatched hostname? Ejecting to safety.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 21) {
 			$Running_Command = 'Something went wrong trying to perform a snapshot operation on this host.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		elsif ($Status == 22) {
 			my $Queue_Query = $DB_Connection->prepare("SELECT `job_id`, `override`
@@ -1060,22 +1060,22 @@ sub html_output {
 					my $DShell_Queue_Execution_Cap = DShell_Queue_Execution_Cap();
 					$Running_Command = "This Job is queued at position $Queue_Position_Count of $Total_Queued_Jobs. The concurrent Job execution cap is $DShell_Queue_Execution_Cap Jobs.";
 					$Status = 'Queued';
-					$Control_Button = "<a href='/D-Shell/jobs.cgi?Prioritise_Job=$DBID'><img src=\"/resources/imgs/cog-animation-small.gif\" alt=\"Prioratise Job ID $DBID\" ></a>";
-					$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+					$Control_Button = "<a href='/D-Shell/jobs.cgi?Prioritise_Job=$DBID'><img src=\"/Resources/Images/cog-animation-small.gif\" alt=\"Prioratise Job ID $DBID\" ></a>";
+					$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/Resources/Images/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 				}
 			}
 		}
 		elsif ($Status == 99) {
 			$Running_Command = 'My head fell off. I don\'t know why.';
 			$Status = 'Error';
-			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/resources/imgs/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
-			$Kill_Button = "<img src=\"/resources/imgs/grey.png\" alt=\"Stop Job ID $DBID\" >";
+			$Control_Button = "<a href='/D-Shell/jobs.cgi?Run_Job=$DBID'><img src=\"/Resources/Images/forward.png\" alt=\"Run Job ID $DBID\" ></a>";
+			$Kill_Button = "<img src=\"/Resources/Images/grey.png\" alt=\"Stop Job ID $DBID\" >";
 		}
 		else {
 			$Running_Command = 'Unhandled exit code. This is not supposed to happen.';
 			$Status = 'Error';
-			$Control_Button = "<img src=\"/resources/imgs/delete.png\" alt=\"Something bad happened :(\" >";
-			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/resources/imgs/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
+			$Control_Button = "<img src=\"/Resources/Images/delete.png\" alt=\"Something bad happened :(\" >";
+			$Kill_Button = "<a href='/D-Shell/jobs.cgi?Stop_Job=$DBID'><img src=\"/Resources/Images/red.png\" alt=\"Stop Job ID $DBID\" ></a>";
 		}
 
 		if ($On_Failure) {
@@ -1097,7 +1097,7 @@ sub html_output {
 			$Last_Modified,
 			$Modified_By,
 			"<a href='/D-Shell/jobs.cgi?Job_Log=$DBID'>
-				<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+				<div style='position: relative; background: url(\"/Resources/Images/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Log_Count
 					</p>
@@ -1178,9 +1178,9 @@ print <<ENDHTML;
 			$Total_Paused_Jobs currently paused jobs.<br />
 			$Total_Queued_Jobs jobs in queue.<br />
 			$Total_Priority_Jobs priority jobs.<br />
-			Pause all running jobs <a href='/D-Shell/jobs.cgi?Pause_Job=ALL'><img src=\"/resources/imgs/pause.png\" alt=\"Pause all Jobs\" ></a><br />
-			Resume all paused jobs <a href='/D-Shell/jobs.cgi?Resume_Job=ALL'><img src=\"/resources/imgs/forward.png\" alt=\"Resume all paused Jobs\" ></a><br />
-			Prioritise all jobs <a href='/D-Shell/jobs.cgi?Prioritise_Job=ALL'><img src=\"/resources/imgs/cog.png\" alt=\"Prioritise all queued Jobs\" ></a><br />
+			Pause all running jobs <a href='/D-Shell/jobs.cgi?Pause_Job=ALL'><img src=\"/Resources/Images/pause.png\" alt=\"Pause all Jobs\" ></a><br />
+			Resume all paused jobs <a href='/D-Shell/jobs.cgi?Resume_Job=ALL'><img src=\"/Resources/Images/forward.png\" alt=\"Resume all paused Jobs\" ></a><br />
+			Prioritise all jobs <a href='/D-Shell/jobs.cgi?Prioritise_Job=ALL'><img src=\"/Resources/Images/cog.png\" alt=\"Prioritise all queued Jobs\" ></a><br />
 		</td>
 	</tr>
 </table>

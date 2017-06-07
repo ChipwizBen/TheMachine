@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use POSIX qw(strftime);
 use HTML::Table;
 
@@ -90,7 +90,7 @@ print <<ENDHTML;
 	<!--[if IE]>
 		<META HTTP-EQUIV=REFRESH CONTENT="0; URL=http://getfirefox.com">
 	<![endif]-->
-	<link rel="icon" href="/resources/imgs/cog-animation-small.gif">
+	<link rel="icon" href="/Resources/Images/cog-animation-small.gif">
 </head>
 <body>
 	<!-- Strip/Buttons/White BKG -->
@@ -110,7 +110,7 @@ print <<ENDHTML;
 
 	<div id="strip-image"></div>
 
-	<div id="buttons">
+	<div id="Buttons">
 		<ul id="navigation">
 			<li><a href="/index.cgi"><span>Home</span></a>
 				<ul>
@@ -124,7 +124,7 @@ print <<ENDHTML;
 						</ul>
 					</li>
 					<li><a href="/changelog.cgi">System Changelog</a></li>
-					<li><a href="/resources/The_Machine_Manual.pdf">System Manual</a></li>
+					<li><a href="/Resources/The_Machine_Manual.pdf">System Manual</a></li>
 				</ul>
 			</li>
 			<li><a href="/#"><span>IP</span></a>
@@ -193,7 +193,7 @@ print <<ENDHTML;
 				</ul>
 			</li>
 		</ul>
-	</div> <!-- buttons -->
+	</div> <!-- Buttons -->
 <br/>
 
 <div id ="tbmessagegreen">

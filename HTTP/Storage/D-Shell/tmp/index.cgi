@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 
 my $Common_Config;
 if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../../../common.pl';}

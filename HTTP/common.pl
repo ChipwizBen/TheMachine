@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 
 &Maintenance_Mode;
 
@@ -75,7 +75,7 @@ sub System_Log_File {
 
 	# This is the system log file. This is where some system log and paper trail entires go.
 
-	my $System_Log_File = '../Storage/System/Log/System_Log';
+	my $System_Log_File = '/var/log/TheMachine/System.log';
 	return $System_Log_File;
 
 } # sub System_Log_File
@@ -270,7 +270,7 @@ sub Distribution_Log_Location {
 
 	# This is the log location for the distribution system. You do not need a trailing slash.
 
-	my $Distribution_Log_Location = '../Storage/System/Log';
+	my $Distribution_Log_Location = '/var/log/TheMachine/Distribution.log';
 	return $Distribution_Log_Location;
 
 } # sub Distribution_Log_Location

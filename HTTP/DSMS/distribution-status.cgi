@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 
 my $Common_Config;
 if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '../common.pl';}
@@ -398,7 +398,7 @@ sub html_output {
 			$Last_Successful_Checkin,
 			$Last_Modified,
 			$Modified_By,
-			"<a href=\"distribution-status.cgi?Edit_Host_Parameters=$Host_ID_Clean\"><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host Parameters $Host_ID_Clean\" ></a>"
+			"<a href=\"distribution-status.cgi?Edit_Host_Parameters=$Host_ID_Clean\"><img src=\"/Resources/Images/edit.png\" alt=\"Edit Host Parameters $Host_ID_Clean\" ></a>"
 		);
 	
 		if ($Status_Light eq 'OK') {

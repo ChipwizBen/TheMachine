@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 
 use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_IN_A_OVERLAP $IP_IDENTICAL);
 use HTML::Table;
@@ -1185,8 +1185,8 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 	$Hosts,
 	"<a href='/IP/ipv6-blocks.cgi?Filter=$Parent_Block_Extract'>$Parent_Block</a>", 
 	$Floating, $Last_Modified, $Modified_By,
-	"<a href='/IP/ipv6-assignments.cgi?Edit_Block=$ID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
-	"<a href='/IP/ipv6-assignments.cgi?Delete=$ID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>"
+	"<a href='/IP/ipv6-assignments.cgi?Edit_Block=$ID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
+	"<a href='/IP/ipv6-assignments.cgi?Delete=$ID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>"
 	);
 
 	if ($Floating eq 'Yes') {

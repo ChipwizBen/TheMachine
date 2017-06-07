@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 
 my $Common_Config;
@@ -1630,7 +1630,7 @@ sub html_linked_hosts {
 					if ($Host_Active) {$Host_Active = "<span style='color: #00FF00;'>Yes</span>"}
 					else {$Host_Active = "<span style='color: #FF0000;'>No</span>"}
 
-					my $View_Host = "<a href='/Icinga/icinga-hosts.cgi?Filter=$Host_Name'><img src=\"/resources/imgs/forward.png\" alt=\"View Host $Host_Name\" ></a>";
+					my $View_Host = "<a href='/Icinga/icinga-hosts.cgi?Filter=$Host_Name'><img src=\"/Resources/Images/forward.png\" alt=\"View Host $Host_Name\" ></a>";
 
 				$Table->addRow ( "$Host_ID", "$Host_Name", "$Host_Active", "$View_Host" );
 
@@ -1809,10 +1809,10 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga-services.cgi?Linked_Hosts=$ID_Extract'><img src=\"/resources/imgs/linked.png\" alt=\"View Linked Hosts for $Service_Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-services.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Service_Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-services.cgi?Edit_Service=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Service_Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-services.cgi?Delete_Service=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Service_Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-services.cgi?Linked_Hosts=$ID_Extract'><img src=\"/Resources/Images/linked.png\" alt=\"View Linked Hosts for $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-services.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-services.cgi?Edit_Service=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-services.cgi?Delete_Service=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Service_Name_Extract\" ></a>"
 		);
 
 		for (7 .. 13) {

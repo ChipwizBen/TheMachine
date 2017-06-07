@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
@@ -663,7 +663,7 @@ sub html_show_links {
 			"User Group",
 			"$Group",
 			"$Active",
-			"<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Group\" ></a>"
+			"<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$Group_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View $Group\" ></a>"
 			);
 		}
 	}
@@ -704,7 +704,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -938,16 +938,16 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/DSMS/sudoers-users.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$DB_User_Name_Clean'><img src=\"/resources/imgs/linked.png\" alt=\"Linked Objects to User ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-users.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$DB_User_Name_Clean'><img src=\"/Resources/Images/linked.png\" alt=\"Linked Objects to User ID $DBID_Clean\" ></a>",
 			"<a href='/DSMS/sudoers-users.cgi?View_Notes=$DBID_Clean'>
-				<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+				<div style='position: relative; background: url(\"/Resources/Images/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='/DSMS/sudoers-users.cgi?Edit_User=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit User ID $DBID_Clean\" ></a>",
-			"<a href='/DSMS/sudoers-users.cgi?Delete_User=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete User ID $DBID_Clean\" ></a>"
+			"<a href='/DSMS/sudoers-users.cgi?Edit_User=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit User ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-users.cgi?Delete_User=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete User ID $DBID_Clean\" ></a>"
 		);
 
 

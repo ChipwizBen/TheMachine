@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 
 my $Common_Config;
@@ -757,8 +757,8 @@ sub html_output {
 			"${IPv4_Blocks}${IPv6_Blocks}",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/IP/hosts.cgi?Edit_Host=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host ID $DBID_Clean\" ></a>",
-			"<a href='/IP/hosts.cgi?Delete_Host=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Host ID $DBID_Clean\" ></a>"
+			"<a href='/IP/hosts.cgi?Edit_Host=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Host ID $DBID_Clean\" ></a>",
+			"<a href='/IP/hosts.cgi?Delete_Host=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Host ID $DBID_Clean\" ></a>"
 		);
 
 		if ($Type eq 'Undefined') {$Table->setCellClass ($Host_Row_Count, 3, 'tbroworange');}

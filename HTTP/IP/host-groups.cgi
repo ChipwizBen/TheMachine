@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
@@ -1182,8 +1182,8 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/IP/host-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
-			"<a href='/IP/host-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
+			"<a href='/IP/host-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
+			"<a href='/IP/host-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
 		);
 
 

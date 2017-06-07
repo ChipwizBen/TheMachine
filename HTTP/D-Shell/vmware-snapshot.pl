@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use Parallel::ForkManager;
 use POSIX qw(strftime);
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case_always);

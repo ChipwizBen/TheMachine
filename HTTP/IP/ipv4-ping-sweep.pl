@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use Net::IP::XS qw($IP_NO_OVERLAP
                    $IP_PARTIAL_OVERLAP
                    $IP_A_IN_B_OVERLAP

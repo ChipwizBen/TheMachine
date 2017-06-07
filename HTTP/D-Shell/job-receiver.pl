@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use Getopt::Long qw(:config no_auto_abbrev no_ignore_case_always);
 
 my $Common_Config;

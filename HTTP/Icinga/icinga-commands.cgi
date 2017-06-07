@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 
 my $Common_Config;
@@ -503,7 +503,7 @@ sub html_show_linked {
 			if ($Service_Active) {$Service_Active = "<span style='color: #00FF00;'>Yes</span>"}
 			else {$Service_Active = "<span style='color: #FF0000;'>No</span>"}
 
-			my $View_Service = "<a href='/Icinga/icinga-services.cgi?Filter=$Service_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View Service $Service_Description\" ></a>";
+			my $View_Service = "<a href='/Icinga/icinga-services.cgi?Filter=$Service_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View Service $Service_Description\" ></a>";
 
 			$Table->addRow ( "$Service_ID", "$Service_Name", "$Service_Description", "$Service_Active", "$View_Service" );
 
@@ -590,10 +590,10 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga-commands.cgi?Show_Linked=$ID_Extract'><img src='/resources/imgs/linked.png' alt='Show Linked Hosts/Services for $Name_Extract'></a>",
-			"<a href='/Icinga/icinga-commands.cgi?Display_Config=$ID_Extract'><img src='/resources/imgs/view-notes.png' alt='View Config for $Name_Extract'></a>",
-			"<a href='/Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'><img src='/resources/imgs/edit.png' alt='Edit $Name_Extract'></a>",
-			"<a href='/Icinga/icinga-commands.cgi?Delete_Command=$ID_Extract'><img src='/resources/imgs/delete.png' alt='Delete $Name_Extract'></a>"
+			"<a href='/Icinga/icinga-commands.cgi?Show_Linked=$ID_Extract'><img src='/Resources/Images/linked.png' alt='Show Linked Hosts/Services for $Name_Extract'></a>",
+			"<a href='/Icinga/icinga-commands.cgi?Display_Config=$ID_Extract'><img src='/Resources/Images/view-notes.png' alt='View Config for $Name_Extract'></a>",
+			"<a href='/Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'><img src='/Resources/Images/edit.png' alt='Edit $Name_Extract'></a>",
+			"<a href='/Icinga/icinga-commands.cgi?Delete_Command=$ID_Extract'><img src='/Resources/Images/delete.png' alt='Delete $Name_Extract'></a>"
 		);
 
 		for (4 .. 10) {

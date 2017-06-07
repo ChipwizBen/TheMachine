@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 
 my $Common_Config;
@@ -115,7 +115,7 @@ while ( my @Search = $Search_Host_Groups->fetchrow_array() ) {
 	"Host Group",
 	"$Name",
 	"$Active$Expires",
-	"<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-host-groups.cgi?ID_Filter=$ID'><img src=\"Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -157,7 +157,7 @@ while ( my @Search = $Search_User_Groups->fetchrow_array() ) {
 	"User Group",
 	"$Name",
 	"$Active$Expires",
-	"<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-user-groups.cgi?ID_Filter=$ID'><img src=\"Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -197,7 +197,7 @@ while ( my @Search = $Search_Command_Groups->fetchrow_array() ) {
 	"Command Group",
 	"$Name",
 	"$Active$Expires",
-	"<a href='/DSMS/sudoers-command-groups.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-command-groups.cgi?ID_Filter=$ID'><img src=\"Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -237,7 +237,7 @@ while ( my @Search = $Search_Hosts->fetchrow_array() ) {
 	"Host",
 	"$Name",
 	"$Active$Expires",
-	"<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-hosts.cgi?ID_Filter=$ID'><img src=\"Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -277,7 +277,7 @@ while ( my @Search = $Search_Users->fetchrow_array() ) {
 	"User",
 	"$Name",
 	"$Active$Expires",
-	"<a href='/DSMS/sudoers-users.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-users.cgi?ID_Filter=$ID'><img src=\"Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -320,7 +320,7 @@ while ( my @Search = $Search_Commands->fetchrow_array() ) {
 	"Command",
 	"$Name ($Command)",
 	"$Active$Expires",
-	"<a href='/DSMS/sudoers-commands.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-commands.cgi?ID_Filter=$ID'><img src=\"Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 
@@ -361,7 +361,7 @@ while ( my @Search = $Search_Rules->fetchrow_array() ) {
 	"Rule",
 	"$Name",
 	"$Active$Expires<br/>$Approved",
-	"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$ID'><img src=\"resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+	"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$ID'><img src=\"Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 	);
 }
 

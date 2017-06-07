@@ -1,20 +1,20 @@
 # Distributed Sudoers Management System Build and Distribution Processes
-*/10 * * * * root cd /opt/TheMachine/http/DSMS/ >> /opt/TheMachine/logs/Cron-DSMS.log 2>&1 && ./sudoers-build.pl >> /opt/TheMachine/logs/Cron-DSMS.log 2>&1 && ./distribution.pl >> /opt/TheMachine/logs/Cron-DSMS.log 2>&1
+*/10 * * * * root cd /opt/TheMachine/HTTP/DSMS/ >> /var/log/TheMachine/Cron-DSMS.log 2>&1 && ./sudoers-build.pl >> /var/log/TheMachine/Cron-DSMS.log 2>&1 && ./distribution.pl >> /var/log/TheMachine/Cron-DSMS.log 2>&1
 
 # Reverse Proxy Build
-*/9 * * * * root cd /opt/TheMachine/http/ReverseProxy/ >> /opt/TheMachine/logs/Cron-ReverseProxy.log 2>&1 && ./reverse-proxy-build.pl >> /opt/TheMachine/logs/Cron-ReverseProxy.log 2>&1
+*/9 * * * * root cd /opt/TheMachine/HTTP/ReverseProxy/ >> /var/log/TheMachine/Cron-ReverseProxy.log 2>&1 && ./reverse-proxy-build.pl >> /var/log/TheMachine/Cron-ReverseProxy.log 2>&1
 
 # Command Set Dump
-*/11 * * * * root cd /opt/TheMachine/http/D-Shell/ >> /opt/TheMachine/logs/Cron-CommandSetDump.log 2>&1 && ./command-set-dump.pl >> /opt/TheMachine/logs/Cron-CommandSetDump.log 2>&1
+*/11 * * * * root cd /opt/TheMachine/HTTP/D-Shell/ >> /var/log/TheMachine/Cron-CommandSetDump.log 2>&1 && ./command-set-dump.pl >> /var/log/TheMachine/Cron-CommandSetDump.log 2>&1
 
 # IP Assignment Block Capacity Check
-00 * * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockCount.log 2>&1 && ./ip-assignment-counter.pl >> /opt/TheMachine/logs/Cron-IPBlockCount.log 2>&1
+00 * * * * root cd /opt/TheMachine/HTTP/IP/ >> /var/log/TheMachine/Cron-IPBlockCount.log 2>&1 && ./ip-assignment-counter.pl >> /var/log/TheMachine/Cron-IPBlockCount.log 2>&1
 
 # IP Block Sweep
-00 01 * * * root cd /opt/TheMachine/http/IP/ >> /opt/TheMachine/logs/Cron-IPBlockSweep.log 2>&1 && ./ipv4-ping-sweep.pl >> /opt/TheMachine/logs/Cron-IPBlockSweep.log 2>&1
+00 01 * * * root cd /opt/TheMachine/HTTP/IP/ >> /var/log/TheMachine/Cron-IPBlockSweep.log 2>&1 && ./ipv4-ping-sweep.pl >> /var/log/TheMachine/Cron-IPBlockSweep.log 2>&1
 
 # Icinga Config Deployment
-# 00 * * * * root cd /var/www/html/Icinga/ > /dev/null 2>&1 && ./push-config.pl > /dev/null 2>&1
+# 00 * * * * root cd /opt/TheMachine/HTTP/Icinga/ > /dev/null 2>&1 && ./push-config.pl > /dev/null 2>&1
 
 # MySQL Nightly Backup and Cleaning
 20 20 * * * root /bin/find /root/MySQL-Backups/ -maxdepth 1 -name "mysqldump*.gz" -type f -mtime +7 -exec rm -f {} \;

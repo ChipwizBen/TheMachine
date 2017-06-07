@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 
 use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_IN_A_OVERLAP $IP_IDENTICAL);
 use HTML::Table;
@@ -951,7 +951,11 @@ if ($Block_CIDR == 32 && $Parent) {$CIDR = $Parent_CIDR} else {$CIDR = $Block_CI
 
 # Have to use Net::IPv4Addr to determine the network, as Net::IP is too strict to take arbitrary IP values
 use Net::IPv4Addr;
-my ($Network_Block, $Network_Block_Mask) = Net::IPv4Addr::ipv4_network( $Block_Prefix, $CIDR);
+my ($Network_Block, $Network_Block_Mask);
+eval {($Network_Block, $Network_Block_Mask) = Net::IPv4Addr::ipv4_network($Block_Prefix, $CIDR);};
+if ($@) {
+	print "Failed with Block Prefix: $Block_Prefix, CIDR: $CIDR\n";
+}
 
 
 my $Block_Query = new Net::IP::XS ($Network_Block.'/'.$Network_Block_Mask) || die (Net::IP::XS::Error);
@@ -1154,8 +1158,8 @@ while ( my @Select_Blocks = $Select_Blocks->fetchrow_array() ) {
 	$Hosts,
 	"<a href='/IP/ipv4-blocks.cgi?Filter=$Parent_Block_Extract'>$Parent_Block</a>", 
 	$Floating, $Last_Modified, $Modified_By,
-	"<a href='/IP/ipv4-assignments.cgi?Edit_Block=$ID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
-	"<a href='/IP/ipv4-assignments.cgi?Delete=$ID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>"
+	"<a href='/IP/ipv4-assignments.cgi?Edit_Block=$ID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
+	"<a href='/IP/ipv4-assignments.cgi?Delete=$ID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>"
 	);
 
 	if ($Floating eq 'Yes') {

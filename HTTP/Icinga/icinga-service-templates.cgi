@@ -1,8 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
-use lib qw(resources/modules);
-use lib qw(../resources/modules);
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 
 my $Common_Config;
@@ -1371,7 +1371,7 @@ sub html_linked_service_groups {
 					if ($Service_Group_Active) {$Service_Group_Active = "<span style='color: #00FF00;'>Yes</span>"}
 					else {$Service_Group_Active = "<span style='color: #FF0000;'>No</span>"}
 
-					my $View_Group = "<a href='/Icinga/icinga-service-groups.cgi?Filter=$Template_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View Group $Service_Group_Name\" ></a>";
+					my $View_Group = "<a href='/Icinga/icinga-service-groups.cgi?Filter=$Template_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View Group $Service_Group_Name\" ></a>";
 
 				$Table->addRow ( "$Template_ID", "$Service_Group_Name", "$Service_Group_Active", "$View_Group" );
 
@@ -1515,10 +1515,10 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga-service-templates.cgi?Linked_Service_Groups=$ID_Extract'><img src=\"/resources/imgs/linked.png\" alt=\"View Linked Service Groups for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-service-templates.cgi?Display_Config=$ID_Extract'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-service-templates.cgi?Edit_Service_Template=$ID_Extract'><img src=\"/resources/imgs/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-service-templates.cgi?Delete_Service_Template=$ID_Extract'><img src=\"/resources/imgs/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga-service-templates.cgi?Linked_Service_Groups=$ID_Extract'><img src=\"/Resources/Images/linked.png\" alt=\"View Linked Service Groups for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-service-templates.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-service-templates.cgi?Edit_Service_Template=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga-service-templates.cgi?Delete_Service_Template=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		for (5 .. 11) {
