@@ -110,7 +110,7 @@ print <<ENDHTML;
 
 	<div id="strip-image"></div>
 
-	<div id="Buttons">
+	<div id="buttons">
 		<ul id="navigation">
 			<li><a href="/index.cgi"><span>Home</span></a>
 				<ul>
