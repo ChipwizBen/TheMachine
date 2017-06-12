@@ -73,7 +73,7 @@ if ($Add_Host) {
 		&html_add_host;
 	}
 }
-elsif ($Host_Name_Add && $Host_Type_Add) {
+elsif ($Host_Name_Add) {
 	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
@@ -105,7 +105,7 @@ elsif ($Edit_Host) {
 		&html_edit_host;
 	}
 }
-elsif ($Host_Name_Edit && $Host_Type_Edit) {
+elsif ($Host_Name_Edit) {
 	if ($User_IP_Admin != 1) {
 		my $Message_Red = 'You do not have sufficient privileges to do that.';
 		$Session->param('Message_Red', $Message_Red);
