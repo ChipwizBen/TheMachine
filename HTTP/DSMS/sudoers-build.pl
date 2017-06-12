@@ -553,6 +553,7 @@ sub create_host_rule_groups {
 		while ( my @Select_Group_Array = $Select_Groups->fetchrow_array() )
 		{
 			my $Host_Group_Name = $Select_Group_Array[0];
+			$Host_Group_Name =~ s/ /_/g;
 			$Host_Group_Name = uc($Host_Group_Name); # Turn to uppercase so that sudo can read it correctly
 			$Group_to_Return = $Group_to_Return . 'HOST_GROUP_' . $Host_Group_Name . ', ';
 		}
