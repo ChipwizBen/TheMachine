@@ -33,7 +33,7 @@ Options are:
 	${Blue}-P, --password\t\t ${Green}Password for the remote host(s)
 	${Blue}-k, --key\t\t ${Green}Pass the key ID used to connect to the server
 	${Blue}-f, --failure\t\t ${Green}Specify the on-failure behaviour (0 is continue, 1 is die)
-	${Blue}-r, --runtime-variable ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
+	${Blue}-r, --runtime-variable\t ${Green}Pass a real time variable (e.g. -r MySQLPassword=bla -r IP=blabla)
 	${Blue}-J, --get-job-id\t ${Green}Spits out the Job ID of the just submitted job(s).
 	${Blue}--high-priority\t\t ${Green}Queues the Job but ignores the position and executes immediately (assuming you've also passed parameters to run)
 
