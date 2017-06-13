@@ -2,7 +2,7 @@
 
 use strict;
 use lib qw(/opt/TheMachine/Modules/);
-
+delete $ENV{PATH};
 
 &Maintenance_Mode;
 
