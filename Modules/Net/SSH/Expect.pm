@@ -323,7 +323,7 @@ sub after {
 sub send {
 	my Net::SSH::Expect $self = shift;
 	my $send = shift;
-	croak (ILLEGAL_ARGUMENT . " missing argument 'string'.") unless defined ($send);
+	croak (ILLEGAL_ARGUMENT . " missing argument 'string'.") unless ($send);
 	my $exp = $self->get_expect();
 	my $t = $self->{terminator};
 	$exp->send($send . $t);
