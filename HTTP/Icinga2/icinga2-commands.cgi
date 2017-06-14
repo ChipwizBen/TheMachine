@@ -74,7 +74,7 @@ elsif ($Command_Add && $Command_Add) {
 		$Session->flush();
 	}
 	
-	print "Location: /Icinga/icinga-commands.cgi\n\n";
+	print "Location: /Icinga/icinga2-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Command) {
@@ -88,7 +88,7 @@ elsif ($Command_Edit_Post) {
 	my $Message_Green="$Command_Edit ($Command_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga-commands.cgi\n\n";
+	print "Location: /Icinga/icinga2-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Command) {
@@ -102,7 +102,7 @@ elsif ($Command_Delete_Post) {
 	my $Message_Green="$Command_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga-commands.cgi\n\n";
+	print "Location: /Icinga/icinga2-commands.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
@@ -129,14 +129,14 @@ sub html_add_command {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga2-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Command</h3>
 
-<form action='/Icinga/icinga-commands.cgi' method='post' >
+<form action='/Icinga/icinga2-commands.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -186,7 +186,7 @@ sub add_command {
 			my $Message_Red="$Command_Add already exists (ID: $ID_Extract, Command: $Command_Extract)";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga-commands.cgi\n\n";
+			print "Location: /Icinga/icinga2-commands.cgi\n\n";
 			exit(0);
 
 		}
@@ -230,14 +230,14 @@ sub html_edit_command {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga2-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Command <span style="color: #00FF00;">$Command_Extract</span></h3>
 
-<form action='/Icinga/icinga-commands.cgi' method='post' >
+<form action='/Icinga/icinga2-commands.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -304,7 +304,7 @@ sub edit_command {
 			my $Message_Red="$Command_Edit already exists - Conflicting Command ID (This entry): $Command_Edit_Post, Existing Command ID: $ID_Extract, Existing Command Command: $Command_Extract";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga-commands.cgi\n\n";
+			print "Location: /Icinga/icinga2-commands.cgi\n\n";
 			exit(0);
 
 		}
@@ -340,14 +340,14 @@ sub html_delete_command {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga2-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Command</h3>
 
-<form action='/Icinga/icinga-commands.cgi' method='post' >
+<form action='/Icinga/icinga2-commands.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this command?</p>
 <table align = "center">
 	<tr>
@@ -411,7 +411,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga2-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -503,7 +503,7 @@ sub html_show_linked {
 			if ($Service_Active) {$Service_Active = "<span style='color: #00FF00;'>Yes</span>"}
 			else {$Service_Active = "<span style='color: #FF0000;'>No</span>"}
 
-			my $View_Service = "<a href='/Icinga/icinga-services.cgi?Filter=$Service_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View Service $Service_Description\" ></a>";
+			my $View_Service = "<a href='/Icinga/icinga2-services.cgi?Filter=$Service_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View Service $Service_Description\" ></a>";
 
 			$Table->addRow ( "$Service_ID", "$Service_Name", "$Service_Description", "$Service_Active", "$View_Service" );
 
@@ -513,7 +513,7 @@ sub html_show_linked {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga-commands.cgi">
+<a href="/Icinga/icinga2-commands.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -590,10 +590,10 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga-commands.cgi?Show_Linked=$ID_Extract'><img src='/Resources/Images/linked.png' alt='Show Linked Hosts/Services for $Name_Extract'></a>",
-			"<a href='/Icinga/icinga-commands.cgi?Display_Config=$ID_Extract'><img src='/Resources/Images/view-notes.png' alt='View Config for $Name_Extract'></a>",
-			"<a href='/Icinga/icinga-commands.cgi?Edit_Command=$ID_Extract'><img src='/Resources/Images/edit.png' alt='Edit $Name_Extract'></a>",
-			"<a href='/Icinga/icinga-commands.cgi?Delete_Command=$ID_Extract'><img src='/Resources/Images/delete.png' alt='Delete $Name_Extract'></a>"
+			"<a href='/Icinga/icinga2-commands.cgi?Show_Linked=$ID_Extract'><img src='/Resources/Images/linked.png' alt='Show Linked Hosts/Services for $Name_Extract'></a>",
+			"<a href='/Icinga/icinga2-commands.cgi?Display_Config=$ID_Extract'><img src='/Resources/Images/view-notes.png' alt='View Config for $Name_Extract'></a>",
+			"<a href='/Icinga/icinga2-commands.cgi?Edit_Command=$ID_Extract'><img src='/Resources/Images/edit.png' alt='Edit $Name_Extract'></a>",
+			"<a href='/Icinga/icinga2-commands.cgi?Delete_Command=$ID_Extract'><img src='/Resources/Images/delete.png' alt='Delete $Name_Extract'></a>"
 		);
 
 		for (4 .. 10) {
@@ -616,7 +616,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/Icinga/icinga-commands.cgi' method='post' >
+			<form action='/Icinga/icinga2-commands.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -647,7 +647,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/Icinga/icinga-commands.cgi' method='post' >
+			<form action='/Icinga/icinga2-commands.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Command</span></td>
@@ -659,7 +659,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/Icinga/icinga-commands.cgi' method='post' >
+			<form action='/Icinga/icinga2-commands.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Command</span></td>

@@ -10,14 +10,17 @@ if (-f './common.pl') {$Common_Config = './common.pl';} else {$Common_Config = '
 require $Common_Config;
 
 my $Header = Header();
+my $Footer = Footer();
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 
-my $Add_Host_Template = $CGI->param("Add_Host_Template");
-my $Edit_Host_Template = $CGI->param("Edit_Host_Template");
+my $Add_Host = $CGI->param("Add_Host");
+my $Edit_Host = $CGI->param("Edit_Host");
 
-my $Template_Name_Add = $CGI->param("Template_Name_Add");
-my $Templates_Template_Add = $CGI->param("Templates_Template_Add");
+my $Host_Name_Add = $CGI->param("Host_Name_Add");
+my $Template_Add = $CGI->param("Template_Add");
+my $Alias_Add = $CGI->param("Alias_Add");
+my $Address_Add = $CGI->param("Address_Add");
 my $Parent_Add = $CGI->param("Parent_Add");
 my $Host_Group_Add = $CGI->param("Host_Group_Add");
 my $Contact_Add = $CGI->param("Contact_Add");
@@ -57,19 +60,19 @@ my $Host_Edit = $CGI->param("Host_Edit");
 my $Alias_Edit = $CGI->param("Alias_Edit");
 my $Active_Edit = $CGI->param("Active_Edit");
 
-my $Delete_Host_Template = $CGI->param("Delete_Host_Template");
-my $Template_Delete_Post = $CGI->param("Template_Delete_Post");
-my $Template_Delete = $CGI->param("Template_Delete");
+my $Delete_Host = $CGI->param("Delete_Host");
+my $Host_Delete_Post = $CGI->param("Host_Delete_Post");
+my $Host_Delete = $CGI->param("Host_Delete");
 
-my $Template_Notes = $CGI->param("Template_Notes");
-my $Template_Note_Update = $CGI->param("Template_Note_Update");
-my $Template_Note_Update_ID = $CGI->param("Template_Note_Update_ID");
+my $Host_Notes = $CGI->param("Host_Notes");
+my $Host_Note_Update = $CGI->param("Host_Note_Update");
+my $Host_Note_Update_ID = $CGI->param("Host_Note_Update_ID");
 
 my $Display_Config = $CGI->param("Display_Config");
 
 my $Filter = $CGI->param("Filter");
 
-my $Username = $Session->param("User_Name");
+my $User_Name = $Session->param("User_Name");
 my $User_Admin = $Session->param("User_Admin");
 
 my $Rows_Returned = $CGI->param("Rows_Returned");
@@ -77,7 +80,7 @@ my $Rows_Returned = $CGI->param("Rows_Returned");
 		$Rows_Returned='100';
 	}
 
-if (!$Username) {
+if (!$User_Name) {
 	print "Location: /logout.cgi\n\n";
 	exit(0);
 }
@@ -90,51 +93,52 @@ if ($User_Admin ne '1') {
 	exit(0);
 }
 
-if ($Add_Host_Template) {
+if ($Add_Host) {
 	require $Header;
 	&html_output;
-	&html_add_host_template;
+	&html_add_host;
 }
-elsif ($Template_Name_Add) {
-	&add_host_template;
+elsif ($Host_Name_Add && $Address_Add) {
+	&add_host;
 	if ($Active_Add) {
-		my $Message_Green="$Template_Name_Add added successfully and set active";
+		my $Message_Green="$Host_Name_Add ($Address_Add) added successfully and set active";
 		$Session->param('Message_Green', $Message_Green);
 		$Session->flush();
 	}
 	else {
-		my $Message_Orange="$Template_Name_Add added successfully but set inactive";
+		my $Message_Orange="$Host_Name_Add ($Address_Add) added successfully but set inactive";
 		$Session->param('Message_Orange', $Message_Orange);
 		$Session->flush();
 	}
 	
-	print "Location: /Icinga/icinga-host-templates.cgi\n\n";
+	print "Location: /Icinga/icinga2-hosts.cgi\n\n";
 	exit(0);
 }
-elsif ($Edit_Host_Template) {
+elsif ($Edit_Host) {
 	require $Header;
 	&html_output;
-	&html_edit_host_template;
+	&html_edit_host;
 }
 elsif ($Host_Edit_Post) {
-	&edit_host_template;
+	&edit_host;
 	my $Message_Green="$Host_Edit ($Alias_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga-host-templates.cgi\n\n";
+	print "Location: /Icinga/icinga2-hosts.cgi\n\n";
 	exit(0);
 }
-elsif ($Delete_Host_Template) {
+elsif ($Delete_Host) {
 	require $Header;
 	&html_output;
-	&html_delete_host_template;
+	require $Footer;
+	&html_delete_host;
 }
-elsif ($Template_Delete_Post) {
-	&delete_host_template;
-	my $Message_Green="$Template_Delete deleted successfully";
+elsif ($Host_Delete_Post) {
+	&delete_host;
+	my $Message_Green="$Host_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga-host-templates.cgi\n\n";
+	print "Location: /Icinga/icinga2-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
@@ -142,17 +146,17 @@ elsif ($Display_Config) {
 	&html_output;
 	&html_display_config;
 }
-elsif ($Template_Notes) {
+elsif ($Host_Notes) {
 	require $Header;
 	&html_output;
 	&html_display_notes;
 }
-elsif ($Template_Note_Update && $Template_Note_Update_ID) {
+elsif ($Host_Note_Update && $Host_Note_Update_ID) {
 	&update_notes;
 	my $Message_Green="Notes updated successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga-host-templates.cgi\n\n";
+	print "Location: /Icinga/icinga2-hosts.cgi\n\n";
 	exit(0);
 }
 else {
@@ -162,27 +166,27 @@ else {
 
 
 
-sub html_add_host_template {
+sub html_add_host {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga-host-templates.cgi">
+<a href="/Icinga/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Add New Host Template</h3>
+<h3 align="center">Add New Host</h3>
 
-<form action='/Icinga/icinga-host-templates.cgi' method='post' >
+<form action='/Icinga/icinga2-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
 		<td>
 			<table>
 				<tr>
-					<td style="text-align: right;">Template's Template:</td>
+					<td style="text-align: right;">Template:</td>
 					<td colspan="3">
-						<select name='Templates_Template_Add' style="width: 200px">
+						<select name='Template_Add' style="width: 200px">
 							<option value='0'>-- No Template --</option>
 ENDHTML
 		
@@ -193,10 +197,10 @@ ENDHTML
 							ORDER BY `template_name` ASC");
 							$Select_Templates->execute();
 					
-							while ( my @DB_Host_Template = $Select_Templates->fetchrow_array() )
+							while ( my @DB_Host = $Select_Templates->fetchrow_array() )
 							{
-								my $ID_Extract = $DB_Host_Template[0];
-								my $Name_Extract = $DB_Host_Template[1];
+								my $ID_Extract = $DB_Host[0];
+								my $Name_Extract = $DB_Host[1];
 								print "<option value='$ID_Extract'>$Name_Extract</option>";
 							}
 
@@ -205,8 +209,16 @@ print <<ENDHTML;
 					</td>
 				</tr>
 				<tr>
-					<td style="text-align: right;">Template Name:</td>
-					<td colspan="3"><input type='text' name='Template_Name_Add' style="width: 200px" maxlength='255' placeholder="Template Name" required autofocus></td>
+					<td style="text-align: right;">Host Name:</td>
+					<td colspan="3"><input type='text' name='Host_Name_Add' style="width: 200px" maxlength='255' placeholder="Host Name" required autofocus></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">Alias:</td>
+					<td colspan="3"><input type='text' name='Alias_Add' style="width: 200px" maxlength='255' placeholder="Alias"></td>
+				</tr>
+				<tr>
+					<td style="text-align: right;">IP:</td>
+					<td colspan="3"><input type='text' name='Address_Add' style="width: 200px" maxlength='255' placeholder="www.xxx.yyy.zzz" required></td>
 				</tr>
 				<tr>
 					<td style="text-align: right;">Parent:</td>
@@ -238,7 +250,7 @@ print <<ENDHTML;
 						<select name='Host_Group_Add' style="width: 200px">
 							<option value='0'>-- Inherit Host Group --</option>
 ENDHTML
-		
+
 							my $Select_Host_Groups = $DB_Connection->prepare("SELECT `id`, `hostgroup_name`
 							FROM `icinga2_hostgroup`
 							WHERE `active` = '1'
@@ -264,13 +276,13 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Check_Periods = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Check_Period = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `icinga2_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Check_Periods->execute();
+							$Select_Check_Period->execute();
 					
-							while ( my @DB_Service = $Select_Check_Periods->fetchrow_array() )
+							while ( my @DB_Service = $Select_Check_Period->fetchrow_array() )
 							{
 								my $ID_Extract = $DB_Service[0];
 								my $Name_Extract = $DB_Service[1];
@@ -290,17 +302,17 @@ print <<ENDHTML;
 ENDHTML
 		
 		
-							my $Select_Notification_Periods = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
+							my $Select_Notification_Period = $DB_Connection->prepare("SELECT `id`, `timeperiod_name`, `alias`
 							FROM `icinga2_timeperiod`
 							WHERE `active` = '1'
 							ORDER BY `timeperiod_name` ASC");
-							$Select_Notification_Periods->execute();
+							$Select_Notification_Period->execute();
 					
-							while ( my @DB_Host_Template = $Select_Notification_Periods->fetchrow_array() )
+							while ( my @DB_Host = $Select_Notification_Period->fetchrow_array() )
 							{
-								my $ID_Extract = $DB_Host_Template[0];
-								my $Name_Extract = $DB_Host_Template[1];
-								my $Alias_Extract = $DB_Host_Template[2];
+								my $ID_Extract = $DB_Host[0];
+								my $Name_Extract = $DB_Host[1];
+								my $Alias_Extract = $DB_Host[2];
 								print "<option value='$ID_Extract'>$Name_Extract ($Alias_Extract)</option>";
 							}
 
@@ -322,11 +334,11 @@ ENDHTML
 							ORDER BY `contact_name` ASC");
 							$Select_Contacts->execute();
 					
-							while ( my @DB_Host_Template = $Select_Contacts->fetchrow_array() )
+							while ( my @DB_Host = $Select_Contacts->fetchrow_array() )
 							{
-								my $ID_Extract = $DB_Host_Template[0];
-								my $Name_Extract = $DB_Host_Template[1];
-								my $Alias_Extract = $DB_Host_Template[2];
+								my $ID_Extract = $DB_Host[0];
+								my $Name_Extract = $DB_Host[1];
+								my $Alias_Extract = $DB_Host[2];
 								print "<option value='$ID_Extract'>$Name_Extract ($Alias_Extract)</option>";
 							}
 
@@ -348,11 +360,11 @@ ENDHTML
 							ORDER BY `contactgroup_name` ASC");
 							$Select_Contact_Groups->execute();
 					
-							while ( my @DB_Host_Template = $Select_Contact_Groups->fetchrow_array() )
+							while ( my @DB_Host = $Select_Contact_Groups->fetchrow_array() )
 							{
-								my $ID_Extract = $DB_Host_Template[0];
-								my $Name_Extract = $DB_Host_Template[1];
-								my $Alias_Extract = $DB_Host_Template[2];
+								my $ID_Extract = $DB_Host[0];
+								my $Name_Extract = $DB_Host[1];
+								my $Alias_Extract = $DB_Host[2];
 								print "<option value='$ID_Extract'>$Name_Extract ($Alias_Extract)</option>";
 							}
 
@@ -520,29 +532,27 @@ ENDHTML
 </table>
 
 <hr width="50%">
-<div style="text-align: center"><input type=submit name='ok' value='Add Host Template'></div>
+<div style="text-align: center"><input type=submit name='ok' value='Add Host'></div>
 </form>
-
-</div>
 
 ENDHTML
 
 
-} #sub html_add_host_template
+} #sub html_add_host
 
-sub add_host_template {
+sub add_host {
 
-	my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`
-	FROM `icinga2_hosttemplate`
-	WHERE `template_name` = ?");
-	$Select_Host_Template->execute($Template_Name_Add);
-	my $Rows = $Select_Host_Template->rows();
+	my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
+	FROM `icinga2_host`
+	WHERE `host_name` = ?");
+	$Select_Host->execute($Host_Name_Add);
+	my $Rows = $Select_Host->rows();
 
-	if ($Rows ne 0) {
-		my $Message_Red="Template name $Template_Name_Add already exists. Template not added.";
+	if ($Rows > 0) {
+		my $Message_Red="Host name $Host_Name_Add already exists. Host not added.";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /Icinga/icinga-host-templates.cgi\n\n";
+		print "Location: /Icinga/icinga2-hosts.cgi\n\n";
 		exit(0);
 	}
 
@@ -563,118 +573,118 @@ sub add_host_template {
 	$Notification_Options_Add =~ s/,$//g;
 	if ($Notification_Add_Inherit eq 2) {$Notification_Options_Add = undef};
 
-	my $Host_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_hosttemplate` (
-		`id`, `template_name`, `active_checks_enabled`, `check_freshness`, `check_period`, `event_handler_enabled`,
-		`flap_detection_enabled`, `check_command`,`max_check_attempts`, `check_interval`, `notification_interval`, `notification_options`,
+	my $Host_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_host` (
+		`host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, `check_period`, `event_handler_enabled`,
+		`flap_detection_enabled`, `check_command`, `max_check_attempts`, `check_interval`, `notification_interval`, `notification_options`,
 		`notification_period`, `notifications_enabled`, `obsess_over_host`, `passive_checks_enabled`, `process_perf_data`,
 		`retain_nonstatus_information`, `retain_status_information`, `retry_interval`, `active`, `last_modified`, `modified_by`
 	)
 	VALUES (
-		NULL, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?,
-		?, ?, ?, ?,	NOW(), '$Username'
+		?, ?, ?, ?,	NOW(), ?
 	)");
 
-	$Host_Insert->execute($Template_Name_Add, $Active_Checks_Add, $Check_Freshness_Add, $Check_Period_Add, $Event_Handler_Add,
+	$Host_Insert->execute($Host_Name_Add, $Alias_Add, $Address_Add, $Active_Checks_Add, $Check_Freshness_Add, $Check_Period_Add, $Event_Handler_Add,
 	$Flap_Detection_Add, $Check_Command_Add, $Max_Check_Attempts_Add, $Normal_Check_Interval_Add, $Notification_Interval_Add, $Notification_Options_Add,
 	$Notification_Period_Add, $Notifications_Add, $Obsess_Over_Host_Add, $Passive_Checks_Add, $Process_Performance_Data_Add,
-	$Retain_NonStatus_Information_Add, $Retain_Status_Information_Add, $Retry_Check_Interval_Add, $Active_Add);
+	$Retain_NonStatus_Information_Add, $Retain_Status_Information_Add, $Retry_Check_Interval_Add, $Active_Add, $User_Name);
 
-	my $Template_Insert_ID = $DB_Connection->{mysql_insertid};
+	my $Host_Insert_ID = $DB_Connection->{mysql_insertid};
 
 
-	if ($Templates_Template_Add) {
+	if ($Template_Add) {
 
-		my $Template_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHosttemplateToHosttemplate` (
+		my $Template_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHostToHosttemplate` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
 		?, ?
 		)");
 
-		$Template_Insert->execute($Template_Insert_ID, $Templates_Template_Add);
+		$Template_Insert->execute($Host_Insert_ID, $Template_Add);
 
 	}
 
 	if ($Contact_Add) {
 
-		my $Contact_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHosttemplateToContact` (
+		my $Contact_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHostToContact` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
 		?, ?
 		)");
 
-		$Contact_Insert->execute($Template_Insert_ID, $Contact_Add);
+		$Contact_Insert->execute($Host_Insert_ID, $Contact_Add);
 
 	}
 
 	if ($Contact_Group_Add) {
 
-		my $Contact_Group_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHosttemplateToContactgroup` (
+		my $Contact_Group_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHostToContactgroup` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
 		?, ?
 		)");
 
-		$Contact_Group_Insert->execute($Template_Insert_ID, $Contact_Group_Add);
+		$Contact_Group_Insert->execute($Host_Insert_ID, $Contact_Group_Add);
 
 	}
 
 	if ($Host_Group_Add) {
 
-		my $Contact_Group_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHosttemplateToHostgroup` (
+		my $Contact_Group_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHostToHostgroup` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
 		?, ?
 		)");
 
-		$Contact_Group_Insert->execute($Template_Insert_ID, $Host_Group_Add);
+		$Contact_Group_Insert->execute($Host_Insert_ID, $Host_Group_Add);
 
 	}
 
 	if ($Parent_Add) {
 
-		my $Parent_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHosttemplateToHost` (
+		my $Parent_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_lnkHostToHost` (
 		`idMaster`, `idSlave`
 		)
 		VALUES (
 		?, ?
 		)");
 
-		$Parent_Insert->execute($Template_Insert_ID, $Parent_Add);
+		$Parent_Insert->execute($Host_Insert_ID, $Parent_Add);
 
 	}
 
-} # sub add_host_template
+} # sub add_host
 
-sub html_edit_host_template {
+sub html_edit_host {
 
-	my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`, `alias`, `active`
-	FROM `icinga2_hosttemplate`
-	WHERE `id` = '$Edit_Host_Template'");
-	$Select_Host_Template->execute( );
+	my $Select_Host = $DB_Connection->prepare("SELECT `host_name`, `alias`, `active`
+	FROM `icinga2_host`
+	WHERE `id` = '$Edit_Host'");
+	$Select_Host->execute( );
 	
-	while ( my @DB_Host_Template = $Select_Host_Template->fetchrow_array() )
+	while ( my @DB_Host = $Select_Host->fetchrow_array() )
 	{
 	
-		my $Host_Extract = $DB_Host_Template[0];
-		my $Alias_Extract = $DB_Host_Template[1];
-		my $Active_Extract = $DB_Host_Template[2];
+		my $Host_Extract = $DB_Host[0];
+		my $Alias_Extract = $DB_Host[1];
+		my $Active_Extract = $DB_Host[2];
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga-host-templates.cgi">
+<a href="/Icinga/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Host <span style="color: #00FF00;">$Host_Extract</span></h3>
 
-<form action='/Icinga/icinga-host-templates.cgi' method='post' >
+<form action='/Icinga/icinga2-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -707,7 +717,7 @@ print <<ENDHTML;
 	</tr>
 </table>
 
-<input type='hidden' name='Host_Edit_Post' value='$Edit_Host_Template'>
+<input type='hidden' name='Host_Edit_Post' value='$Edit_Host'>
 
 <hr width="50%">
 <div style="text-align: center"><input type=submit name='ok' value='Edit Host'></div>
@@ -717,84 +727,89 @@ print <<ENDHTML;
 ENDHTML
 
 	}
-} # sub html_edit_host_template
+} # sub html_edit_host
 
-sub edit_host_template {
+sub edit_host {
 
 	my $Host_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
-	FROM `icinga2_hosttemplate`
-	WHERE `template_name` = '$Host_Edit'
+	FROM `icinga2_host`
+	WHERE `host_name` = '$Host_Edit'
 	AND `id` != ?");
 
 	$Host_Insert_Check->execute($Host_Edit_Post);
 	my $Host_Rows = $Host_Insert_Check->rows();
 
 	if ($Host_Rows) {
-		while ( my @DB_Host_Template = $Host_Insert_Check->fetchrow_array() )
+		while ( my @DB_Host = $Host_Insert_Check->fetchrow_array() )
 			{
 
-			my $ID_Extract = $DB_Host_Template[0];
-			my $Alias_Extract = $DB_Host_Template[1];
+			my $ID_Extract = $DB_Host[0];
+			my $Alias_Extract = $DB_Host[1];
 
 			my $Message_Red="$Host_Edit already exists - Conflicting Host ID (This entry): $Host_Edit_Post, Existing Host ID: $ID_Extract, Existing Host Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga-host-templates.cgi\n\n";
+			print "Location: /Icinga/icinga2-hosts.cgi\n\n";
 			exit(0);
 
 		}
 	}
 	else {
 
-		my $Host_Update = $DB_Connection->prepare("UPDATE `icinga2_hosttemplate` SET
-			`template_name` = ?,
+		my $Host_Update = $DB_Connection->prepare("UPDATE `icinga2_host` SET
+			`host_name` = ?,
 			`alias` = ?,
 			`active` = ?,
 			`last_modified` = NOW(),
-			`modified_by` = '$Username'
+			`modified_by` = '$User_Name'
 			WHERE `id` = ?"
 		);
 		
 		$Host_Update->execute($Host_Edit, $Alias_Edit, $Active_Edit, $Host_Edit_Post)
 	}
 
-} # sub edit_host_template
+} # sub edit_host
 
-sub html_delete_host_template {
+sub html_delete_host {
 
-	my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`
-	FROM `icinga2_hosttemplate`
+	my $Select_Host = $DB_Connection->prepare("SELECT `host_name`, `alias`
+	FROM `icinga2_host`
 	WHERE `id` = ?");
-	$Select_Host_Template->execute($Delete_Host_Template);
+	$Select_Host->execute($Delete_Host);
 	
-	while ( my @DB_Host_Template = $Select_Host_Template->fetchrow_array() )
+	while ( my @DB_Host = $Select_Host->fetchrow_array() )
 	{
 	
-		my $Host_Extract = $DB_Host_Template[0];
+		my $Host_Extract = $DB_Host[0];
+		my $Alias_Extract = $DB_Host[1];
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga-host-templates.cgi">
+<a href="/Icinga/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Delete Host Template</h3>
+<h3 align="center">Delete Host</h3>
 
-<form action='/Icinga/icinga-host-templates.cgi' method='post' >
-<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host template?</p>
+<form action='/Icinga/icinga2-hosts.cgi' method='post' >
+<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host?</p>
 <table align = "center">
 	<tr>
-		<td style="text-align: right;">Template Name:</td>
+		<td style="text-align: right;">Host Name:</td>
 		<td style="text-align: left; color: #00FF00;">$Host_Extract</td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">Host Alias:</td>
+		<td style="text-align: left; color: #00FF00;">$Alias_Extract</td>
 	</tr>
 </table>
 
-<input type='hidden' name='Template_Delete_Post' value='$Delete_Host_Template'>
-<input type='hidden' name='Template_Delete' value='$Host_Extract'>
+<input type='hidden' name='Host_Delete_Post' value='$Delete_Host'>
+<input type='hidden' name='Host_Delete' value='$Host_Extract'>
 
 <hr width="50%">
-<div style="text-align: center"><input type=submit name='ok' value='Delete Host Template'></div>
+<div style="text-align: center"><input type=submit name='ok' value='Delete Host'></div>
 
 </form>
 
@@ -803,90 +818,92 @@ print <<ENDHTML;
 ENDHTML
 
 	}
-} # sub html_delete_host_template
+} # sub html_delete_host
 
-sub delete_host_template {
+sub delete_host {
 
-	my $Delete = $DB_Connection->prepare("DELETE from `icinga2_hosttemplate`
+	my $Delete = $DB_Connection->prepare("DELETE from `icinga2_host`
 				WHERE `id` = ?");
-	$Delete->execute($Template_Delete_Post);
+	$Delete->execute($Host_Delete_Post);
 
-	$Delete = $DB_Connection->prepare("DELETE from `icinga2_lnkHosttemplateToHosttemplate`
+	$Delete = $DB_Connection->prepare("DELETE from `icinga2_lnkHostToHosttemplate`
 				WHERE `idMaster` = ?");
-	$Delete->execute($Template_Delete_Post);
+	$Delete->execute($Host_Delete_Post);
 
-	$Delete = $DB_Connection->prepare("DELETE from `icinga2_lnkHosttemplateToContact`
+	$Delete = $DB_Connection->prepare("DELETE from `icinga2_lnkHostToContact`
 				WHERE `idMaster` = ?");
-	$Delete->execute($Template_Delete_Post);
+	$Delete->execute($Host_Delete_Post);
 
-	$Delete = $DB_Connection->prepare("DELETE from `icinga2_lnkHosttemplateToContactgroup`
+	$Delete = $DB_Connection->prepare("DELETE from `icinga2_lnkHostToContactgroup`
 				WHERE `idMaster` = ?");
-	$Delete->execute($Template_Delete_Post);
+	$Delete->execute($Host_Delete_Post);
 
-	$Delete = $DB_Connection->prepare("DELETE from `icinga2_lnkHosttemplateToHostgroup`
+	$Delete = $DB_Connection->prepare("DELETE from `icinga2_lnkHostToHostgroup`
 				WHERE `idMaster` = ?");
-	$Delete->execute($Template_Delete_Post);
+	$Delete->execute($Host_Delete_Post);
 
-} # sub delete_host_template
+} # sub delete_host
 
 sub html_display_config {
 
-	my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+	my $Select_Host = $DB_Connection->prepare("SELECT `host_name`, `alias`, `address`, `active_checks_enabled`, `check_freshness`, 
 	`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`,
 	`check_interval`, `notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`,
 	`obsess_over_host`, `passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`,
 	`retain_status_information`, `retry_interval`, `active`, `notes`, `last_modified`, `modified_by`
-	FROM `icinga2_hosttemplate`
+	FROM `icinga2_host`
 	WHERE `id` = ?");
-	$Select_Host_Template->execute($Display_Config);
+	$Select_Host->execute($Display_Config);
 	
-	while ( my @DB_Host_Template = $Select_Host_Template->fetchrow_array() )
+	while ( my @DB_Host = $Select_Host->fetchrow_array() )
 	{
 	
-		my $Template_Extract = $DB_Host_Template[0];
-		my $Active_Checks_Enabled_Extract = $DB_Host_Template[1];
-		my $Check_Freshness_Extract = $DB_Host_Template[2];
-		my $Check_Period_Extract = $DB_Host_Template[3];
-		my $Event_Handler_Enabled_Extract = $DB_Host_Template[4];
-		my $Flap_Detection_Enabled_Extract = $DB_Host_Template[5];
-		my $Check_Command_Extract = $DB_Host_Template[6];
-		my $Max_Check_Attempts_Extract = $DB_Host_Template[7];
-		my $Normal_Check_Interval_Extract = $DB_Host_Template[8];
-		my $Notification_Interval_Extract = $DB_Host_Template[9];
-		my $Notification_Options_Extract = $DB_Host_Template[10];
-		my $Notification_Period_Extract = $DB_Host_Template[11];
-		my $Notifications_Enabled_Extract = $DB_Host_Template[12];
-		my $Obsess_Over_Host_Extract = $DB_Host_Template[13];
-		my $Passive_Checks_Enabled_Extract = $DB_Host_Template[14];
-		my $Process_Perf_Data_Extract = $DB_Host_Template[15];
-		my $Retain_NonStatus_Information_Extract = $DB_Host_Template[16];
-		my $Retain_Status_Information_Extract = $DB_Host_Template[17];
-		my $Retry_Check_Interval_Extract = $DB_Host_Template[18];
-		my $Active_Extract = $DB_Host_Template[19];
-		my $Host_Notes_Extract = $DB_Host_Template[20];
-		my $Last_Modified_Extract = $DB_Host_Template[21];
-		my $Modified_By_Extract = $DB_Host_Template[22];
+		my $Host_Extract = $DB_Host[0];
+		my $Alias_Extract = $DB_Host[1];
+		my $IP_Extract = $DB_Host[2];
+		my $Active_Checks_Enabled_Extract = $DB_Host[3];
+		my $Check_Freshness_Extract = $DB_Host[4];
+		my $Check_Period_Extract = $DB_Host[5];
+		my $Event_Handler_Enabled_Extract = $DB_Host[6];
+		my $Flap_Detection_Enabled_Extract = $DB_Host[7];
+		my $Check_Command_Extract = $DB_Host[8];
+		my $Max_Check_Attempts_Extract = $DB_Host[9];
+		my $Normal_Check_Interval_Extract = $DB_Host[10];
+		my $Notification_Interval_Extract = $DB_Host[11];
+		my $Notification_Options_Extract = $DB_Host[12];
+		my $Notification_Period_Extract = $DB_Host[13];
+		my $Notifications_Enabled_Extract = $DB_Host[14];
+		my $Obsess_Over_Host_Extract = $DB_Host[15];
+		my $Passive_Checks_Enabled_Extract = $DB_Host[16];
+		my $Process_Perf_Data_Extract = $DB_Host[17];
+		my $Retain_NonStatus_Information_Extract = $DB_Host[18];
+		my $Retain_Status_Information_Extract = $DB_Host[19];
+		my $Retry_Check_Interval_Extract = $DB_Host[20];
+		my $Active_Extract = $DB_Host[21];
+		my $Host_Notes_Extract = $DB_Host[22];
+		my $Last_Modified_Extract = $DB_Host[23];
+		my $Modified_By_Extract = $DB_Host[24];
 
 
 		## Host Parent Resolution
 
 		my $Host_Parents;
-		my $Select_Host_Template_Parent_Link = $DB_Connection->prepare("SELECT `idSlave`
-		FROM `icinga2_lnkHosttemplateToHost`
+		my $Select_Host_Parent_Link = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHostToHost`
 		WHERE (`idMaster` = ?)");
-		$Select_Host_Template_Parent_Link->execute($Display_Config);
+		$Select_Host_Parent_Link->execute($Display_Config);
 
-			while ( my @DB_Parent_Link = $Select_Host_Template_Parent_Link->fetchrow_array() )
+			while ( my @DB_Parent_Link = $Select_Host_Parent_Link->fetchrow_array() )
 			{
 
 				my $Host_Link = $DB_Parent_Link[0];
 
-				my $Select_Host_Template = $DB_Connection->prepare("SELECT `host_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
 				FROM `icinga2_host`
 				WHERE `id` = ?");
-				$Select_Host_Template->execute($Host_Link);
+				$Select_Host->execute($Host_Link);
 
-				while ( my @DB_Parent = $Select_Host_Template->fetchrow_array() )
+				while ( my @DB_Parent = $Select_Host->fetchrow_array() )
 				{
 
 					my $Host_Parent = $DB_Parent[0];
@@ -900,22 +917,22 @@ sub html_display_config {
 		## Host Template Resolution
 
 		my $Host_Templates;
-		my $Select_Host_Template_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
-		FROM `icinga2_lnkHosttemplateToHosttemplate`
+		my $Select_Host_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHostToHosttemplate`
 		WHERE (`idMaster` = ?)");
-		$Select_Host_Template_Template_Link->execute($Display_Config);
+		$Select_Host_Template_Link->execute($Display_Config);
 
-			while ( my @DB_Template_Link = $Select_Host_Template_Template_Link->fetchrow_array() )
+			while ( my @DB_Template_Link = $Select_Host_Template_Link->fetchrow_array() )
 			{
 
 				my $Host_Link = $DB_Template_Link[0];
 
-				my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `template_name`
 				FROM `icinga2_hosttemplate`
 				WHERE `id` = ?");
-				$Select_Host_Template->execute($Host_Link);
+				$Select_Host->execute($Host_Link);
 
-				while ( my @DB_Template = $Select_Host_Template->fetchrow_array() )
+				while ( my @DB_Template = $Select_Host->fetchrow_array() )
 				{
 
 					my $Host_Template = $DB_Template[0];
@@ -929,22 +946,22 @@ sub html_display_config {
 		## Host Contact Group Resolution
 
 		my $Host_Contact_Groups;
-		my $Select_Host_Template_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
-		FROM `icinga2_lnkHosttemplateToContactgroup`
+		my $Select_Host_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHostToContactgroup`
 		WHERE (`idMaster` = ?)");
-		$Select_Host_Template_Contact_Group_Link->execute($Display_Config);
+		$Select_Host_Contact_Group_Link->execute($Display_Config);
 
-			while ( my @DB_Contact_Group_Link = $Select_Host_Template_Contact_Group_Link->fetchrow_array() )
+			while ( my @DB_Contact_Group_Link = $Select_Host_Contact_Group_Link->fetchrow_array() )
 			{
 
 				my $Host_Link = $DB_Contact_Group_Link[0];
 
-				my $Select_Host_Template = $DB_Connection->prepare("SELECT `contactgroup_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `contactgroup_name`
 				FROM `icinga2_contactgroup`
 				WHERE `id` = ?");
-				$Select_Host_Template->execute($Host_Link);
+				$Select_Host->execute($Host_Link);
 
-				while ( my @DB_Contact_Group = $Select_Host_Template->fetchrow_array() )
+				while ( my @DB_Contact_Group = $Select_Host->fetchrow_array() )
 				{
 
 					my $Host_Contact_Group = $DB_Contact_Group[0];
@@ -955,59 +972,59 @@ sub html_display_config {
 
 		## / Host Contact Group Resolution
 
-		## Host Template's Template Values
+		## Host Template Values
 
 		my $Host_Template_ID;
-		my $Description_Extract_Template;
+		my $Host_Description_Extract_Template;
 		my $Last_Modified_Extract_Template;
 		my $Modified_By_Extract_Template;
 		my $Check_Period_Extract_Template;
 		my $Notification_Period_Extract_Template;
 		my $Check_Command_Extract_Template;
-		my $Select_Host_Template_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
-		FROM `icinga2_lnkHosttemplateToHosttemplate`
+		my $Select_Host_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHostToHosttemplate`
 		WHERE `idMaster` = ?");
-		$Select_Host_Template_Template_ID->execute($Display_Config);
+		$Select_Host_Template_ID->execute($Display_Config);
 		
-		while ( my @DB_Host_Template_Template_ID = $Select_Host_Template_Template_ID->fetchrow_array() )
+		while ( my @DB_Host_Template_ID = $Select_Host_Template_ID->fetchrow_array() )
 		{
 
-			$Host_Template_ID = $DB_Host_Template_Template_ID[0];
+			$Host_Template_ID = $DB_Host_Template_ID[0];
 
-			my $Select_Host_Template_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+			my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
 			`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`, `check_interval`,
 			`notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`, `obsess_over_host`,
 			`passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`, `retain_status_information`,
 			`retry_interval`, `active`, `last_modified`, `modified_by`
 			FROM `icinga2_hosttemplate`
 			WHERE `id` = ?");
-			$Select_Host_Template_Template->execute($Host_Template_ID);
+			$Select_Host_Template->execute($Host_Template_ID);
 			
-			while ( my @DB_Host_Template_Template = $Select_Host_Template_Template->fetchrow_array() )
+			while ( my @DB_Host_Template = $Select_Host_Template->fetchrow_array() )
 			{
 	
-				$Description_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[0]</span>";
-				my $Active_Checks_Enabled_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[1]</span>";
-				my $Check_Freshness_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[2]</span>";
-				$Check_Period_Extract_Template = $DB_Host_Template_Template[3];
-				my $Event_Handler_Enabled_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[4]</span>";
-				my $Flap_Detection_Enabled_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[5]</span>";
-				$Check_Command_Extract_Template = $DB_Host_Template_Template[6];
-				my $Max_Check_Attempts_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[7]</span>";
-				my $Normal_Check_Interval_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[8]</span>";
-				my $Notification_Interval_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[9]</span>";
-				my $Notification_Options_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[10]</span>";
-				$Notification_Period_Extract_Template = $DB_Host_Template_Template[11];
-				my $Notifications_Enabled_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[12]</span>";
-				my $Obsess_Over_Host_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[13]</span>";
-				my $Passive_Checks_Enabled_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[14]</span>";
-				my $Process_Perf_Data_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[15]</span>";
-				my $Retain_NonStatus_Information_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[16]</span>";
-				my $Retain_Status_Information_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[17]</span>";
-				my $Retry_Check_Interval_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[18]</span>";
-				my $Active_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[19]</span>";
-				$Last_Modified_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[20]</span>";
-				$Modified_By_Extract_Template = "<span style='color: #FF00FF;'>$DB_Host_Template_Template[21]</span>";
+				$Host_Description_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[0]</span>";
+				my $Active_Checks_Enabled_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[1]</span>";
+				my $Check_Freshness_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[2]</span>";
+				$Check_Period_Extract_Template = $DB_Host_Template[3];
+				my $Event_Handler_Enabled_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[4]</span>";
+				my $Flap_Detection_Enabled_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[5]</span>";
+				$Check_Command_Extract_Template = $DB_Host_Template[6];
+				my $Max_Check_Attempts_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[7]</span>";
+				my $Normal_Check_Interval_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[8]</span>";
+				my $Notification_Interval_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[9]</span>";
+				my $Notification_Options_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[10]</span>";
+				$Notification_Period_Extract_Template = $DB_Host_Template[11];
+				my $Notifications_Enabled_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[12]</span>";
+				my $Obsess_Over_Host_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[13]</span>";
+				my $Passive_Checks_Enabled_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[14]</span>";
+				my $Process_Perf_Data_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[15]</span>";
+				my $Retain_NonStatus_Information_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[16]</span>";
+				my $Retain_Status_Information_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[17]</span>";
+				my $Retry_Check_Interval_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[18]</span>";
+				my $Active_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[19]</span>";
+				$Last_Modified_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[20]</span>";
+				$Modified_By_Extract_Template = "<span style='color: #FF8800;'>$DB_Host_Template[21]</span>";
 
 				if ($Active_Checks_Enabled_Extract eq 2) {$Active_Checks_Enabled_Extract = $Active_Checks_Enabled_Extract_Template};
 				if ($Check_Freshness_Extract eq 2) {$Check_Freshness_Extract = $Check_Freshness_Extract_Template};
@@ -1027,7 +1044,112 @@ sub html_display_config {
 			}
 		}
 
-		## / Template's Template Values
+		## / Host Template Values
+		
+		## Host Template's Template Values
+
+		my $Host_Templates_Template_ID;
+		my $Host_Description_Extract_Templates_Template;
+		my $Last_Modified_Extract_Templates_Template;
+		my $Modified_By_Extract_Templates_Template;
+		my $Check_Period_Extract_Templates_Template;
+		my $Notification_Period_Extract_Templates_Template;
+		my $Check_Command_Extract_Templates_Template;
+		
+		my $Select_Host_Templates_Template_ID = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHosttemplateToHosttemplate`
+		WHERE `idMaster` = ?");
+		$Select_Host_Templates_Template_ID->execute($Host_Template_ID);
+		
+		while ( my @DB_Host_Templates_Template_ID = $Select_Host_Templates_Template_ID->fetchrow_array() )
+		{
+
+			$Host_Templates_Template_ID = $DB_Host_Templates_Template_ID[0];
+
+			my $Select_Host_Templates_Template = $DB_Connection->prepare("SELECT `template_name`, `active_checks_enabled`, `check_freshness`, 
+			`check_period`, `event_handler_enabled`, `flap_detection_enabled`, `check_command`, `max_check_attempts`, `check_interval`,
+			`notification_interval`, `notification_options`, `notification_period`, `notifications_enabled`, `obsess_over_host`,
+			`passive_checks_enabled`, `process_perf_data`, `retain_nonstatus_information`, `retain_status_information`,
+			`retry_interval`, `active`, `last_modified`, `modified_by`
+			FROM `icinga2_hosttemplate`
+			WHERE `id` = ?");
+			$Select_Host_Templates_Template->execute($Host_Templates_Template_ID);
+			
+			while ( my @DB_Host_Templates_Template = $Select_Host_Templates_Template->fetchrow_array() )
+			{
+	
+				$Host_Description_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[0]</span>";
+				my $Active_Checks_Enabled_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[1]</span>";
+				my $Check_Freshness_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[2]</span>";
+				$Check_Period_Extract_Templates_Template = $DB_Host_Templates_Template[3];
+				my $Event_Handler_Enabled_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[4]</span>";
+				my $Flap_Detection_Enabled_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[5]</span>";
+				$Check_Command_Extract_Templates_Template = $DB_Host_Templates_Template[6];
+				my $Max_Check_Attempts_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[7]</span>";
+				my $Normal_Check_Interval_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[8]</span>";
+				my $Notification_Interval_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[9]</span>";
+				my $Notification_Options_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[10]</span>";
+				$Notification_Period_Extract_Templates_Template = $DB_Host_Templates_Template[11];
+				my $Notifications_Enabled_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[12]</span>";
+				my $Obsess_Over_Host_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[13]</span>";
+				my $Passive_Checks_Enabled_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[14]</span>";
+				my $Process_Perf_Data_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[15]</span>";
+				my $Retain_NonStatus_Information_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[16]</span>";
+				my $Retain_Status_Information_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[17]</span>";
+				my $Retry_Check_Interval_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[18]</span>";
+				my $Active_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[19]</span>";
+				$Last_Modified_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[20]</span>";
+				$Modified_By_Extract_Templates_Template = "<span style='color: #FF00FF;'>$DB_Host_Templates_Template[21]</span>";
+
+				if ($Active_Checks_Enabled_Extract eq "<span style='color: #FF8800;'></span>" || $Active_Checks_Enabled_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Active_Checks_Enabled_Extract = $Active_Checks_Enabled_Extract_Templates_Template;
+				}
+				if ($Check_Freshness_Extract eq "<span style='color: #FF8800;'></span>" || $Check_Freshness_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Check_Freshness_Extract = $Check_Freshness_Extract_Templates_Template;
+				}
+				if ($Event_Handler_Enabled_Extract eq "<span style='color: #FF8800;'></span>" || $Event_Handler_Enabled_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Event_Handler_Enabled_Extract = $Event_Handler_Enabled_Extract_Templates_Template;
+				}
+				if ($Flap_Detection_Enabled_Extract eq "<span style='color: #FF8800;'></span>" || $Flap_Detection_Enabled_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Flap_Detection_Enabled_Extract = $Flap_Detection_Enabled_Extract_Templates_Template;
+				}
+				if ($Max_Check_Attempts_Extract eq "<span style='color: #FF8800;'></span>" || $Max_Check_Attempts_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Max_Check_Attempts_Extract = $Max_Check_Attempts_Extract_Templates_Template;
+				}
+				if ($Normal_Check_Interval_Extract eq "<span style='color: #FF8800;'></span>" || $Normal_Check_Interval_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Normal_Check_Interval_Extract = $Normal_Check_Interval_Extract_Templates_Template;
+				}
+				if ($Notification_Interval_Extract eq "<span style='color: #FF8800;'></span>" || $Notification_Interval_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Notification_Interval_Extract = $Notification_Interval_Extract_Templates_Template;
+				}
+				if ($Notification_Options_Extract eq "<span style='color: #FF8800;'></span>" || $Notification_Options_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Notification_Options_Extract = $Notification_Options_Extract_Templates_Template;
+				}
+				if ($Notifications_Enabled_Extract eq "<span style='color: #FF8800;'></span>" || $Notifications_Enabled_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Notifications_Enabled_Extract = $Notifications_Enabled_Extract_Templates_Template;
+				}
+				if ($Obsess_Over_Host_Extract eq "<span style='color: #FF8800;'></span>" || $Obsess_Over_Host_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Obsess_Over_Host_Extract = $Obsess_Over_Host_Extract_Templates_Template;
+				}
+				if ($Passive_Checks_Enabled_Extract eq "<span style='color: #FF8800;'></span>" || $Passive_Checks_Enabled_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Passive_Checks_Enabled_Extract = $Passive_Checks_Enabled_Extract_Templates_Template;
+				}
+				if ($Process_Perf_Data_Extract eq "<span style='color: #FF8800;'></span>" || $Process_Perf_Data_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Process_Perf_Data_Extract = $Process_Perf_Data_Extract_Templates_Template;
+				}
+				if ($Retain_NonStatus_Information_Extract eq "<span style='color: #FF8800;'></span>" || $Retain_NonStatus_Information_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Retain_NonStatus_Information_Extract = $Retain_NonStatus_Information_Extract_Templates_Template;
+				}
+				if ($Retain_Status_Information_Extract eq "<span style='color: #FF8800;'></span>" || $Retain_Status_Information_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Retain_Status_Information_Extract = $Retain_Status_Information_Extract_Templates_Template;
+				}
+				if ($Retry_Check_Interval_Extract eq "<span style='color: #FF8800;'></span>" || $Retry_Check_Interval_Extract eq "<span style='color: #FF8800;'>2</span>") {
+					$Retry_Check_Interval_Extract = $Retry_Check_Interval_Extract_Templates_Template;
+				}
+			}
+		}
+
+		## / Host Template's Template Values
 
 		## Check Period Link Collection
 
@@ -1039,6 +1161,9 @@ sub html_display_config {
 		elsif ($Check_Period_Extract_Template != 0) {
 			$Check_Period = $Check_Period_Extract_Template;
 		}
+		elsif ($Check_Period_Extract_Templates_Template != 0) {
+			$Check_Period = $Check_Period_Extract_Templates_Template;
+		}
 
 		my $Select_Check_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `icinga2_timeperiod`
@@ -1049,8 +1174,11 @@ sub html_display_config {
 		{
 			my $DB_Check_Period = $DB_Time_Period[0];
 
-			if ($Check_Period_Extract_Template != 0) {
+			if ($Check_Period_Extract_Templates_Template != 0) {
 				$Check_Period = "<span style='color: #FF00FF;'>$DB_Check_Period</span>";
+			}
+			if ($Check_Period_Extract_Template != 0) {
+				$Check_Period = "<span style='color: #FF8800;'>$DB_Check_Period</span>";
 			}
 			if ($Check_Period_Extract  != 0) {
 				$Check_Period = $DB_Check_Period;
@@ -1070,6 +1198,9 @@ sub html_display_config {
 		elsif ($Notification_Period_Extract_Template != 0) {
 			$Notification_Period = $Notification_Period_Extract_Template;
 		}
+		elsif ($Notification_Period_Extract_Templates_Template != 0) {
+			$Notification_Period = $Notification_Period_Extract_Templates_Template;
+		}
 
 		my $Select_Notification_Period = $DB_Connection->prepare("SELECT `timeperiod_name`
 		FROM `icinga2_timeperiod`
@@ -1080,8 +1211,11 @@ sub html_display_config {
 		{
 			my $DB_Notification_Period = $DB_Time_Period[0];
 
-			if ($Notification_Period_Extract_Template != 0) {
+			if ($Notification_Period_Extract_Templates_Template != 0) {
 				$Notification_Period = "<span style='color: #FF00FF;'>$DB_Notification_Period</span>";
+			}
+			if ($Notification_Period_Extract_Template != 0) {
+				$Notification_Period = "<span style='color: #FF8800;'>$DB_Notification_Period</span>";
 			}
 			if ($Notification_Period_Extract  != 0) {
 				$Notification_Period = $DB_Notification_Period;
@@ -1120,7 +1254,7 @@ sub html_display_config {
 				$Check_Command = $Check_Command.$Check_Command_Where_Remaining;
 
 				if (!$Check_Command_Extract || $Check_Command_Extract eq '') {
-					$Check_Command = "<span style='color: #FF00FF;'>$Check_Command</span>";
+					$Check_Command = "<span style='color: #FF8800;'>$Check_Command</span>";
 				}
 
 			}
@@ -1130,7 +1264,8 @@ sub html_display_config {
 		$Host_Parents =~ s/,$//g;
 		$Host_Templates =~ s/,$//g;
 		$Host_Contact_Groups =~ s/,$//g;
-		$Host_Template_ID = "<span style='color: #FF00FF;'>$Host_Template_ID</span>";
+		$Host_Template_ID = "<span style='color: #FF8800;'>$Host_Template_ID</span>";
+		$Host_Templates_Template_ID = "<span style='color: #FF00FF;'>$Host_Templates_Template_ID</span>";
 		
 		if (!$Host_Contact_Groups) {$Host_Contact_Groups = "<span style='color: #FF0000;'>UNDEFINED</span>";}
 		if (!$Check_Period) {$Check_Period = "<span style='color: #FF0000;'>UNDEFINED</span>";}
@@ -1149,6 +1284,7 @@ sub html_display_config {
 		if ($Normal_Check_Interval_Extract =~ m/></) {$Normal_Check_Interval_Extract = "<span style='color: #FF0000;'>UNDEFINED</span>";}
 		if ($Retry_Check_Interval_Extract =~ m/></) {$Retry_Check_Interval_Extract = "<span style='color: #FF0000;'>UNDEFINED</span>";}
 		if (!$Host_Parents) {$Host_Parents = "<span style='color: #FF0000;'>UNDEFINED</span>";}
+		
 
 
 		if (!$Active_Extract) {
@@ -1162,18 +1298,21 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="full-width-popup-box">
-<a href="/Icinga/icinga-host-templates.cgi">
+<a href="/Icinga/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
-<h3 align="center">Live Config for <span style="color: #00FF00;">$Template_Extract</span></h3>
+<h3 align="center">Live Config for <span style="color: #00FF00;">$Host_Extract</span></h3>
 
-<p>This config is automatically applied regularly. The config below illustrates how this template's config will be written.<br />
+<p>This config is automatically applied regularly. The config below illustrates how this host's config will be written.<br />
 ENDHTML
 
 if ($Host_Template_ID !~ /></) {
-	print 'The values in <span style="color: #FF00FF;">purple</span> are not defined in this template, so are collected from the template\'s template.';
+	print 'The values in <span style="color: #FF8800;">orange</span> are undefined in this host, and are therefore inherited from this host\'s template.<br />';
+}
+if ($Host_Templates_Template_ID !~ /></) {
+	print 'The values in <span style="color: #FF00FF;">purple</span> are not defined in this host, nor this host\'s template, so are collected from the host template\'s template.';
 }
 
 print <<ENDHTML;
@@ -1185,26 +1324,40 @@ print <<ENDHTML;
 <code>
 <table align = "center">
 	<tr>
-		<td colspan='3'>## Template ID: $Display_Config</td>
+		<td colspan='3'>## Host ID: $Display_Config</td>
 	</tr>
 	<tr>
-		<td colspan='3'>## Template Modified $Last_Modified_Extract by $Modified_By_Extract</td>
+		<td colspan='3'>## Host Modified $Last_Modified_Extract by $Modified_By_Extract</td>
 	</tr>
 	<tr>
-		<td colspan='3'>## Template Notes: $Host_Notes_Extract</td>
+		<td colspan='3'>## Host Notes: $Host_Notes_Extract</td>
 	</tr>
 ENDHTML
 
 if ($Host_Template_ID !~ /></) {
 	print <<ENDHTML;
 	<tr>
-		<td colspan='3'>## Template's Template ID: $Host_Template_ID</td>
+		<td colspan='3'>## Template ID: $Host_Template_ID</td>
 	</tr>
 	<tr>
-		<td colspan='3'>## Template's Template Name: $Description_Extract_Template</td>
+		<td colspan='3'>## Template Name: $Host_Description_Extract_Template</td>
 	</tr>
 	<tr>
-		<td colspan='3'>## Template's Template Modified: $Last_Modified_Extract_Template by $Modified_By_Extract_Template</td>
+		<td colspan='3'>## Template Modified: $Last_Modified_Extract_Template by $Modified_By_Extract_Template</td>
+	</tr>
+
+ENDHTML
+}
+if ($Host_Templates_Template_ID !~ /></) {
+	print <<ENDHTML;
+	<tr>
+		<td colspan='3'>## Template's Template ID: $Host_Templates_Template_ID</td>
+	</tr>
+	<tr>
+		<td colspan='3'>## Template's Template Name: $Host_Description_Extract_Templates_Template</td>
+	</tr>
+	<tr>
+		<td colspan='3'>## Template's Template Modified: $Last_Modified_Extract_Templates_Template by $Modified_By_Extract_Templates_Template</td>
 	</tr>
 
 ENDHTML
@@ -1216,11 +1369,19 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style='padding-left: 2em;'>use</td>
-		<td style='padding-left: 2em;'>$Description_Extract_Template</td>
+		<td style='padding-left: 2em;'>$Host_Templates</td>
 	</tr>
 	<tr>
-		<td style='padding-left: 2em;'>name</td>
-		<td style='padding-left: 2em;'>$Template_Extract</td>
+		<td style='padding-left: 2em;'>host_name</td>
+		<td style='padding-left: 2em;'>$Host_Extract</td>
+	</tr>
+	<tr>
+		<td style='padding-left: 2em;'>alias</td>
+		<td style='padding-left: 2em;'>$Alias_Extract</td>
+	</tr>
+	<tr>
+		<td style='padding-left: 2em;'>address</td>
+		<td style='padding-left: 2em;'>$IP_Extract</td>
 	</tr>
 	<tr>
 		<td style='padding-left: 2em;'>contact_groups</td>
@@ -1304,7 +1465,7 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style='padding-left: 2em;'>register</td>
-		<td style='padding-left: 2em;'>0</td>
+		<td style='padding-left: 2em;'>1</td>
 	</tr>
 	<tr>
 		<td colspan='3'>}</td>
@@ -1324,20 +1485,22 @@ ENDHTML
 
 sub html_display_notes {
 
-	my $Select_Notes = $DB_Connection->prepare("SELECT `template_name`, `notes`
-	FROM `icinga2_hosttemplate`
+	my $Select_Notes = $DB_Connection->prepare("SELECT `host_name`, `alias`, `address`, `notes`
+	FROM `icinga2_host`
 	WHERE `id` = ?");
-	$Select_Notes->execute($Template_Notes);
+	$Select_Notes->execute($Host_Notes);
 	
 	while ( my @DB_Notes = $Select_Notes->fetchrow_array() )
 	{
 	
-		my $Template_Extract = $DB_Notes[0];
-		my $Notes_Extract = $DB_Notes[1];
+		my $Host_Extract = $DB_Notes[0];
+		my $Alias_Extract = $DB_Notes[1];
+		my $IP_Extract = $DB_Notes[2];
+		my $Notes_Extract = $DB_Notes[3];
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga-host-templates.cgi">
+<a href="/Icinga/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1347,20 +1510,28 @@ print <<ENDHTML;
 <table align="center">
 	<tr>
 		<td>Hostname:</td>
-		<td style='color: #00FF00; text-align: left;'>$Template_Extract</td>
+		<td style='color: #00FF00; text-align: left;'>$Host_Extract</td>
+	</tr>
+	<tr>
+		<td>Alias:</td>
+		<td style='color: #00FF00; text-align: left;'>$Alias_Extract</td>
+	</tr>
+	<tr>
+		<td>IP:</td>
+		<td style='color: #00FF00; text-align: left;'>$IP_Extract</td>
 	</tr>
 </table>
 
-<form action='/Icinga/icinga-host-templates.cgi' method='post' >
+<form action='/Icinga/icinga2-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Notes:</td>
-		<td><textarea rows='4' cols='50' maxlength='255' name='Template_Note_Update' placeholder="$Notes_Extract" autofocus>$Notes_Extract</textarea></td>
+		<td><textarea rows='4' cols='50' maxlength='255' name='Host_Note_Update' placeholder="$Notes_Extract" autofocus>$Notes_Extract</textarea></td>
 	</tr>
 </table>
 
-<input type='hidden' name='Template_Note_Update_ID' value='$Template_Notes'>
+<input type='hidden' name='Host_Note_Update_ID' value='$Host_Notes'>
 
 <hr width="50%">
 <div style="text-align: center"><input type=submit name='ok' value='Update Notes'></div>
@@ -1377,21 +1548,21 @@ ENDHTML
 
 sub update_notes {
 
-		my $Host_Update = $DB_Connection->prepare("UPDATE `icinga2_hosttemplate` SET
+		my $Host_Update = $DB_Connection->prepare("UPDATE `icinga2_host` SET
 			`notes` = ?,
 			`last_modified` = NOW(),
-			`modified_by` = '$Username'
+			`modified_by` = '$User_Name'
 			WHERE `id` = ?"
 		);
 
-		$Host_Update->execute($Template_Note_Update, $Template_Note_Update_ID)
+		$Host_Update->execute($Host_Note_Update, $Host_Note_Update_ID)
 
 } # sub update_notes
 
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>13,
+		-cols=>16,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -1403,66 +1574,72 @@ sub html_output {
 	);
 
 
-	$Table->addRow ( "ID", "Name", "Host Groups", "Parent", "Host Templates", "Contact Groups", "Active",
-	"Last Modified", "Modified By", "Template Notes", "View Config", "Edit (todo)", "Delete" );
+	$Table->addRow ( "ID", "Name", "Alias", "IP", "Host Groups", "Parent", "Children", "Host Templates", "Contact Groups", "Active",
+	"Last Modified", "Modified By", "Host Notes", "View Config", "Edit (todo)", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Host_Templates_Count = $DB_Connection->prepare("SELECT `id` FROM `icinga2_hosttemplate`");
-		$Select_Host_Templates_Count->execute( );
-		my $Total_Rows = $Select_Host_Templates_Count->rows();
+	my $Select_Hosts_Count = $DB_Connection->prepare("SELECT `id` FROM `icinga2_host`");
+		$Select_Hosts_Count->execute( );
+		my $Total_Rows = $Select_Hosts_Count->rows();
 
-	my $Select_Host_Templates = $DB_Connection->prepare("SELECT `id`, `template_name`, `active`, `last_modified`, `modified_by`
-	FROM `icinga2_hosttemplate`
+	my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `host_name`, `alias`, `address`, `active`, `last_modified`, `modified_by`
+	FROM `icinga2_host`
 	WHERE (`id` LIKE '%$Filter%'
-	OR `template_name` LIKE '%$Filter%')
-	ORDER BY `template_name` ASC
+	OR `host_name` LIKE '%$Filter%'
+	OR `alias` LIKE '%$Filter%'
+	OR `address` LIKE '%$Filter%')
+	ORDER BY `host_name` ASC
 	LIMIT ?, ?");
 
-	$Select_Host_Templates->execute(0, $Rows_Returned);
-	my $Rows = $Select_Host_Templates->rows();
+	$Select_Hosts->execute(0, $Rows_Returned);
+	my $Rows = $Select_Hosts->rows();
 	
 	$Table->setRowClass(1, 'tbrow1');
 
 	my $User_Row_Count=1;
-	while ( my @DB_Host_Template = $Select_Host_Templates->fetchrow_array() )
+	while ( my @DB_Host = $Select_Hosts->fetchrow_array() )
 	{
 	
 		$User_Row_Count++;
 	
-		my $ID_Extract = $DB_Host_Template[0];
+		my $ID_Extract = $DB_Host[0];
 			my $ID_Extract_Display = $ID_Extract;
 			$ID_Extract_Display =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Name_Extract = $DB_Host_Template[1];
+		my $Name_Extract = $DB_Host[1];
 			my $Name = $Name_Extract;
 			$Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active_Extract = $DB_Host_Template[2];
-		my $Last_Modified_Extract = $DB_Host_Template[3];
-		my $Modified_By_Extract = $DB_Host_Template[4];
+		my $Alias_Extract = $DB_Host[2];
+			$Alias_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $IP_Extract = $DB_Host[3];
+			$IP_Extract =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Active_Extract = $DB_Host[4];
+		my $Last_Modified_Extract = $DB_Host[5];
+		my $Modified_By_Extract = $DB_Host[6];
 
 
 		## Host to Host Group
 
 		my $Host_Groups;
-		my $Select_Host_Template_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
-		FROM `icinga2_lnkHosttemplateToHostgroup`
+		my $Select_Host_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHostToHostgroup`
 		WHERE (`idMaster` = '$ID_Extract')");
-		$Select_Host_Template_Group_Link->execute();
+		$Select_Host_Group_Link->execute();
 
-			while ( my @DB_Group_Link = $Select_Host_Template_Group_Link->fetchrow_array() )
+			while ( my @DB_Group_Link = $Select_Host_Group_Link->fetchrow_array() )
 			{
 
 				my $Host_Link = $DB_Group_Link[0];
 
-				my $Select_Host_Template = $DB_Connection->prepare("SELECT `hostgroup_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `hostgroup_name`
 				FROM `icinga2_hostgroup`
 				WHERE `id` = '$Host_Link'");
-				$Select_Host_Template->execute();
+				$Select_Host->execute();
 
-				while ( my @DB_Group = $Select_Host_Template->fetchrow_array() )
+				while ( my @DB_Group = $Select_Host->fetchrow_array() )
 				{
 
 					my $Host_Group = $DB_Group[0];
-					$Host_Groups = "<a href='/Icinga/icinga-host-groups.cgi?Filter=$Host_Group'>$Host_Group</a><br />".$Host_Groups;
+					$Host_Groups = "<a href='/Icinga/icinga2-host-groups.cgi?Filter=$Host_Group'>$Host_Group</a><br />".$Host_Groups;
 
 				}
 			}
@@ -1472,56 +1649,84 @@ sub html_output {
 		## Host Parent Resolution
 
 		my $Host_Parents;
-		my $Select_Host_Template_Parent_Link = $DB_Connection->prepare("SELECT `idSlave`
-		FROM `icinga2_lnkHosttemplateToHost`
+		my $Select_Host_Parent_Link = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHostToHost`
 		WHERE (`idMaster` = '$ID_Extract')");
-		$Select_Host_Template_Parent_Link->execute();
+		$Select_Host_Parent_Link->execute();
 
-			while ( my @DB_Parent_Link = $Select_Host_Template_Parent_Link->fetchrow_array() )
+			while ( my @DB_Parent_Link = $Select_Host_Parent_Link->fetchrow_array() )
 			{
 
 				my $Host_Link = $DB_Parent_Link[0];
 
-				my $Select_Host_Template = $DB_Connection->prepare("SELECT `host_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
 				FROM `icinga2_host`
 				WHERE `id` = '$Host_Link'");
-				$Select_Host_Template->execute();
+				$Select_Host->execute();
 
-				while ( my @DB_Parent = $Select_Host_Template->fetchrow_array() )
+				while ( my @DB_Parent = $Select_Host->fetchrow_array() )
 				{
 
 					my $Host_Parent = $DB_Parent[0];
-					$Host_Parents = "<a href='/Icinga/icinga-host-templates.cgi?Filter=$Host_Parent'>$Host_Parent</a><br />".$Host_Parents;
+					$Host_Parents = "<a href='/Icinga/icinga2-hosts.cgi?Filter=$Host_Parent'>$Host_Parent</a><br />".$Host_Parents;
 
 				}
 			}
 
 		## / Host Parent Resolution
 
+		## Host Children Resolution
+
+		my $Host_Children;
+		my $Select_Host_Child_Link = $DB_Connection->prepare("SELECT `idMaster`
+		FROM `icinga2_lnkHostToHost`
+		WHERE (`idSlave` = '$ID_Extract')");
+		$Select_Host_Child_Link->execute();
+
+			while ( my @DB_Child_Link = $Select_Host_Child_Link->fetchrow_array() )
+			{
+
+				my $Host_Link = $DB_Child_Link[0];
+
+				my $Select_Host = $DB_Connection->prepare("SELECT `host_name`
+				FROM `icinga2_host`
+				WHERE `id` = '$Host_Link'");
+				$Select_Host->execute();
+
+				while ( my @DB_Child = $Select_Host->fetchrow_array() )
+				{
+
+					my $Host_Child = $DB_Child[0];
+					$Host_Children = "<a href='/Icinga/icinga2-hosts.cgi?Filter=$Host_Child'>$Host_Child</a><br />".$Host_Children;
+
+				}
+			}
+
+		## / Host Children Resolution
 
 		## Host Template Resolution
 
 		my $Host_Templates;
-		my $Select_Host_Template_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
-		FROM `icinga2_lnkHosttemplateToHosttemplate`
+		my $Select_Host_Template_Link = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHostToHosttemplate`
 		WHERE (`idMaster` = '$ID_Extract')");
-		$Select_Host_Template_Template_Link->execute();
+		$Select_Host_Template_Link->execute();
 
-			while ( my @DB_Template_Link = $Select_Host_Template_Template_Link->fetchrow_array() )
+			while ( my @DB_Template_Link = $Select_Host_Template_Link->fetchrow_array() )
 			{
 
 				my $Host_Link = $DB_Template_Link[0];
 
-				my $Select_Host_Template = $DB_Connection->prepare("SELECT `template_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `template_name`
 				FROM `icinga2_hosttemplate`
 				WHERE `id` = '$Host_Link'");
-				$Select_Host_Template->execute();
+				$Select_Host->execute();
 
-				while ( my @DB_Template = $Select_Host_Template->fetchrow_array() )
+				while ( my @DB_Template = $Select_Host->fetchrow_array() )
 				{
 
 					my $Host_Template = $DB_Template[0];
-					$Host_Templates = "<a href='/Icinga/icinga-host-templates.cgi?Filter=$Host_Template'>$Host_Template</a><br />".$Host_Templates;
+					$Host_Templates = "<a href='/Icinga/icinga2-host-templates.cgi?Filter=$Host_Template'>$Host_Template</a><br />".$Host_Templates;
 
 				}
 			}
@@ -1531,26 +1736,26 @@ sub html_output {
 		## Host Contact Group Resolution
 
 		my $Host_Contact_Groups;
-		my $Select_Host_Template_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
-		FROM `icinga2_lnkHosttemplateToContactgroup`
+		my $Select_Host_Contact_Group_Link = $DB_Connection->prepare("SELECT `idSlave`
+		FROM `icinga2_lnkHostToContactgroup`
 		WHERE (`idMaster` = '$ID_Extract')");
-		$Select_Host_Template_Contact_Group_Link->execute();
+		$Select_Host_Contact_Group_Link->execute();
 
-			while ( my @DB_Contact_Group_Link = $Select_Host_Template_Contact_Group_Link->fetchrow_array() )
+			while ( my @DB_Contact_Group_Link = $Select_Host_Contact_Group_Link->fetchrow_array() )
 			{
 
 				my $Host_Link = $DB_Contact_Group_Link[0];
 
-				my $Select_Host_Template = $DB_Connection->prepare("SELECT `contactgroup_name`
+				my $Select_Host = $DB_Connection->prepare("SELECT `contactgroup_name`
 				FROM `icinga2_contactgroup`
 				WHERE `id` = '$Host_Link'");
-				$Select_Host_Template->execute();
+				$Select_Host->execute();
 
-				while ( my @DB_Contact_Group = $Select_Host_Template->fetchrow_array() )
+				while ( my @DB_Contact_Group = $Select_Host->fetchrow_array() )
 				{
 
 					my $Host_Contact_Group = $DB_Contact_Group[0];
-					$Host_Contact_Groups = "<a href='/Icinga/icinga-contact-groups.cgi?Filter=$Host_Contact_Group'>$Host_Contact_Group</a><br />".$Host_Contact_Groups;
+					$Host_Contact_Groups = "<a href='/Icinga/icinga2-contact-groups.cgi?Filter=$Host_Contact_Group'>$Host_Contact_Group</a><br />".$Host_Contact_Groups;
 
 				}
 			}
@@ -1560,36 +1765,40 @@ sub html_output {
 
 		$Host_Groups =~ s/,$//g;
 		$Host_Parents =~ s/,$//g;
+		$Host_Children =~ s/,$//g;
 		$Host_Templates =~ s/,$//g;
 
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='/Icinga/icinga-host-templates.cgi?Edit_Host_Template=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='/Icinga/icinga-host-templates.cgi?Edit_Host_Template=$ID_Extract'>$Name</a>",
+			"<a href='/Icinga/icinga2-hosts.cgi?Edit_Host=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga2-hosts.cgi?Edit_Host=$ID_Extract'>$Name</a>",
+			$Alias_Extract,
+			$IP_Extract,
 			$Host_Groups,
 			$Host_Parents,
+			$Host_Children,
 			$Host_Templates,
 			$Host_Contact_Groups,
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga-host-templates.cgi?Template_Notes=$ID_Extract'><img src=\"/Resources/Images/add-note.png\" alt=\"View/Edit Notes for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-host-templates.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-host-templates.cgi?Edit_Host_Template=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-host-templates.cgi?Delete_Host_Template=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga2-hosts.cgi?Host_Notes=$ID_Extract'><img src=\"/Resources/Images/add-note.png\" alt=\"View/Edit Notes for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga2-hosts.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga2-hosts.cgi?Edit_Host=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga2-hosts.cgi?Delete_Host=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
-		for (7 .. 13) {
+		for (10 .. 16) {
 			$Table->setColWidth($_, '1px');
 			$Table->setColAlign($_, 'center');
 		}
 
 		if ($Active_Extract eq 'Yes') {
-			$Table->setCellClass ($User_Row_Count, 7, 'tbrowgreen');
+			$Table->setCellClass ($User_Row_Count, 10, 'tbrowgreen');
 		}
 		else {
-			$Table->setCellClass ($User_Row_Count, 7, 'tbroworange');
+			$Table->setCellClass ($User_Row_Count, 10, 'tbroworange');
 		}
 
 	}
@@ -1600,7 +1809,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/Icinga/icinga-host-templates.cgi' method='post' >
+			<form action='/Icinga/icinga2-hosts.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1631,37 +1840,37 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/Icinga/icinga-host-templates.cgi' method='post' >
+			<form action='/Icinga/icinga2-hosts.cgi' method='post' >
 			<table>
 				<tr>
-					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Host Template</span></td>
+					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Host</span></td>
 				</tr>
 				<tr>
-					<td align="center"><input type='submit' name='Add_Host_Template' value='Add Host Template'></td>
+					<td align="center"><input type='submit' name='Add_Host' value='Add Host'></td>
 				</tr>
 			</table>
 			</form>
 		</td>
 		<td align="right">
-			<form action='/Icinga/icinga-host-templates.cgi' method='post' >
+			<form action='/Icinga/icinga2-hosts.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Host</span></td>
 				</tr>
 				<tr>
-					<td style="text-align: right;"><input type=submit name='Edit Host Template' value='Edit Host'></td>
+					<td style="text-align: right;"><input type=submit name='Edit Host' value='Edit Host'></td>
 					<td align="center">
-						<select name='Edit_Host_Template' style="width: 150px">
+						<select name='Edit_Host' style="width: 150px">
 ENDHTML
 
-						my $Template_List_Query = $DB_Connection->prepare("SELECT `id`, `template_name`
-						FROM `icinga2_hosttemplate`
-						ORDER BY `template_name` ASC");
-						$Template_List_Query->execute( );
+						my $Host_List_Query = $DB_Connection->prepare("SELECT `id`, `host_name`
+						FROM `icinga2_host`
+						ORDER BY `host_name` ASC");
+						$Host_List_Query->execute( );
 						
-						while ( (my $ID, my $Template_Name) = my @Template_List_Query = $Template_List_Query->fetchrow_array() )
+						while ( (my $ID, my $Host_Name) = my @Host_List_Query = $Host_List_Query->fetchrow_array() )
 						{
-							print "<option value='$ID'>$Template_Name</option>";
+							print "<option value='$ID'>$Host_Name</option>";
 						}
 
 print <<ENDHTML;
@@ -1674,7 +1883,7 @@ print <<ENDHTML;
 	</tr>
 </table>
 
-<p style="font-size:14px; font-weight:bold;">Icinga Host Templates | Host Templates Displayed: $Rows of $Total_Rows</p>
+<p style="font-size:14px; font-weight:bold;">Icinga Hosts | Hosts Displayed: $Rows of $Total_Rows</p>
 
 $Table
 

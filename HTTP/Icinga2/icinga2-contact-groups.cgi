@@ -72,7 +72,7 @@ elsif ($Group_Add && $Alias_Add) {
 		$Session->flush();
 	}
 	
-	print "Location: /Icinga/icinga-host-groups.cgi\n\n";
+	print "Location: /Icinga/icinga2-contact-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Group) {
@@ -85,7 +85,7 @@ elsif ($Group_Edit_Post) {
 	my $Message_Green="$Group_Edit ($Alias_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga-host-groups.cgi\n\n";
+	print "Location: /Icinga/icinga2-contact-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Group) {
@@ -98,7 +98,7 @@ elsif ($Group_Delete_Post) {
 	my $Message_Green="$Group_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga-host-groups.cgi\n\n";
+	print "Location: /Icinga/icinga2-contact-groups.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
@@ -117,14 +117,14 @@ sub html_add_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga-host-groups.cgi">
+<a href="/Icinga/icinga2-contact-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Group</h3>
 
-<form action='/Icinga/icinga-host-groups.cgi' method='post' >
+<form action='/Icinga/icinga2-contact-groups.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -156,8 +156,8 @@ ENDHTML
 sub add_group {
 
 	my $Group_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
-	FROM `icinga2_hostgroup`
-	WHERE `hostgroup_name` = '$Group_Add'");
+	FROM `icinga2_contactgroup`
+	WHERE `contactgroup_name` = '$Group_Add'");
 
 	$Group_Insert_Check->execute( );
 	my $Group_Rows = $Group_Insert_Check->rows();
@@ -172,15 +172,15 @@ sub add_group {
 			my $Message_Red="$Group_Add already exists (ID: $ID_Extract, Alias: $Alias_Extract)";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga-host-groups.cgi\n\n";
+			print "Location: /Icinga/icinga2-contact-groups.cgi\n\n";
 			exit(0);
 
 		}
 	}
 	else {
-		my $Group_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_hostgroup` (
+		my $Group_Insert = $DB_Connection->prepare("INSERT INTO `icinga2_contactgroup` (
 			`id`,
-			`hostgroup_name`,
+			`contactgroup_name`,
 			`alias`,
 			`active`,
 			`last_modified`,
@@ -202,8 +202,8 @@ sub add_group {
 
 sub html_edit_group {
 
-	my $Select_Group = $DB_Connection->prepare("SELECT `hostgroup_name`, `alias`, `active`
-	FROM `icinga2_hostgroup`
+	my $Select_Group = $DB_Connection->prepare("SELECT `contactgroup_name`, `alias`, `active`
+	FROM `icinga2_contactgroup`
 	WHERE `id` = '$Edit_Group'");
 	$Select_Group->execute( );
 	
@@ -216,14 +216,14 @@ sub html_edit_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga-host-groups.cgi">
+<a href="/Icinga/icinga2-contact-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Group <span style="color: #00FF00;">$Group_Extract</span></h3>
 
-<form action='/Icinga/icinga-host-groups.cgi' method='post' >
+<form action='/Icinga/icinga2-contact-groups.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -271,8 +271,8 @@ ENDHTML
 sub edit_group {
 
 	my $Group_Insert_Check = $DB_Connection->prepare("SELECT `id`, `alias`
-	FROM `icinga2_hostgroup`
-	WHERE `hostgroup_name` = '$Group_Edit'
+	FROM `icinga2_contactgroup`
+	WHERE `contactgroup_name` = '$Group_Edit'
 	AND `id` != '$Group_Edit_Post'");
 
 	$Group_Insert_Check->execute( );
@@ -288,15 +288,15 @@ sub edit_group {
 			my $Message_Red="$Group_Edit already exists - Conflicting Group ID (This entry): $Group_Edit_Post, Existing Group ID: $ID_Extract, Existing Group Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga-host-groups.cgi\n\n";
+			print "Location: /Icinga/icinga2-contact-groups.cgi\n\n";
 			exit(0);
 
 		}
 	}
 	else {
 
-		my $Group_Update = $DB_Connection->prepare("UPDATE `icinga2_hostgroup` SET
-			`hostgroup_name` = ?,
+		my $Group_Update = $DB_Connection->prepare("UPDATE `icinga2_contactgroup` SET
+			`contactgroup_name` = ?,
 			`alias` = ?,
 			`active` = ?,
 			`last_modified` = NOW(),
@@ -311,8 +311,8 @@ sub edit_group {
 
 sub html_delete_group {
 
-	my $Select_Group = $DB_Connection->prepare("SELECT `hostgroup_name`, `alias`
-	FROM `icinga2_hostgroup`
+	my $Select_Group = $DB_Connection->prepare("SELECT `contactgroup_name`, `alias`
+	FROM `icinga2_contactgroup`
 	WHERE `id` = '$Delete_Group'");
 	$Select_Group->execute( );
 	
@@ -324,15 +324,15 @@ sub html_delete_group {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga-host-groups.cgi">
+<a href="/Icinga/icinga2-contact-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Group</h3>
 
-<form action='/Icinga/icinga-host-groups.cgi' method='post' >
-<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host group?</p>
+<form action='/Icinga/icinga2-contact-groups.cgi' method='post' >
+<p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Group Name:</td>
@@ -361,7 +361,7 @@ ENDHTML
 
 sub delete_group {
 
-	$DB_Connection->do("DELETE from `icinga2_hostgroup`
+	$DB_Connection->do("DELETE from `icinga2_contactgroup`
 				WHERE `id` = '$Group_Delete_Post'");
 
 } # sub delete_group
@@ -369,8 +369,8 @@ sub delete_group {
 sub html_display_config {
 
 	my $Members;
-	my $Select_Group = $DB_Connection->prepare("SELECT `hostgroup_name`, `alias`, `active`, `last_modified`, `modified_by`
-	FROM `icinga2_hostgroup`
+	my $Select_Group = $DB_Connection->prepare("SELECT `contactgroup_name`, `alias`, `active`, `last_modified`, `modified_by`
+	FROM `icinga2_contactgroup`
 	WHERE `id` = ?");
 	$Select_Group->execute($Display_Config);
 	
@@ -384,7 +384,7 @@ sub html_display_config {
 		my $Modified_By_Extract = $DB_Group[4];
 
 		my $Select_Members = $DB_Connection->prepare("SELECT `idMaster`
-		FROM `icinga2_lnkHostToHostgroup`
+		FROM `icinga2_lnkContactToContactgroup`
 		WHERE `idSlave` = ?");
 		$Select_Members->execute($Display_Config);
 		
@@ -392,8 +392,8 @@ sub html_display_config {
 		{
 			my $idMaster = $DB_Members[0];
 			
-			my $Select_Member_Names = $DB_Connection->prepare("SELECT `host_name`
-			FROM `icinga2_host`
+			my $Select_Member_Names = $DB_Connection->prepare("SELECT `contact_name`
+			FROM `icinga2_contact`
 			WHERE `id` = ?");
 			$Select_Member_Names->execute($idMaster);
 
@@ -408,37 +408,38 @@ sub html_display_config {
 
 		if (!$Active_Extract) {
 			$Active_Extract="<span style='color: #FF8A00;'>
-			This host group is not active, so this config will not be written. 
-			Make this host group active to use it in Icinga.</span>";
+			This contact group is not active, so this config will not be written. 
+			Make this contact group active to use it in Icinga.</span>";
 		}
 		else {
 			$Active_Extract="";
 		}
 
 print <<ENDHTML;
-<div id="wide-popup-box">
-<a href="/Icinga/icinga-host-groups.cgi">
+<div id="small-popup-box">
+<a href="/Icinga/icinga2-contact-groups.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Live Config for <span style="color: #00FF00;">$Group_Extract</span></h3>
-<p>This config is automatically applied regularly. The config below illustrates how this host group's config will be written.</p>
+
+<p>This config is automatically applied regularly. The config below illustrates how this contact group's config will be written.</p>
 <p>$Active_Extract</p>
 <div style="text-align: left;">
 <code>
 <table align = "center">
 	<tr>
-		<td colspan='3'>## Host Group ID: $Display_Config</td>
+		<td colspan='3'>## Contact Group ID: $Display_Config</td>
 	</tr>
 	<tr>
 		<td colspan='3'>## Modified $Last_Modified_Extract by $Modified_By_Extract</td>
 	</tr>
 	<tr>
-		<td colspan='3'>define hostgroup {</td>
+		<td colspan='3'>define contactgroup {</td>
 	</tr>
 	<tr>
-		<td style='padding-left: 2em;'>hostgroup_name</td>
+		<td style='padding-left: 2em;'>contactgroup_name</td>
 		<td style='padding-left: 2em;'>$Group_Extract</td>
 	</tr>
 	<tr>
@@ -483,16 +484,16 @@ sub html_output {
 	$Table->addRow ( "ID", "Name", "Alias", "Active", "Last Modified", "Modified By", "View Config", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
-	my $Select_Groups_Count = $DB_Connection->prepare("SELECT `id` FROM `icinga2_hostgroup`");
+	my $Select_Groups_Count = $DB_Connection->prepare("SELECT `id` FROM `icinga2_contactgroup`");
 		$Select_Groups_Count->execute( );
 		my $Total_Rows = $Select_Groups_Count->rows();
 
-	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `hostgroup_name`, `alias`, `active`, `last_modified`, `modified_by`
-	FROM `icinga2_hostgroup`
+	my $Select_Groups = $DB_Connection->prepare("SELECT `id`, `contactgroup_name`, `alias`, `active`, `last_modified`, `modified_by`
+	FROM `icinga2_contactgroup`
 	WHERE (`id` LIKE '%$Filter%'
-	OR `hostgroup_name` LIKE '%$Filter%'
+	OR `contactgroup_name` LIKE '%$Filter%'
 	OR `alias` LIKE '%$Filter%')
-	ORDER BY `hostgroup_name` ASC
+	ORDER BY `contactgroup_name` ASC
 	LIMIT ?, ?");
 
 	$Select_Groups->execute(0, $Rows_Returned);
@@ -505,7 +506,7 @@ sub html_output {
 	{
 	
 		$User_Row_Count++;
-	
+
 		my $ID_Extract = $DB_Group[0];
 			my $ID_Extract_Display = $ID_Extract;
 			$ID_Extract_Display =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
@@ -520,15 +521,15 @@ sub html_output {
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='/Icinga/icinga-host-groups.cgi?Edit_Group=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='/Icinga/icinga-host-groups.cgi?Edit_Group=$ID_Extract'>$Name_Extract</a>",
+			"<a href='/Icinga/icinga2-contact-groups.cgi?Edit_Group=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga/icinga2-contact-groups.cgi?Edit_Group=$ID_Extract'>$Name_Extract</a>",
 			$Alias_Extract,
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga-host-groups.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-host-groups.cgi?Edit_Group=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga-host-groups.cgi?Delete_Group=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga/icinga2-contact-groups.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga2-contact-groups.cgi?Edit_Group=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga/icinga2-contact-groups.cgi?Delete_Group=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		for (4 .. 9) {
@@ -551,7 +552,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/Icinga/icinga-host-groups.cgi' method='post' >
+			<form action='/Icinga/icinga2-contact-groups.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -577,7 +578,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="right">
-			<form action='/Icinga/icinga-host-groups.cgi' method='post' >
+			<form action='/Icinga/icinga2-contact-groups.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Group</span></td>
@@ -591,7 +592,7 @@ print <<ENDHTML;
 	</tr>
 </table>
 
-<p style="font-size:14px; font-weight:bold;">Icinga Host Groups | Groups Displayed: $Rows of $Total_Rows</p>
+<p style="font-size:14px; font-weight:bold;">Icinga Contact Groups | Groups Displayed: $Rows of $Total_Rows</p>
 
 $Table
 

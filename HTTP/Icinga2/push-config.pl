@@ -15,7 +15,7 @@ my $Version = Version();
 my $Date_Time = strftime "%Y-%m-%d %H:%M:%S", localtime;
 my $Config_Path = '/etc/icinga2/conf.d'; # No trailing slash
 
-#&write_time_periods;
+&write_time_periods;
 #&write_contact_groups;
 #&write_host_groups;
 #&write_service_groups;
@@ -47,7 +47,7 @@ sub write_time_periods {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Time periods defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 	while ( my @DB_Time = $Select_Time->fetchrow_array() )
@@ -84,33 +84,33 @@ sub write_time_periods {
 
 		print FILE "## Time Period ID: $Time_ID_Extract\n";
 		print FILE "## Modified $Last_Modified_Extract by $Modified_By_Extract\n";
-		print FILE "define timeperiod {\n";
-		print FILE "	timeperiod_name	$Time_Name_Extract\n";
-		print FILE "	alias		$Alias_Extract\n";
+		print FILE "object TimePeriod \"$Time_Name_Extract\" {\n";
+		#print FILE "	\"display_name\" = \"$Alias_Extract\"\n";
+		print FILE "ranges = {\n";
 
 		if ($Sunday) {
-			print FILE "	sunday		$Sunday\n";
+			print FILE "	\"sunday\" = \"$Sunday\"\n";
 		}
 		if ($Monday) {
-			print FILE "	monday		$Monday\n";
+			print FILE "	\"monday\" = \"$Monday\"\n";
 		}
 		if ($Tuesday) {
-			print FILE "	tuesday		$Tuesday\n";
+			print FILE "	\"tuesday\" = \"$Tuesday\"\n";
 		}
 		if ($Wednesday) {
-			print FILE "	wednesday	$Wednesday\n";
+			print FILE "	\"wednesday\" = \"$Wednesday\"\n";
 		}
 		if ($Thursday) {
-			print FILE "	thursday	$Thursday\n";
+			print FILE "	\"thursday\" = \"$Thursday\"\n";
 		}
 		if ($Friday) {
-			print FILE "	friday		$Friday\n";
+			print FILE "	\"friday\" = \"$Friday\"\n";
 		}
 		if ($Saturday) {
-			print FILE "	saturday	$Saturday\n";
+			print FILE "	\"saturday\" = \"$Saturday\"\n";
 		}
 
-		print FILE "}\n\n";
+		print FILE "\t}\n}\n\n";
 
 	}
 
@@ -137,7 +137,7 @@ sub write_host_groups {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Host groups defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 
@@ -211,7 +211,7 @@ sub write_service_groups {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Service groups defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 
@@ -259,7 +259,7 @@ sub write_contact_groups {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Contact groups defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 
@@ -336,7 +336,7 @@ sub write_host_templates {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Templates defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 	
@@ -729,7 +729,7 @@ sub write_service_templates {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Templates defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 	
@@ -1071,6 +1071,7 @@ sub write_service_templates {
 #			}
 			if ($Check_Command) {
 				$Check_Command =~ s/\"/\\"/g;
+				$Check_Command =~ s/(.*?)!.*/$1/g;
 				print FILE "	check_command = \"$Check_Command\"\n";
 			}
 #			if ($Active_Checks_Enabled_Extract) {
@@ -1167,7 +1168,7 @@ sub write_contacts {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Contacts defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 
@@ -1301,7 +1302,7 @@ sub write_hosts {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Hosts defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 	
@@ -1630,7 +1631,7 @@ sub write_services {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Services defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 
@@ -1895,6 +1896,7 @@ sub write_services {
 #			}
 			if ($Check_Command_Extract) {
 				$Check_Command_Extract =~ s/\"/\\"/g;
+				$Check_Command_Extract =~ s/(.*?)!.*/$1/g;
 				print FILE "	check_command = \"$Check_Command_Extract\"\n";
 			}
 #			if ($Active_Checks_Enabled_Extract && $Active_Checks_Enabled_Extract ne 2) {
@@ -1987,7 +1989,7 @@ sub write_commands {
 	print FILE "## This file is part of a wider system and is automatically overwritten often\n";
 	print FILE "## View the changelog or README files for more information.\n";
 	print FILE "## Commands defined in file: $Rows\n";
-	print FILE "########################################\n";
+	print FILE "#########################################################################\n";
 	print FILE "\n\n";
 
 	while ( my @DB_Command = $Select_Command->fetchrow_array() )
@@ -1996,6 +1998,7 @@ sub write_commands {
 		my $Command_ID_Extract = $DB_Command[0];
 		my $Command_Extract = $DB_Command[1];
 		my $Command_Line_Extract = $DB_Command[2];
+			$Command_Line_Extract =~ s/"/\\"/g;
 		my $Last_Modified_Extract = $DB_Command[3];
 		my $Modified_By_Extract = $DB_Command[4];
 
