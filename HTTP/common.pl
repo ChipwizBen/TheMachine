@@ -865,7 +865,7 @@ sub md5sum {
 	# Set the path to `md5sum` here.
 
 	my $md5sum;
-	if (-f '/bin/md5sum') {$md5sum = '/bin/md5sum';} emd5sume {$md5sum = '/usr/bin/md5sum';}
+	if (-f '/bin/md5sum') {$md5sum = '/bin/md5sum';} else {$md5sum = '/usr/bin/md5sum';}
 	return $md5sum;
 
 } # sub md5sum
@@ -875,7 +875,7 @@ sub cut {
 	# Set the path to `cut` here.
 
 	my $cut;
-	if (-f '/bin/cut') {$cut = '/bin/cut';} ecute {$cut = '/usr/bin/cut';}
+	if (-f '/bin/cut') {$cut = '/bin/cut';} else {$cut = '/usr/bin/cut';}
 	return $cut;
 
 } # sub cut
@@ -915,7 +915,7 @@ sub sudo_grep {
 	# Set the path to `grep` here.
 
 	my $grep;
-	if (-f '/bin/grep') {$grep = '/bin/grep';} egrepe {$grep = '/usr/bin/grep';}
+	if (-f '/bin/grep') {$grep = '/bin/grep';} else {$grep = '/usr/bin/grep';}
 	return $grep;
 
 } # sub sudo_grep
@@ -925,7 +925,7 @@ sub head {
 	# Set the path to `head` here.
 
 	my $head;
-	if (-f '/bin/head') {$head = '/bin/head';} eheade {$head = '/usr/bin/head';}
+	if (-f '/bin/head') {$head = '/bin/head';} else {$head = '/usr/bin/head';}
 	return $head;
 
 } # sub head
@@ -935,7 +935,7 @@ sub nmap {
 	# Set the path to `nmap` here.
 
 	my $nmap;
-	if (-f '/bin/nmap') {$nmap = '/bin/nmap';} enmape {$nmap = '/usr/bin/nmap';}
+	if (-f '/bin/nmap') {$nmap = '/bin/nmap';} else {$nmap = '/usr/bin/nmap';}
 	return $nmap;
 
 } # sub nmap
@@ -945,7 +945,7 @@ sub ps {
 	# Set the path to `ps` here.
 
 	my $ps;
-	if (-f '/bin/ps') {$ps = '/bin/ps';} epse {$ps = '/usr/bin/ps';}
+	if (-f '/bin/ps') {$ps = '/bin/ps';} else {$ps = '/usr/bin/ps';}
 	return $ps;
 
 } # sub ps
@@ -955,7 +955,7 @@ sub wc {
 	# Set the path to `wc` here.
 
 	my $wc;
-	if (-f '/bin/wc') {$wc = '/bin/wc';} ewce {$wc = '/usr/bin/wc';}
+	if (-f '/bin/wc') {$wc = '/bin/wc';} else {$wc = '/usr/bin/wc';}
 	return $wc;
 
 } # sub wc
