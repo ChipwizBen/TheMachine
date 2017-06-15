@@ -39,6 +39,21 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	$Table->addRow('2.4.0', 'Fixed an issue with SSH connections trying indefinitely.');
+	$Table->addRow('', 'Fixed an issue with jobs not being removed from the queue when manually stopped.');
+	$Table->addRow('', 'Made counters appear in verbose output for D-Shell connections.');
+	$Table->addRow('', 'Fix for race condition in queuing system.');
+	$Table->addRow('', 'Fixed salt logic fault when encrypting keys.');
+	$Table->addRow('', 'New installs default to assume VMware API is missing.');
+	$Table->addRow('', 'New installs default to local auth.');
+	$Table->addRow('', 'Dropped Host Type requirement from edits and additions for Hosts.');
+	$Table->addRow('', 'Added missing regex for Host Group names in rules. Credit Simon Gray and Dylan Baars for spotting the fault.');
+	$Table->addRow('', 'Paths now stripped and enforced as absolute for taint.');
+	$Table->addRow('', 'Icinga2 config introduced (beta, also not fully complete, but simple operations should work).');
+	$Table->addRow('', 'CSS fixes here and there.');
+	$Table->addRow('', 'Created RPM and SRPM, perl dependencies defined from repos where they exist, otherwise modules bundled under Modules/.');
+	$Table->addRow('<hr />', '');
+
 	## Version 2.3.2
 	$Table->addRow('2.3.2', 'Added the option to strip colour from verbose output to aid viewing in a non-CLI context, such as HTML.');
 	$Table->addRow('---', '');
