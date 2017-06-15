@@ -1,6 +1,8 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 
 require './common.pl';
 my $DB_Connection = DB_Connection();

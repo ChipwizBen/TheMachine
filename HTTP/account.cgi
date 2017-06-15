@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use Digest::SHA qw(sha512_hex);
 
 require './common.pl';
@@ -150,7 +152,8 @@ sub add_key {
 	my $New_Salt;
 	while (length $Key_Lock < 256) {
 		my $Salt = Salt(1);
-		$Salt = $Salt =~ /(.*)/;
+		$Salt =~ /(.*)/;
+		if ($Salt =~ /^(.+)$/) {$Salt = $1;}
 		$New_Salt = $New_Salt . $Salt;
 		$Key_Lock =~ s/\s//g;
 		$Key_Lock = $Key_Lock . $Salt;
@@ -507,10 +510,10 @@ sub html_output {
 		my $Last_Modified = $Keys[5];
 
 		if ($Key_Default) {
-			$Key_Default = "<img src=\"resources/imgs/green.png\" alt=\"Default Key\" >";
+			$Key_Default = "<img src=\"Resources/Images/green.png\" alt=\"Default Key\" >";
 		}
 		else {
-			$Key_Default = "<a href='account.cgi?Default_Key=$Key_ID'><img src=\"resources/imgs/grey.png\" alt=\"Make Key Default\" ></a>";
+			$Key_Default = "<a href='account.cgi?Default_Key=$Key_ID'><img src=\"Resources/Images/grey.png\" alt=\"Make Key Default\" ></a>";
 		}
 
 		$Key_Table->addRow(
@@ -519,7 +522,7 @@ sub html_output {
 			$Passphrase,
 			$Last_Modified,
 			$Key_Default,
-			"<a href='account.cgi?Delete_Key=$Key_ID'><img src=\"resources/imgs/delete.png\" alt=\"Delete Key\" ></a>");
+			"<a href='account.cgi?Delete_Key=$Key_ID'><img src=\"Resources/Images/delete.png\" alt=\"Delete Key\" ></a>");
 
 		if ($Passphrase eq 'Set') {
 			$Key_Table->setCellClass (-1, 3, 'tbrowgreen');

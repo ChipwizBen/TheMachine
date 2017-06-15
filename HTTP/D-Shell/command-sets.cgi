@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use POSIX qw(strftime);
 use HTML::Table;
 
@@ -1205,7 +1207,7 @@ print <<ENDHTML;
 
 <h3 align="center">Queue Command Set <span style='color: #00FF00;'>$Command_Name [Rev. $Command_Revision]</span></h3>
 
-<script src="/resources/jquery.min-2.1.1.js"></script>
+<script src="/Resources/jquery.min-2.1.1.js"></script>
 <SCRIPT LANGUAGE="JavaScript"><!--
 	\$(document).ready(function () {
 		\$('#RunNowToggle').change(function () {
@@ -1697,7 +1699,7 @@ sub html_revision_history {
 
 			my $Diff;
 			if ($Command_Parent) {
-				$Diff = "<a href='/D-Shell/command-sets.cgi?Master_Revision=$Revision_History&Diff=$Revision&Diff_Previous=$Command_Parent'><img src=\"/resources/imgs/diff.png\" alt=\"Diff Rev. $Command_Revision and Rev. $Command_Revision_Previous\" ></a>";
+				$Diff = "<a href='/D-Shell/command-sets.cgi?Master_Revision=$Revision_History&Diff=$Revision&Diff_Previous=$Command_Parent'><img src=\"/Resources/Images/diff.png\" alt=\"Diff Rev. $Command_Revision and Rev. $Command_Revision_Previous\" ></a>";
 			}
 			else {
 				$Diff = 'N/A';
@@ -1899,10 +1901,10 @@ sub html_output {
 			$Command_Owner,
 			$Last_Modified,
 			$Modified_By,
-			"<a href='/D-Shell/command-sets.cgi?Revision_History=$DBID_Clean'><img src=\"/resources/imgs/history.png\" alt=\"Revision History for Command ID $DBID_Clean\" ></a>",
-			"<a href='/D-Shell/command-sets.cgi?Run_Command=$DBID_Clean'><img src=\"/resources/imgs/forward.png\" alt=\"Run Command ID $DBID_Clean\" ></a>",
-			"<a href='/D-Shell/command-sets.cgi?Edit_Command=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Command ID $DBID_Clean\" ></a>",
-			"<a href='/D-Shell/command-sets.cgi?Delete_Command=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Command ID $DBID_Clean\" ></a>"
+			"<a href='/D-Shell/command-sets.cgi?Revision_History=$DBID_Clean'><img src=\"/Resources/Images/history.png\" alt=\"Revision History for Command ID $DBID_Clean\" ></a>",
+			"<a href='/D-Shell/command-sets.cgi?Run_Command=$DBID_Clean'><img src=\"/Resources/Images/forward.png\" alt=\"Run Command ID $DBID_Clean\" ></a>",
+			"<a href='/D-Shell/command-sets.cgi?Edit_Command=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Command ID $DBID_Clean\" ></a>",
+			"<a href='/D-Shell/command-sets.cgi?Delete_Command=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Command ID $DBID_Clean\" ></a>"
 		);
 
 	}

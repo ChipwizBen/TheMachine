@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
@@ -626,14 +628,14 @@ sub html_output {
 		if ($Filter || $ID_Filter) {
 			my $Filter_URL;
 			if ($Filter) {$Filter_URL = "Filter=$Filter"} else {$Filter_URL = "ID_Filter=$ID_Filter"}
-			$View = "<a href='$Me?View_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Redirect ID $DBID_Clean\" ></a>";
-			$Edit = "<a href='$Me?Edit_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Redirect ID $DBID_Clean\" ></a>";
-			$Delete = "<a href='$Me?Delete_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Redirect ID $DBID_Clean\" ></a>";
+			$View = "<a href='$Me?View_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Redirect ID $DBID_Clean\" ></a>";
+			$Edit = "<a href='$Me?Edit_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Redirect ID $DBID_Clean\" ></a>";
+			$Delete = "<a href='$Me?Delete_Redirect=$DBID_Clean&$Filter_URL'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Redirect ID $DBID_Clean\" ></a>";
 		}
 		else {
-			$View = "<a href='$Me?View_Redirect=$DBID_Clean'><img src=\"/resources/imgs/view-notes.png\" alt=\"View Redirect ID $DBID_Clean\" ></a>";
-			$Edit = "<a href='$Me?Edit_Redirect=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Redirect ID $DBID_Clean\" ></a>";
-			$Delete = "<a href='$Me?Delete_Redirect=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Redirect ID $DBID_Clean\" ></a>";
+			$View = "<a href='$Me?View_Redirect=$DBID_Clean'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Redirect ID $DBID_Clean\" ></a>";
+			$Edit = "<a href='$Me?Edit_Redirect=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Redirect ID $DBID_Clean\" ></a>";
+			$Delete = "<a href='$Me?Delete_Redirect=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Redirect ID $DBID_Clean\" ></a>";
 		}
 
 		$Table->addRow(

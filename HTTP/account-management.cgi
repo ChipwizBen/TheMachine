@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use Digest::SHA qw(sha512_hex);
 use HTML::Table;
 
@@ -1243,8 +1245,8 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 		$Lockout_Extract,
 		$Last_Modified_Extract,
 		$Modified_By_Extract,
-		"<a href='account-management.cgi?Edit_User=$ID_Extract'><img src=\"resources/imgs/edit.png\" alt=\"Edit $User_Name_Extract\" ></a>",
-		"<a href='account-management.cgi?Delete_User=$ID_Extract'><img src=\"resources/imgs/delete.png\" alt=\"Delete $User_Name_Extract\" ></a>"
+		"<a href='account-management.cgi?Edit_User=$ID_Extract'><img src=\"Resources/Images/edit.png\" alt=\"Edit $User_Name_Extract\" ></a>",
+		"<a href='account-management.cgi?Delete_User=$ID_Extract'><img src=\"Resources/Images/delete.png\" alt=\"Delete $User_Name_Extract\" ></a>"
 	);
 
 	if ($Admin_Extract eq 'Read-only') {

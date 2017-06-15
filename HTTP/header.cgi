@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use POSIX qw(strftime);
 use HTML::Table;
 
@@ -88,7 +90,7 @@ print <<ENDHTML;
 	<!--[if IE]>
 		<META HTTP-EQUIV=REFRESH CONTENT="0; URL=http://getfirefox.com">
 	<![endif]-->
-	<link rel="icon" href="/resources/imgs/cog-animation-small.gif">
+	<link rel="icon" href="/Resources/Images/cog-animation-small.gif">
 </head>
 <body>
 	<!-- Strip/Buttons/White BKG -->
@@ -110,7 +112,7 @@ print <<ENDHTML;
 
 	<div id="buttons">
 		<ul id="navigation">
-			<li><a href="/index.cgi"><span>&nbsp; Home</span></a>
+			<li><a href="/index.cgi"><span>Home</span></a>
 				<ul>
 					<li><a href="/account.cgi">My Account</a></li>
 					<li><a href="/#">Management <b style="float:right;">></b></a>
@@ -122,10 +124,10 @@ print <<ENDHTML;
 						</ul>
 					</li>
 					<li><a href="/changelog.cgi">System Changelog</a></li>
-					<li><a href="/resources/The_Machine_Manual.pdf">System Manual</a></li>
+					<li><a href="/Resources/The_Machine_Manual.pdf">System Manual</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; IP</span></a>
+			<li><a href="/#"><span>IP</span></a>
 				<ul>
 					<li><a href="/IP/host-types.cgi">Host Types</a></li>
 					<li><a href="/IP/host-groups.cgi">Host Groups</a></li>
@@ -137,55 +139,50 @@ print <<ENDHTML;
 				</ul>
 			</li>
 
-
-
-<!--
-			<li><a href="/#"><span>&nbsp; Icinga</span></a>
+			<li><a href="/#"><span>Icinga2 (beta)</span></a>
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
 						<ul>
-							<li><a href="/Icinga/icinga-host-groups.cgi">Host Groups</a></li>
-							<li><a href="/Icinga/icinga-service-groups.cgi">Service Groups</a></li>
-							<li><a href="/Icinga/icinga-contact-groups.cgi">Contact Groups</a></li>
+							<li><a href="/Icinga2/icinga2-host-groups.cgi">Host Groups</a></li>
+							<li><a href="/Icinga2/icinga2-service-groups.cgi">Service Groups</a></li>
+							<li><a href="/Icinga2/icinga2-contact-groups.cgi">Contact Groups</a></li>
 						</ul>
 					</li>
-					<li><a href="/Icinga/icinga-hosts.cgi">Hosts</a></li>
-					<li><a href="/Icinga/icinga-host-templates.cgi">Host Templates</a></li>
-					<li><a href="/Icinga/icinga-services.cgi">Services</a></li>
-					<li><a href="/Icinga/icinga-service-templates.cgi">Service Templates</a></li>
-					<li><a href="/Icinga/icinga-commands.cgi">Commands</a></li>
-					<li><a href="/Icinga/icinga-contacts.cgi">Contacts</a></li>
-					<li><a href="/Icinga/icinga-time-periods.cgi">Time Periods</a></li>
+					<li><a href="/Icinga2/icinga2-hosts.cgi">Hosts</a></li>
+					<li><a href="/Icinga2/icinga2-host-templates.cgi">Host Templates</a></li>
+					<li><a href="/Icinga2/icinga2-services.cgi">Services</a></li>
+					<li><a href="/Icinga2/icinga2-service-templates.cgi">Service Templates</a></li>
+					<li><a href="/Icinga2/icinga2-commands.cgi">Commands</a></li>
+					<li><a href="/Icinga2/icinga2-contacts.cgi">Contacts</a></li>
+					<li><a href="/Icinga2/icinga2-time-periods.cgi">Time Periods</a></li>
 				</ul>
 			</li>
--->
 
-
-			<li><a href="/#"><span>&nbsp; D-Shell</span></a>
+			<li><a href="/#"><span>D-Shell</span></a>
 				<ul>
 					<li><a href="/D-Shell/command-sets.cgi">Command Sets</a></li>
 					<li><a href="/D-Shell/jobs.cgi">Jobs</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; DNS</span></a>
+			<li><a href="/#"><span>DNS</span></a>
 				<ul>
 					<li><a href="/DNS/domains.cgi">Domains</a></li>
 					<li><a href="/DNS/zone-records.cgi">Zone Records</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; Reverse Proxy</span></a>
+			<li><a href="/#"><span>Reverse Proxy</span></a>
 				<ul>
 					<li><a href="/ReverseProxy/reverse-proxy.cgi">Reverse Proxy</a></li>
 					<li><a href="/ReverseProxy/redirects.cgi">Redirects</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>&nbsp; DSMS</span></a>
+			<li><a href="/#"><span>Sudoers</span></a>
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
 						<ul>
 							<li><a href="/IP/host-groups.cgi">Global Host Groups</a></li>
-							<li><a href="/DSMS/sudoers-user-groups.cgi">DSMS User Groups</a></li>
-							<li><a href="/DSMS/sudoers-command-groups.cgi">DSMS Command Groups</a></li>
+							<li><a href="/DSMS/sudoers-user-groups.cgi">Sudo User Groups</a></li>
+							<li><a href="/DSMS/sudoers-command-groups.cgi">Sudo Command Groups</a></li>
 						</ul>
 					</li>
 					<li><a href="/DSMS/sudoers-hosts.cgi">Sudo Hosts</a></li>
@@ -196,7 +193,7 @@ print <<ENDHTML;
 				</ul>
 			</li>
 		</ul>
-	</div> <!-- buttons -->
+	</div> <!-- Buttons -->
 <br/>
 
 <div id ="tbmessagegreen">

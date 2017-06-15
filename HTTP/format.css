@@ -322,11 +322,12 @@ textarea:focus {
 
 #navigation span {
 	display: block;
-	width: 155px;
+	width: 161px;
 	height: 20px;
 	background-image: url(resources/imgs/buttons/nav.jpg);
 	background-repeat: no-repeat;
 	cursor: pointer;
+    text-align: center;
 	}
 
 #navigation a:hover {
@@ -340,7 +341,7 @@ textarea:focus {
 
 #navigation li ul {
 	position: absolute;
-	width: 143px;
+	width: 144px;
 	visibility: hidden;
 	font-size: 90%;
 	border-style: solid;
@@ -354,7 +355,7 @@ textarea:focus {
 #navigation li ul a:link {
 	background-image:none;
 	padding: 5px;
-	width: 133px;
+	width: 134px;
 	color: #293E77;
 	background-color: #FFFFFF;
 
@@ -368,7 +369,7 @@ textarea:focus {
 #navigation li:hover ul {
 	visibility: visible;
 	float: left;
-	margin: 0px 0px 0px 0px;
+	margin: 0px 0px 0px 7px;
 	padding: 0px 0px 0px 0px;
 	z-index: 100;
 	transition: color 0.3s linear;
@@ -401,8 +402,8 @@ textarea:focus {
 
 #navigation li ul li ul {
 	position: absolute;
-	left: 143px;
-	width: 143px;
+	left: 144px;
+	width: 144px;
 	visibility: hidden;
 	margin-left: 0px;
 	font-size: 90%;
@@ -418,7 +419,7 @@ textarea:focus {
 #navigation li ul li ul a:link {
 	background-image: none;
 	padding: 5px;
-	width: 133px;
+	width: 134px;
 	color: #293E77;
 	background-color: #FFFFFF;
 	}
@@ -462,7 +463,7 @@ textarea:focus {
 #navigation li ul li ul li ul {
 	position: absolute;
 	left: 143px;
-	width: 143px;
+	width: 144px;
 	visibility: hidden;
 	margin-left: 0px;
 	font-size: 90%;

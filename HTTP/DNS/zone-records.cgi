@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 use POSIX qw(strftime);
 
@@ -837,8 +839,8 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/DNS/zone-records.cgi?Edit_Record=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Record ID $DBID_Clean\" ></a>",
-			"<a href='/DNS/zone-records.cgi?Delete_Record=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Record ID $DBID_Clean\" ></a>"
+			"<a href='/DNS/zone-records.cgi?Edit_Record=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Record ID $DBID_Clean\" ></a>",
+			"<a href='/DNS/zone-records.cgi?Delete_Record=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Record ID $DBID_Clean\" ></a>"
 		);
 
 		if ($Zone eq 'Internal') {

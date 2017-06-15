@@ -2,51 +2,71 @@
 
 DIR='/opt/TheMachine'
 User='apache'
+Group='apache'
 
-mkdir -p $DIR/http/Storage/D-Shell/Job-Log
-mkdir -p $DIR/http/Storage/D-Shell/tmp
-chown root:apache $DIR/
+chown root:$Group $DIR/
 chmod g+x $DIR/
-chown -R root:apache $DIR/http/
-chmod 550 $DIR/http/
-chmod 650 $DIR/http/*.cgi
-chmod 650 $DIR/http/*/*.cgi
-chmod 650 $DIR/http/*/*/*.cgi
-chmod 500 $DIR/http/*.pl
-chmod 500 $DIR/http/*/*.pl
-chown root:apache $DIR/http/common.pl $DIR/http/register.pl $DIR/http/checkin.pl
-chmod 650 $DIR/http/common.pl $DIR/http/register.pl $DIR/http/checkin.pl
-chown root:root $DIR/http/DSMS/sudoers-build.pl $DIR/http/DSMS/distribution.pl
-chmod 100 $DIR/http/DSMS/sudoers-build.pl $DIR/http/DSMS/distribution.pl
-chown root:apache $DIR/http/DSMS/environmental-defaults
-chmod 640 $DIR/http/DSMS/environmental-defaults
-chown -R root:apache $DIR/http/format.css $DIR/http/favicon.ico $DIR/http/resources/
-chmod -R 440 $DIR/http/format.css $DIR/http/favicon.ico $DIR/http/resources/
-find $DIR/http/ -type d -exec chmod 550 {} \;
-chown -R root:root $DIR/http/Storage/
-chmod -R 711 $DIR/http/Storage/
-chown $User. $DIR/http/Storage/D-Shell/Job-Log
-chmod 711 $DIR/http/Storage/D-Shell/Job-Log
-chown $User. $DIR/http/Storage/D-Shell/tmp
-chmod 711 $DIR/http/Storage/D-Shell/tmp
-chmod 750 $DIR/http/D-Shell/*.cgi
-chmod 750 $DIR/http/D-Shell/*.pl
-mkdir -p /var/log/httpd/TheMachine/
-ln -s /var/log/httpd/TheMachine/ $DIR/logs
+chown -R root:$Group $DIR/HTTP/
+chmod -R 550 $DIR/HTTP/
+chmod 550 $DIR/HTTP/*.cgi
+chmod 550 $DIR/HTTP/*/*.cgi
+chmod 550 $DIR/HTTP/*/*/*.cgi
+chmod 500 $DIR/HTTP/*.pl
+chmod 500 $DIR/HTTP/*/*.pl
+chown root:$Group $DIR/HTTP/common.pl $DIR/HTTP/register.pl $DIR/HTTP/checkin.pl
+chmod 550 $DIR/HTTP/common.pl $DIR/HTTP/register.pl $DIR/HTTP/checkin.pl
+chown root:root $DIR/HTTP/DSMS/sudoers-build.pl $DIR/HTTP/DSMS/distribution.pl
+chmod 100 $DIR/HTTP/DSMS/sudoers-build.pl $DIR/HTTP/DSMS/distribution.pl
+chown root:$Group $DIR/HTTP/DSMS/environmental-defaults
+chmod 640 $DIR/HTTP/DSMS/environmental-defaults
+chown -R root:$Group $DIR/HTTP/format.css $DIR/HTTP/Resources/
+chmod -R 440 $DIR/HTTP/format.css $DIR/HTTP/Resources/
+find $DIR/HTTP/ -type d -exec chmod 550 {} \;
+chown -R root:root $DIR/HTTP/Storage/
+chmod -R 711 $DIR/HTTP/Storage/
+chown -R $User. $DIR/HTTP/Storage/D-Shell/Job-Log
+chmod -R 711 $DIR/HTTP/Storage/D-Shell/Job-Log
+chown $User. $DIR/HTTP/Storage/D-Shell/tmp
+chmod 711 $DIR/HTTP/Storage/D-Shell/tmp
+chmod 550 $DIR/HTTP/D-Shell/*.cgi
+chmod 550 $DIR/HTTP/D-Shell/*.pl
 
-semanage fcontext -a -t httpd_sys_script_exec_t "$DIR/http(/.*)?"
-setsebool -P httpd_can_sendmail on # Allows apache to send emails
-setsebool -P httpd_enable_cgi on # Allows apache to run CGI
+chown $User:$Group /var/log/TheMachine
+
+# API use only
+chmod 755 $DIR/HTTP/
+chmod 755 $DIR/HTTP/D-Shell/
+chmod 755 $DIR/HTTP/Storage/D-Shell
+chmod 777 $DIR/HTTP/Storage/D-Shell/Job-Log
+chmod 777 $DIR/HTTP/Storage/D-Shell/tmp
+chmod 555 $DIR/HTTP/D-Shell/job-receiver.pl
+chmod 555 $DIR/HTTP/D-Shell/d-shell.pl
+chmod 555 $DIR/HTTP/common.pl
+# / API use only
+
+# SELinux
+setsebool -P httpd_can_sendmail 1 # Allows apache to send emails
+setsebool -P httpd_enable_cgi 1 # Allows apache to run CGI
 setsebool -P httpd_can_network_connect 1 # Allows apache to connect to network
 setsebool -P httpd_can_connect_ldap 1 # Allows apache to connect to AD to auth
-semanage fcontext -a -t httpd_cache_t '$DIR/http/Storage/D-Shell(/.*)?' # Allows apache to write D-Shell config/logs
-semanage fcontext -a -t httpd_cache_t '$DIR/http/Storage/DNS(/.*)?' # Allows apache to write DNS config
-semanage fcontext -a -t httpd_cache_t '$DIR/http/Storage/Sudoers(/.*)?' # Allows apache to write Sudoers config
 
-semodule -r TheMachine
+# Allows apache to exec files
+semanage fcontext -a -t httpd_sys_script_exec_t "$DIR/HTTP(/.*)?"
+# Allows apache to write System logs
+semanage fcontext -a -t httpd_cache_t "/var/log/TheMachine(/.*)?"
+# Allows apache to write D-Shell config/logs
+semanage fcontext -a -t httpd_cache_t "$DIR/HTTP/Storage/D-Shell(/.*)?"
+# Allows apache to write DNS config
+semanage fcontext -a -t httpd_cache_t "$DIR/HTTP/Storage/DNS(/.*)?"
+# Allows apache to write Sudoers config
+semanage fcontext -a -t httpd_cache_t "$DIR/HTTP/Storage/Sudoers(/.*)?"
+
+if [[ $(semodule --list | grep TheMachine) ]]; then
+	semodule -r TheMachine
+fi
 
 cat <<_EOF_> /tmp/TheMachine.te
-module TheMachine 1.0;
+module TheMachine 1.0.0;
 require {
         type unconfined_t;
         type init_t;
@@ -159,7 +179,6 @@ allow httpd_sys_script_t user_devpts_t:chr_file getattr;
 _EOF_
 checkmodule -M -m -o /tmp/TheMachine.mod /tmp/TheMachine.te
 semodule_package -m /tmp/TheMachine.mod -o /tmp/TheMachine.pp
-semodule -i /tmp/TheMachine.pp
-rm -f /tmp/TheMachine*
-
-restorecon -RFv $DIR
+semodule -i /tmp/TheMachine.pp > /dev/null 2>&1
+rm -f /tmp/TheMachine.pp /tmp/TheMachine.mod /tmp/TheMachine.te
+restorecon -RF $DIR

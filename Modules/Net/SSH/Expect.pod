@@ -1,0 +1,558 @@
+=head1 NAME
+
+Net::SSH::Expect - SSH wrapper to execute remote commands
+
+=head1 SYNOPSIS
+
+	use Net::SSH::Expect;
+
+	#
+	# You can do SSH authentication with user-password or without it.
+	#
+
+	# Making an ssh connection with user-password authentication
+	# 1) construct the object
+	my $ssh = Net::SSH::Expect->new (
+	    host => "myserver.com", 
+	    password=> 'pass87word', 
+	    user => 'bnegrao', 
+	    raw_pty => 1
+	);
+
+	# 2) logon to the SSH server using those credentials.
+	# test the login output to make sure we had success
+	my $login_output = $ssh->login();
+	if ($login_output !~ /Welcome/) {
+	    die "Login has failed. Login output was $login_output";
+	}
+	
+	# - now you know you're logged in - #
+
+	# Starting ssh without password
+	# 1) run the constructor
+	my $ssh = Net::SSH::Expect->new (
+	    host => "myserver.com", 
+	    user => 'bnegrao', 
+	    raw_pty => 1
+	);
+	# 2) now start the ssh process
+	$ssh->run_ssh() or die "SSH process couldn't start: $!";
+	
+	# 3) you should be logged on now. Test if you received the remote prompt:
+	($ssh->read_all(2) =~ />\s*\z/) or die "where's the remote prompt?"
+
+	# - now you know you're logged in - #
+
+	# disable terminal translations and echo on the SSH server
+	# executing on the server the stty command:
+	$ssh->exec("stty raw -echo");
+
+	# runs arbitrary commands and print their outputs 
+	# (including the remote prompt comming at the end)
+	my $ls = $ssh->exec("ls -l /");
+	print($ls);
+	
+	my $who = $ssh->exec("who");
+	print ($who);
+	
+	# When running a command that causes a huge output,
+	# lets get the output line by line:
+	$ssh->send("find /");   # using send() instead of exec()
+	my $line;
+	# returns the next line, removing it from the input stream:
+  	while ( defined ($line = $ssh->read_line()) ) {
+	    print $line . "\n";  
+	}
+
+	# take a look in what is immediately available on the input stream
+	print $ssh->peek(0);	# you'll probably see the remote prompt
+ 
+	# the last read_line() on the previous loop will not include the
+	# remote prompt that appears at the end of the output, because the prompt
+	# doesn't end with a '\n' character. So let's remove the remainder
+	# prompt from the input stream:
+	$ssh->eat($ssh->peek(0));  # removes whatever is on the input stream now
+
+	# We can also iterate over the output in chunks,
+	# printing everything that's available at each 1 second:
+	$ssh->send ("find /home");
+	my $chunk;
+	while ($chunk = $ssh->peek(1)) { # grabs chunks of output each 1 second
+	    print $ssh->eat($chunk);
+	}
+
+	# Now let's run an interactive command, like passwd.
+	# This is done combining send() and waitfor() methods together:
+	$ssh->send("passwd");
+	$ssh->waitfor('password:\s*\z', 1) or die "prompt 'password' not found after 1 second";
+	$ssh->send("curren_password");
+	$ssh->waitfor(':\s*\z', 1) or die "prompt 'New password:' not found";
+	$ssh->send("new_password");
+	$ssh->waitfor(':\s*\z', 1) or die "prompt 'Confirm new password:' not found";
+	$ssh->send("new_password");
+
+	# check that we have the system prompt again.
+	my ($before_match, $match) = $ssh->waitfor('>\s*\z', 1);  # waitfor() in a list context
+	die "passwd failed. passwd said '$before_match'." unless ($match);
+
+	# closes the ssh connection
+	$ssh->close();
+
+=head1 DESCRIPTION
+
+This module is a wrapper to the I<ssh> executable that is available in your system's I<$PATH>.
+Use this module to execute commands on the remote SSH server.
+It authenticates with the user and password you passed in the constructor's attributes
+C<user> and C<password>.
+
+Once an ssh connection was started using the C<connect()> method it will remain open
+until you call the C<close()> method. This allows you execute as many commands as you want
+with the C<exec()> method using only one connection. This is a better approach over other 
+ssh wrapper implementations, i.e: Net::SCP, Net::SSH and Net::SCP::Expect, that start a new
+ssh connection each time a remote command is issued or a file is transfered.
+
+It uses I<Expect.pm> module to interact with the SSH server. A C<get_expect()> method is 
+provided so you can obtain the internal C<Expect> object connected to the SSH server. Use 
+this only if you have some special need that you can't do with the C<exec()> method.
+
+This module was inspired by Net::SCP::Expect L<http://search.cpan.org/~djberg/Net-SCP-Expect-0.12/Expect.pm>
+and by Net::Telnet and some of its methods work the same as these two modules.
+
+=head2 IMPORTANT NOTES ABOUT DEALING WITH SSH AND PSEUDO-TERMINALS
+
+This module uses Expect to start the local ssh client process, and Expect will interact with this process
+through a local pseudo-terminal (ptty). Similarly, the ssh client will connect to the SSH server and
+there will receive an ssh login process attached to a ptty too.
+
+During my tests I realized that the I/O to and from the ssh server changes drastically from OS to OS
+if we let the local and remote pttys configured on their defaults. The echo's and the \r\n translations
+make a mess that we are never sure what will be sent to the other side and what will be received here.
+
+Many ptty features are system dependent and we can't rely on them working the same on different OS's.
+
+To avoid these problems I always recommend you to:
+
+1) enable the 'raw_pty' constructor attribute. This disables most (if not all) of the problematic features 
+on the local ptty.
+
+2) Similarly set the ptty on the remote server to 'raw -echo' as soon as you login.
+This can be done with:
+
+    $ssh->exec("stty raw -echo");
+
+Obviously your server must support the 'stty' command for that.
+
+3) If you won't run on the server interactive commands that prompt for input, like 'passwd', you
+could prevent the ssh server from attributing a ptty for the ssh login process. This is done
+by enabling the 'no_terminal' constructor attribute. What that does is passing the '-T' option
+to the ssh client process when it is created. From the BSD ssh client manual:
+    -T      Disable pseudo-tty allocation.
+
+This will create the cleaner connection possible. You won't have a ptty on the server, and, 
+weirdly, you won't receive a remote prompt. Try yourself 'ssh -T my.ssh.server' to see how it
+works. Notice that some system commands that rely on a terminal won't work, say, 'who am i',
+'stty', etc.
+
+Also, interactive commands like 'passwd' or 'mail' won't be able to print their prompts.
+
+But other system commands will run better: 'ls -l' will be printed without terminal control characters.
+'ps -ef' will have the command lines printed fully, since there is no 'columns' terminal limitation.
+
+Moral of the story: pseudo terminals do many character translations that can bring some unexpected results
+in some situations. Avoid them if you can.
+
+=head1 EXPORT
+
+None by default.
+
+=head1 CONSTRUCTOR ATTRIBUTES
+
+The constructor accepts all the following attributes that can be set in the form of attribute => 'value' pairs.
+They are presentend in three groups: 
+1) attributes to configure the ssh client process;
+2) attributes to configure the underlying Expect object;
+3) attributes to configure this module;
+
+=head2 ATTRIBUTES TO CONFIGURE THE SSH CLIENT PROCESS
+
+Some of the attributes bellow will enable/disable some options of the ssh client. Refer to you ssh client documentation
+to know what each one does.
+
+=over 4
+
+=item string B<binary>
+
+the complete path to the 'ssh' executable in your machine. The default is 'ssh' what means the ssh used by default is the first one found in your $PATH environment variable.
+
+=item string B<user>
+
+the username to login.
+
+=item string B<password>
+
+the password used to login. You won't need to set this field if you have public-key authentication configured for you ssh user. Read run_ssh() documentation for more info.
+
+=item string B<host>
+
+the address(dns name/ip) to the ssh server
+
+=item string B<port>
+
+Feeds the -p ssh client option with alternate ssh port. This option is not set by default.
+
+=item boolean B<no_terminal>
+
+If enabled adds the -T ssh client option to the ssh command line. See the discussion on "IMPORTANT NOTES 
+ABOUT DEALING WITH SSH AND PSEUDO-TERMINALS" to know if you want to enable this.
+
+=item char B<escape_char>
+
+Passes a character to the -e ssh client option. This enables ssh escapes. Since this
+option can cause trouble, it is explicitly turned off by default with a '-e none' option 
+being set on the ssh command line.
+
+=item string B<ssh_option>
+
+This lets you add your own ssh options to the command line. Set this string to the options you want,
+like '-v -p 2022', and your options will be added to the ssh command line that will start the ssh process.
+
+=back
+
+=head2 CONSTRUCTOR OPTIONS THAT CONFIGURE THE INTERNAL EXPECT OBJECT
+
+The following constructor attributes can be used to configure special features of the internal Expect object used to communicate with the ssh server. These options will be passed to the Expect object inside the C<connect> method before it spawns the ssh process.
+
+=over 4
+
+=item string B<log_file>
+
+Used as argument to the internal Expect->log_file() method. Default is no logfile.
+
+=item boolean B<log_stdout>
+
+Used as argument to the internal Expect->log_sdtout() method. Default is 0, to disable log to stdout.
+
+=item boolean B<exp_internal>
+
+Argument to be passed to the internal Expect->exp_internal() method. Default is 0, to disable the internal exposure.
+
+=item boolean B<exp_debug>
+
+Argument to be passed to the internal Expect->debug() method. Default is 0, to disable debug.
+
+=item boolean B<raw_pty>
+
+Argument to be passed to the internal Expect->raw_pty() method. It's recommended that you enable this. See the disscussion
+in "IMPORTANT NOTES ABOUT DEALING WITH SSH AND PSEUDO-TERMINALS" to know why.
+Default is 0 to let the local ptty as its defaults.
+
+=item boolean B<restart_timeout_upon_receive>
+
+If this is enabled the timeout in all reading operations works as an inactivity timeout - it'll not start counting
+while there is data arriving on input stream. Default is 0.
+
+=back
+
+=head2 CONSTRUCTOR OPTIONS TO CONFIGURE THIS MODULE
+
+=over 4
+
+=item string B<terminator>
+
+the line terminator in use on the SSH server, this will added at the end of each command
+passed to the C<exec()> method. The default is C<\n>.
+
+It also affects the read_line() method, it expect each line to be terminated by the 'teminator'
+character. Lines can also be ended with "\r" or "\r\n" in some systems.
+Remember to adjust this for your system. 
+
+You can also use the terminator() method to set this attribute.
+
+=item integer B<timeout>
+
+The maximum time to wait for a pattern to show up on input stream before giving up
+in a read operation. The default is 1 second.
+
+Timeout must always be an integer >= 0.
+
+This attribute can also be get/set with the C<timeout()> method.
+
+=item boolean B<debug>
+
+Causes some methods to print debug messages to the STDERR. This feature is not widely implemented yet. 
+(only eat() implements it until this moment)
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item boolean B<run_ssh()> - forks the ssh client process
+
+	# boolean run_ssh() - forks the ssh client process opening an ssh connection to the SSH server.
+	#
+	#	This method has three roles:
+	#	1) 	Instantiate a new Expect object configuring it with all the defaults and user-defined
+	#		settings.
+	#	2)	Define the ssh command line using the defaults and user-defined settings
+	#	3)	Fork the ssh process using the spawn() method of the Expect instance we created. 
+	#		The SSH connection is established on this step using the user account set in the 'user'
+	#		constructor attribute. No password is sent here, that happens only in the login() method.
+	#
+	#	This method is run internally by the login() method so you don't need to run it yourself
+	#	in most of the cases. You'll run this method alone if you had set up public-key authentication 
+	#	between the ssh client and the ssh server. In this case you only need to call this method
+	#	to have an authenticated ssh connection, you won't call login(). Note that when you 
+	#	use public-key authentication you won't need to set the 'password' constructor attribute
+	#	but you still need to define the 'user' attribute.
+	#	If you don't know how to setup public-key authentication there's a good guide at
+	#	http://sial.org/howto/openssh/publickey-auth/
+	#		
+	# returns:
+	#	boolean: 1 if the ssh ran OK or 0 otherwise. In case of failures, use $! to do get info.
+
+
+=item string B<login([$login_prompt, $password_prompt] [,$test_success])>  - authenticates on the ssh server. 
+
+	# string login ([$login_prompt, $password_prompt] [,$test_success]) - authenticates on the ssh server. 
+	#	This method responds to the authentication prompt sent by the SSH server. 
+	#	You can customize the "Login:" and "Password:" prompts that must be expected by passing their
+	#	patterns as arguments to this method, although this method has default values that work to most
+	#	SSH servers out there.
+	#	It runs the run_ssh() method only if it wasn't run before(), but it'll die
+	#	if run_ssh() returns false.
+	#
+	# param:
+	#	$login_prompt: A pattern string used to match the "Login:" prompt. The default 
+	#		pattern is qr/ogin:\s*$/
+	#
+	#	$password_prompt: A pattern string used to match the "Password:" prompt. The default
+	#		pattern is qr/[Pp]assword.*?:|[Pp]assphrase.*?:/
+	#
+	#	$test_success: 0 | 1. if 1, login will do an extra-test to verify if the password
+	# 		entered was accepted. The test consists in verifying if, after sending the password,
+	#		the "Password" prompt shows up again what would indicate that the password was rejected.
+	#		This test is disabled by default.
+	#
+	#	OBS: the number of paramaters passed to this method will tell it what parameters are being passed:
+	#	0 parameters: login() : All the default values will be used.
+	#	1 parameter:  login(1) : The $test_success parameter is set.
+	#	2 parameters: login("Login:", "Password:") : the $login_prompt and $password_prompt parameters are set.
+	#	3 parameters: login("Login:", "Password;", 1) : the three parameters received values on this order.
+	#
+	# returns:
+	#	string: whatever the SSH server wrote in my input stream after loging in. This usually is some
+	#		welcome message and/or the remote prompt. You could use this string to do your verification
+	#		that the login was successful. The content returned is removed from the input stream.
+	# dies:
+	#	IllegalState: if any of 'host' or 'user' or 'password' fields are unset.
+	#	SSHProccessError: if run_ssh() failed to spawn the ssh process
+	# 	SSHConnectionError: if the connection failed for some reason, like invalid 'host' address or network problems.
+
+=item string B<exec($cmd [,$timeout])> - executes a command in the remote machine returning its output
+
+exec('command') runs 'command' in the remote machine and returns all the output generated by 'command' into a string. 
+
+=item boolean B<waitfor($pattern [,$timeout])>
+
+	# boolean waitfor ($string [, $timeout, $match_type])
+	# This method reads until a pattern or string is found in the input stream.
+	# All the characters before and including the match are removed from the input stream.
+	# 
+	# After waitfor returns, use the methods before(), match() and after() to get the data
+	# 'before the match', 'what matched', and 'after the match' respectively.
+	#
+	# If waitfor returns false, whatever content is on input stream can be accessed with 
+	# before(). In this case before() will return the same content as peek(). 
+	#
+	# params:
+	#	$string: a string to be matched. It can be a regular expression or a literal string
+	#			 anb its interpretation as one or other depends on $match_type. Default is
+	#			 're', what treats $string as a regular expression.
+	#
+	#	$timeout: the timeout in seconds while waiting for $string
+	#
+	#	$match_type: match_type affects how $string will be matched:
+	#		'-re': means $string is a regular expression.
+	#		'-ex': means $string is an "exact match", i.e., will be matched literally.
+	#
+	# returns: 
+	#	boolean: 1 is returned if string was found, 0 otherwise. When the match fails
+	#			 waitfor() will only return after waiting $timeout seconds.
+	#
+	# dies:
+	#	SSH_CONNECTION_ABORTED if EOF is found (error type 2)
+	#	SSH_PROCESS_ERROR if the ssh process has died (error type 3)
+	#	SSH_CONNECTION_ERROR if unknown error (type 4) is found
+
+=item string B<before()> - returns the "before match" data of the last waitfor() call.
+
+When waitfor() matches, if there is any content before the match, this will be returned by before().
+
+If the last waitfor() didn't match, before() will return all the current content on the input
+stream, just as if you had called peek() with the same timeout.
+
+=item string B<match()> - returns the "match" data of the last waitfor() call, or undef if didn't match.
+
+=item string B<after()> - returns the "after match" data of the last waitfor() call, or undef if didn't match.
+
+=item void B<close()> - terminates the ssh connection
+
+=item void B<send($string)> - sends $string to the SSH server, returns nothing
+
+Sends the string to the SSH server. If the ssh server process is attached to a pseudo-terminal (this is the default)
+it is likely that the echo terminal property will be on, what will make the server place the command you just sent in our
+input stream, i.e., you'll see the command you sent in your next read operation.
+
+To avoid this, try to disable the echo property on the server-side, using
+
+ $ssh->exec("stty -echo");
+
+It's also advisable to disable the terminal character convertions on server-side, what will make you sure that
+every character you sent will be received "as-is" to the other side.
+
+So you'll probably use this to disable character conversions and echo:
+
+ $ssh->exec("stty raw -echo");
+
+Of course you're server must support the 'stty' command for that work.
+
+To guarantee that your characters are not converted by your local pseudo-terminal before you send them out,
+set the constructor option:
+
+	raw_pty => 1 
+
+And if you don't need a terminal on the server-side at all, set the constructor option bellow to 1:
+
+	no_terminal => 1
+
+=item string B<peek([$timeout])> - returns what is in the input stream without removing anything
+
+	# peek([$timeout]) - returns what is in the input stream without removing anything
+	# 	peek() returns what is available on the input stream until $timeout seconds.
+	#	If there is data continuosly arriving on the input stream, subsequent calls to peek() 
+	#	will return a growing amount of data.
+	#
+	# dies:
+	#	SSH_CONNECTION_ABORTED if EOF is found (error type 2)
+	#	SSH_PROCESS_ERROR if the ssh process has died (error type 3)
+	#	SSH_CONNECTION_ERROR if unknown error (type 4) is found
+
+=item string B<eat($string)> - removes all the head of the input stream until $string inclusive.
+
+	# string eat($string)- removes all the head of the input stream until $string inclusive.
+	#	eat() will only be able	to remove the $string if it's currently present on the 
+	#	input stream because eat() will wait 0 seconds before removing it.
+	#
+	#	Use it associated with peek to eat everything that appears on the input stream:
+	#
+	#	while ($chunk = $exp->eat($exp->peak())) {
+	#		print $chunk;
+	#	}
+	#	
+	#	Or use the read_all() method that does the above loop for you returning the accumulated
+	#	result.
+	#
+	# param:
+	#	string: a string currently available on the input stream. 
+	#		If $string doesn't start in the head, all the content before $string will also
+	#		be removed. 
+	#
+	#		If $string is undef or empty string it will be returned immediately as it.
+	#	
+	# returns:
+	#	string: the removed content or empty string if there is nothing in the input stream.
+	# 
+	# dies:
+	#	SSH_CONNECTION_ABORTED if EOF is found (error type 2)
+	#	SSH_PROCESS_ERROR if the ssh process has died (error type 3)
+	#	SSH_CONNECTION_ERROR if unknown error (type 4) is found
+	#
+	# debbuging features:
+	#	The following warnings are printed to STDERR if $exp->debug() == 1:
+	#		eat() prints a warning is $string wasn't found in the head of the input stream.
+	#		eat() prints a warning is $string was empty or undefined.
+	#
+
+=item string B<read_all([$timeout])> - reads and removes all the output from the input stream.
+
+The reading/removing process will be interrupted after $timeout seconds of inactivity
+on the input stream.
+
+=item string B<read_line([$timeout])> - reads the next line from the input stream and returns it. 
+
+	# string read_line([$timeout]) - reads the next line from the input stream
+	# Read a line of text. A line is considered to be terminated by the 'teminator'
+	# character. Default is "\n". Lines can also be ended with "\r" or "\r\n".
+	# Remember to adequate this for your system with the terminator() method. 
+	# When there are no more lines available, read_line() returns undef. Note that this doen't mean
+	# there is no data left on input stream since there can be a string not terminated with the 
+	# 'terminator' character, notably the remote prompt could be left there when read_line() returns
+	# undef.
+	#
+	# params:
+	#	$timeout: the timeout waiting for a line. Defaults to timeout().
+	#
+	# returns:
+	#	string: a line on the input stream, without the trailing 'terminator' character.
+	#			An empty string indicates that the line read only contained the 'terminator'
+	#			character (an empty line).
+	#	undef: when there are no more lines on the input stream.
+	#
+
+=item void B<restart_timeout_upon_receive( 0 | 1 )> - changes the timeout counter behaviour
+
+	# void restart_timeout_upon_receive( 0 | 1 ) - changes the timeout counter behaviour
+	# params:
+	#	boolean: if true, sets the timeout to "inactivity timeout", if false
+	#			sets it to "absolute timeout".
+	# dies:
+	#	IllegalParamenter if argument is not given.
+
+=item Expect B<get_expect()> - returns the internal Expect object
+
+=over 4
+
+=item params:
+
+none
+
+=item returns:
+
+an C<Expect> object connected to the SSH server. It will die if you try to run it without being connected.
+
+=item dies:
+
+IllegalState: if this there is no valid ssh connection established
+
+=back
+
+=back
+
+=head1 SEE ALSO
+
+Net::SCP::Expect, Net::SCP, Net::SSH::Perl, L<Expect>
+
+=head1 REPORTING BUGS
+
+To report bugs please use the bug reporting tool available on CPAN website, in the module's page. That way I can
+keep track of what I need to do and I can also communicate with you through that tool.
+
+=head1 AUTHOR
+
+Bruno Negrao Guimaraes Zica. E<lt>bnegrao@cpan.orgE<gt>.
+
+=head1 THANKS
+
+Daniel Berger, author of Net::SCP::Expect. Special thanks to the people helping me improve this module by reporting their tests and the bugs they find.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2007 by Bruno Negrao Guimaraes Zica
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.3 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut

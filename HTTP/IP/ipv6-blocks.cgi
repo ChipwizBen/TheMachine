@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 
 use Net::IP::XS qw($IP_NO_OVERLAP $IP_PARTIAL_OVERLAP $IP_A_IN_B_OVERLAP $IP_B_IN_A_OVERLAP $IP_IDENTICAL);
 use POSIX qw(strftime);
@@ -913,8 +915,8 @@ while ( my @IPv6_Block_Query_Output = $IPv6_Block_Query->fetchrow_array() )
 		"<a href='/IP/ipv6-blocks.cgi?Query_Block=$Block_Extract'>$Block</a>", 
 		$Gateway_Extract, $Range_For_Use, $Range_For_Use_Subnet, 
 		"$DNS1<br />$DNS2", "$NTP1<br />$NTP2", $Percent_Used."%", $Last_Modified, $Modified_By,
-		"<a href='/IP/ipv6-blocks.cgi?Edit_Block=$ID'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
-		"<a href='/IP/ipv6-blocks.cgi?Delete=$ID'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>");
+		"<a href='/IP/ipv6-blocks.cgi?Edit_Block=$ID'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Block $Block_Extract\" ></a>",
+		"<a href='/IP/ipv6-blocks.cgi?Delete=$ID'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Block $Block_Extract\" ></a>");
 	
 	if ($Percent_Used <= 50) {
 		$Table->setCellClass ($Row_Count, 10, 'tbrowgreen');

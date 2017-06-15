@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use POSIX qw(strftime);
 use Tie::File;
 

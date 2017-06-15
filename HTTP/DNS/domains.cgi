@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 
 my $Common_Config;
@@ -393,8 +395,8 @@ sub html_output {
 			"$Domain",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/DNS/domains.cgi?Edit_Domain=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Domain ID $DBID_Clean\" ></a>",
-			"<a href='/DNS/domains.cgi?Delete_Domain=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Domain ID $DBID_Clean\" ></a>"
+			"<a href='/DNS/domains.cgi?Edit_Domain=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Domain ID $DBID_Clean\" ></a>",
+			"<a href='/DNS/domains.cgi?Delete_Domain=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Domain ID $DBID_Clean\" ></a>"
 		);
 
 	}

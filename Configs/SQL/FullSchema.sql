@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `TheMachine` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `TheMachine`;
--- MySQL dump 10.13  Distrib 5.7.12, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.18, for Linux (x86_64)
 --
 -- Host: localhost    Database: TheMachine
 -- ------------------------------------------------------
--- Server version	5.5.50-MariaDB
+-- Server version	5.5.52-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -39,7 +39,7 @@ CREATE TABLE `access_log` (
   `username` varchar(128) DEFAULT NULL,
   `time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9795 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9800 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -58,7 +58,7 @@ CREATE TABLE `audit_log` (
   `username` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13663 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13666 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,7 +80,7 @@ CREATE TABLE `auth` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,7 +116,7 @@ CREATE TABLE `command_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,7 +133,7 @@ CREATE TABLE `command_set_dependency` (
   `order` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -154,7 +154,7 @@ CREATE TABLE `command_sets` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=116 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -175,7 +175,7 @@ CREATE TABLE `commands` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `command_alias_UNIQUE` (`command_alias`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -210,7 +210,7 @@ CREATE TABLE `credentials` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_UNIQUE` (`email`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -252,7 +252,7 @@ CREATE TABLE `domains` (
   `modified_by` varchar(128) NOT NULL,
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`domain`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -290,7 +290,7 @@ CREATE TABLE `host_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -308,7 +308,7 @@ CREATE TABLE `host_types` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -329,287 +329,17 @@ CREATE TABLE `hosts` (
   PRIMARY KEY (`id`,`hostname`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `hostname_UNIQUE` (`hostname`)
-) ENGINE=InnoDB AUTO_INCREMENT=1842 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `ipv4_assignments`
---
-
-DROP TABLE IF EXISTS `ipv4_assignments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ipv4_assignments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip_block` varchar(45) NOT NULL,
-  `parent_block` varchar(45) NOT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modified_by` varchar(128) NOT NULL,
-  PRIMARY KEY (`id`,`ip_block`,`parent_block`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4517 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `ipv4_blocks`
---
-
-DROP TABLE IF EXISTS `ipv4_blocks`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ipv4_blocks` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip_block_name` varchar(45) NOT NULL,
-  `ip_block_description` varchar(128) DEFAULT NULL,
-  `ip_block` varchar(18) NOT NULL,
-  `gateway` varchar(15) DEFAULT NULL,
-  `range_for_use` varchar(33) DEFAULT NULL,
-  `range_for_use_subnet` varchar(15) DEFAULT NULL,
-  `dns1` varchar(15) DEFAULT NULL,
-  `dns2` varchar(15) DEFAULT NULL,
-  `ntp1` varchar(15) DEFAULT NULL,
-  `ntp2` varchar(15) DEFAULT NULL,
-  `percent_used` varchar(5) DEFAULT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modified_by` varchar(128) NOT NULL,
-  PRIMARY KEY (`id`,`ip_block_name`,`ip_block`),
-  UNIQUE KEY `id_UNIQUE` (`id`),
-  UNIQUE KEY `ip_block_name_UNIQUE` (`ip_block_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=121 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `job_status`
---
-
-DROP TABLE IF EXISTS `job_status`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `job_status` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `job_id` int(45) NOT NULL,
-  `command` longtext NOT NULL,
-  `exit_code` int(5) DEFAULT NULL,
-  `output` mediumtext,
-  `task_started` timestamp NULL DEFAULT NULL,
-  `task_ended` timestamp NULL DEFAULT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modified_by` varchar(128) NOT NULL,
-  PRIMARY KEY (`id`,`job_id`),
-  KEY `idx_job_status_job_id` (`job_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=67036 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `jobs`
---
-
-DROP TABLE IF EXISTS `jobs`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `jobs` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `host_id` int(11) NOT NULL,
-  `command_set_id` int(11) NOT NULL,
-  `on_failure` int(1) NOT NULL DEFAULT '0',
-  `status` int(1) NOT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modified_by` varchar(128) NOT NULL DEFAULT 'System',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2074 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_command_groups_to_commands`
---
-
-DROP TABLE IF EXISTS `lnk_command_groups_to_commands`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_command_groups_to_commands` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `group` int(11) NOT NULL,
-  `command` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`command`,`group`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_host_groups_to_hosts`
---
-
-DROP TABLE IF EXISTS `lnk_host_groups_to_hosts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_host_groups_to_hosts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `group` int(11) NOT NULL,
-  `host` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`host`,`group`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_hosts_to_ipv4_assignments`
---
-
-DROP TABLE IF EXISTS `lnk_hosts_to_ipv4_assignments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_hosts_to_ipv4_assignments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `host` int(11) NOT NULL,
-  `ip` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`ip`,`host`)
-) ENGINE=InnoDB AUTO_INCREMENT=2264 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_command_groups`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_command_groups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_command_groups` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `command_group` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`command_group`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_commands`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_commands`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_commands` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `command` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`command`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_host_groups`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_host_groups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_host_groups` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `host_group` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`host_group`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_hosts`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_hosts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_hosts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `host` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`host`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_user_groups`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_user_groups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_user_groups` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `user_group` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`user_group`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_users`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `user` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`user`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_user_groups_to_users`
---
-
-DROP TABLE IF EXISTS `lnk_user_groups_to_users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_user_groups_to_users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `group` int(11) NOT NULL,
-  `user` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`user`,`group`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lock`
---
-
-DROP TABLE IF EXISTS `lock`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lock` (
-  `sudoers-build` int(1) NOT NULL DEFAULT '0',
-  `sudoers-distribution` int(1) NOT NULL DEFAULT '0',
-  `dns-build` int(1) NOT NULL DEFAULT '0',
-  `reverse-proxy-build` int(1) NOT NULL,
-  `last-sudoers-build-started` datetime NOT NULL,
-  `last-sudoers-build-finished` datetime NOT NULL,
-  `last-sudoers-distribution-started` datetime NOT NULL,
-  `last-sudoers-distribution-finished` datetime NOT NULL,
-  `last-dns-build-started` datetime NOT NULL,
-  `last-dns-build-finished` datetime NOT NULL,
-  `last-reverse-proxy-build-started` datetime NOT NULL,
-  `last-reverse-proxy-build-finished` datetime NOT NULL,
-  PRIMARY KEY (`sudoers-build`,`sudoers-distribution`,`dns-build`,`last-sudoers-build-started`,`last-sudoers-build-finished`,`last-sudoers-distribution-started`,`last-sudoers-distribution-finished`,`last-dns-build-started`,`last-dns-build-finished`,`last-reverse-proxy-build-started`,`reverse-proxy-build`,`last-reverse-proxy-build-finished`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_command`
+-- Table structure for table `icinga2_command`
 --
 
-DROP TABLE IF EXISTS `nagios_command`;
+DROP TABLE IF EXISTS `icinga2_command`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_command` (
+CREATE TABLE `icinga2_command` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `command_name` varchar(255) NOT NULL,
   `command_line` text NOT NULL,
@@ -621,17 +351,17 @@ CREATE TABLE `nagios_command` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`command_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=243 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_contact`
+-- Table structure for table `icinga2_contact`
 --
 
-DROP TABLE IF EXISTS `nagios_contact`;
+DROP TABLE IF EXISTS `icinga2_contact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_contact` (
+CREATE TABLE `icinga2_contact` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `contact_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -670,17 +400,17 @@ CREATE TABLE `nagios_contact` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`contact_name`,`config_id`),
   UNIQUE KEY `contact_name_UNIQUE` (`contact_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=131 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_contactgroup`
+-- Table structure for table `icinga2_contactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_contactgroup`;
+DROP TABLE IF EXISTS `icinga2_contactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_contactgroup` (
+CREATE TABLE `icinga2_contactgroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `contactgroup_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -694,17 +424,17 @@ CREATE TABLE `nagios_contactgroup` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`contactgroup_name`,`config_id`),
   UNIQUE KEY `contactgroup_name_UNIQUE` (`contactgroup_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_contacttemplate`
+-- Table structure for table `icinga2_contacttemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_contacttemplate`;
+DROP TABLE IF EXISTS `icinga2_contacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_contacttemplate` (
+CREATE TABLE `icinga2_contacttemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -740,17 +470,17 @@ CREATE TABLE `nagios_contacttemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_domain`
+-- Table structure for table `icinga2_domain`
 --
 
-DROP TABLE IF EXISTS `nagios_domain`;
+DROP TABLE IF EXISTS `icinga2_domain`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_domain` (
+CREATE TABLE `icinga2_domain` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -776,17 +506,17 @@ CREATE TABLE `nagios_domain` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `domain` (`domain`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_host`
+-- Table structure for table `icinga2_host`
 --
 
-DROP TABLE IF EXISTS `nagios_host`;
+DROP TABLE IF EXISTS `icinga2_host`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_host` (
+CREATE TABLE `icinga2_host` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -847,17 +577,17 @@ CREATE TABLE `nagios_host` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`config_id`),
   UNIQUE KEY `host_name_UNIQUE` (`host_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1305 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_hostdependency`
+-- Table structure for table `icinga2_hostdependency`
 --
 
-DROP TABLE IF EXISTS `nagios_hostdependency`;
+DROP TABLE IF EXISTS `icinga2_hostdependency`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_hostdependency` (
+CREATE TABLE `icinga2_hostdependency` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `dependent_host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -874,17 +604,17 @@ CREATE TABLE `nagios_hostdependency` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_hostescalation`
+-- Table structure for table `icinga2_hostescalation`
 --
 
-DROP TABLE IF EXISTS `nagios_hostescalation`;
+DROP TABLE IF EXISTS `icinga2_hostescalation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_hostescalation` (
+CREATE TABLE `icinga2_hostescalation` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -902,17 +632,17 @@ CREATE TABLE `nagios_hostescalation` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_hostextinfo`
+-- Table structure for table `icinga2_hostextinfo`
 --
 
-DROP TABLE IF EXISTS `nagios_hostextinfo`;
+DROP TABLE IF EXISTS `icinga2_hostextinfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_hostextinfo` (
+CREATE TABLE `icinga2_hostextinfo` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` int(11) DEFAULT NULL,
   `notes` varchar(255) NOT NULL,
@@ -931,17 +661,17 @@ CREATE TABLE `nagios_hostextinfo` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_hostgroup`
+-- Table structure for table `icinga2_hostgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_hostgroup`;
+DROP TABLE IF EXISTS `icinga2_hostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_hostgroup` (
+CREATE TABLE `icinga2_hostgroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `hostgroup_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -957,17 +687,17 @@ CREATE TABLE `nagios_hostgroup` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`hostgroup_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_hosttemplate`
+-- Table structure for table `icinga2_hosttemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_hosttemplate`;
+DROP TABLE IF EXISTS `icinga2_hosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_hosttemplate` (
+CREATE TABLE `icinga2_hosttemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -1024,17 +754,17 @@ CREATE TABLE `nagios_hosttemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_info`
+-- Table structure for table `icinga2_info`
 --
 
-DROP TABLE IF EXISTS `nagios_info`;
+DROP TABLE IF EXISTS `icinga2_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_info` (
+CREATE TABLE `icinga2_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `key1` varchar(200) NOT NULL,
   `key2` varchar(200) NOT NULL,
@@ -1043,17 +773,17 @@ CREATE TABLE `nagios_info` (
   `infotext` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `keypair` (`key1`,`key2`,`version`,`language`)
-) ENGINE=InnoDB AUTO_INCREMENT=223 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContactToCommandHost`
+-- Table structure for table `icinga2_lnkContactToCommandHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContactToCommandHost`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToCommandHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContactToCommandHost` (
+CREATE TABLE `icinga2_lnkContactToCommandHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1061,13 +791,13 @@ CREATE TABLE `nagios_lnkContactToCommandHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContactToCommandService`
+-- Table structure for table `icinga2_lnkContactToCommandService`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContactToCommandService`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToCommandService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContactToCommandService` (
+CREATE TABLE `icinga2_lnkContactToCommandService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1075,13 +805,13 @@ CREATE TABLE `nagios_lnkContactToCommandService` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContactToContactgroup`
+-- Table structure for table `icinga2_lnkContactToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContactToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContactToContactgroup` (
+CREATE TABLE `icinga2_lnkContactToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1089,13 +819,13 @@ CREATE TABLE `nagios_lnkContactToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContactToContacttemplate`
+-- Table structure for table `icinga2_lnkContactToContacttemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContactToContacttemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToContacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContactToContacttemplate` (
+CREATE TABLE `icinga2_lnkContactToContacttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1105,13 +835,13 @@ CREATE TABLE `nagios_lnkContactToContacttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContactToVariabledefinition`
+-- Table structure for table `icinga2_lnkContactToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContactToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContactToVariabledefinition` (
+CREATE TABLE `icinga2_lnkContactToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1119,13 +849,13 @@ CREATE TABLE `nagios_lnkContactToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContactgroupToContact`
+-- Table structure for table `icinga2_lnkContactgroupToContact`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContactgroupToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkContactgroupToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContactgroupToContact` (
+CREATE TABLE `icinga2_lnkContactgroupToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1133,13 +863,13 @@ CREATE TABLE `nagios_lnkContactgroupToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContactgroupToContactgroup`
+-- Table structure for table `icinga2_lnkContactgroupToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContactgroupToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkContactgroupToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContactgroupToContactgroup` (
+CREATE TABLE `icinga2_lnkContactgroupToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1147,13 +877,13 @@ CREATE TABLE `nagios_lnkContactgroupToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContacttemplateToCommandHost`
+-- Table structure for table `icinga2_lnkContacttemplateToCommandHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContacttemplateToCommandHost`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToCommandHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContacttemplateToCommandHost` (
+CREATE TABLE `icinga2_lnkContacttemplateToCommandHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1161,13 +891,13 @@ CREATE TABLE `nagios_lnkContacttemplateToCommandHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContacttemplateToCommandService`
+-- Table structure for table `icinga2_lnkContacttemplateToCommandService`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContacttemplateToCommandService`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToCommandService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContacttemplateToCommandService` (
+CREATE TABLE `icinga2_lnkContacttemplateToCommandService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1175,13 +905,13 @@ CREATE TABLE `nagios_lnkContacttemplateToCommandService` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContacttemplateToContactgroup`
+-- Table structure for table `icinga2_lnkContacttemplateToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContacttemplateToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContacttemplateToContactgroup` (
+CREATE TABLE `icinga2_lnkContacttemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1189,13 +919,13 @@ CREATE TABLE `nagios_lnkContacttemplateToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContacttemplateToContacttemplate`
+-- Table structure for table `icinga2_lnkContacttemplateToContacttemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContacttemplateToContacttemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToContacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContacttemplateToContacttemplate` (
+CREATE TABLE `icinga2_lnkContacttemplateToContacttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1205,13 +935,13 @@ CREATE TABLE `nagios_lnkContacttemplateToContacttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkContacttemplateToVariabledefinition`
+-- Table structure for table `icinga2_lnkContacttemplateToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkContacttemplateToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkContacttemplateToVariabledefinition` (
+CREATE TABLE `icinga2_lnkContacttemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1219,13 +949,13 @@ CREATE TABLE `nagios_lnkContacttemplateToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostToContact`
+-- Table structure for table `icinga2_lnkHostToContact`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostToContact` (
+CREATE TABLE `icinga2_lnkHostToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1233,13 +963,13 @@ CREATE TABLE `nagios_lnkHostToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostToContactgroup`
+-- Table structure for table `icinga2_lnkHostToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostToContactgroup` (
+CREATE TABLE `icinga2_lnkHostToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1247,13 +977,13 @@ CREATE TABLE `nagios_lnkHostToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostToHost`
+-- Table structure for table `icinga2_lnkHostToHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostToHost` (
+CREATE TABLE `icinga2_lnkHostToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1261,13 +991,13 @@ CREATE TABLE `nagios_lnkHostToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostToHostgroup`
+-- Table structure for table `icinga2_lnkHostToHostgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostToHostgroup` (
+CREATE TABLE `icinga2_lnkHostToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1275,13 +1005,13 @@ CREATE TABLE `nagios_lnkHostToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostToHosttemplate`
+-- Table structure for table `icinga2_lnkHostToHosttemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostToHosttemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToHosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostToHosttemplate` (
+CREATE TABLE `icinga2_lnkHostToHosttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1291,13 +1021,13 @@ CREATE TABLE `nagios_lnkHostToHosttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostToVariabledefinition`
+-- Table structure for table `icinga2_lnkHostToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostToVariabledefinition` (
+CREATE TABLE `icinga2_lnkHostToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1305,13 +1035,13 @@ CREATE TABLE `nagios_lnkHostToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostdependencyToHost_DH`
+-- Table structure for table `icinga2_lnkHostdependencyToHost_DH`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHost_DH`;
+DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHost_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostdependencyToHost_DH` (
+CREATE TABLE `icinga2_lnkHostdependencyToHost_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1319,13 +1049,13 @@ CREATE TABLE `nagios_lnkHostdependencyToHost_DH` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostdependencyToHost_H`
+-- Table structure for table `icinga2_lnkHostdependencyToHost_H`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHost_H`;
+DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHost_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostdependencyToHost_H` (
+CREATE TABLE `icinga2_lnkHostdependencyToHost_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1333,13 +1063,13 @@ CREATE TABLE `nagios_lnkHostdependencyToHost_H` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostdependencyToHostgroup_DH`
+-- Table structure for table `icinga2_lnkHostdependencyToHostgroup_DH`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHostgroup_DH`;
+DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHostgroup_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostdependencyToHostgroup_DH` (
+CREATE TABLE `icinga2_lnkHostdependencyToHostgroup_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1347,13 +1077,13 @@ CREATE TABLE `nagios_lnkHostdependencyToHostgroup_DH` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostdependencyToHostgroup_H`
+-- Table structure for table `icinga2_lnkHostdependencyToHostgroup_H`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHostgroup_H`;
+DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHostgroup_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostdependencyToHostgroup_H` (
+CREATE TABLE `icinga2_lnkHostdependencyToHostgroup_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1361,13 +1091,13 @@ CREATE TABLE `nagios_lnkHostdependencyToHostgroup_H` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostescalationToContact`
+-- Table structure for table `icinga2_lnkHostescalationToContact`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostescalationToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkHostescalationToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostescalationToContact` (
+CREATE TABLE `icinga2_lnkHostescalationToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1375,13 +1105,13 @@ CREATE TABLE `nagios_lnkHostescalationToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostescalationToContactgroup`
+-- Table structure for table `icinga2_lnkHostescalationToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostescalationToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostescalationToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostescalationToContactgroup` (
+CREATE TABLE `icinga2_lnkHostescalationToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1389,13 +1119,13 @@ CREATE TABLE `nagios_lnkHostescalationToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostescalationToHost`
+-- Table structure for table `icinga2_lnkHostescalationToHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostescalationToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkHostescalationToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostescalationToHost` (
+CREATE TABLE `icinga2_lnkHostescalationToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1403,13 +1133,13 @@ CREATE TABLE `nagios_lnkHostescalationToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostescalationToHostgroup`
+-- Table structure for table `icinga2_lnkHostescalationToHostgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostescalationToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostescalationToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostescalationToHostgroup` (
+CREATE TABLE `icinga2_lnkHostescalationToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1417,13 +1147,13 @@ CREATE TABLE `nagios_lnkHostescalationToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostgroupToHost`
+-- Table structure for table `icinga2_lnkHostgroupToHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostgroupToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkHostgroupToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostgroupToHost` (
+CREATE TABLE `icinga2_lnkHostgroupToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1431,13 +1161,13 @@ CREATE TABLE `nagios_lnkHostgroupToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHostgroupToHostgroup`
+-- Table structure for table `icinga2_lnkHostgroupToHostgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHostgroupToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostgroupToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHostgroupToHostgroup` (
+CREATE TABLE `icinga2_lnkHostgroupToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1445,13 +1175,13 @@ CREATE TABLE `nagios_lnkHostgroupToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHosttemplateToContact`
+-- Table structure for table `icinga2_lnkHosttemplateToContact`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHosttemplateToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHosttemplateToContact` (
+CREATE TABLE `icinga2_lnkHosttemplateToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1459,13 +1189,13 @@ CREATE TABLE `nagios_lnkHosttemplateToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHosttemplateToContactgroup`
+-- Table structure for table `icinga2_lnkHosttemplateToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHosttemplateToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHosttemplateToContactgroup` (
+CREATE TABLE `icinga2_lnkHosttemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1473,13 +1203,13 @@ CREATE TABLE `nagios_lnkHosttemplateToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHosttemplateToHost`
+-- Table structure for table `icinga2_lnkHosttemplateToHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHosttemplateToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHosttemplateToHost` (
+CREATE TABLE `icinga2_lnkHosttemplateToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1487,13 +1217,13 @@ CREATE TABLE `nagios_lnkHosttemplateToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHosttemplateToHostgroup`
+-- Table structure for table `icinga2_lnkHosttemplateToHostgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHosttemplateToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHosttemplateToHostgroup` (
+CREATE TABLE `icinga2_lnkHosttemplateToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1501,13 +1231,13 @@ CREATE TABLE `nagios_lnkHosttemplateToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHosttemplateToHosttemplate`
+-- Table structure for table `icinga2_lnkHosttemplateToHosttemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHosttemplateToHosttemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToHosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHosttemplateToHosttemplate` (
+CREATE TABLE `icinga2_lnkHosttemplateToHosttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1517,13 +1247,13 @@ CREATE TABLE `nagios_lnkHosttemplateToHosttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkHosttemplateToVariabledefinition`
+-- Table structure for table `icinga2_lnkHosttemplateToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkHosttemplateToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkHosttemplateToVariabledefinition` (
+CREATE TABLE `icinga2_lnkHosttemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1531,13 +1261,13 @@ CREATE TABLE `nagios_lnkHosttemplateToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceToContact`
+-- Table structure for table `icinga2_lnkServiceToContact`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceToContact` (
+CREATE TABLE `icinga2_lnkServiceToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1545,13 +1275,13 @@ CREATE TABLE `nagios_lnkServiceToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceToContactgroup`
+-- Table structure for table `icinga2_lnkServiceToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceToContactgroup` (
+CREATE TABLE `icinga2_lnkServiceToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1559,13 +1289,13 @@ CREATE TABLE `nagios_lnkServiceToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceToHost`
+-- Table structure for table `icinga2_lnkServiceToHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceToHost` (
+CREATE TABLE `icinga2_lnkServiceToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1573,13 +1303,13 @@ CREATE TABLE `nagios_lnkServiceToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceToHostgroup`
+-- Table structure for table `icinga2_lnkServiceToHostgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceToHostgroup` (
+CREATE TABLE `icinga2_lnkServiceToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1587,13 +1317,13 @@ CREATE TABLE `nagios_lnkServiceToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceToServicegroup`
+-- Table structure for table `icinga2_lnkServiceToServicegroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceToServicegroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceToServicegroup` (
+CREATE TABLE `icinga2_lnkServiceToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1601,13 +1331,13 @@ CREATE TABLE `nagios_lnkServiceToServicegroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceToServicetemplate`
+-- Table structure for table `icinga2_lnkServiceToServicetemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceToServicetemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToServicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceToServicetemplate` (
+CREATE TABLE `icinga2_lnkServiceToServicetemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1617,13 +1347,13 @@ CREATE TABLE `nagios_lnkServiceToServicetemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceToVariabledefinition`
+-- Table structure for table `icinga2_lnkServiceToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceToVariabledefinition` (
+CREATE TABLE `icinga2_lnkServiceToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1631,13 +1361,13 @@ CREATE TABLE `nagios_lnkServiceToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicedependencyToHost_DH`
+-- Table structure for table `icinga2_lnkServicedependencyToHost_DH`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHost_DH`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHost_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicedependencyToHost_DH` (
+CREATE TABLE `icinga2_lnkServicedependencyToHost_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1645,13 +1375,13 @@ CREATE TABLE `nagios_lnkServicedependencyToHost_DH` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicedependencyToHost_H`
+-- Table structure for table `icinga2_lnkServicedependencyToHost_H`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHost_H`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHost_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicedependencyToHost_H` (
+CREATE TABLE `icinga2_lnkServicedependencyToHost_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1659,13 +1389,13 @@ CREATE TABLE `nagios_lnkServicedependencyToHost_H` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicedependencyToHostgroup_DH`
+-- Table structure for table `icinga2_lnkServicedependencyToHostgroup_DH`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHostgroup_DH`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHostgroup_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicedependencyToHostgroup_DH` (
+CREATE TABLE `icinga2_lnkServicedependencyToHostgroup_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1673,13 +1403,13 @@ CREATE TABLE `nagios_lnkServicedependencyToHostgroup_DH` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicedependencyToHostgroup_H`
+-- Table structure for table `icinga2_lnkServicedependencyToHostgroup_H`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHostgroup_H`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHostgroup_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicedependencyToHostgroup_H` (
+CREATE TABLE `icinga2_lnkServicedependencyToHostgroup_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1687,13 +1417,13 @@ CREATE TABLE `nagios_lnkServicedependencyToHostgroup_H` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicedependencyToService_DS`
+-- Table structure for table `icinga2_lnkServicedependencyToService_DS`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicedependencyToService_DS`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToService_DS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicedependencyToService_DS` (
+CREATE TABLE `icinga2_lnkServicedependencyToService_DS` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1701,13 +1431,13 @@ CREATE TABLE `nagios_lnkServicedependencyToService_DS` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicedependencyToService_S`
+-- Table structure for table `icinga2_lnkServicedependencyToService_S`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicedependencyToService_S`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToService_S`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicedependencyToService_S` (
+CREATE TABLE `icinga2_lnkServicedependencyToService_S` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1715,13 +1445,13 @@ CREATE TABLE `nagios_lnkServicedependencyToService_S` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceescalationToContact`
+-- Table structure for table `icinga2_lnkServiceescalationToContact`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceescalationToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceescalationToContact` (
+CREATE TABLE `icinga2_lnkServiceescalationToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1729,13 +1459,13 @@ CREATE TABLE `nagios_lnkServiceescalationToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceescalationToContactgroup`
+-- Table structure for table `icinga2_lnkServiceescalationToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceescalationToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceescalationToContactgroup` (
+CREATE TABLE `icinga2_lnkServiceescalationToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1743,13 +1473,13 @@ CREATE TABLE `nagios_lnkServiceescalationToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceescalationToHost`
+-- Table structure for table `icinga2_lnkServiceescalationToHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceescalationToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceescalationToHost` (
+CREATE TABLE `icinga2_lnkServiceescalationToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1757,13 +1487,13 @@ CREATE TABLE `nagios_lnkServiceescalationToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceescalationToHostgroup`
+-- Table structure for table `icinga2_lnkServiceescalationToHostgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceescalationToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceescalationToHostgroup` (
+CREATE TABLE `icinga2_lnkServiceescalationToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1771,13 +1501,13 @@ CREATE TABLE `nagios_lnkServiceescalationToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServiceescalationToService`
+-- Table structure for table `icinga2_lnkServiceescalationToService`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServiceescalationToService`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServiceescalationToService` (
+CREATE TABLE `icinga2_lnkServiceescalationToService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1785,13 +1515,13 @@ CREATE TABLE `nagios_lnkServiceescalationToService` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicegroupToService`
+-- Table structure for table `icinga2_lnkServicegroupToService`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicegroupToService`;
+DROP TABLE IF EXISTS `icinga2_lnkServicegroupToService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicegroupToService` (
+CREATE TABLE `icinga2_lnkServicegroupToService` (
   `idMaster` int(11) NOT NULL,
   `idSlaveH` int(11) NOT NULL,
   `idSlaveHG` int(11) NOT NULL,
@@ -1801,13 +1531,13 @@ CREATE TABLE `nagios_lnkServicegroupToService` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicegroupToServicegroup`
+-- Table structure for table `icinga2_lnkServicegroupToServicegroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicegroupToServicegroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServicegroupToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicegroupToServicegroup` (
+CREATE TABLE `icinga2_lnkServicegroupToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1815,13 +1545,13 @@ CREATE TABLE `nagios_lnkServicegroupToServicegroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicetemplateToContact`
+-- Table structure for table `icinga2_lnkServicetemplateToContact`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicetemplateToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicetemplateToContact` (
+CREATE TABLE `icinga2_lnkServicetemplateToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1829,13 +1559,13 @@ CREATE TABLE `nagios_lnkServicetemplateToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicetemplateToContactgroup`
+-- Table structure for table `icinga2_lnkServicetemplateToContactgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicetemplateToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicetemplateToContactgroup` (
+CREATE TABLE `icinga2_lnkServicetemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1843,13 +1573,13 @@ CREATE TABLE `nagios_lnkServicetemplateToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicetemplateToHost`
+-- Table structure for table `icinga2_lnkServicetemplateToHost`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicetemplateToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicetemplateToHost` (
+CREATE TABLE `icinga2_lnkServicetemplateToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1857,13 +1587,13 @@ CREATE TABLE `nagios_lnkServicetemplateToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicetemplateToHostgroup`
+-- Table structure for table `icinga2_lnkServicetemplateToHostgroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicetemplateToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicetemplateToHostgroup` (
+CREATE TABLE `icinga2_lnkServicetemplateToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1871,13 +1601,13 @@ CREATE TABLE `nagios_lnkServicetemplateToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicetemplateToServicegroup`
+-- Table structure for table `icinga2_lnkServicetemplateToServicegroup`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicetemplateToServicegroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicetemplateToServicegroup` (
+CREATE TABLE `icinga2_lnkServicetemplateToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1885,13 +1615,13 @@ CREATE TABLE `nagios_lnkServicetemplateToServicegroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicetemplateToServicetemplate`
+-- Table structure for table `icinga2_lnkServicetemplateToServicetemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicetemplateToServicetemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToServicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicetemplateToServicetemplate` (
+CREATE TABLE `icinga2_lnkServicetemplateToServicetemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1901,13 +1631,13 @@ CREATE TABLE `nagios_lnkServicetemplateToServicetemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkServicetemplateToVariabledefinition`
+-- Table structure for table `icinga2_lnkServicetemplateToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkServicetemplateToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkServicetemplateToVariabledefinition` (
+CREATE TABLE `icinga2_lnkServicetemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1915,13 +1645,13 @@ CREATE TABLE `nagios_lnkServicetemplateToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_lnkTimeperiodToTimeperiod`
+-- Table structure for table `icinga2_lnkTimeperiodToTimeperiod`
 --
 
-DROP TABLE IF EXISTS `nagios_lnkTimeperiodToTimeperiod`;
+DROP TABLE IF EXISTS `icinga2_lnkTimeperiodToTimeperiod`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_lnkTimeperiodToTimeperiod` (
+CREATE TABLE `icinga2_lnkTimeperiodToTimeperiod` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1929,13 +1659,13 @@ CREATE TABLE `nagios_lnkTimeperiodToTimeperiod` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_logbook`
+-- Table structure for table `icinga2_logbook`
 --
 
-DROP TABLE IF EXISTS `nagios_logbook`;
+DROP TABLE IF EXISTS `icinga2_logbook`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_logbook` (
+CREATE TABLE `icinga2_logbook` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `user` varchar(255) NOT NULL,
@@ -1943,34 +1673,34 @@ CREATE TABLE `nagios_logbook` (
   `domain` varchar(255) NOT NULL,
   `entry` tinytext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_mainmenu`
+-- Table structure for table `icinga2_mainmenu`
 --
 
-DROP TABLE IF EXISTS `nagios_mainmenu`;
+DROP TABLE IF EXISTS `icinga2_mainmenu`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_mainmenu` (
+CREATE TABLE `icinga2_mainmenu` (
   `id` tinyint(4) NOT NULL AUTO_INCREMENT,
   `order_id` tinyint(4) NOT NULL DEFAULT '0',
   `menu_id` tinyint(4) NOT NULL DEFAULT '0',
   `item` varchar(20) NOT NULL DEFAULT '',
   `link` varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_service`
+-- Table structure for table `icinga2_service`
 --
 
-DROP TABLE IF EXISTS `nagios_service`;
+DROP TABLE IF EXISTS `icinga2_service`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_service` (
+CREATE TABLE `icinga2_service` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL DEFAULT 'Obsolete Field',
   `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -2028,17 +1758,17 @@ CREATE TABLE `nagios_service` (
   `access_rights` varchar(8) DEFAULT NULL,
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=639 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_servicedependency`
+-- Table structure for table `icinga2_servicedependency`
 --
 
-DROP TABLE IF EXISTS `nagios_servicedependency`;
+DROP TABLE IF EXISTS `icinga2_servicedependency`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_servicedependency` (
+CREATE TABLE `icinga2_servicedependency` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `dependent_host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -2061,13 +1791,13 @@ CREATE TABLE `nagios_servicedependency` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_serviceescalation`
+-- Table structure for table `icinga2_serviceescalation`
 --
 
-DROP TABLE IF EXISTS `nagios_serviceescalation`;
+DROP TABLE IF EXISTS `icinga2_serviceescalation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_serviceescalation` (
+CREATE TABLE `icinga2_serviceescalation` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -2090,13 +1820,13 @@ CREATE TABLE `nagios_serviceescalation` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_serviceextinfo`
+-- Table structure for table `icinga2_serviceextinfo`
 --
 
-DROP TABLE IF EXISTS `nagios_serviceextinfo`;
+DROP TABLE IF EXISTS `icinga2_serviceextinfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_serviceextinfo` (
+CREATE TABLE `icinga2_serviceextinfo` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` int(11) DEFAULT NULL,
   `service_description` int(11) NOT NULL,
@@ -2112,17 +1842,17 @@ CREATE TABLE `nagios_serviceextinfo` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`service_description`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_servicegroup`
+-- Table structure for table `icinga2_servicegroup`
 --
 
-DROP TABLE IF EXISTS `nagios_servicegroup`;
+DROP TABLE IF EXISTS `icinga2_servicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_servicegroup` (
+CREATE TABLE `icinga2_servicegroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `servicegroup_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -2138,17 +1868,17 @@ CREATE TABLE `nagios_servicegroup` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`servicegroup_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_servicetemplate`
+-- Table structure for table `icinga2_servicetemplate`
 --
 
-DROP TABLE IF EXISTS `nagios_servicetemplate`;
+DROP TABLE IF EXISTS `icinga2_servicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_servicetemplate` (
+CREATE TABLE `icinga2_servicetemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
   `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -2206,34 +1936,34 @@ CREATE TABLE `nagios_servicetemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_settings`
+-- Table structure for table `icinga2_settings`
 --
 
-DROP TABLE IF EXISTS `nagios_settings`;
+DROP TABLE IF EXISTS `icinga2_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_settings` (
+CREATE TABLE `icinga2_settings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `category` varchar(20) NOT NULL,
   `name` varchar(30) NOT NULL,
   `value` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_submenu`
+-- Table structure for table `icinga2_submenu`
 --
 
-DROP TABLE IF EXISTS `nagios_submenu`;
+DROP TABLE IF EXISTS `icinga2_submenu`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_submenu` (
+CREATE TABLE `icinga2_submenu` (
   `id` tinyint(4) NOT NULL AUTO_INCREMENT,
   `id_main` tinyint(4) NOT NULL DEFAULT '0',
   `order_id` tinyint(4) NOT NULL DEFAULT '0',
@@ -2241,34 +1971,34 @@ CREATE TABLE `nagios_submenu` (
   `link` varchar(50) NOT NULL DEFAULT '',
   `access_rights` varchar(8) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_timedefinition`
+-- Table structure for table `icinga2_timedefinition`
 --
 
-DROP TABLE IF EXISTS `nagios_timedefinition`;
+DROP TABLE IF EXISTS `icinga2_timedefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_timedefinition` (
+CREATE TABLE `icinga2_timedefinition` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tipId` int(10) unsigned NOT NULL,
   `definition` varchar(255) NOT NULL,
   `range` text NOT NULL,
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_timeperiod`
+-- Table structure for table `icinga2_timeperiod`
 --
 
-DROP TABLE IF EXISTS `nagios_timeperiod`;
+DROP TABLE IF EXISTS `icinga2_timeperiod`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_timeperiod` (
+CREATE TABLE `icinga2_timeperiod` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `timeperiod_name` varchar(255) NOT NULL DEFAULT '',
   `alias` varchar(255) NOT NULL DEFAULT '',
@@ -2281,17 +2011,17 @@ CREATE TABLE `nagios_timeperiod` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `timeperiod_name` (`timeperiod_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 PACK_KEYS=0;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 PACK_KEYS=0;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_user`
+-- Table structure for table `icinga2_user`
 --
 
-DROP TABLE IF EXISTS `nagios_user`;
+DROP TABLE IF EXISTS `icinga2_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_user` (
+CREATE TABLE `icinga2_user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -2305,22 +2035,292 @@ CREATE TABLE `nagios_user` (
   `locale` varchar(6) DEFAULT 'en_EN',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nagios_variabledefinition`
+-- Table structure for table `icinga2_variabledefinition`
 --
 
-DROP TABLE IF EXISTS `nagios_variabledefinition`;
+DROP TABLE IF EXISTS `icinga2_variabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nagios_variabledefinition` (
+CREATE TABLE `icinga2_variabledefinition` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `value` varchar(255) NOT NULL,
   `last_modified` datetime NOT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ipv4_assignments`
+--
+
+DROP TABLE IF EXISTS `ipv4_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ipv4_assignments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_block` varchar(45) NOT NULL,
+  `parent_block` varchar(45) NOT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL,
+  PRIMARY KEY (`id`,`ip_block`,`parent_block`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ipv4_blocks`
+--
+
+DROP TABLE IF EXISTS `ipv4_blocks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ipv4_blocks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_block_name` varchar(45) NOT NULL,
+  `ip_block_description` varchar(128) DEFAULT NULL,
+  `ip_block` varchar(18) NOT NULL,
+  `gateway` varchar(15) DEFAULT NULL,
+  `range_for_use` varchar(33) DEFAULT NULL,
+  `range_for_use_subnet` varchar(15) DEFAULT NULL,
+  `dns1` varchar(15) DEFAULT NULL,
+  `dns2` varchar(15) DEFAULT NULL,
+  `ntp1` varchar(15) DEFAULT NULL,
+  `ntp2` varchar(15) DEFAULT NULL,
+  `percent_used` varchar(5) DEFAULT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL,
+  PRIMARY KEY (`id`,`ip_block_name`,`ip_block`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `ip_block_name_UNIQUE` (`ip_block_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `job_status`
+--
+
+DROP TABLE IF EXISTS `job_status`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `job_status` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `job_id` int(45) NOT NULL,
+  `command` longtext NOT NULL,
+  `exit_code` int(5) DEFAULT NULL,
+  `output` mediumtext,
+  `task_started` timestamp NULL DEFAULT NULL,
+  `task_ended` timestamp NULL DEFAULT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL,
+  PRIMARY KEY (`id`,`job_id`),
+  KEY `idx_job_status_job_id` (`job_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `jobs`
+--
+
+DROP TABLE IF EXISTS `jobs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jobs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) NOT NULL,
+  `command_set_id` int(11) NOT NULL,
+  `on_failure` int(1) NOT NULL DEFAULT '0',
+  `status` int(1) NOT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL DEFAULT 'System',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_command_groups_to_commands`
+--
+
+DROP TABLE IF EXISTS `lnk_command_groups_to_commands`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_command_groups_to_commands` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group` int(11) NOT NULL,
+  `command` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`command`,`group`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_host_groups_to_hosts`
+--
+
+DROP TABLE IF EXISTS `lnk_host_groups_to_hosts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_host_groups_to_hosts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group` int(11) NOT NULL,
+  `host` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`host`,`group`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_hosts_to_ipv4_assignments`
+--
+
+DROP TABLE IF EXISTS `lnk_hosts_to_ipv4_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_hosts_to_ipv4_assignments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `host` int(11) NOT NULL,
+  `ip` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`ip`,`host`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_command_groups`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_command_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_command_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `command_group` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`command_group`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_commands`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_commands`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_commands` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `command` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`command`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_host_groups`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_host_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_host_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `host_group` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`host_group`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_hosts`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_hosts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_hosts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `host` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`host`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_user_groups`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_user_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_user_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `user_group` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`user_group`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_users`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `user` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`user`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_user_groups_to_users`
+--
+
+DROP TABLE IF EXISTS `lnk_user_groups_to_users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_user_groups_to_users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group` int(11) NOT NULL,
+  `user` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`user`,`group`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lock`
+--
+
+DROP TABLE IF EXISTS `lock`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lock` (
+  `sudoers-build` int(1) NOT NULL DEFAULT '0',
+  `sudoers-distribution` int(1) NOT NULL DEFAULT '0',
+  `dns-build` int(1) NOT NULL DEFAULT '0',
+  `reverse-proxy-build` int(1) NOT NULL,
+  `last-sudoers-build-started` datetime NOT NULL,
+  `last-sudoers-build-finished` datetime NOT NULL,
+  `last-sudoers-distribution-started` datetime NOT NULL,
+  `last-sudoers-distribution-finished` datetime NOT NULL,
+  `last-dns-build-started` datetime NOT NULL,
+  `last-dns-build-finished` datetime NOT NULL,
+  `last-reverse-proxy-build-started` datetime NOT NULL,
+  `last-reverse-proxy-build-finished` datetime NOT NULL,
+  PRIMARY KEY (`sudoers-build`,`sudoers-distribution`,`dns-build`,`last-sudoers-build-started`,`last-sudoers-build-finished`,`last-sudoers-distribution-started`,`last-sudoers-distribution-finished`,`last-dns-build-started`,`last-dns-build-finished`,`last-reverse-proxy-build-started`,`reverse-proxy-build`,`last-reverse-proxy-build-finished`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2340,7 +2340,7 @@ CREATE TABLE `notes` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2363,7 +2363,7 @@ CREATE TABLE `redirect` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2399,7 +2399,7 @@ CREATE TABLE `reverse_proxy` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=87 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2426,7 +2426,7 @@ CREATE TABLE `rules` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2447,7 +2447,7 @@ CREATE TABLE `user_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2467,7 +2467,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2492,7 +2492,7 @@ CREATE TABLE `zone_records` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`,`source`,`target`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -2504,5 +2504,4 @@ CREATE TABLE `zone_records` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-28 12:46:03
-
+-- Dump completed on 2017-06-15 21:38:18

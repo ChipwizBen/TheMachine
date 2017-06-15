@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
@@ -3798,16 +3800,16 @@ sub html_output {
 				"$Approved",
 				"$Last_Modified<br />$Last_Approved",
 				"$Modified_By<br />$Approved_By",
-				"<a href='/DSMS/sudoers-rules.cgi?Approve_Rule_ID=$DBID_Clean&Approve_Rule_Name=$DB_Rule_Name_Clean'><img src=\"/resources/imgs/confirm.png\" alt=\"Approve Rule ID $DBID_Clean\" ></a>",
+				"<a href='/DSMS/sudoers-rules.cgi?Approve_Rule_ID=$DBID_Clean&Approve_Rule_Name=$DB_Rule_Name_Clean'><img src=\"/Resources/Images/confirm.png\" alt=\"Approve Rule ID $DBID_Clean\" ></a>",
 				"<a href='/DSMS/sudoers-rules.cgi?View_Notes=$DBID_Clean'>
-					<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+					<div style='position: relative; background: url(\"/Resources/Images/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 						<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 							$Note_Count
 						</p>
 					</div>
 				</a>",
-				"<a href='/DSMS/sudoers-rules.cgi?Edit_Rule=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Rule ID $DBID_Clean\" ></a>",
-				"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Rule ID $DBID_Clean\" ></a>"
+				"<a href='/DSMS/sudoers-rules.cgi?Edit_Rule=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Rule ID $DBID_Clean\" ></a>",
+				"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Rule ID $DBID_Clean\" ></a>"
 			);
 		}
 		else {
@@ -3827,16 +3829,16 @@ sub html_output {
 				"$Approved",
 				"$Last_Modified<br />$Last_Approved",
 				"$Modified_By<br />$Approved_By",
-				"<img src=\"/resources/imgs/confirm-dim.png\" alt=\"You cannot approve this rule\" >",
+				"<img src=\"/Resources/Images/confirm-dim.png\" alt=\"You cannot approve this rule\" >",
 				"<a href='/DSMS/sudoers-rules.cgi?View_Notes=$DBID_Clean'>
-					<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+					<div style='position: relative; background: url(\"/Resources/Images/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 						<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 							$Note_Count
 						</p>
 					</div>
 				</a>",
-				"<a href='/DSMS/sudoers-rules.cgi?Edit_Rule=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Rule ID $DBID_Clean\" ></a>",
-				"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Rule ID $DBID_Clean\" ></a>"
+				"<a href='/DSMS/sudoers-rules.cgi?Edit_Rule=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Rule ID $DBID_Clean\" ></a>",
+				"<a href='/DSMS/sudoers-rules.cgi?Delete_Rule=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Rule ID $DBID_Clean\" ></a>"
 			);
 		}
 
@@ -3989,11 +3991,11 @@ ENDHTML
 							if ($Approver == 1 && $Requires_Approval == 1) {
 								print "<tr>
 										<td>Approver</td>
-										<td><img src='/resources/imgs/green.png' alt='Is an Approver' ></td>
+										<td><img src='/Resources/Images/green.png' alt='Is an Approver' ></td>
 									</tr>
 									<tr>
 										<td>Changes Requires Approval</td>
-										<td><img src='/resources/imgs/green.png' alt='Requires Approval' ></td>
+										<td><img src='/Resources/Images/green.png' alt='Requires Approval' ></td>
 									</tr>
 									<tr>
 										<td align='center' colspan='2'>You can approve rules of other users but not your own.</td>
@@ -4003,11 +4005,11 @@ ENDHTML
 							elsif ($Approver == 1 && $Requires_Approval == 0) {
 								print "<tr>
 										<td>Approver</td>
-										<td><img src='/resources/imgs/green.png' alt='Is an Approver' ></td>
+										<td><img src='/Resources/Images/green.png' alt='Is an Approver' ></td>
 									</tr>
 									<tr>
 										<td>Changes Requires Approval</td>
-										<td><img src='/resources/imgs/red.png' alt='Does not Require Approval' ></td>
+										<td><img src='/Resources/Images/red.png' alt='Does not Require Approval' ></td>
 									</tr>
 									<tr>
 										<td align='center' colspan='2'>You can approve all rules including your own.</td>
@@ -4017,11 +4019,11 @@ ENDHTML
 							elsif ($Approver == 0) {
 								print "<tr>
 										<td>Approver</td>
-										<td><img src='/resources/imgs/red.png' alt='Is not an Approver' ></td>
+										<td><img src='/Resources/Images/red.png' alt='Is not an Approver' ></td>
 									</tr>
 									<tr>
 										<td>Changes Requires Approval</td>
-										<td><img src='/resources/imgs/green.png' alt='Requires Approval' ></td>
+										<td><img src='/Resources/Images/green.png' alt='Requires Approval' ></td>
 									</tr>
 									<tr>
 										<td align='center' colspan='2'>You cannot approve rules.</td>

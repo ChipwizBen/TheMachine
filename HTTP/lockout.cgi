@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use Digest::SHA qw(sha512_hex);
 
 require './common.pl';

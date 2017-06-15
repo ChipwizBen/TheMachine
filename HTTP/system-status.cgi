@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use Date::Parse qw(str2time);
 
 require './common.pl';
@@ -159,6 +161,10 @@ my $Salt = Salt();
 	$Salt =~ s/&/&amp;/g;
 	$Salt =~ s/</&lt;/g;
 	$Salt =~ s/>/&gt;/g;
+my $Salt_1 = Salt(1);
+	$Salt_1 =~ s/&/&amp;/g;
+	$Salt_1 =~ s/</&lt;/g;
+	$Salt_1 =~ s/>/&gt;/g;
 
 print <<ENDHTML;
 	<h3 style="text-align: center;">Global Configuration</h3>
@@ -318,6 +324,10 @@ print <<ENDHTML;
 		<tr>
 			<td style="text-align: right;">Salt Generation Test</td>
 			<td style='color: #00FF00;'>$Salt</td>
+		</tr>
+		<tr>
+			<td style="text-align: right;">Salt Generation Test (Single Value)</td>
+			<td style='color: #00FF00;'>$Salt_1</td>
 		</tr>
 	</table>
 ENDHTML

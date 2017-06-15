@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 use Date::Parse qw(str2time);
 use POSIX qw(strftime);
@@ -1225,7 +1227,7 @@ sub html_show_links {
 			"Command",
 			"$Command_Alias ($Command)",
 			"$Active",
-			"<a href='/DSMS/sudoers-commands.cgi?ID_Filter=$Command_Alias_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Command_Alias\" ></a>"
+			"<a href='/DSMS/sudoers-commands.cgi?ID_Filter=$Command_Alias_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View $Command_Alias\" ></a>"
 			);
 		}
 	}
@@ -1266,7 +1268,7 @@ sub html_show_links {
 			"Rule",
 			"$Name",
 			"$Active<br />$Approved",
-			"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"/resources/imgs/forward.png\" alt=\"View $Name\" ></a>"
+			"<a href='/DSMS/sudoers-rules.cgi?ID_Filter=$Rule_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View $Name\" ></a>"
 			);
 		}
 	}
@@ -1553,16 +1555,16 @@ sub html_output {
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/DSMS/sudoers-command-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"/resources/imgs/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-command-groups.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$Group_Name_Clean'><img src=\"/Resources/Images/linked.png\" alt=\"Linked Objects to Group ID $DBID_Clean\" ></a>",
 			"<a href='/DSMS/sudoers-command-groups.cgi?View_Notes=$DBID_Clean'>
-				<div style='position: relative; background: url(\"/resources/imgs/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
+				<div style='position: relative; background: url(\"/Resources/Images/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
 						$Note_Count
 					</p>
 				</div>
 			</a>",
-			"<a href='/DSMS/sudoers-command-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
-			"<a href='/DSMS/sudoers-command-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
+			"<a href='/DSMS/sudoers-command-groups.cgi?Edit_Group=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Group ID $DBID_Clean\" ></a>",
+			"<a href='/DSMS/sudoers-command-groups.cgi?Delete_Group=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Group ID $DBID_Clean\" ></a>"
 		);
 
 

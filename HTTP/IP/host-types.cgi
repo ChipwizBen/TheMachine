@@ -1,6 +1,8 @@
 #!/usr/bin/perl -T
 
 use strict;
+use lib qw(/opt/TheMachine/Modules/);
+
 use HTML::Table;
 use POSIX qw(strftime);
 
@@ -395,8 +397,8 @@ sub html_output {
 			"$Host_Type",
 			"$Last_Modified",
 			"$Modified_By",
-			"<a href='/IP/host-types.cgi?Edit_Host Type=$DBID_Clean'><img src=\"/resources/imgs/edit.png\" alt=\"Edit Host Type ID $DBID_Clean\" ></a>",
-			"<a href='/IP/host-types.cgi?Delete_Host Type=$DBID_Clean'><img src=\"/resources/imgs/delete.png\" alt=\"Delete Host Type ID $DBID_Clean\" ></a>"
+			"<a href='/IP/host-types.cgi?Edit_Host Type=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Host Type ID $DBID_Clean\" ></a>",
+			"<a href='/IP/host-types.cgi?Delete_Host Type=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Host Type ID $DBID_Clean\" ></a>"
 		);
 
 	}
