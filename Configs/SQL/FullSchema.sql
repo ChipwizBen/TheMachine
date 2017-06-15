@@ -333,13 +333,13 @@ CREATE TABLE `hosts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_command`
+-- Table structure for table `icinga2_command`
 --
 
-DROP TABLE IF EXISTS `icinga_command`;
+DROP TABLE IF EXISTS `icinga2_command`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_command` (
+CREATE TABLE `icinga2_command` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `command_name` varchar(255) NOT NULL,
   `command_line` text NOT NULL,
@@ -355,13 +355,13 @@ CREATE TABLE `icinga_command` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_contact`
+-- Table structure for table `icinga2_contact`
 --
 
-DROP TABLE IF EXISTS `icinga_contact`;
+DROP TABLE IF EXISTS `icinga2_contact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_contact` (
+CREATE TABLE `icinga2_contact` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `contact_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -404,13 +404,13 @@ CREATE TABLE `icinga_contact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_contactgroup`
+-- Table structure for table `icinga2_contactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_contactgroup`;
+DROP TABLE IF EXISTS `icinga2_contactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_contactgroup` (
+CREATE TABLE `icinga2_contactgroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `contactgroup_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -428,13 +428,13 @@ CREATE TABLE `icinga_contactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_contacttemplate`
+-- Table structure for table `icinga2_contacttemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_contacttemplate`;
+DROP TABLE IF EXISTS `icinga2_contacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_contacttemplate` (
+CREATE TABLE `icinga2_contacttemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -474,13 +474,13 @@ CREATE TABLE `icinga_contacttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_domain`
+-- Table structure for table `icinga2_domain`
 --
 
-DROP TABLE IF EXISTS `icinga_domain`;
+DROP TABLE IF EXISTS `icinga2_domain`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_domain` (
+CREATE TABLE `icinga2_domain` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -510,13 +510,13 @@ CREATE TABLE `icinga_domain` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_host`
+-- Table structure for table `icinga2_host`
 --
 
-DROP TABLE IF EXISTS `icinga_host`;
+DROP TABLE IF EXISTS `icinga2_host`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_host` (
+CREATE TABLE `icinga2_host` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -581,13 +581,13 @@ CREATE TABLE `icinga_host` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_hostdependency`
+-- Table structure for table `icinga2_hostdependency`
 --
 
-DROP TABLE IF EXISTS `icinga_hostdependency`;
+DROP TABLE IF EXISTS `icinga2_hostdependency`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_hostdependency` (
+CREATE TABLE `icinga2_hostdependency` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `dependent_host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -608,13 +608,13 @@ CREATE TABLE `icinga_hostdependency` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_hostescalation`
+-- Table structure for table `icinga2_hostescalation`
 --
 
-DROP TABLE IF EXISTS `icinga_hostescalation`;
+DROP TABLE IF EXISTS `icinga2_hostescalation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_hostescalation` (
+CREATE TABLE `icinga2_hostescalation` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -636,13 +636,13 @@ CREATE TABLE `icinga_hostescalation` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_hostextinfo`
+-- Table structure for table `icinga2_hostextinfo`
 --
 
-DROP TABLE IF EXISTS `icinga_hostextinfo`;
+DROP TABLE IF EXISTS `icinga2_hostextinfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_hostextinfo` (
+CREATE TABLE `icinga2_hostextinfo` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` int(11) DEFAULT NULL,
   `notes` varchar(255) NOT NULL,
@@ -665,13 +665,13 @@ CREATE TABLE `icinga_hostextinfo` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_hostgroup`
+-- Table structure for table `icinga2_hostgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_hostgroup`;
+DROP TABLE IF EXISTS `icinga2_hostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_hostgroup` (
+CREATE TABLE `icinga2_hostgroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `hostgroup_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -691,13 +691,13 @@ CREATE TABLE `icinga_hostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_hosttemplate`
+-- Table structure for table `icinga2_hosttemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_hosttemplate`;
+DROP TABLE IF EXISTS `icinga2_hosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_hosttemplate` (
+CREATE TABLE `icinga2_hosttemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -758,13 +758,13 @@ CREATE TABLE `icinga_hosttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_info`
+-- Table structure for table `icinga2_info`
 --
 
-DROP TABLE IF EXISTS `icinga_info`;
+DROP TABLE IF EXISTS `icinga2_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_info` (
+CREATE TABLE `icinga2_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `key1` varchar(200) NOT NULL,
   `key2` varchar(200) NOT NULL,
@@ -777,13 +777,13 @@ CREATE TABLE `icinga_info` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContactToCommandHost`
+-- Table structure for table `icinga2_lnkContactToCommandHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContactToCommandHost`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToCommandHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContactToCommandHost` (
+CREATE TABLE `icinga2_lnkContactToCommandHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -791,13 +791,13 @@ CREATE TABLE `icinga_lnkContactToCommandHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContactToCommandService`
+-- Table structure for table `icinga2_lnkContactToCommandService`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContactToCommandService`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToCommandService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContactToCommandService` (
+CREATE TABLE `icinga2_lnkContactToCommandService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -805,13 +805,13 @@ CREATE TABLE `icinga_lnkContactToCommandService` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContactToContactgroup`
+-- Table structure for table `icinga2_lnkContactToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContactToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContactToContactgroup` (
+CREATE TABLE `icinga2_lnkContactToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -819,13 +819,13 @@ CREATE TABLE `icinga_lnkContactToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContactToContacttemplate`
+-- Table structure for table `icinga2_lnkContactToContacttemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContactToContacttemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToContacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContactToContacttemplate` (
+CREATE TABLE `icinga2_lnkContactToContacttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -835,13 +835,13 @@ CREATE TABLE `icinga_lnkContactToContacttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContactToVariabledefinition`
+-- Table structure for table `icinga2_lnkContactToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContactToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkContactToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContactToVariabledefinition` (
+CREATE TABLE `icinga2_lnkContactToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -849,13 +849,13 @@ CREATE TABLE `icinga_lnkContactToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContactgroupToContact`
+-- Table structure for table `icinga2_lnkContactgroupToContact`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContactgroupToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkContactgroupToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContactgroupToContact` (
+CREATE TABLE `icinga2_lnkContactgroupToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -863,13 +863,13 @@ CREATE TABLE `icinga_lnkContactgroupToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContactgroupToContactgroup`
+-- Table structure for table `icinga2_lnkContactgroupToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContactgroupToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkContactgroupToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContactgroupToContactgroup` (
+CREATE TABLE `icinga2_lnkContactgroupToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -877,13 +877,13 @@ CREATE TABLE `icinga_lnkContactgroupToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContacttemplateToCommandHost`
+-- Table structure for table `icinga2_lnkContacttemplateToCommandHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContacttemplateToCommandHost`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToCommandHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContacttemplateToCommandHost` (
+CREATE TABLE `icinga2_lnkContacttemplateToCommandHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -891,13 +891,13 @@ CREATE TABLE `icinga_lnkContacttemplateToCommandHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContacttemplateToCommandService`
+-- Table structure for table `icinga2_lnkContacttemplateToCommandService`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContacttemplateToCommandService`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToCommandService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContacttemplateToCommandService` (
+CREATE TABLE `icinga2_lnkContacttemplateToCommandService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -905,13 +905,13 @@ CREATE TABLE `icinga_lnkContacttemplateToCommandService` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContacttemplateToContactgroup`
+-- Table structure for table `icinga2_lnkContacttemplateToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContacttemplateToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContacttemplateToContactgroup` (
+CREATE TABLE `icinga2_lnkContacttemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -919,13 +919,13 @@ CREATE TABLE `icinga_lnkContacttemplateToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContacttemplateToContacttemplate`
+-- Table structure for table `icinga2_lnkContacttemplateToContacttemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContacttemplateToContacttemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToContacttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContacttemplateToContacttemplate` (
+CREATE TABLE `icinga2_lnkContacttemplateToContacttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -935,13 +935,13 @@ CREATE TABLE `icinga_lnkContacttemplateToContacttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkContacttemplateToVariabledefinition`
+-- Table structure for table `icinga2_lnkContacttemplateToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkContacttemplateToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkContacttemplateToVariabledefinition` (
+CREATE TABLE `icinga2_lnkContacttemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -949,13 +949,13 @@ CREATE TABLE `icinga_lnkContacttemplateToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostToContact`
+-- Table structure for table `icinga2_lnkHostToContact`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostToContact` (
+CREATE TABLE `icinga2_lnkHostToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -963,13 +963,13 @@ CREATE TABLE `icinga_lnkHostToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostToContactgroup`
+-- Table structure for table `icinga2_lnkHostToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostToContactgroup` (
+CREATE TABLE `icinga2_lnkHostToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -977,13 +977,13 @@ CREATE TABLE `icinga_lnkHostToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostToHost`
+-- Table structure for table `icinga2_lnkHostToHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostToHost` (
+CREATE TABLE `icinga2_lnkHostToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -991,13 +991,13 @@ CREATE TABLE `icinga_lnkHostToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostToHostgroup`
+-- Table structure for table `icinga2_lnkHostToHostgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostToHostgroup` (
+CREATE TABLE `icinga2_lnkHostToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1005,13 +1005,13 @@ CREATE TABLE `icinga_lnkHostToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostToHosttemplate`
+-- Table structure for table `icinga2_lnkHostToHosttemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostToHosttemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToHosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostToHosttemplate` (
+CREATE TABLE `icinga2_lnkHostToHosttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1021,13 +1021,13 @@ CREATE TABLE `icinga_lnkHostToHosttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostToVariabledefinition`
+-- Table structure for table `icinga2_lnkHostToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkHostToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostToVariabledefinition` (
+CREATE TABLE `icinga2_lnkHostToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1035,13 +1035,13 @@ CREATE TABLE `icinga_lnkHostToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostdependencyToHost_DH`
+-- Table structure for table `icinga2_lnkHostdependencyToHost_DH`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostdependencyToHost_DH`;
+DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHost_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostdependencyToHost_DH` (
+CREATE TABLE `icinga2_lnkHostdependencyToHost_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1049,13 +1049,13 @@ CREATE TABLE `icinga_lnkHostdependencyToHost_DH` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostdependencyToHost_H`
+-- Table structure for table `icinga2_lnkHostdependencyToHost_H`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostdependencyToHost_H`;
+DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHost_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostdependencyToHost_H` (
+CREATE TABLE `icinga2_lnkHostdependencyToHost_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1063,13 +1063,13 @@ CREATE TABLE `icinga_lnkHostdependencyToHost_H` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostdependencyToHostgroup_DH`
+-- Table structure for table `icinga2_lnkHostdependencyToHostgroup_DH`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostdependencyToHostgroup_DH`;
+DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHostgroup_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostdependencyToHostgroup_DH` (
+CREATE TABLE `icinga2_lnkHostdependencyToHostgroup_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1077,13 +1077,13 @@ CREATE TABLE `icinga_lnkHostdependencyToHostgroup_DH` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostdependencyToHostgroup_H`
+-- Table structure for table `icinga2_lnkHostdependencyToHostgroup_H`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostdependencyToHostgroup_H`;
+DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHostgroup_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostdependencyToHostgroup_H` (
+CREATE TABLE `icinga2_lnkHostdependencyToHostgroup_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1091,13 +1091,13 @@ CREATE TABLE `icinga_lnkHostdependencyToHostgroup_H` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostescalationToContact`
+-- Table structure for table `icinga2_lnkHostescalationToContact`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostescalationToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkHostescalationToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostescalationToContact` (
+CREATE TABLE `icinga2_lnkHostescalationToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1105,13 +1105,13 @@ CREATE TABLE `icinga_lnkHostescalationToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostescalationToContactgroup`
+-- Table structure for table `icinga2_lnkHostescalationToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostescalationToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostescalationToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostescalationToContactgroup` (
+CREATE TABLE `icinga2_lnkHostescalationToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1119,13 +1119,13 @@ CREATE TABLE `icinga_lnkHostescalationToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostescalationToHost`
+-- Table structure for table `icinga2_lnkHostescalationToHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostescalationToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkHostescalationToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostescalationToHost` (
+CREATE TABLE `icinga2_lnkHostescalationToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1133,13 +1133,13 @@ CREATE TABLE `icinga_lnkHostescalationToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostescalationToHostgroup`
+-- Table structure for table `icinga2_lnkHostescalationToHostgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostescalationToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostescalationToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostescalationToHostgroup` (
+CREATE TABLE `icinga2_lnkHostescalationToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1147,13 +1147,13 @@ CREATE TABLE `icinga_lnkHostescalationToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostgroupToHost`
+-- Table structure for table `icinga2_lnkHostgroupToHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostgroupToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkHostgroupToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostgroupToHost` (
+CREATE TABLE `icinga2_lnkHostgroupToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1161,13 +1161,13 @@ CREATE TABLE `icinga_lnkHostgroupToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHostgroupToHostgroup`
+-- Table structure for table `icinga2_lnkHostgroupToHostgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHostgroupToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHostgroupToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHostgroupToHostgroup` (
+CREATE TABLE `icinga2_lnkHostgroupToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1175,13 +1175,13 @@ CREATE TABLE `icinga_lnkHostgroupToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHosttemplateToContact`
+-- Table structure for table `icinga2_lnkHosttemplateToContact`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHosttemplateToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHosttemplateToContact` (
+CREATE TABLE `icinga2_lnkHosttemplateToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1189,13 +1189,13 @@ CREATE TABLE `icinga_lnkHosttemplateToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHosttemplateToContactgroup`
+-- Table structure for table `icinga2_lnkHosttemplateToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHosttemplateToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHosttemplateToContactgroup` (
+CREATE TABLE `icinga2_lnkHosttemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1203,13 +1203,13 @@ CREATE TABLE `icinga_lnkHosttemplateToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHosttemplateToHost`
+-- Table structure for table `icinga2_lnkHosttemplateToHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHosttemplateToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHosttemplateToHost` (
+CREATE TABLE `icinga2_lnkHosttemplateToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1217,13 +1217,13 @@ CREATE TABLE `icinga_lnkHosttemplateToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHosttemplateToHostgroup`
+-- Table structure for table `icinga2_lnkHosttemplateToHostgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHosttemplateToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHosttemplateToHostgroup` (
+CREATE TABLE `icinga2_lnkHosttemplateToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1231,13 +1231,13 @@ CREATE TABLE `icinga_lnkHosttemplateToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHosttemplateToHosttemplate`
+-- Table structure for table `icinga2_lnkHosttemplateToHosttemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHosttemplateToHosttemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToHosttemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHosttemplateToHosttemplate` (
+CREATE TABLE `icinga2_lnkHosttemplateToHosttemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1247,13 +1247,13 @@ CREATE TABLE `icinga_lnkHosttemplateToHosttemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkHosttemplateToVariabledefinition`
+-- Table structure for table `icinga2_lnkHosttemplateToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkHosttemplateToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkHosttemplateToVariabledefinition` (
+CREATE TABLE `icinga2_lnkHosttemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1261,13 +1261,13 @@ CREATE TABLE `icinga_lnkHosttemplateToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceToContact`
+-- Table structure for table `icinga2_lnkServiceToContact`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceToContact` (
+CREATE TABLE `icinga2_lnkServiceToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1275,13 +1275,13 @@ CREATE TABLE `icinga_lnkServiceToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceToContactgroup`
+-- Table structure for table `icinga2_lnkServiceToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceToContactgroup` (
+CREATE TABLE `icinga2_lnkServiceToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1289,13 +1289,13 @@ CREATE TABLE `icinga_lnkServiceToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceToHost`
+-- Table structure for table `icinga2_lnkServiceToHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceToHost` (
+CREATE TABLE `icinga2_lnkServiceToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1303,13 +1303,13 @@ CREATE TABLE `icinga_lnkServiceToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceToHostgroup`
+-- Table structure for table `icinga2_lnkServiceToHostgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceToHostgroup` (
+CREATE TABLE `icinga2_lnkServiceToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1317,13 +1317,13 @@ CREATE TABLE `icinga_lnkServiceToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceToServicegroup`
+-- Table structure for table `icinga2_lnkServiceToServicegroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceToServicegroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceToServicegroup` (
+CREATE TABLE `icinga2_lnkServiceToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1331,13 +1331,13 @@ CREATE TABLE `icinga_lnkServiceToServicegroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceToServicetemplate`
+-- Table structure for table `icinga2_lnkServiceToServicetemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceToServicetemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToServicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceToServicetemplate` (
+CREATE TABLE `icinga2_lnkServiceToServicetemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1347,13 +1347,13 @@ CREATE TABLE `icinga_lnkServiceToServicetemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceToVariabledefinition`
+-- Table structure for table `icinga2_lnkServiceToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceToVariabledefinition` (
+CREATE TABLE `icinga2_lnkServiceToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1361,13 +1361,13 @@ CREATE TABLE `icinga_lnkServiceToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicedependencyToHost_DH`
+-- Table structure for table `icinga2_lnkServicedependencyToHost_DH`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicedependencyToHost_DH`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHost_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicedependencyToHost_DH` (
+CREATE TABLE `icinga2_lnkServicedependencyToHost_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1375,13 +1375,13 @@ CREATE TABLE `icinga_lnkServicedependencyToHost_DH` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicedependencyToHost_H`
+-- Table structure for table `icinga2_lnkServicedependencyToHost_H`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicedependencyToHost_H`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHost_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicedependencyToHost_H` (
+CREATE TABLE `icinga2_lnkServicedependencyToHost_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1389,13 +1389,13 @@ CREATE TABLE `icinga_lnkServicedependencyToHost_H` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicedependencyToHostgroup_DH`
+-- Table structure for table `icinga2_lnkServicedependencyToHostgroup_DH`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicedependencyToHostgroup_DH`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHostgroup_DH`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicedependencyToHostgroup_DH` (
+CREATE TABLE `icinga2_lnkServicedependencyToHostgroup_DH` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1403,13 +1403,13 @@ CREATE TABLE `icinga_lnkServicedependencyToHostgroup_DH` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicedependencyToHostgroup_H`
+-- Table structure for table `icinga2_lnkServicedependencyToHostgroup_H`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicedependencyToHostgroup_H`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHostgroup_H`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicedependencyToHostgroup_H` (
+CREATE TABLE `icinga2_lnkServicedependencyToHostgroup_H` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1417,13 +1417,13 @@ CREATE TABLE `icinga_lnkServicedependencyToHostgroup_H` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicedependencyToService_DS`
+-- Table structure for table `icinga2_lnkServicedependencyToService_DS`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicedependencyToService_DS`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToService_DS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicedependencyToService_DS` (
+CREATE TABLE `icinga2_lnkServicedependencyToService_DS` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1431,13 +1431,13 @@ CREATE TABLE `icinga_lnkServicedependencyToService_DS` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicedependencyToService_S`
+-- Table structure for table `icinga2_lnkServicedependencyToService_S`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicedependencyToService_S`;
+DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToService_S`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicedependencyToService_S` (
+CREATE TABLE `icinga2_lnkServicedependencyToService_S` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1445,13 +1445,13 @@ CREATE TABLE `icinga_lnkServicedependencyToService_S` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceescalationToContact`
+-- Table structure for table `icinga2_lnkServiceescalationToContact`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceescalationToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceescalationToContact` (
+CREATE TABLE `icinga2_lnkServiceescalationToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1459,13 +1459,13 @@ CREATE TABLE `icinga_lnkServiceescalationToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceescalationToContactgroup`
+-- Table structure for table `icinga2_lnkServiceescalationToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceescalationToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceescalationToContactgroup` (
+CREATE TABLE `icinga2_lnkServiceescalationToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1473,13 +1473,13 @@ CREATE TABLE `icinga_lnkServiceescalationToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceescalationToHost`
+-- Table structure for table `icinga2_lnkServiceescalationToHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceescalationToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceescalationToHost` (
+CREATE TABLE `icinga2_lnkServiceescalationToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1487,13 +1487,13 @@ CREATE TABLE `icinga_lnkServiceescalationToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceescalationToHostgroup`
+-- Table structure for table `icinga2_lnkServiceescalationToHostgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceescalationToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceescalationToHostgroup` (
+CREATE TABLE `icinga2_lnkServiceescalationToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1501,13 +1501,13 @@ CREATE TABLE `icinga_lnkServiceescalationToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServiceescalationToService`
+-- Table structure for table `icinga2_lnkServiceescalationToService`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServiceescalationToService`;
+DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServiceescalationToService` (
+CREATE TABLE `icinga2_lnkServiceescalationToService` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1515,13 +1515,13 @@ CREATE TABLE `icinga_lnkServiceescalationToService` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicegroupToService`
+-- Table structure for table `icinga2_lnkServicegroupToService`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicegroupToService`;
+DROP TABLE IF EXISTS `icinga2_lnkServicegroupToService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicegroupToService` (
+CREATE TABLE `icinga2_lnkServicegroupToService` (
   `idMaster` int(11) NOT NULL,
   `idSlaveH` int(11) NOT NULL,
   `idSlaveHG` int(11) NOT NULL,
@@ -1531,13 +1531,13 @@ CREATE TABLE `icinga_lnkServicegroupToService` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicegroupToServicegroup`
+-- Table structure for table `icinga2_lnkServicegroupToServicegroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicegroupToServicegroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServicegroupToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicegroupToServicegroup` (
+CREATE TABLE `icinga2_lnkServicegroupToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1545,13 +1545,13 @@ CREATE TABLE `icinga_lnkServicegroupToServicegroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicetemplateToContact`
+-- Table structure for table `icinga2_lnkServicetemplateToContact`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicetemplateToContact`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToContact`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicetemplateToContact` (
+CREATE TABLE `icinga2_lnkServicetemplateToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1559,13 +1559,13 @@ CREATE TABLE `icinga_lnkServicetemplateToContact` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicetemplateToContactgroup`
+-- Table structure for table `icinga2_lnkServicetemplateToContactgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicetemplateToContactgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToContactgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicetemplateToContactgroup` (
+CREATE TABLE `icinga2_lnkServicetemplateToContactgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1573,13 +1573,13 @@ CREATE TABLE `icinga_lnkServicetemplateToContactgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicetemplateToHost`
+-- Table structure for table `icinga2_lnkServicetemplateToHost`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicetemplateToHost`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToHost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicetemplateToHost` (
+CREATE TABLE `icinga2_lnkServicetemplateToHost` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1587,13 +1587,13 @@ CREATE TABLE `icinga_lnkServicetemplateToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicetemplateToHostgroup`
+-- Table structure for table `icinga2_lnkServicetemplateToHostgroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicetemplateToHostgroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToHostgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicetemplateToHostgroup` (
+CREATE TABLE `icinga2_lnkServicetemplateToHostgroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1601,13 +1601,13 @@ CREATE TABLE `icinga_lnkServicetemplateToHostgroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicetemplateToServicegroup`
+-- Table structure for table `icinga2_lnkServicetemplateToServicegroup`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicetemplateToServicegroup`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToServicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicetemplateToServicegroup` (
+CREATE TABLE `icinga2_lnkServicetemplateToServicegroup` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1615,13 +1615,13 @@ CREATE TABLE `icinga_lnkServicetemplateToServicegroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicetemplateToServicetemplate`
+-- Table structure for table `icinga2_lnkServicetemplateToServicetemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicetemplateToServicetemplate`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToServicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicetemplateToServicetemplate` (
+CREATE TABLE `icinga2_lnkServicetemplateToServicetemplate` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   `idSort` int(11) NOT NULL,
@@ -1631,13 +1631,13 @@ CREATE TABLE `icinga_lnkServicetemplateToServicetemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkServicetemplateToVariabledefinition`
+-- Table structure for table `icinga2_lnkServicetemplateToVariabledefinition`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkServicetemplateToVariabledefinition`;
+DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToVariabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkServicetemplateToVariabledefinition` (
+CREATE TABLE `icinga2_lnkServicetemplateToVariabledefinition` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1645,13 +1645,13 @@ CREATE TABLE `icinga_lnkServicetemplateToVariabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_lnkTimeperiodToTimeperiod`
+-- Table structure for table `icinga2_lnkTimeperiodToTimeperiod`
 --
 
-DROP TABLE IF EXISTS `icinga_lnkTimeperiodToTimeperiod`;
+DROP TABLE IF EXISTS `icinga2_lnkTimeperiodToTimeperiod`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_lnkTimeperiodToTimeperiod` (
+CREATE TABLE `icinga2_lnkTimeperiodToTimeperiod` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -1659,13 +1659,13 @@ CREATE TABLE `icinga_lnkTimeperiodToTimeperiod` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_logbook`
+-- Table structure for table `icinga2_logbook`
 --
 
-DROP TABLE IF EXISTS `icinga_logbook`;
+DROP TABLE IF EXISTS `icinga2_logbook`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_logbook` (
+CREATE TABLE `icinga2_logbook` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `user` varchar(255) NOT NULL,
@@ -1677,13 +1677,13 @@ CREATE TABLE `icinga_logbook` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_mainmenu`
+-- Table structure for table `icinga2_mainmenu`
 --
 
-DROP TABLE IF EXISTS `icinga_mainmenu`;
+DROP TABLE IF EXISTS `icinga2_mainmenu`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_mainmenu` (
+CREATE TABLE `icinga2_mainmenu` (
   `id` tinyint(4) NOT NULL AUTO_INCREMENT,
   `order_id` tinyint(4) NOT NULL DEFAULT '0',
   `menu_id` tinyint(4) NOT NULL DEFAULT '0',
@@ -1694,13 +1694,13 @@ CREATE TABLE `icinga_mainmenu` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_service`
+-- Table structure for table `icinga2_service`
 --
 
-DROP TABLE IF EXISTS `icinga_service`;
+DROP TABLE IF EXISTS `icinga2_service`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_service` (
+CREATE TABLE `icinga2_service` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL DEFAULT 'Obsolete Field',
   `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -1762,13 +1762,13 @@ CREATE TABLE `icinga_service` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_servicedependency`
+-- Table structure for table `icinga2_servicedependency`
 --
 
-DROP TABLE IF EXISTS `icinga_servicedependency`;
+DROP TABLE IF EXISTS `icinga2_servicedependency`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_servicedependency` (
+CREATE TABLE `icinga2_servicedependency` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `dependent_host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -1791,13 +1791,13 @@ CREATE TABLE `icinga_servicedependency` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_serviceescalation`
+-- Table structure for table `icinga2_serviceescalation`
 --
 
-DROP TABLE IF EXISTS `icinga_serviceescalation`;
+DROP TABLE IF EXISTS `icinga2_serviceescalation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_serviceescalation` (
+CREATE TABLE `icinga2_serviceescalation` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `config_name` varchar(255) NOT NULL,
   `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -1820,13 +1820,13 @@ CREATE TABLE `icinga_serviceescalation` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_serviceextinfo`
+-- Table structure for table `icinga2_serviceextinfo`
 --
 
-DROP TABLE IF EXISTS `icinga_serviceextinfo`;
+DROP TABLE IF EXISTS `icinga2_serviceextinfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_serviceextinfo` (
+CREATE TABLE `icinga2_serviceextinfo` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `host_name` int(11) DEFAULT NULL,
   `service_description` int(11) NOT NULL,
@@ -1846,13 +1846,13 @@ CREATE TABLE `icinga_serviceextinfo` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_servicegroup`
+-- Table structure for table `icinga2_servicegroup`
 --
 
-DROP TABLE IF EXISTS `icinga_servicegroup`;
+DROP TABLE IF EXISTS `icinga2_servicegroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_servicegroup` (
+CREATE TABLE `icinga2_servicegroup` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `servicegroup_name` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -1872,13 +1872,13 @@ CREATE TABLE `icinga_servicegroup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_servicetemplate`
+-- Table structure for table `icinga2_servicetemplate`
 --
 
-DROP TABLE IF EXISTS `icinga_servicetemplate`;
+DROP TABLE IF EXISTS `icinga2_servicetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_servicetemplate` (
+CREATE TABLE `icinga2_servicetemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `template_name` varchar(255) NOT NULL,
   `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -1940,13 +1940,13 @@ CREATE TABLE `icinga_servicetemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_settings`
+-- Table structure for table `icinga2_settings`
 --
 
-DROP TABLE IF EXISTS `icinga_settings`;
+DROP TABLE IF EXISTS `icinga2_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_settings` (
+CREATE TABLE `icinga2_settings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `category` varchar(20) NOT NULL,
   `name` varchar(30) NOT NULL,
@@ -1957,13 +1957,13 @@ CREATE TABLE `icinga_settings` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_submenu`
+-- Table structure for table `icinga2_submenu`
 --
 
-DROP TABLE IF EXISTS `icinga_submenu`;
+DROP TABLE IF EXISTS `icinga2_submenu`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_submenu` (
+CREATE TABLE `icinga2_submenu` (
   `id` tinyint(4) NOT NULL AUTO_INCREMENT,
   `id_main` tinyint(4) NOT NULL DEFAULT '0',
   `order_id` tinyint(4) NOT NULL DEFAULT '0',
@@ -1975,13 +1975,13 @@ CREATE TABLE `icinga_submenu` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_timedefinition`
+-- Table structure for table `icinga2_timedefinition`
 --
 
-DROP TABLE IF EXISTS `icinga_timedefinition`;
+DROP TABLE IF EXISTS `icinga2_timedefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_timedefinition` (
+CREATE TABLE `icinga2_timedefinition` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tipId` int(10) unsigned NOT NULL,
   `definition` varchar(255) NOT NULL,
@@ -1992,13 +1992,13 @@ CREATE TABLE `icinga_timedefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_timeperiod`
+-- Table structure for table `icinga2_timeperiod`
 --
 
-DROP TABLE IF EXISTS `icinga_timeperiod`;
+DROP TABLE IF EXISTS `icinga2_timeperiod`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_timeperiod` (
+CREATE TABLE `icinga2_timeperiod` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `timeperiod_name` varchar(255) NOT NULL DEFAULT '',
   `alias` varchar(255) NOT NULL DEFAULT '',
@@ -2015,13 +2015,13 @@ CREATE TABLE `icinga_timeperiod` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_user`
+-- Table structure for table `icinga2_user`
 --
 
-DROP TABLE IF EXISTS `icinga_user`;
+DROP TABLE IF EXISTS `icinga2_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_user` (
+CREATE TABLE `icinga2_user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
@@ -2039,13 +2039,13 @@ CREATE TABLE `icinga_user` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga_variabledefinition`
+-- Table structure for table `icinga2_variabledefinition`
 --
 
-DROP TABLE IF EXISTS `icinga_variabledefinition`;
+DROP TABLE IF EXISTS `icinga2_variabledefinition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga_variabledefinition` (
+CREATE TABLE `icinga2_variabledefinition` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `value` varchar(255) NOT NULL,
