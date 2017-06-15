@@ -1,6 +1,9 @@
 #!/bin/bash
 
 DIR='/opt/TheMachine'
+User='apache'
+Group='apache'
+
 Random_Password=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
 if [ -e $DIR/HTTP/common.pl ]; then
