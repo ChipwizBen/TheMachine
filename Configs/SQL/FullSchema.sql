@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `TheMachine` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `TheMachine`;
--- MySQL dump 10.13  Distrib 5.7.12, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.18, for Linux (x86_64)
 --
 -- Host: localhost    Database: TheMachine
 -- ------------------------------------------------------
--- Server version	5.5.50-MariaDB
+-- Server version	5.5.52-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -39,7 +39,7 @@ CREATE TABLE `access_log` (
   `username` varchar(128) DEFAULT NULL,
   `time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9795 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9800 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -58,7 +58,7 @@ CREATE TABLE `audit_log` (
   `username` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13663 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13666 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,7 +80,7 @@ CREATE TABLE `auth` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,7 +116,7 @@ CREATE TABLE `command_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,7 +133,7 @@ CREATE TABLE `command_set_dependency` (
   `order` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -154,7 +154,7 @@ CREATE TABLE `command_sets` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=116 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -175,7 +175,7 @@ CREATE TABLE `commands` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `command_alias_UNIQUE` (`command_alias`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -210,7 +210,7 @@ CREATE TABLE `credentials` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_UNIQUE` (`email`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -252,7 +252,7 @@ CREATE TABLE `domains` (
   `modified_by` varchar(128) NOT NULL,
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`domain`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -290,7 +290,7 @@ CREATE TABLE `host_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -308,7 +308,7 @@ CREATE TABLE `host_types` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -329,276 +329,6 @@ CREATE TABLE `hosts` (
   PRIMARY KEY (`id`,`hostname`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `hostname_UNIQUE` (`hostname`)
-) ENGINE=InnoDB AUTO_INCREMENT=1842 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `ipv4_assignments`
---
-
-DROP TABLE IF EXISTS `ipv4_assignments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ipv4_assignments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip_block` varchar(45) NOT NULL,
-  `parent_block` varchar(45) NOT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modified_by` varchar(128) NOT NULL,
-  PRIMARY KEY (`id`,`ip_block`,`parent_block`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4517 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `ipv4_blocks`
---
-
-DROP TABLE IF EXISTS `ipv4_blocks`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ipv4_blocks` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip_block_name` varchar(45) NOT NULL,
-  `ip_block_description` varchar(128) DEFAULT NULL,
-  `ip_block` varchar(18) NOT NULL,
-  `gateway` varchar(15) DEFAULT NULL,
-  `range_for_use` varchar(33) DEFAULT NULL,
-  `range_for_use_subnet` varchar(15) DEFAULT NULL,
-  `dns1` varchar(15) DEFAULT NULL,
-  `dns2` varchar(15) DEFAULT NULL,
-  `ntp1` varchar(15) DEFAULT NULL,
-  `ntp2` varchar(15) DEFAULT NULL,
-  `percent_used` varchar(5) DEFAULT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modified_by` varchar(128) NOT NULL,
-  PRIMARY KEY (`id`,`ip_block_name`,`ip_block`),
-  UNIQUE KEY `id_UNIQUE` (`id`),
-  UNIQUE KEY `ip_block_name_UNIQUE` (`ip_block_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=121 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `job_status`
---
-
-DROP TABLE IF EXISTS `job_status`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `job_status` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `job_id` int(45) NOT NULL,
-  `command` longtext NOT NULL,
-  `exit_code` int(5) DEFAULT NULL,
-  `output` mediumtext,
-  `task_started` timestamp NULL DEFAULT NULL,
-  `task_ended` timestamp NULL DEFAULT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modified_by` varchar(128) NOT NULL,
-  PRIMARY KEY (`id`,`job_id`),
-  KEY `idx_job_status_job_id` (`job_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=67036 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `jobs`
---
-
-DROP TABLE IF EXISTS `jobs`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `jobs` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `host_id` int(11) NOT NULL,
-  `command_set_id` int(11) NOT NULL,
-  `on_failure` int(1) NOT NULL DEFAULT '0',
-  `status` int(1) NOT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modified_by` varchar(128) NOT NULL DEFAULT 'System',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2074 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_command_groups_to_commands`
---
-
-DROP TABLE IF EXISTS `lnk_command_groups_to_commands`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_command_groups_to_commands` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `group` int(11) NOT NULL,
-  `command` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`command`,`group`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_host_groups_to_hosts`
---
-
-DROP TABLE IF EXISTS `lnk_host_groups_to_hosts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_host_groups_to_hosts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `group` int(11) NOT NULL,
-  `host` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`host`,`group`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_hosts_to_ipv4_assignments`
---
-
-DROP TABLE IF EXISTS `lnk_hosts_to_ipv4_assignments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_hosts_to_ipv4_assignments` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `host` int(11) NOT NULL,
-  `ip` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`ip`,`host`)
-) ENGINE=InnoDB AUTO_INCREMENT=2264 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_command_groups`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_command_groups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_command_groups` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `command_group` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`command_group`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_commands`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_commands`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_commands` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `command` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`command`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_host_groups`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_host_groups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_host_groups` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `host_group` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`host_group`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_hosts`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_hosts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_hosts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `host` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`host`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_user_groups`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_user_groups`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_user_groups` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `user_group` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`user_group`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_rules_to_users`
---
-
-DROP TABLE IF EXISTS `lnk_rules_to_users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_rules_to_users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `rule` int(11) NOT NULL,
-  `user` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`user`,`rule`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lnk_user_groups_to_users`
---
-
-DROP TABLE IF EXISTS `lnk_user_groups_to_users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lnk_user_groups_to_users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `group` int(11) NOT NULL,
-  `user` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`user`,`group`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `lock`
---
-
-DROP TABLE IF EXISTS `lock`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `lock` (
-  `sudoers-build` int(1) NOT NULL DEFAULT '0',
-  `sudoers-distribution` int(1) NOT NULL DEFAULT '0',
-  `dns-build` int(1) NOT NULL DEFAULT '0',
-  `reverse-proxy-build` int(1) NOT NULL,
-  `last-sudoers-build-started` datetime NOT NULL,
-  `last-sudoers-build-finished` datetime NOT NULL,
-  `last-sudoers-distribution-started` datetime NOT NULL,
-  `last-sudoers-distribution-finished` datetime NOT NULL,
-  `last-dns-build-started` datetime NOT NULL,
-  `last-dns-build-finished` datetime NOT NULL,
-  `last-reverse-proxy-build-started` datetime NOT NULL,
-  `last-reverse-proxy-build-finished` datetime NOT NULL,
-  PRIMARY KEY (`sudoers-build`,`sudoers-distribution`,`dns-build`,`last-sudoers-build-started`,`last-sudoers-build-finished`,`last-sudoers-distribution-started`,`last-sudoers-distribution-finished`,`last-dns-build-started`,`last-dns-build-finished`,`last-reverse-proxy-build-started`,`reverse-proxy-build`,`last-reverse-proxy-build-finished`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -621,7 +351,7 @@ CREATE TABLE `icinga_command` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`command_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=243 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -670,7 +400,7 @@ CREATE TABLE `icinga_contact` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`contact_name`,`config_id`),
   UNIQUE KEY `contact_name_UNIQUE` (`contact_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=131 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -694,7 +424,7 @@ CREATE TABLE `icinga_contactgroup` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`contactgroup_name`,`config_id`),
   UNIQUE KEY `contactgroup_name_UNIQUE` (`contactgroup_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -740,7 +470,7 @@ CREATE TABLE `icinga_contacttemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -776,7 +506,7 @@ CREATE TABLE `icinga_domain` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `domain` (`domain`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -847,7 +577,7 @@ CREATE TABLE `icinga_host` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`config_id`),
   UNIQUE KEY `host_name_UNIQUE` (`host_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1305 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -874,7 +604,7 @@ CREATE TABLE `icinga_hostdependency` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -902,7 +632,7 @@ CREATE TABLE `icinga_hostescalation` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -931,7 +661,7 @@ CREATE TABLE `icinga_hostextinfo` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -957,7 +687,7 @@ CREATE TABLE `icinga_hostgroup` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`hostgroup_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1024,7 +754,7 @@ CREATE TABLE `icinga_hosttemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1043,7 +773,7 @@ CREATE TABLE `icinga_info` (
   `infotext` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `keypair` (`key1`,`key2`,`version`,`language`)
-) ENGINE=InnoDB AUTO_INCREMENT=223 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1943,7 +1673,7 @@ CREATE TABLE `icinga_logbook` (
   `domain` varchar(255) NOT NULL,
   `entry` tinytext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1960,7 +1690,7 @@ CREATE TABLE `icinga_mainmenu` (
   `item` varchar(20) NOT NULL DEFAULT '',
   `link` varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2028,7 +1758,7 @@ CREATE TABLE `icinga_service` (
   `access_rights` varchar(8) DEFAULT NULL,
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=639 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2112,7 +1842,7 @@ CREATE TABLE `icinga_serviceextinfo` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`service_description`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2138,7 +1868,7 @@ CREATE TABLE `icinga_servicegroup` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`servicegroup_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2206,7 +1936,7 @@ CREATE TABLE `icinga_servicetemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2223,7 +1953,7 @@ CREATE TABLE `icinga_settings` (
   `value` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2241,7 +1971,7 @@ CREATE TABLE `icinga_submenu` (
   `link` varchar(50) NOT NULL DEFAULT '',
   `access_rights` varchar(8) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2258,7 +1988,7 @@ CREATE TABLE `icinga_timedefinition` (
   `range` text NOT NULL,
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2281,7 +2011,7 @@ CREATE TABLE `icinga_timeperiod` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `timeperiod_name` (`timeperiod_name`,`config_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 PACK_KEYS=0;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 PACK_KEYS=0;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2305,7 +2035,7 @@ CREATE TABLE `icinga_user` (
   `locale` varchar(6) DEFAULT 'en_EN',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2325,6 +2055,276 @@ CREATE TABLE `icinga_variabledefinition` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `ipv4_assignments`
+--
+
+DROP TABLE IF EXISTS `ipv4_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ipv4_assignments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_block` varchar(45) NOT NULL,
+  `parent_block` varchar(45) NOT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL,
+  PRIMARY KEY (`id`,`ip_block`,`parent_block`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ipv4_blocks`
+--
+
+DROP TABLE IF EXISTS `ipv4_blocks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ipv4_blocks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_block_name` varchar(45) NOT NULL,
+  `ip_block_description` varchar(128) DEFAULT NULL,
+  `ip_block` varchar(18) NOT NULL,
+  `gateway` varchar(15) DEFAULT NULL,
+  `range_for_use` varchar(33) DEFAULT NULL,
+  `range_for_use_subnet` varchar(15) DEFAULT NULL,
+  `dns1` varchar(15) DEFAULT NULL,
+  `dns2` varchar(15) DEFAULT NULL,
+  `ntp1` varchar(15) DEFAULT NULL,
+  `ntp2` varchar(15) DEFAULT NULL,
+  `percent_used` varchar(5) DEFAULT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL,
+  PRIMARY KEY (`id`,`ip_block_name`,`ip_block`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `ip_block_name_UNIQUE` (`ip_block_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `job_status`
+--
+
+DROP TABLE IF EXISTS `job_status`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `job_status` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `job_id` int(45) NOT NULL,
+  `command` longtext NOT NULL,
+  `exit_code` int(5) DEFAULT NULL,
+  `output` mediumtext,
+  `task_started` timestamp NULL DEFAULT NULL,
+  `task_ended` timestamp NULL DEFAULT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL,
+  PRIMARY KEY (`id`,`job_id`),
+  KEY `idx_job_status_job_id` (`job_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `jobs`
+--
+
+DROP TABLE IF EXISTS `jobs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jobs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) NOT NULL,
+  `command_set_id` int(11) NOT NULL,
+  `on_failure` int(1) NOT NULL DEFAULT '0',
+  `status` int(1) NOT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL DEFAULT 'System',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_command_groups_to_commands`
+--
+
+DROP TABLE IF EXISTS `lnk_command_groups_to_commands`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_command_groups_to_commands` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group` int(11) NOT NULL,
+  `command` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`command`,`group`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_host_groups_to_hosts`
+--
+
+DROP TABLE IF EXISTS `lnk_host_groups_to_hosts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_host_groups_to_hosts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group` int(11) NOT NULL,
+  `host` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`host`,`group`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_hosts_to_ipv4_assignments`
+--
+
+DROP TABLE IF EXISTS `lnk_hosts_to_ipv4_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_hosts_to_ipv4_assignments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `host` int(11) NOT NULL,
+  `ip` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`ip`,`host`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_command_groups`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_command_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_command_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `command_group` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`command_group`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_commands`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_commands`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_commands` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `command` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`command`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_host_groups`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_host_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_host_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `host_group` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`host_group`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_hosts`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_hosts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_hosts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `host` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`host`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_user_groups`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_user_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_user_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `user_group` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`user_group`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_rules_to_users`
+--
+
+DROP TABLE IF EXISTS `lnk_rules_to_users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_rules_to_users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule` int(11) NOT NULL,
+  `user` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`user`,`rule`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_user_groups_to_users`
+--
+
+DROP TABLE IF EXISTS `lnk_user_groups_to_users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_user_groups_to_users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group` int(11) NOT NULL,
+  `user` int(11) NOT NULL,
+  PRIMARY KEY (`id`,`user`,`group`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lock`
+--
+
+DROP TABLE IF EXISTS `lock`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lock` (
+  `sudoers-build` int(1) NOT NULL DEFAULT '0',
+  `sudoers-distribution` int(1) NOT NULL DEFAULT '0',
+  `dns-build` int(1) NOT NULL DEFAULT '0',
+  `reverse-proxy-build` int(1) NOT NULL,
+  `last-sudoers-build-started` datetime NOT NULL,
+  `last-sudoers-build-finished` datetime NOT NULL,
+  `last-sudoers-distribution-started` datetime NOT NULL,
+  `last-sudoers-distribution-finished` datetime NOT NULL,
+  `last-dns-build-started` datetime NOT NULL,
+  `last-dns-build-finished` datetime NOT NULL,
+  `last-reverse-proxy-build-started` datetime NOT NULL,
+  `last-reverse-proxy-build-finished` datetime NOT NULL,
+  PRIMARY KEY (`sudoers-build`,`sudoers-distribution`,`dns-build`,`last-sudoers-build-started`,`last-sudoers-build-finished`,`last-sudoers-distribution-started`,`last-sudoers-distribution-finished`,`last-dns-build-started`,`last-dns-build-finished`,`last-reverse-proxy-build-started`,`reverse-proxy-build`,`last-reverse-proxy-build-finished`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `notes`
 --
 
@@ -2340,7 +2340,7 @@ CREATE TABLE `notes` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2363,7 +2363,7 @@ CREATE TABLE `redirect` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2399,7 +2399,7 @@ CREATE TABLE `reverse_proxy` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=87 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2426,7 +2426,7 @@ CREATE TABLE `rules` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2447,7 +2447,7 @@ CREATE TABLE `user_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2467,7 +2467,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2492,7 +2492,7 @@ CREATE TABLE `zone_records` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`,`source`,`target`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -2504,5 +2504,4 @@ CREATE TABLE `zone_records` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-28 12:46:03
-
+-- Dump completed on 2017-06-15 21:38:18

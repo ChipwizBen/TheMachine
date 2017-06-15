@@ -4,6 +4,12 @@ DIR='/opt/TheMachine'
 Random_Password=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
 if [ -e $DIR/HTTP/common.pl ]; then
+
+        grep '$Version\s=' /opt/TheMachine/HTTP/common.pl | sed -r "s/.*'(.*)'.*/\1/" > /opt/TheMachine/version
+        cp /opt/TheMachine/HTTP/common.pl /opt/TheMachine/HTTP/common.pl-upgrade-backup-$(date '+%Y-%m-%d')
+        chown root:root /opt/TheMachine/HTTP/common.pl-upgrade-backup-$(date '+%Y-%m-%d')
+        chmod 700 /opt/TheMachine/HTTP/common.pl-upgrade-backup-$(date '+%Y-%m-%d')
+
         if [ -e $DIR/version ]; then
                 Old_Version=$(cat $DIR/version)
                 echo "Old Version: $Old_Version"
