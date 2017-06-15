@@ -111,7 +111,7 @@ elsif ($Host_Name_Add && $Address_Add) {
 		$Session->flush();
 	}
 	
-	print "Location: /Icinga/icinga2-hosts.cgi\n\n";
+	print "Location: /Icinga2/icinga2-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Host) {
@@ -124,7 +124,7 @@ elsif ($Host_Edit_Post) {
 	my $Message_Green="$Host_Edit ($Alias_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-hosts.cgi\n\n";
+	print "Location: /Icinga2/icinga2-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Host) {
@@ -138,7 +138,7 @@ elsif ($Host_Delete_Post) {
 	my $Message_Green="$Host_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-hosts.cgi\n\n";
+	print "Location: /Icinga2/icinga2-hosts.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
@@ -156,7 +156,7 @@ elsif ($Host_Note_Update && $Host_Note_Update_ID) {
 	my $Message_Green="Notes updated successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-hosts.cgi\n\n";
+	print "Location: /Icinga2/icinga2-hosts.cgi\n\n";
 	exit(0);
 }
 else {
@@ -170,14 +170,14 @@ sub html_add_host {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga2-hosts.cgi">
+<a href="/Icinga2/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Host</h3>
 
-<form action='/Icinga/icinga2-hosts.cgi' method='post' >
+<form action='/Icinga2/icinga2-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -552,7 +552,7 @@ sub add_host {
 		my $Message_Red="Host name $Host_Name_Add already exists. Host not added.";
 		$Session->param('Message_Red', $Message_Red);
 		$Session->flush();
-		print "Location: /Icinga/icinga2-hosts.cgi\n\n";
+		print "Location: /Icinga2/icinga2-hosts.cgi\n\n";
 		exit(0);
 	}
 
@@ -677,14 +677,14 @@ sub html_edit_host {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-hosts.cgi">
+<a href="/Icinga2/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Host <span style="color: #00FF00;">$Host_Extract</span></h3>
 
-<form action='/Icinga/icinga2-hosts.cgi' method='post' >
+<form action='/Icinga2/icinga2-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -749,7 +749,7 @@ sub edit_host {
 			my $Message_Red="$Host_Edit already exists - Conflicting Host ID (This entry): $Host_Edit_Post, Existing Host ID: $ID_Extract, Existing Host Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga2-hosts.cgi\n\n";
+			print "Location: /Icinga2/icinga2-hosts.cgi\n\n";
 			exit(0);
 
 		}
@@ -785,14 +785,14 @@ sub html_delete_host {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-hosts.cgi">
+<a href="/Icinga2/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Host</h3>
 
-<form action='/Icinga/icinga2-hosts.cgi' method='post' >
+<form action='/Icinga2/icinga2-hosts.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this host?</p>
 <table align = "center">
 	<tr>
@@ -1298,7 +1298,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="full-width-popup-box">
-<a href="/Icinga/icinga2-hosts.cgi">
+<a href="/Icinga2/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1500,7 +1500,7 @@ sub html_display_notes {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-hosts.cgi">
+<a href="/Icinga2/icinga2-hosts.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1522,7 +1522,7 @@ print <<ENDHTML;
 	</tr>
 </table>
 
-<form action='/Icinga/icinga2-hosts.cgi' method='post' >
+<form action='/Icinga2/icinga2-hosts.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -1639,7 +1639,7 @@ sub html_output {
 				{
 
 					my $Host_Group = $DB_Group[0];
-					$Host_Groups = "<a href='/Icinga/icinga2-host-groups.cgi?Filter=$Host_Group'>$Host_Group</a><br />".$Host_Groups;
+					$Host_Groups = "<a href='/Icinga2/icinga2-host-groups.cgi?Filter=$Host_Group'>$Host_Group</a><br />".$Host_Groups;
 
 				}
 			}
@@ -1668,7 +1668,7 @@ sub html_output {
 				{
 
 					my $Host_Parent = $DB_Parent[0];
-					$Host_Parents = "<a href='/Icinga/icinga2-hosts.cgi?Filter=$Host_Parent'>$Host_Parent</a><br />".$Host_Parents;
+					$Host_Parents = "<a href='/Icinga2/icinga2-hosts.cgi?Filter=$Host_Parent'>$Host_Parent</a><br />".$Host_Parents;
 
 				}
 			}
@@ -1697,7 +1697,7 @@ sub html_output {
 				{
 
 					my $Host_Child = $DB_Child[0];
-					$Host_Children = "<a href='/Icinga/icinga2-hosts.cgi?Filter=$Host_Child'>$Host_Child</a><br />".$Host_Children;
+					$Host_Children = "<a href='/Icinga2/icinga2-hosts.cgi?Filter=$Host_Child'>$Host_Child</a><br />".$Host_Children;
 
 				}
 			}
@@ -1726,7 +1726,7 @@ sub html_output {
 				{
 
 					my $Host_Template = $DB_Template[0];
-					$Host_Templates = "<a href='/Icinga/icinga2-host-templates.cgi?Filter=$Host_Template'>$Host_Template</a><br />".$Host_Templates;
+					$Host_Templates = "<a href='/Icinga2/icinga2-host-templates.cgi?Filter=$Host_Template'>$Host_Template</a><br />".$Host_Templates;
 
 				}
 			}
@@ -1755,7 +1755,7 @@ sub html_output {
 				{
 
 					my $Host_Contact_Group = $DB_Contact_Group[0];
-					$Host_Contact_Groups = "<a href='/Icinga/icinga2-contact-groups.cgi?Filter=$Host_Contact_Group'>$Host_Contact_Group</a><br />".$Host_Contact_Groups;
+					$Host_Contact_Groups = "<a href='/Icinga2/icinga2-contact-groups.cgi?Filter=$Host_Contact_Group'>$Host_Contact_Group</a><br />".$Host_Contact_Groups;
 
 				}
 			}
@@ -1771,8 +1771,8 @@ sub html_output {
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='/Icinga/icinga2-hosts.cgi?Edit_Host=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='/Icinga/icinga2-hosts.cgi?Edit_Host=$ID_Extract'>$Name</a>",
+			"<a href='/Icinga2/icinga2-hosts.cgi?Edit_Host=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga2/icinga2-hosts.cgi?Edit_Host=$ID_Extract'>$Name</a>",
 			$Alias_Extract,
 			$IP_Extract,
 			$Host_Groups,
@@ -1783,10 +1783,10 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga2-hosts.cgi?Host_Notes=$ID_Extract'><img src=\"/Resources/Images/add-note.png\" alt=\"View/Edit Notes for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-hosts.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-hosts.cgi?Edit_Host=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-hosts.cgi?Delete_Host=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga2/icinga2-hosts.cgi?Host_Notes=$ID_Extract'><img src=\"/Resources/Images/add-note.png\" alt=\"View/Edit Notes for $Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-hosts.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-hosts.cgi?Edit_Host=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-hosts.cgi?Delete_Host=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		for (10 .. 16) {
@@ -1809,7 +1809,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/Icinga/icinga2-hosts.cgi' method='post' >
+			<form action='/Icinga2/icinga2-hosts.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1840,7 +1840,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/Icinga/icinga2-hosts.cgi' method='post' >
+			<form action='/Icinga2/icinga2-hosts.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Host</span></td>
@@ -1852,7 +1852,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/Icinga/icinga2-hosts.cgi' method='post' >
+			<form action='/Icinga2/icinga2-hosts.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Host</span></td>

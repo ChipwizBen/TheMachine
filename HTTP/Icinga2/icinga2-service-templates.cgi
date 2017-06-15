@@ -102,7 +102,7 @@ elsif ($Name_Template_Add) {
 		$Session->flush();
 	}
 	
-	print "Location: /Icinga/icinga2-service-templates.cgi\n\n";
+	print "Location: /Icinga2/icinga2-service-templates.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Service_Template) {
@@ -115,7 +115,7 @@ elsif ($Service_Template_Edit_Post) {
 	my $Message_Green="$Service_Template_Edit ($Service_Template_Description_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-service-templates.cgi\n\n";
+	print "Location: /Icinga2/icinga2-service-templates.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Service_Template) {
@@ -128,7 +128,7 @@ elsif ($Service_Template_Delete_Post) {
 	my $Message_Green="$Service_Template_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-service-templates.cgi\n\n";
+	print "Location: /Icinga2/icinga2-service-templates.cgi\n\n";
 	exit(0);
 }
 elsif ($Linked_Service_Groups) {
@@ -152,14 +152,14 @@ sub html_add_service_template {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga2-service-templates.cgi">
+<a href="/Icinga2/icinga2-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Service Template</h3>
 
-<form action='/Icinga/icinga2-service-templates.cgi' method='post' >
+<form action='/Icinga2/icinga2-service-templates.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -586,14 +586,14 @@ sub html_edit_service_template {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-service-templates.cgi">
+<a href="/Icinga2/icinga2-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Service <span style="color: #00FF00;">$Service_Template_Extract</span></h3>
 
-<form action='/Icinga/icinga2-service-templates.cgi' method='post' >
+<form action='/Icinga2/icinga2-service-templates.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -658,7 +658,7 @@ sub edit_service_template {
 			my $Message_Red="$Service_Template_Edit already exists - Conflicting Service ID (This entry): $Service_Template_Edit_Post, Existing Service ID: $ID_Extract, Existing Service Description: $Service_Template_Description_Extract";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga2-service-templates.cgi\n\n";
+			print "Location: /Icinga2/icinga2-service-templates.cgi\n\n";
 			exit(0);
 
 		}
@@ -693,14 +693,14 @@ sub html_delete_service_template {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-service-templates.cgi">
+<a href="/Icinga2/icinga2-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Service Template</h3>
 
-<form action='/Icinga/icinga2-service-templates.cgi' method='post' >
+<form action='/Icinga2/icinga2-service-templates.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
@@ -1147,7 +1147,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="full-width-popup-box">
-<a href="/Icinga/icinga2-service-templates.cgi">
+<a href="/Icinga2/icinga2-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1371,7 +1371,7 @@ sub html_linked_service_groups {
 					if ($Service_Group_Active) {$Service_Group_Active = "<span style='color: #00FF00;'>Yes</span>"}
 					else {$Service_Group_Active = "<span style='color: #FF0000;'>No</span>"}
 
-					my $View_Group = "<a href='/Icinga/icinga2-service-groups.cgi?Filter=$Template_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View Group $Service_Group_Name\" ></a>";
+					my $View_Group = "<a href='/Icinga2/icinga2-service-groups.cgi?Filter=$Template_ID'><img src=\"/Resources/Images/forward.png\" alt=\"View Group $Service_Group_Name\" ></a>";
 
 				$Table->addRow ( "$Template_ID", "$Service_Group_Name", "$Service_Group_Active", "$View_Group" );
 
@@ -1383,7 +1383,7 @@ sub html_linked_service_groups {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-service-templates.cgi">
+<a href="/Icinga2/icinga2-service-templates.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1475,7 +1475,7 @@ sub html_output {
 				{
 
 					my $Service_Group = $DB_Group[0];
-					$Service_Groups = "<a href='/Icinga/icinga2-service-groups.cgi?Filter=$Service_Group'>$Service_Group</a><br />".$Service_Groups;
+					$Service_Groups = "<a href='/Icinga2/icinga2-service-groups.cgi?Filter=$Service_Group'>$Service_Group</a><br />".$Service_Groups;
 
 				}
 
@@ -1499,7 +1499,7 @@ sub html_output {
 			{
 
 				$Check_Command = $DB_Command[0];
-				$Check_Command = "<a href='/Icinga/icinga2-commands.cgi?Filter=$Check_Command'><span style='color: #FFFF00;'>$Check_Command</span></a>";
+				$Check_Command = "<a href='/Icinga2/icinga2-commands.cgi?Filter=$Check_Command'><span style='color: #FFFF00;'>$Check_Command</span></a>";
 				$Check_Command = $Check_Command.$Check_Command_Extract_Command_Remaining;
 
 			}
@@ -1508,17 +1508,17 @@ sub html_output {
 
 
 		$Table->addRow(
-			"<a href='/Icinga/icinga2-service-templates.cgi?Edit_Service_Template=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='/Icinga/icinga2-service-templates.cgi?Edit_Service_Template=$ID_Extract'>$Name</a>",
+			"<a href='/Icinga2/icinga2-service-templates.cgi?Edit_Service_Template=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga2/icinga2-service-templates.cgi?Edit_Service_Template=$ID_Extract'>$Name</a>",
 			$Check_Command,
 			$Service_Groups,
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga2-service-templates.cgi?Linked_Service_Groups=$ID_Extract'><img src=\"/Resources/Images/linked.png\" alt=\"View Linked Service Groups for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-service-templates.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-service-templates.cgi?Edit_Service_Template=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-service-templates.cgi?Delete_Service_Template=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga2/icinga2-service-templates.cgi?Linked_Service_Groups=$ID_Extract'><img src=\"/Resources/Images/linked.png\" alt=\"View Linked Service Groups for $Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-service-templates.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-service-templates.cgi?Edit_Service_Template=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-service-templates.cgi?Delete_Service_Template=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		for (5 .. 11) {
@@ -1542,7 +1542,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/Icinga/icinga2-service-templates.cgi' method='post' >
+			<form action='/Icinga2/icinga2-service-templates.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1573,7 +1573,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/Icinga/icinga2-service-templates.cgi' method='post' >
+			<form action='/Icinga2/icinga2-service-templates.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Service Template</span></td>
@@ -1585,7 +1585,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/Icinga/icinga2-service-templates.cgi' method='post' >
+			<form action='/Icinga2/icinga2-service-templates.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Service</span></td>

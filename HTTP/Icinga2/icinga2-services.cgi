@@ -106,7 +106,7 @@ elsif ($Name_Add) {
 		$Session->flush();
 	}
 	
-	print "Location: /Icinga/icinga2-services.cgi\n\n";
+	print "Location: /Icinga2/icinga2-services.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Service) {
@@ -119,7 +119,7 @@ elsif ($Service_Edit_Post) {
 	my $Message_Green="$Service_Name_Edit edited successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-services.cgi\n\n";
+	print "Location: /Icinga2/icinga2-services.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Service) {
@@ -132,7 +132,7 @@ elsif ($Service_Delete_Post) {
 	my $Message_Green="$Service_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-services.cgi\n\n";
+	print "Location: /Icinga2/icinga2-services.cgi\n\n";
 	exit(0);
 }
 elsif ($Linked_Hosts) {
@@ -156,14 +156,14 @@ sub html_add_service {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga2-services.cgi">
+<a href="/Icinga2/icinga2-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Service</h3>
 
-<form action='/Icinga/icinga2-services.cgi' method='post' >
+<form action='/Icinga2/icinga2-services.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -620,14 +620,14 @@ sub html_edit_service {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-services.cgi">
+<a href="/Icinga2/icinga2-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Service <span style="color: #00FF00;">$Service_Extract</span></h3>
 
-<form action='/Icinga/icinga2-services.cgi' method='post' >
+<form action='/Icinga2/icinga2-services.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -688,7 +688,7 @@ sub edit_service {
 			my $Message_Red="$Service_Name_Edit already exists - Conflicting Service ID (This entry): $Service_Edit_Post, Existing Service ID: $ID_Extract, Existing Service Description: $Service_Name_Extract";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga2-services.cgi\n\n";
+			print "Location: /Icinga2/icinga2-services.cgi\n\n";
 			exit(0);
 
 		}
@@ -723,14 +723,14 @@ sub html_delete_service {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-services.cgi">
+<a href="/Icinga2/icinga2-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Service</h3>
 
-<form action='/Icinga/icinga2-services.cgi' method='post' >
+<form action='/Icinga2/icinga2-services.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
@@ -1386,7 +1386,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="full-width-popup-box">
-<a href="/Icinga/icinga2-services.cgi">
+<a href="/Icinga2/icinga2-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1630,7 +1630,7 @@ sub html_linked_hosts {
 					if ($Host_Active) {$Host_Active = "<span style='color: #00FF00;'>Yes</span>"}
 					else {$Host_Active = "<span style='color: #FF0000;'>No</span>"}
 
-					my $View_Host = "<a href='/Icinga/icinga2-hosts.cgi?Filter=$Host_Name'><img src=\"/Resources/Images/forward.png\" alt=\"View Host $Host_Name\" ></a>";
+					my $View_Host = "<a href='/Icinga2/icinga2-hosts.cgi?Filter=$Host_Name'><img src=\"/Resources/Images/forward.png\" alt=\"View Host $Host_Name\" ></a>";
 
 				$Table->addRow ( "$Host_ID", "$Host_Name", "$Host_Active", "$View_Host" );
 
@@ -1642,7 +1642,7 @@ sub html_linked_hosts {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-services.cgi">
+<a href="/Icinga2/icinga2-services.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -1737,7 +1737,7 @@ sub html_output {
 				{
 
 					my $Service_Template = $DB_Template[0];
-					$Service_Templates = "<a href='/Icinga/icinga2-service-templates.cgi?Filter=$Service_Template'>$Service_Template</a><br />".$Service_Templates;
+					$Service_Templates = "<a href='/Icinga2/icinga2-service-templates.cgi?Filter=$Service_Template'>$Service_Template</a><br />".$Service_Templates;
 
 				}
 
@@ -1766,7 +1766,7 @@ sub html_output {
 				{
 
 					my $Service_Group = $DB_Group[0];
-					$Service_Groups = "<a href='/Icinga/icinga2-service-groups.cgi?Filter=$Service_Group'>$Service_Group</a><br />".$Service_Groups;
+					$Service_Groups = "<a href='/Icinga2/icinga2-service-groups.cgi?Filter=$Service_Group'>$Service_Group</a><br />".$Service_Groups;
 
 				}
 
@@ -1791,7 +1791,7 @@ sub html_output {
 			{
 
 				$Check_Command = $DB_Command[0];
-				$Check_Command = "<a href='/Icinga/icinga2-commands.cgi?Filter=$Check_Command'><span style='color: #FFFF00;'>$Check_Command</span></a>";
+				$Check_Command = "<a href='/Icinga2/icinga2-commands.cgi?Filter=$Check_Command'><span style='color: #FFFF00;'>$Check_Command</span></a>";
 				$Check_Command = $Check_Command.$Check_Command_Extract_Command_Remaining;
 
 			}
@@ -1800,7 +1800,7 @@ sub html_output {
 
 
 		$Table->addRow(
-			"<a href='/Icinga/icinga2-services.cgi?Edit_Service=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga2/icinga2-services.cgi?Edit_Service=$ID_Extract'>$ID_Extract_Display</a>",
 			$Service_Name,
 			$Service_Description_Extract,
 			$Check_Command,
@@ -1809,10 +1809,10 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga2-services.cgi?Linked_Hosts=$ID_Extract'><img src=\"/Resources/Images/linked.png\" alt=\"View Linked Hosts for $Service_Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-services.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Service_Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-services.cgi?Edit_Service=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Service_Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-services.cgi?Delete_Service=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Service_Name_Extract\" ></a>"
+			"<a href='/Icinga2/icinga2-services.cgi?Linked_Hosts=$ID_Extract'><img src=\"/Resources/Images/linked.png\" alt=\"View Linked Hosts for $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-services.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-services.cgi?Edit_Service=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Service_Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-services.cgi?Delete_Service=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Service_Name_Extract\" ></a>"
 		);
 
 		for (7 .. 13) {
@@ -1835,7 +1835,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/Icinga/icinga2-services.cgi' method='post' >
+			<form action='/Icinga2/icinga2-services.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -1866,7 +1866,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/Icinga/icinga2-services.cgi' method='post' >
+			<form action='/Icinga2/icinga2-services.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Service</span></td>
@@ -1878,7 +1878,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/Icinga/icinga2-services.cgi' method='post' >
+			<form action='/Icinga2/icinga2-services.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Service</span></td>

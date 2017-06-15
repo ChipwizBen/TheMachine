@@ -70,7 +70,7 @@ elsif ($Time_Add && $Alias_Add) {
 		$Session->flush();
 	}
 	
-	print "Location: /Icinga/icinga2-time-periods.cgi\n\n";
+	print "Location: /Icinga2/icinga2-time-periods.cgi\n\n";
 	exit(0);
 }
 elsif ($Edit_Time) {
@@ -83,7 +83,7 @@ elsif ($Time_Edit_Post) {
 	my $Message_Green="$Time_Edit ($Alias_Edit) edited successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-time-periods.cgi\n\n";
+	print "Location: /Icinga2/icinga2-time-periods.cgi\n\n";
 	exit(0);
 }
 elsif ($Delete_Time) {
@@ -96,7 +96,7 @@ elsif ($Time_Delete_Post) {
 	my $Message_Green="$Time_Delete deleted successfully";
 	$Session->param('Message_Green', $Message_Green);
 	$Session->flush();
-	print "Location: /Icinga/icinga2-time-periods.cgi\n\n";
+	print "Location: /Icinga2/icinga2-time-periods.cgi\n\n";
 	exit(0);
 }
 elsif ($Display_Config) {
@@ -115,14 +115,14 @@ sub html_add_time_period {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-time-periods.cgi">
+<a href="/Icinga2/icinga2-time-periods.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Add New Time Period</h3>
 
-<form action='/Icinga/icinga2-time-periods.cgi' method='post' >
+<form action='/Icinga2/icinga2-time-periods.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -198,7 +198,7 @@ sub add_time_period {
 			my $Message_Red="$Time_Add already exists (ID: $ID_Extract, Alias: $Alias_Extract), time period not added";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga2-time-periods.cgi\n\n";
+			print "Location: /Icinga2/icinga2-time-periods.cgi\n\n";
 			exit(0);
 
 		}
@@ -280,14 +280,14 @@ sub html_edit_time_period {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-time-periods.cgi">
+<a href="/Icinga2/icinga2-time-periods.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Editing Time <span style="color: #00FF00;">$Time_Extract</span></h3>
 
-<form action='/Icinga/icinga2-time-periods.cgi' method='post' >
+<form action='/Icinga2/icinga2-time-periods.cgi' method='post' >
 
 <table align = "center">
 	<tr>
@@ -352,7 +352,7 @@ sub edit_time_period {
 			my $Message_Red="$Time_Edit already exists - Conflicting Time ID (This entry): $Time_Edit_Post, Existing Time ID: $ID_Extract, Existing Time Alias: $Alias_Extract";
 			$Session->param('Message_Red', $Message_Red);
 			$Session->flush();
-			print "Location: /Icinga/icinga2-time-periods.cgi\n\n";
+			print "Location: /Icinga2/icinga2-time-periods.cgi\n\n";
 			exit(0);
 
 		}
@@ -388,14 +388,14 @@ sub html_delete_time_period {
 
 print <<ENDHTML;
 <div id="small-popup-box">
-<a href="/Icinga/icinga2-time-periods.cgi">
+<a href="/Icinga2/icinga2-time-periods.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
 
 <h3 align="center">Delete Time</h3>
 
-<form action='/Icinga/icinga2-time-periods.cgi' method='post' >
+<form action='/Icinga2/icinga2-time-periods.cgi' method='post' >
 <p>Are you sure you want to <span style="color:#FF0000">DELETE</span> this service group?</p>
 <table align = "center">
 	<tr>
@@ -483,7 +483,7 @@ sub html_display_config {
 
 print <<ENDHTML;
 <div id="wide-popup-box">
-<a href="/Icinga/icinga2-time-periods.cgi">
+<a href="/Icinga2/icinga2-time-periods.cgi">
 <div id="blockclosebutton">
 </div>
 </a>
@@ -673,8 +673,8 @@ sub html_output {
 		if ($Active_Extract) {$Active_Extract='Yes';} else {$Active_Extract='No';}
 
 		$Table->addRow(
-			"<a href='/Icinga/icinga2-time-periods.cgi?Edit_Time=$ID_Extract'>$ID_Extract_Display</a>",
-			"<a href='/Icinga/icinga2-time-periods.cgi?Edit_Time=$ID_Extract'>$Name</a>",
+			"<a href='/Icinga2/icinga2-time-periods.cgi?Edit_Time=$ID_Extract'>$ID_Extract_Display</a>",
+			"<a href='/Icinga2/icinga2-time-periods.cgi?Edit_Time=$ID_Extract'>$Name</a>",
 			$Alias_Extract,
 			$Sunday,
 			$Monday,
@@ -686,9 +686,9 @@ sub html_output {
 			$Active_Extract,
 			$Last_Modified_Extract,
 			$Modified_By_Extract,
-			"<a href='/Icinga/icinga2-time-periods.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-time-periods.cgi?Edit_Time=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
-			"<a href='/Icinga/icinga2-time-periods.cgi?Delete_Time=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
+			"<a href='/Icinga2/icinga2-time-periods.cgi?Display_Config=$ID_Extract'><img src=\"/Resources/Images/view-notes.png\" alt=\"View Config for $Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-time-periods.cgi?Edit_Time=$ID_Extract'><img src=\"/Resources/Images/edit.png\" alt=\"Edit $Name_Extract\" ></a>",
+			"<a href='/Icinga2/icinga2-time-periods.cgi?Delete_Time=$ID_Extract'><img src=\"/Resources/Images/delete.png\" alt=\"Delete $Name_Extract\" ></a>"
 		);
 
 		if ($Sunday eq undef) {$Table->setCellClass ($User_Row_Count, 4, 'tbroworange')}
@@ -719,7 +719,7 @@ print <<ENDHTML;
 	<tr>
 		<td style="text-align: right;">
 			<table cellpadding="3px">
-			<form action='/Icinga/icinga2-time-periods.cgi' method='post' >
+			<form action='/Icinga2/icinga2-time-periods.cgi' method='post' >
 				<tr>
 					<td style="text-align: right;">Returned Rows:</td>
 					<td style="text-align: right;">
@@ -750,7 +750,7 @@ print <<ENDHTML;
 			</table>
 		</td>
 		<td align="center">
-			<form action='/Icinga/icinga2-time-periods.cgi' method='post' >
+			<form action='/Icinga2/icinga2-time-periods.cgi' method='post' >
 			<table>
 				<tr>
 					<td align="center"><span style="font-size: 18px; color: #00FF00;">Add New Time Period</span></td>
@@ -762,7 +762,7 @@ print <<ENDHTML;
 			</form>
 		</td>
 		<td align="right">
-			<form action='/Icinga/icinga2-time-periods.cgi' method='post' >
+			<form action='/Icinga2/icinga2-time-periods.cgi' method='post' >
 			<table>
 				<tr>
 					<td colspan="2" align="center"><span style="font-size: 18px; color: #FFC600;">Edit Time Period</span></td>

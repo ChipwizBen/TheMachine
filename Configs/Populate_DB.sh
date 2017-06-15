@@ -17,8 +17,8 @@ fi
 
 if [ "$Old_Version" = "none" ]; then
     echo "Previous installation not found. Please provide MariaDB root password for DB setup:"
-
-    read $MariaDB_Root_Password
+    echo -n "Password: "
+    read -s MariaDB_Root_Password
 
     mysql -u root -p$MariaDB_Root_Password < $DIR/Configs/SQL/FullSchema.sql
     mysql -u root -p$MariaDB_Root_Password << _EOF_

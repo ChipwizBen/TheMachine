@@ -143,18 +143,18 @@ print <<ENDHTML;
 				<ul>
 					<li><a href="/#">Groups <b style="float:right;">></b></a>
 						<ul>
-							<li><a href="/Icinga/icinga2-host-groups.cgi">Host Groups</a></li>
-							<li><a href="/Icinga/icinga2-service-groups.cgi">Service Groups</a></li>
-							<li><a href="/Icinga/icinga2-contact-groups.cgi">Contact Groups</a></li>
+							<li><a href="/Icinga2/icinga2-host-groups.cgi">Host Groups</a></li>
+							<li><a href="/Icinga2/icinga2-service-groups.cgi">Service Groups</a></li>
+							<li><a href="/Icinga2/icinga2-contact-groups.cgi">Contact Groups</a></li>
 						</ul>
 					</li>
-					<li><a href="/Icinga/icinga2-hosts.cgi">Hosts</a></li>
-					<li><a href="/Icinga/icinga2-host-templates.cgi">Host Templates</a></li>
-					<li><a href="/Icinga/icinga2-services.cgi">Services</a></li>
-					<li><a href="/Icinga/icinga2-service-templates.cgi">Service Templates</a></li>
-					<li><a href="/Icinga/icinga2-commands.cgi">Commands</a></li>
-					<li><a href="/Icinga/icinga2-contacts.cgi">Contacts</a></li>
-					<li><a href="/Icinga/icinga2-time-periods.cgi">Time Periods</a></li>
+					<li><a href="/Icinga2/icinga2-hosts.cgi">Hosts</a></li>
+					<li><a href="/Icinga2/icinga2-host-templates.cgi">Host Templates</a></li>
+					<li><a href="/Icinga2/icinga2-services.cgi">Services</a></li>
+					<li><a href="/Icinga2/icinga2-service-templates.cgi">Service Templates</a></li>
+					<li><a href="/Icinga2/icinga2-commands.cgi">Commands</a></li>
+					<li><a href="/Icinga2/icinga2-contacts.cgi">Contacts</a></li>
+					<li><a href="/Icinga2/icinga2-time-periods.cgi">Time Periods</a></li>
 				</ul>
 			</li>
 
