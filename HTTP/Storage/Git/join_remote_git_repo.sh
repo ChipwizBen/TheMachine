@@ -1,7 +1,7 @@
 #!/bin/bash
 
-Repo='git@github.com:ChipwizBen/TheMachine.git'
-Directory='/var/www/html/Storage/Git'
+Repo=''
+Directory='/opt/TheMachine/HTTP/Storage/Git'
 
 cd $Directory
 echo "# The Machine" > README.md
