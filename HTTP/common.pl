@@ -978,7 +978,7 @@ sub Version {
 
 	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
 
-	my $Version = '2.4.0';
+	my $Version = '2.4.1';
 	return $Version;
 
 } # sub Version
