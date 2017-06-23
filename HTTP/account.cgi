@@ -337,8 +337,8 @@ sub html_output {
 		if ($DSMS_Admin_Extract == 1) {$DSMS_Admin_Extract = "Yes";} else {$DSMS_Admin_Extract = "No";}
 		if ($Approver_Extract == 1) {$Approver_Extract = "Yes";} else {$Approver_Extract = "No";}
 		if ($Requires_Approval_Extract == 1) {$Requires_Approval_Extract = "Yes";} else {$Requires_Approval_Extract = "No";}
-		if ($Last_Login_Extract eq '0000-00-00 00:00:00') {$Last_Login_Extract = 'Never';}
-		if ($Last_Active_Extract eq '0000-00-00 00:00:00') {$Last_Active_Extract = 'Never';}
+		if (!$Last_Login_Extract || $Last_Login_Extract eq '0000-00-00 00:00:00') {$Last_Login_Extract = 'Never';}
+		if (!$Last_Active_Extract || $Last_Active_Extract eq '0000-00-00 00:00:00') {$Last_Active_Extract = 'Never';}
 	
 		$Permissions_Table->addRow (
 			$Admin_Extract,

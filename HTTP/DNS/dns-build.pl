@@ -175,7 +175,8 @@ sub write_internal {
 		WHERE `domain` = ?
 		AND `active` = '1'
 		AND (`expires` >= '$Date'
-			OR `expires` = '0000-00-00')
+			OR `expires` = '0000-00-00'
+			OR `expires` IS NULL)
 		AND (`zone` = '0'
 			OR `zone` = '2')
 		ORDER BY `target` ASC");
@@ -230,7 +231,8 @@ sub write_external {
 		WHERE `domain` = ?
 		AND `active` = '1'
 		AND (`expires` >= '$Date'
-			OR `expires` = '0000-00-00')
+			OR `expires` = '0000-00-00'
+			OR `expires` IS NULL)
 		AND (`zone` = '1'
 			OR `zone` = '2')
 		ORDER BY `target` ASC");

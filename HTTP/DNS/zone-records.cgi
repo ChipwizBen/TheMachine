@@ -323,7 +323,7 @@ ENDHTML
 sub add_record {
 
 	if ($Expires_Toggle_Add ne 'on') {
-		$Expires_Date_Add = '0000-00-00';
+		$Expires_Date_Add = undef;
 	}
 
 	my $Record_Options_Add;
@@ -357,7 +357,7 @@ sub add_record {
 	my $Record_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
-	if ($Expires_Date_Add eq '0000-00-00') {
+	if (!$Expires_Date_Add || $Expires_Date_Add eq '0000-00-00') {
 		$Expires_Date_Add = 'not expire';
 	}
 	else {
@@ -398,7 +398,7 @@ sub html_edit_record {
 
 		my $Expires_Checked;
 		my $Expires_Disabled;
-		if ($Expires_Extract eq '0000-00-00') {
+		if (!$Expires_Extract || $Expires_Extract eq '0000-00-00') {
 			$Expires_Checked = '';
 			$Expires_Disabled = 'disabled';
 			$Expires_Extract = strftime "%Y-%m-%d", localtime;
@@ -593,7 +593,7 @@ ENDHTML
 sub edit_record {
 
 	if ($Expires_Toggle_Edit ne 'on') {
-		$Expires_Date_Edit = '0000-00-00';
+		$Expires_Date_Edit = undef;
 	}
 
 	my $Record_Options_Edit;
@@ -621,7 +621,7 @@ sub edit_record {
 	$Record_Target_Edit, $Record_Zone_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_Record_Post);
 
 	# Audit Log
-	if ($Expires_Date_Edit eq '0000-00-00') {
+	if (!$Expires_Date_Edit || $Expires_Date_Edit eq '0000-00-00') {
 		$Expires_Date_Edit = 'does not expire';
 	}
 	else {
@@ -705,7 +705,7 @@ sub delete_record {
 	while ( my ( $Source, $Type, $Target, $Expires, $Active ) = $Select_Records->fetchrow_array() )
 	{
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {
@@ -809,7 +809,7 @@ sub html_output {
 
 		my $Expires_Epoch;
 		my $Today_Epoch = time;
-		if ($Expires_Clean =~ /^0000-00-00$/) {
+		if (!$Expires_Clean || $Expires_Clean =~ /^0000-00-00$/) {
 			$Expires = 'Never';
 		}
 		else {

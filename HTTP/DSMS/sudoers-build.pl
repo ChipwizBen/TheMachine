@@ -172,7 +172,8 @@ sub write_host_groups {
 		FROM `host_groups`
 		WHERE `active` = '1'
 		AND (`expires` >= '$Date'
-			OR `expires` = '0000-00-00')
+			OR `expires` = '0000-00-00'
+			OR `expires` IS NULL)
 		ORDER BY `groupname` ASC"
 	);
 	$Select_Groups->execute();
@@ -196,7 +197,7 @@ sub write_host_groups {
 
 		if (!$Group_Is_Used) {next HOST_GROUP}
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {
@@ -228,7 +229,8 @@ sub write_host_groups {
 					WHERE `id` = ?
 					AND `active` = '1'
 					AND (`expires` >= '$Date'
-						OR `expires` = '0000-00-00')"
+						OR `expires` = '0000-00-00'
+						OR `expires` IS NULL)"
 				);
 				$Select_Hosts->execute($Host_ID);
 	
@@ -299,7 +301,8 @@ sub write_user_groups {
 		FROM `user_groups`
 		WHERE `active` = '1'
 		AND (`expires` >= '$Date'
-			OR `expires` = '0000-00-00')
+			OR `expires` = '0000-00-00'
+			OR `expires` IS NULL)
 		ORDER BY `groupname` ASC"
 	);
 	$Select_Groups->execute();
@@ -324,7 +327,7 @@ sub write_user_groups {
 
 		if (!$Group_Is_Used) {next USER_GROUP}
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {
@@ -350,7 +353,8 @@ sub write_user_groups {
 				WHERE `id` = ?
 				AND `active` = '1'
 				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
+					OR `expires` = '0000-00-00'
+					OR `expires` IS NULL)"
 			);
 			$Select_Users->execute($User_ID);
 
@@ -394,7 +398,8 @@ sub write_command_groups {
 		FROM `command_groups`
 		WHERE `active` = '1'
 		AND (`expires` >= '$Date'
-			OR `expires` = '0000-00-00')
+			OR `expires` = '0000-00-00'
+			OR `expires` IS NULL)
 		ORDER BY `groupname` ASC"
 	);
 	$Select_Groups->execute();
@@ -418,7 +423,7 @@ sub write_command_groups {
 
 		if (!$Group_Is_Used) {next COMMAND_GROUP}
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {
@@ -444,7 +449,8 @@ sub write_command_groups {
 				WHERE `id` = ?
 				AND `active` = '1'
 				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
+					OR `expires` = '0000-00-00'
+					OR `expires` IS NULL)"
 			);
 			$Select_Commands->execute($Command_ID);
 
@@ -486,7 +492,8 @@ sub write_commands {
 		FROM `commands`
 		WHERE `active` = '1'
 		AND (`expires` >= '$Date'
-			OR `expires` = '0000-00-00')
+			OR `expires` = '0000-00-00'
+			OR `expires` IS NULL)
 		ORDER BY `command_alias` ASC"
 	);
 	$Select_Commands->execute();
@@ -501,7 +508,7 @@ sub write_commands {
 		my $Last_Modified = $Select_Commands[4];
 		my $Modified_By = $Select_Commands[5];
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {
@@ -546,7 +553,8 @@ sub create_host_rule_groups {
 			WHERE `id` = ?
 			AND `active` = '1'
 			AND (`expires` >= '$Date'
-				OR `expires` = '0000-00-00')"
+				OR `expires` = '0000-00-00'
+				OR `expires` IS NULL)"
 		);
 		$Select_Groups->execute($Group_ID);
 
@@ -584,7 +592,8 @@ sub create_host_rule_groups {
 				WHERE `id` = ?
 				AND `active` = '1'
 				AND (`expires` >= '$Date'
-					OR `expires` = '0000-00-00')"
+					OR `expires` = '0000-00-00'
+					OR `expires` IS NULL)"
 			);
 			$Select_Hosts->execute($Host_ID);
 
@@ -655,7 +664,8 @@ sub create_user_rule_groups {
 			WHERE `id` = ?
 			AND `active` = '1'
 			AND (`expires` >= '$Date'
-				OR `expires` = '0000-00-00')"
+				OR `expires` = '0000-00-00'
+				OR `expires` IS NULL)"
 		);
 		$Select_Groups->execute($Group_ID);
 
@@ -685,7 +695,8 @@ sub create_user_rule_groups {
 			WHERE `id` = ?
 			AND `active` = '1'
 			AND (`expires` >= '$Date'
-				OR `expires` = '0000-00-00')"
+				OR `expires` = '0000-00-00'
+				OR `expires` IS NULL)"
 		);
 		$Select_Users->execute($User_ID);
 
@@ -723,7 +734,8 @@ sub create_command_rule_groups {
 			WHERE `id` = ?
 			AND `active` = '1'
 			AND (`expires` >= '$Date'
-				OR `expires` = '0000-00-00')"
+				OR `expires` = '0000-00-00'
+				OR `expires` IS NULL)"
 		);
 		$Select_Groups->execute($Group_ID);
 
@@ -752,7 +764,8 @@ sub create_command_rule_groups {
 			WHERE `id` = ?
 			AND `active` = '1'
 			AND (`expires` >= '$Date'
-				OR `expires` = '0000-00-00')"
+				OR `expires` = '0000-00-00'
+				OR `expires` IS NULL)"
 		);
 		$Select_Commands->execute($Command_ID);
 
@@ -780,7 +793,8 @@ sub write_rules {
 		WHERE `active` = '1'
 		AND `approved` = '1'
 		AND (`expires` >= '$Date'
-			OR `expires` = '0000-00-00')
+			OR `expires` = '0000-00-00'
+			OR `expires` IS NULL)
 		ORDER BY `id` ASC"
 	);
 
@@ -811,7 +825,7 @@ sub write_rules {
 			$Returned_Host_Group = 'ALL';
 		}
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {

@@ -403,8 +403,8 @@ sub add_user {
 		?, ?, ?, ?,
 		?, ?, ?, ?, ?,
 		?, ?, ?, ?, ?,
-		'0000-00-00 00:00:00',
-		'0000-00-00 00:00:00',
+		'',
+		'',
 		0, 0,
 		NOW(),
 		?
@@ -1060,7 +1060,7 @@ sub html_delete_user {
 		my $Last_Active_Extract = $DB_User[1];
 		my $Email_Extract = $DB_User[2];
 
-		if ($Last_Active_Extract eq '0000-00-00 00:00:00') {
+		if (!$Last_Active_Extract || $Last_Active_Extract eq '0000-00-00 00:00:00') {
 			$Last_Active_Extract = 'Never';
 		}
 
@@ -1225,8 +1225,8 @@ while ( my @DB_User = $Select_Users->fetchrow_array() )
 	if ($Approver_Extract == 1) {$Approver_Extract = "Yes";} else {$Approver_Extract = "No";}
 	if ($Requires_Approval_Extract == 1) {$Requires_Approval_Extract = "Yes";} else {$Requires_Approval_Extract = "No";}
 	if ($Lockout_Extract == 1) {$Lockout_Extract = "Yes";} else {$Lockout_Extract = "No";}
-	if ($Last_Login_Extract eq '0000-00-00 00:00:00') {$Last_Login_Extract = 'Never';}
-	if ($Last_Active_Extract eq '0000-00-00 00:00:00') {$Last_Active_Extract = 'Never';}
+	if (!$Last_Login_Extract || $Last_Login_Extract eq '0000-00-00 00:00:00') {$Last_Login_Extract = 'Never';}
+	if (!$Last_Active_Extract || $Last_Active_Extract eq '0000-00-00 00:00:00') {$Last_Active_Extract = 'Never';}
 
 	$Table->addRow(
 		"<a href='account-management.cgi?Edit_User=$ID_Extract'>$User_Name_Extract</a>",

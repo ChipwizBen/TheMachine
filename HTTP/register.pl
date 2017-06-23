@@ -51,7 +51,6 @@ sub duplicate_check {
 sub add_host {
 	my $Host_Insert = $DB_Connection->prepare("INSERT INTO `hosts` (
 		`hostname`,
-		`expires`,
 		`active`,
 		`modified_by`
 	)
@@ -59,7 +58,7 @@ sub add_host {
 		?, ?, ?, ?
 	)");
 
-	$Host_Insert->execute($Host_Name_Add, '0000-00-00', '1', $User_Name);
+	$Host_Insert->execute($Host_Name_Add, '1', $User_Name);
 
 	my $Host_Insert_ID = $DB_Connection->{mysql_insertid};
 

@@ -461,27 +461,28 @@ sub html_output {
 		my $Total_Rows = $Select_Host_Count->rows();
 
 
-	my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`, `active`, `last_modified`, `modified_by`
+	my $Select_Hosts = $DB_Connection->prepare("SELECT `id`, `hostname`, `expires`, `active`, `last_modified`, `modified_by`
 		FROM `hosts`
 		LEFT JOIN `host_attributes`
 		ON `hosts`.`id`=`host_attributes`.`host_id`
 			WHERE (`id` LIKE ?
-			OR `hostname` LIKE ?)
-			AND `dsms` = 1
+			OR `hostname` LIKE ?
+			OR `expires` LIKE ?)
+		AND `dsms` = '1'
 		ORDER BY `hostname` ASC
 		LIMIT ?, ?"
 	);
 
 	if ($ID_Filter) {
-		$Select_Hosts->execute($ID_Filter, '', 0, $Rows_Returned);
+		$Select_Hosts->execute($ID_Filter, '', '', 0, $Rows_Returned);
 	}
 	else {
-		$Select_Hosts->execute("%$Filter%", "%$Filter%", 0, $Rows_Returned);
+		$Select_Hosts->execute("%$Filter%", "%$Filter%", "%$Filter%", 0, $Rows_Returned);
 	}
 
 	my $Rows = $Select_Hosts->rows();
 
-	$Table->addRow( "ID", "Host Name", "IP Address", "Active", "Last Modified", "Modified By", "Show Links", "Notes", "Edit");
+	$Table->addRow( "ID", "Host Name", "IP Address", "Expires", "Active", "Last Modified", "Modified By", "Show Links", "Notes", "Edit");
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Host_Row_Count=1;
@@ -498,10 +499,13 @@ sub html_output {
 		my $Host_Name = $Select_Hosts[1];
 			my $Host_Name_Clean = $Host_Name;
 			$Host_Name =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-		my $Active = $Select_Hosts[2];
+		my $Expires = $Select_Hosts[2];
+		my $Expires_Clean = $Expires;
+			$Expires =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
+		my $Active = $Select_Hosts[3];
 			if ($Active == 1) {$Active = "Yes"} else {$Active = "No"};
-		my $Last_Modified = $Select_Hosts[3];
-		my $Modified_By = $Select_Hosts[4];
+		my $Last_Modified = $Select_Hosts[4];
+		my $Modified_By = $Select_Hosts[5];
 
 		### Discover Note Count
 
@@ -552,10 +556,20 @@ sub html_output {
 
 		### / Block discovery
 
+		my $Expires_Epoch;
+		my $Today_Epoch = time;
+		if (!$Expires_Clean || $Expires_Clean =~ /^0000-00-00$/) {
+			$Expires = 'Never';
+		}
+		else {
+			$Expires_Epoch = str2time("$Expires_Clean"."T23:59:59");
+		}
+
 		$Table->addRow(
 			"$DBID",
 			"$Host_Name",
 			"$Blocks",
+			"$Expires",
 			"$Active",
 			"$Last_Modified",
 			"$Modified_By",
@@ -572,24 +586,29 @@ sub html_output {
 
 
 		if ($Active eq 'Yes') {
-			$Table->setCellClass ($Host_Row_Count, 4, 'tbrowgreen');
+			$Table->setCellClass ($Host_Row_Count, 5, 'tbrowgreen');
 		}
 		else {
-			$Table->setCellClass ($Host_Row_Count, 4, 'tbrowred');
+			$Table->setCellClass ($Host_Row_Count, 5, 'tbrowred');
+		}
+
+		if ($Expires ne 'Never' && $Expires_Epoch < $Today_Epoch) {
+			$Table->setCellClass ($Host_Row_Count, 4, 'tbrowdarkgrey');
 		}
 
 	}
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(4, '1px');
-	$Table->setColWidth(5, '110px');
+	$Table->setColWidth(4, '60px');
+	$Table->setColWidth(5, '1px');
 	$Table->setColWidth(6, '110px');
-	$Table->setColWidth(7, '1px');
+	$Table->setColWidth(7, '110px');
 	$Table->setColWidth(8, '1px');
 	$Table->setColWidth(9, '1px');
+	$Table->setColWidth(10, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (4..9) {
+	for (4..10) {
 		$Table->setColAlign($_, 'center');
 	}
 

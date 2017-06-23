@@ -2,6 +2,7 @@
 
 use strict;
 use lib qw(/opt/TheMachine/Modules/);
+use POSIX qw(strftime);
 
 use HTML::Table;
 
@@ -26,6 +27,11 @@ my $DHCP_Toggle_Add = $CGI->param("DHCP_Toggle_Add");
 	if ($DHCP_Toggle_Add eq 'on') {$DHCP_Toggle_Add = 1} else {$DHCP_Toggle_Add = 0}
 my $DSMS_Toggle_Add = $CGI->param("DSMS_Toggle_Add");
 	if ($DSMS_Toggle_Add eq 'on') {$DSMS_Toggle_Add = 1} else {$DSMS_Toggle_Add = 0}
+my $Expires_Toggle_Add = $CGI->param("Expires_Toggle_Add");
+my $Expires_Date_Add = $CGI->param("Expires_Date_Add");
+	$Expires_Date_Add =~ s/\s//g;
+	$Expires_Date_Add =~ s/[^0-9\-]//g;
+my $Active_Add = $CGI->param("Active_Add");
 
 my $Edit_Host_Post = $CGI->param("Edit_Host_Post");
 my $Host_Name_Edit = $CGI->param("Host_Name_Edit");
@@ -37,6 +43,11 @@ my $DHCP_Toggle_Edit = $CGI->param("DHCP_Toggle_Edit");
 	if ($DHCP_Toggle_Edit eq 'on') {$DHCP_Toggle_Edit = 1} else {$DHCP_Toggle_Edit = 0}
 my $DSMS_Toggle_Edit = $CGI->param("DSMS_Toggle_Edit");
 	if ($DSMS_Toggle_Edit eq 'on') {$DSMS_Toggle_Edit = 1} else {$DSMS_Toggle_Edit = 0}
+my $Expires_Toggle_Edit = $CGI->param("Expires_Toggle_Edit");
+my $Expires_Date_Edit = $CGI->param("Expires_Date_Edit");
+	$Expires_Date_Edit =~ s/\s//g;
+	$Expires_Date_Edit =~ s/[^0-9\-]//g;
+my $Active_Edit = $CGI->param("Active_Edit");
 
 my $Delete_Host = $CGI->param("Delete_Host");
 my $Delete_Host_Confirm = $CGI->param("Delete_Host_Confirm");
@@ -164,6 +175,8 @@ else {
 
 sub html_add_host {
 
+my $Date = strftime "%Y-%m-%d", localtime;
+
 print <<ENDHTML;
 
 <div id="small-popup-box">
@@ -174,16 +187,51 @@ print <<ENDHTML;
 
 <h3 align="center">Add New Host</h3>
 
+<SCRIPT LANGUAGE="JavaScript"><!--
+
+function Sudo_Toggle() {
+	if(document.Add_Hosts.DSMS_Toggle_Add.checked)
+	{
+		document.getElementById("Sudo_Display_Expires_Title").style.display="";
+		document.getElementById("Sudo_Display_Expires_Checkbox").style.display="";
+		document.getElementById("Sudo_Display_Expires_Input").style.display="";
+		document.getElementById("Sudo_Display_Active_Title").style.display="";
+		document.getElementById("Sudo_Display_Active_Checkbox").style.display="";
+		document.getElementById("Sudo_Display_Active_Radio").style.display="";
+	}
+	else
+	{
+		document.getElementById("Sudo_Display_Expires_Title").style.display="none";
+		document.getElementById("Sudo_Display_Expires_Checkbox").style.display="none";
+		document.getElementById("Sudo_Display_Expires_Input").style.display="none";
+		document.getElementById("Sudo_Display_Active_Title").style.display="none";
+		document.getElementById("Sudo_Display_Active_Checkbox").style.display="none";
+		document.getElementById("Sudo_Display_Active_Radio").style.display="none";
+	}
+}
+function Expire_Toggle() {
+	if(document.Add_Hosts.Expires_Toggle_Add.checked)
+	{
+		document.Add_Hosts.Expires_Date_Add.disabled=false;
+	}
+	else
+	{
+		document.Add_Hosts.Expires_Date_Add.disabled=true;
+	}
+}
+//-->
+</SCRIPT>
+
 <form action='/IP/hosts.cgi' name='Add_Hosts' method='post' >
 
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Host Name:</td>
-		<td><input type='text' name='Host_Name_Add' style="width:100%" maxlength='128' placeholder="Host Name" required autofocus></td>
+		<td colspan="2"><input type='text' name='Host_Name_Add' style="width:100%" maxlength='128' placeholder="Host Name" required autofocus></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Host Type:</td>
-		<td style="text-align: left;">
+		<td colspan="2" style="text-align: left;">
 			<select name='Host_Type_Add' style="width: 300px">
 ENDHTML
 
@@ -204,15 +252,25 @@ print <<ENDHTML
 	</tr>
 	<tr>
 		<td style="text-align: right;">Fingerprint:</td>
-		<td><input type='text' name='Host_Fingerprint_Add' style="width:100%" maxlength='50' placeholder="SHA256:deadbeef... / de:ad:be:ef..."></td>
+		<td colspan="2"><input type='text' name='Host_Fingerprint_Add' style="width:100%" maxlength='50' placeholder="SHA256:deadbeef... / de:ad:be:ef..."></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">DHCP?:</td>
-		<td style='text-align: left;'><input type="checkbox" onclick="DHCP_Toggle()" name="DHCP_Toggle_Add"></td>
+		<td colspan="2" style='text-align: left;'><input type="checkbox" name="DHCP_Toggle_Add"></td>
 	</tr>
 	<tr>
 		<td>Manage sudo?</td>
-		<td style='text-align: left;'><input type='checkbox' name='DSMS_Toggle_Add'></td>
+		<td colspan="2" style='text-align: left;'><input type='checkbox' onclick="Sudo_Toggle()" name='DSMS_Toggle_Add'></td>
+	</tr>
+	<tr>
+		<td id="Sudo_Display_Expires_Title" style="display: none; text-align: right;">Sudo expires:</td>
+		<td id="Sudo_Display_Expires_Checkbox" style='display: none;'><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Add"></td>
+		<td id="Sudo_Display_Expires_Input" style="display: none;"><input type="date" name="Expires_Date_Add" style="width:100%" value="$Date" placeholder="YYYY-MM-DD" disabled></td>
+	</tr>
+	<tr>
+		<td id="Sudo_Display_Active_Title" style="display: none; text-align: right;">Active:</td>
+		<td id="Sudo_Display_Active_Checkbox" style="display: none; text-align: right;"><input type="radio" name="Active_Add" value="1" checked> Yes</td>
+		<td id="Sudo_Display_Active_Radio" style="display: none; text-align: left;"><input type="radio" name="Active_Add" value="0"> No</td>
 	</tr>
 </table>
 
@@ -253,16 +311,22 @@ sub add_host {
 	}
 	### / Existing Host_Name Check
 
+	if ($Expires_Toggle_Add ne 'on') {
+		$Expires_Date_Add = undef;
+	}
+
 	my $Host_Insert = $DB_Connection->prepare("INSERT INTO `hosts` (
 		`hostname`,
 		`type`,
+		`expires`,
+		`active`,
 		`modified_by`
 	)
 	VALUES (
-		?, ?, ?
+		?, ?, ?, ?, ?
 	)");
 
-	$Host_Insert->execute($Host_Name_Add, $Host_Type_Add, $User_Name);
+	$Host_Insert->execute($Host_Name_Add, $Host_Type_Add, $Expires_Date_Add, $Active_Add, $User_Name);
 
 	my $Host_Insert_ID = $DB_Connection->{mysql_insertid};
 
@@ -306,7 +370,7 @@ sub add_host {
 
 sub html_edit_host {
 
-	my $Select_Host = $DB_Connection->prepare("SELECT `hostname`, `type`
+	my $Select_Host = $DB_Connection->prepare("SELECT `hostname`, `type`, `expires`, `active`
 	FROM `hosts`
 	WHERE `id` = ?");
 	$Select_Host->execute($Edit_Host);
@@ -315,29 +379,46 @@ sub html_edit_host {
 	{
 		my $Host_Name_Extract = $DB_Host[0];
 		my $Type_Extract = $DB_Host[1];
+		my $Expires_Extract = $DB_Host[2];
+		my $Active_Extract = $DB_Host[3];
 
-	my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `fingerprint`, `dhcp`, `dsms`
-	FROM `host_attributes`
-	WHERE `host_id` = ?");
-	$Select_Host_Attributes->execute($Edit_Host);
-
-	my ($Host_Fingerprint_Extract, $DHCP_Extract, $DSMS_Extract) = $Select_Host_Attributes->fetchrow_array();
-
-		my $DHCP_Checked;
-		if ($DHCP_Extract) {
-			$DHCP_Checked = 'checked';
+		my $Checked;
+		my $Disabled;
+		if (!$Expires_Extract || $Expires_Extract eq '0000-00-00') {
+			$Checked = '';
+			$Disabled = 'disabled';
+			$Expires_Extract = strftime "%Y-%m-%d", localtime;
 		}
 		else {
-			$DHCP_Checked = '';
+			$Checked = 'checked';
+			$Disabled = '';
 		}
 
-		my $DSMS_Checked;
-		if ($DSMS_Extract) {
-			$DSMS_Checked = 'checked';
-		}
-		else {
-			$DSMS_Checked = '';
-		}
+		my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `fingerprint`, `dhcp`, `dsms`
+		FROM `host_attributes`
+		WHERE `host_id` = ?");
+		$Select_Host_Attributes->execute($Edit_Host);
+	
+		my ($Host_Fingerprint_Extract, $DHCP_Extract, $DSMS_Extract) = $Select_Host_Attributes->fetchrow_array();
+	
+			my $DHCP_Checked;
+			if ($DHCP_Extract) {
+				$DHCP_Checked = 'checked';
+			}
+			else {
+				$DHCP_Checked = '';
+			}
+	
+			my $DSMS_Checked;
+			my $DSMS_Display;
+			if ($DSMS_Extract) {
+				$DSMS_Checked = 'checked';
+				$DSMS_Display = '';
+			}
+			else {
+				$DSMS_Checked = '';
+				$DSMS_Display = 'none';
+			}
 
 print <<ENDHTML;
 <div id="small-popup-box">
@@ -348,6 +429,42 @@ print <<ENDHTML;
 
 <h3 align="center">Edit Host</h3>
 
+<SCRIPT LANGUAGE="JavaScript"><!--
+
+function Sudo_Toggle() {
+	if(document.Edit_Hosts.DSMS_Toggle_Edit.checked)
+	{
+		document.getElementById("Sudo_Display_Expires_Title").style.display="";
+		document.getElementById("Sudo_Display_Expires_Checkbox").style.display="";
+		document.getElementById("Sudo_Display_Expires_Input").style.display="";
+		document.getElementById("Sudo_Display_Active_Title").style.display="";
+		document.getElementById("Sudo_Display_Active_Checkbox").style.display="";
+		document.getElementById("Sudo_Display_Active_Radio").style.display="";
+	}
+	else
+	{
+		document.getElementById("Sudo_Display_Expires_Title").style.display="none";
+		document.getElementById("Sudo_Display_Expires_Checkbox").style.display="none";
+		document.getElementById("Sudo_Display_Expires_Input").style.display="none";
+		document.getElementById("Sudo_Display_Active_Title").style.display="none";
+		document.getElementById("Sudo_Display_Active_Checkbox").style.display="none";
+		document.getElementById("Sudo_Display_Active_Radio").style.display="none";
+	}
+}
+function Expire_Toggle() {
+	if(document.Edit_Hosts.Expires_Toggle_Edit.checked)
+	{
+		document.Edit_Hosts.Expires_Date_Edit.disabled=false;
+	}
+	else
+	{
+		document.Edit_Hosts.Expires_Date_Edit.disabled=true;
+	}
+}
+//-->
+</SCRIPT>
+
+
 <form action='/IP/hosts.cgi' name='Edit_Hosts' method='post' >
 
 <table align = "center">
@@ -356,27 +473,27 @@ print <<ENDHTML;
 		<td colspan="2"><input type='text' name='Host_Name_Edit' style="width:100%" value='$Host_Name_Extract' maxlength='128' placeholder="$Host_Name_Extract" required autofocus></td>
 	</tr>
 		<td style="text-align: right;">Host Type:</td>
-		<td style="text-align: left;">
+		<td colspan='2' style="text-align: left;">
 			<select name='Host_Type_Edit' style="width: 300px">
 ENDHTML
 
 
 
-	my $Host_Type_Query = $DB_Connection->prepare("SELECT `id`, `type`
-	FROM `host_types`
-	ORDER BY `type` ASC");
-	$Host_Type_Query->execute( );
-
-	print "<option value='0'>--Select a Host Type--</option>";
-	while ( (my $ID, my $Type) = my @Type_Query = $Host_Type_Query->fetchrow_array() )
-	{
-		if ($ID == $Type_Extract) {
-			print "<option style='background-color: #009400;' value='$ID' selected>$Type</option>";
+		my $Host_Type_Query = $DB_Connection->prepare("SELECT `id`, `type`
+		FROM `host_types`
+		ORDER BY `type` ASC");
+		$Host_Type_Query->execute( );
+	
+		print "<option value='0'>--Select a Host Type--</option>";
+		while ( (my $ID, my $Type) = my @Type_Query = $Host_Type_Query->fetchrow_array() )
+		{
+			if ($ID == $Type_Extract) {
+				print "<option style='background-color: #009400;' value='$ID' selected>$Type</option>";
+			}
+			else {
+				print "<option value='$ID'>$Type</option>";
+			}
 		}
-		else {
-			print "<option value='$ID'>$Type</option>";
-		}
-	}
 
 print <<ENDHTML;
 			</select>
@@ -384,7 +501,7 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">Fingerprint:</td>
-		<td><input type='text' name='Host_Fingerprint_Edit' style="width:100%" maxlength='50' value='$Host_Fingerprint_Extract' placeholder="SHA256:deadbeef... / de:ad:be:ef..."></td>
+		<td colspan='2'><input type='text' name='Host_Fingerprint_Edit' style="width:100%" maxlength='50' value='$Host_Fingerprint_Extract' placeholder="SHA256:deadbeef... / de:ad:be:ef..."></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">DHCP?:</td>
@@ -392,7 +509,31 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td>Manage sudo?</td>
-		<td style='text-align: left;'><input type='checkbox' name='DSMS_Toggle_Edit' $DSMS_Checked></td>
+		<td style='text-align: left;'><input type='checkbox' name='DSMS_Toggle_Edit' onclick="Sudo_Toggle()" $DSMS_Checked></td>
+	</tr>
+	<tr>
+		<td id="Sudo_Display_Expires_Title" style="display: $DSMS_Display; text-align: right;">Sudo expires:</td>
+		<td id="Sudo_Display_Expires_Checkbox" style='display: $DSMS_Display;'><input type="checkbox" onclick="Expire_Toggle()" name="Expires_Toggle_Edit" $Checked></td>
+		<td id="Sudo_Display_Expires_Input" style="display: $DSMS_Display;"><input type="date" name="Expires_Date_Edit" style="width:100%" value="$Expires_Extract" placeholder="$Expires_Extract" $Checked></td>
+	</tr>
+	<tr>
+		<td id="Sudo_Display_Active_Title" style="display: $DSMS_Display; text-align: right;">Active:</td>
+ENDHTML
+
+if ($Active_Extract == 1) {
+print <<ENDHTML;
+		<td id="Sudo_Display_Active_Checkbox" style="display: $DSMS_Display; text-align: right;"><input type="radio" name="Active_Edit" value="1" checked> Yes</td>
+		<td id="Sudo_Display_Active_Radio" style="display: $DSMS_Display; text-align: left;"><input type="radio" name="Active_Edit" value="0"> No</td>
+ENDHTML
+}
+else {
+print <<ENDHTML;
+		<td id="Sudo_Display_Active_Checkbox" style="display: $DSMS_Display; text-align: right;"><input type="radio" name="Active_Edit" value="1"> Yes</td>
+		<td id="Sudo_Display_Active_Radio" style="display: $DSMS_Display; text-align: left;"><input type="radio" name="Active_Edit" value="0" checked> No</td>
+ENDHTML
+}
+
+print <<ENDHTML;
 	</tr>
 </table>
 
@@ -437,13 +578,19 @@ sub edit_host {
 	}
 	### / Existing Host_Name Check
 
+	if ($Expires_Toggle_Edit ne 'on') {
+		$Expires_Date_Edit = undef;
+	}
+
 	my $Update_Host = $DB_Connection->prepare("UPDATE `hosts` SET
 		`hostname` = ?,
 		`type` = ?,
+		`expires` = ?,
+		`active` = ?,
 		`modified_by` = ?
 		WHERE `id` = ?");
 		
-	$Update_Host->execute($Host_Name_Edit, $Host_Type_Edit, $User_Name, $Edit_Host_Post);
+	$Update_Host->execute($Host_Name_Edit, $Host_Type_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_Host_Post);
 
 	my $Host_Attribute_Insert = $DB_Connection->prepare("INSERT INTO `host_attributes` (
 		`host_id`,
@@ -469,6 +616,10 @@ sub edit_host {
 		)
 		ON DUPLICATE KEY UPDATE `last_modified` = NOW(), `modified_by` = ?");
 		$Distribution_Insert->execute($Edit_Host_Post, $User_Name, $User_Name);
+	}
+	else {
+		my $Distribution_Delete = $DB_Connection->prepare("DELETE FROM `distribution` WHERE `host_id` = ?");
+		$Distribution_Delete->execute($Edit_Host_Post);
 	}
 
 	# Audit Log
@@ -554,7 +705,7 @@ sub delete_host {
 	while (( my $Hostname, my $Expires, my $Active ) = $Select_Hosts->fetchrow_array() )
 	{
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {

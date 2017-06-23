@@ -246,7 +246,7 @@ foreach my $User (@Users) {
 
 		my $Expires_Epoch;
 		my $Today_Epoch = time;
-		if ($Expires =~ /^0000-00-00$/) {
+		if (!$Expires || $Expires =~ /^0000-00-00$/) {
 			$Expires = 'Never';
 		}
 		else {
@@ -339,7 +339,7 @@ ENDHTML
 
 					my $Expires_Epoch;
 					my $Today_Epoch = time;
-					if ($Expires =~ /^0000-00-00$/) {
+					if (!$Expires || $Expires =~ /^0000-00-00$/) {
 						$Expires = 'Never';
 					}
 					else {
@@ -456,7 +456,7 @@ sub add_group {
 		$System_Group_Toggle_Add = 0;
 	}
 	if ($Expires_Toggle_Add ne 'on') {
-		$Expires_Date_Add = '0000-00-00';
+		$Expires_Date_Add = undef;
 	}
 
 	my $Group_Insert = $DB_Connection->prepare("INSERT INTO `user_groups` (
@@ -502,7 +502,7 @@ sub add_group {
 	# Audit Log
 	if ($System_Group_Toggle_Add) {$System_Group_Toggle_Add = 'System'} else {$System_Group_Toggle_Add = 'Sudoers'}
 
-	if ($Expires_Date_Add eq '0000-00-00') {
+	if (!$Expires_Date_Add || $Expires_Date_Add eq '0000-00-00') {
 		$Expires_Date_Add = 'not expire';
 	}
 	else {
@@ -575,7 +575,7 @@ while ( my @Select_Links = $Select_Links->fetchrow_array() )
 
 		my $Expires_Epoch;
 		my $Today_Epoch = time;
-		if ($Expires =~ /^0000-00-00$/) {
+		if (!$Expires || $Expires =~ /^0000-00-00$/) {
 			$Expires = 'Never';
 		}
 		else {
@@ -640,7 +640,7 @@ foreach my $User (@Users) {
 
 		my $Expires_Epoch;
 		my $Today_Epoch = time;
-		if ($Expires =~ /^0000-00-00$/) {
+		if (!$Expires || $Expires =~ /^0000-00-00$/) {
 			$Expires = 'Never';
 		}
 		else {
@@ -692,7 +692,7 @@ if (!$Group_Name_Edit) {
 
 	my $Expires_Checked;
 	my $Expires_Disabled;
-	if ($Expires_Date_Edit eq '0000-00-00' || !$Expires_Date_Edit) {
+	if (!$Expires_Date_Edit || $Expires_Date_Edit eq '0000-00-00') {
 		$Expires_Checked = '';
 		$Expires_Disabled = 'disabled';
 		$Expires_Date_Edit = strftime "%Y-%m-%d", localtime;
@@ -774,7 +774,7 @@ ENDHTML
 
 					my $Expires_Epoch;
 					my $Today_Epoch = time;
-					if ($Expires =~ /^0000-00-00$/) {
+					if (!$Expires || $Expires =~ /^0000-00-00$/) {
 						$Expires = 'Never';
 					}
 					else {
@@ -954,7 +954,7 @@ sub edit_group {
 	}
 
 	if ($Expires_Toggle_Edit ne 'on') {
-		$Expires_Date_Edit = '0000-00-00';
+		$Expires_Date_Edit = undef;
 	}
 
 	my $Update_Group = $DB_Connection->prepare("UPDATE `user_groups` SET
@@ -992,7 +992,7 @@ sub edit_group {
 	# Audit Log
 	if ($System_Group_Toggle_Edit) {$System_Group_Toggle_Edit = 'System'} else {$System_Group_Toggle_Edit = 'Sudoers'}
 
-	if ($Expires_Date_Edit eq '0000-00-00') {
+	if (!$Expires_Date_Edit || $Expires_Date_Edit eq '0000-00-00') {
 		$Expires_Date_Edit = 'does not expire';
 	}
 	else {
@@ -1133,7 +1133,7 @@ sub delete_group {
 	while (( my $Group_Name, my $Expires, my $Active ) = $Select_Users->fetchrow_array() )
 	{
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {
@@ -1568,7 +1568,7 @@ sub html_output {
 
 				my $Expires_Epoch;
 				my $Today_Epoch = time;
-				if ($Expires =~ /^0000-00-00$/) {
+				if (!$Expires || $Expires =~ /^0000-00-00$/) {
 					$Expires = 'Never';
 				}
 				else {
@@ -1592,7 +1592,7 @@ sub html_output {
 
 		my $Group_Expires_Epoch;
 		my $Today_Epoch = time;
-		if ($Group_Expires_Clean =~ /^0000-00-00$/) {
+		if (!$Group_Expires_Clean || $Group_Expires_Clean =~ /^0000-00-00$/) {
 			$Group_Expires = 'Never';
 		}
 		else {

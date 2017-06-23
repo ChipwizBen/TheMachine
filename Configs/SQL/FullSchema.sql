@@ -4,7 +4,7 @@ USE `TheMachine`;
 --
 -- Host: localhost    Database: TheMachine
 -- ------------------------------------------------------
--- Server version	5.5.52-MariaDB
+-- Server version	5.7.18-0ubuntu0.16.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -39,7 +39,7 @@ CREATE TABLE `access_log` (
   `username` varchar(128) DEFAULT NULL,
   `time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9800 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13154 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -58,7 +58,7 @@ CREATE TABLE `audit_log` (
   `username` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13666 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=17916 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,7 +80,7 @@ CREATE TABLE `auth` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -109,14 +109,14 @@ DROP TABLE IF EXISTS `command_groups`;
 CREATE TABLE `command_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupname` varchar(128) NOT NULL,
-  `expires` date NOT NULL,
+  `expires` date DEFAULT NULL,
   `active` int(1) NOT NULL DEFAULT '1',
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,7 +133,7 @@ CREATE TABLE `command_set_dependency` (
   `order` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -154,7 +154,7 @@ CREATE TABLE `command_sets` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=164 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -168,14 +168,14 @@ CREATE TABLE `commands` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `command_alias` varchar(128) NOT NULL,
   `command` text NOT NULL,
-  `expires` date NOT NULL,
+  `expires` date DEFAULT NULL,
   `active` int(1) NOT NULL,
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `command_alias_UNIQUE` (`command_alias`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -191,8 +191,8 @@ CREATE TABLE `credentials` (
   `password` varchar(128) NOT NULL,
   `salt` varchar(64) NOT NULL,
   `email` varchar(128) NOT NULL,
-  `last_login` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `last_active` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `last_login` datetime DEFAULT NULL,
+  `last_active` datetime DEFAULT NULL,
   `admin` int(1) NOT NULL DEFAULT '0',
   `ip_admin` int(1) NOT NULL DEFAULT '0',
   `icinga_admin` int(1) NOT NULL DEFAULT '0',
@@ -210,7 +210,7 @@ CREATE TABLE `credentials` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_UNIQUE` (`email`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -228,9 +228,9 @@ CREATE TABLE `distribution` (
   `timeout` int(3) NOT NULL DEFAULT '15',
   `remote_sudoers_path` varchar(255) NOT NULL DEFAULT 'upload/sudoers',
   `status` varchar(1024) NOT NULL DEFAULT 'Not yet attempted connection.',
-  `last_updated` datetime NOT NULL,
-  `last_successful_transfer` datetime NOT NULL,
-  `last_checkin` datetime NOT NULL,
+  `last_updated` datetime DEFAULT NULL,
+  `last_successful_transfer` datetime DEFAULT NULL,
+  `last_checkin` datetime DEFAULT NULL,
   `last_modified` datetime NOT NULL,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`host_id`),
@@ -252,7 +252,7 @@ CREATE TABLE `domains` (
   `modified_by` varchar(128) NOT NULL,
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`domain`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -283,14 +283,14 @@ DROP TABLE IF EXISTS `host_groups`;
 CREATE TABLE `host_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupname` varchar(128) NOT NULL,
-  `expires` date NOT NULL,
+  `expires` date DEFAULT NULL,
   `active` int(1) NOT NULL DEFAULT '1',
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -308,7 +308,7 @@ CREATE TABLE `host_types` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -322,14 +322,14 @@ CREATE TABLE `hosts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `hostname` varchar(128) NOT NULL,
   `type` int(11) NOT NULL DEFAULT '0',
-  `expires` date NOT NULL,
+  `expires` date DEFAULT NULL,
   `active` int(1) NOT NULL DEFAULT '1',
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`,`hostname`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `hostname_UNIQUE` (`hostname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2042 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -351,7 +351,7 @@ CREATE TABLE `icinga2_command` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`command_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=243 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -400,7 +400,7 @@ CREATE TABLE `icinga2_contact` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`contact_name`,`config_id`),
   UNIQUE KEY `contact_name_UNIQUE` (`contact_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=131 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -424,89 +424,7 @@ CREATE TABLE `icinga2_contactgroup` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`contactgroup_name`,`config_id`),
   UNIQUE KEY `contactgroup_name_UNIQUE` (`contactgroup_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_contacttemplate`
---
-
-DROP TABLE IF EXISTS `icinga2_contacttemplate`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_contacttemplate` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `template_name` varchar(255) NOT NULL,
-  `alias` varchar(255) NOT NULL,
-  `contactgroups` int(10) unsigned NOT NULL DEFAULT '0',
-  `contactgroups_tploptions` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `host_notifications_enabled` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `service_notifications_enabled` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `host_notification_period` int(11) NOT NULL DEFAULT '0',
-  `service_notification_period` int(11) NOT NULL DEFAULT '0',
-  `host_notification_options` varchar(20) NOT NULL,
-  `service_notification_options` varchar(20) NOT NULL,
-  `host_notification_commands` int(10) unsigned NOT NULL DEFAULT '0',
-  `host_notification_commands_tploptions` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `service_notification_commands` int(10) unsigned NOT NULL DEFAULT '0',
-  `service_notification_commands_tploptions` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `can_submit_commands` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `retain_status_information` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `retain_nonstatus_information` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `email` varchar(255) DEFAULT NULL,
-  `pager` varchar(255) DEFAULT NULL,
-  `address1` varchar(255) DEFAULT NULL,
-  `address2` varchar(255) DEFAULT NULL,
-  `address3` varchar(255) DEFAULT NULL,
-  `address4` varchar(255) DEFAULT NULL,
-  `address5` varchar(255) DEFAULT NULL,
-  `address6` varchar(255) DEFAULT NULL,
-  `use_variables` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `use_template` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `use_template_tploptions` tinyint(3) unsigned NOT NULL DEFAULT '2',
-  `active` enum('0','1') NOT NULL DEFAULT '1',
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `access_rights` varchar(8) DEFAULT NULL,
-  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_domain`
---
-
-DROP TABLE IF EXISTS `icinga2_domain`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_domain` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `domain` varchar(255) NOT NULL,
-  `alias` varchar(255) NOT NULL,
-  `server` varchar(255) NOT NULL,
-  `method` varchar(255) NOT NULL,
-  `user` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `basedir` varchar(255) NOT NULL,
-  `hostconfig` varchar(255) NOT NULL,
-  `serviceconfig` varchar(255) NOT NULL,
-  `backupdir` varchar(255) NOT NULL,
-  `hostbackup` varchar(255) NOT NULL,
-  `servicebackup` varchar(255) NOT NULL,
-  `nagiosbasedir` varchar(255) NOT NULL,
-  `importdir` varchar(255) NOT NULL,
-  `commandfile` varchar(255) NOT NULL,
-  `binaryfile` varchar(255) NOT NULL,
-  `pidfile` varchar(255) NOT NULL,
-  `version` tinyint(3) unsigned NOT NULL,
-  `access_rights` varchar(255) NOT NULL,
-  `active` enum('0','1') NOT NULL,
-  `nodelete` enum('0','1') NOT NULL DEFAULT '0',
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `domain` (`domain`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -577,91 +495,7 @@ CREATE TABLE `icinga2_host` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`host_name`,`config_id`),
   UNIQUE KEY `host_name_UNIQUE` (`host_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_hostdependency`
---
-
-DROP TABLE IF EXISTS `icinga2_hostdependency`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_hostdependency` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `config_name` varchar(255) NOT NULL,
-  `dependent_host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `dependent_hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `inherits_parent` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `execution_failure_criteria` varchar(20) DEFAULT '',
-  `notification_failure_criteria` varchar(20) DEFAULT '',
-  `dependency_period` int(11) NOT NULL DEFAULT '0',
-  `active` enum('0','1') NOT NULL DEFAULT '1',
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `access_rights` varchar(8) DEFAULT NULL,
-  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_hostescalation`
---
-
-DROP TABLE IF EXISTS `icinga2_hostescalation`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_hostescalation` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `config_name` varchar(255) NOT NULL,
-  `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `contacts` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `contact_groups` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `first_notification` int(11) DEFAULT NULL,
-  `last_notification` int(11) DEFAULT NULL,
-  `notification_interval` int(11) DEFAULT NULL,
-  `escalation_period` int(11) NOT NULL DEFAULT '0',
-  `escalation_options` varchar(20) DEFAULT '',
-  `active` enum('0','1') NOT NULL DEFAULT '1',
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `access_rights` varchar(8) DEFAULT NULL,
-  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_hostextinfo`
---
-
-DROP TABLE IF EXISTS `icinga2_hostextinfo`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_hostextinfo` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `host_name` int(11) DEFAULT NULL,
-  `notes` varchar(255) NOT NULL,
-  `notes_url` varchar(255) NOT NULL,
-  `action_url` varchar(255) NOT NULL,
-  `statistik_url` varchar(255) NOT NULL,
-  `icon_image` varchar(255) NOT NULL,
-  `icon_image_alt` varchar(255) NOT NULL,
-  `vrml_image` varchar(255) NOT NULL,
-  `statusmap_image` varchar(255) NOT NULL,
-  `2d_coords` varchar(255) NOT NULL,
-  `3d_coords` varchar(255) NOT NULL,
-  `active` enum('0','1') NOT NULL DEFAULT '1',
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `access_rights` varchar(8) DEFAULT NULL,
-  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `config_name` (`host_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1305 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -687,7 +521,7 @@ CREATE TABLE `icinga2_hostgroup` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`hostgroup_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -754,26 +588,7 @@ CREATE TABLE `icinga2_hosttemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_info`
---
-
-DROP TABLE IF EXISTS `icinga2_info`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_info` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `key1` varchar(200) NOT NULL,
-  `key2` varchar(200) NOT NULL,
-  `version` varchar(50) NOT NULL,
-  `language` varchar(50) NOT NULL,
-  `infotext` text NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `keypair` (`key1`,`key2`,`version`,`language`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -798,164 +613,6 @@ DROP TABLE IF EXISTS `icinga2_lnkContactToCommandService`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `icinga2_lnkContactToCommandService` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContactToContactgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContactToContactgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContactToContactgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContactToContacttemplate`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContactToContacttemplate`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContactToContacttemplate` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  `idSort` int(11) NOT NULL,
-  `idTable` tinyint(4) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContactToVariabledefinition`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContactToVariabledefinition`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContactToVariabledefinition` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContactgroupToContact`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContactgroupToContact`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContactgroupToContact` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContactgroupToContactgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContactgroupToContactgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContactgroupToContactgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContacttemplateToCommandHost`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToCommandHost`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContacttemplateToCommandHost` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContacttemplateToCommandService`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToCommandService`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContacttemplateToCommandService` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContacttemplateToContactgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToContactgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContacttemplateToContactgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContacttemplateToContacttemplate`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToContacttemplate`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContacttemplateToContacttemplate` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  `idSort` int(11) NOT NULL,
-  `idTable` tinyint(4) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkContacttemplateToVariabledefinition`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkContacttemplateToVariabledefinition`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkContacttemplateToVariabledefinition` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostToContact`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostToContact`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostToContact` (
   `idMaster` int(11) NOT NULL,
   `idSlave` int(11) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`)
@@ -991,20 +648,6 @@ CREATE TABLE `icinga2_lnkHostToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga2_lnkHostToHostgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostToHostgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostToHostgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `icinga2_lnkHostToHosttemplate`
 --
 
@@ -1017,174 +660,6 @@ CREATE TABLE `icinga2_lnkHostToHosttemplate` (
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostToVariabledefinition`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostToVariabledefinition`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostToVariabledefinition` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostdependencyToHost_DH`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHost_DH`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostdependencyToHost_DH` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostdependencyToHost_H`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHost_H`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostdependencyToHost_H` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostdependencyToHostgroup_DH`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHostgroup_DH`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostdependencyToHostgroup_DH` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostdependencyToHostgroup_H`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostdependencyToHostgroup_H`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostdependencyToHostgroup_H` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostescalationToContact`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostescalationToContact`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostescalationToContact` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostescalationToContactgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostescalationToContactgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostescalationToContactgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostescalationToHost`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostescalationToHost`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostescalationToHost` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostescalationToHostgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostescalationToHostgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostescalationToHostgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostgroupToHost`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostgroupToHost`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostgroupToHost` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHostgroupToHostgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHostgroupToHostgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHostgroupToHostgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHosttemplateToContact`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToContact`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHosttemplateToContact` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1217,20 +692,6 @@ CREATE TABLE `icinga2_lnkHosttemplateToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga2_lnkHosttemplateToHostgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToHostgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHosttemplateToHostgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `icinga2_lnkHosttemplateToHosttemplate`
 --
 
@@ -1243,20 +704,6 @@ CREATE TABLE `icinga2_lnkHosttemplateToHosttemplate` (
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkHosttemplateToVariabledefinition`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkHosttemplateToVariabledefinition`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkHosttemplateToVariabledefinition` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1303,20 +750,6 @@ CREATE TABLE `icinga2_lnkServiceToHost` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga2_lnkServiceToHostgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServiceToHostgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServiceToHostgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `icinga2_lnkServiceToServicegroup`
 --
 
@@ -1343,204 +776,6 @@ CREATE TABLE `icinga2_lnkServiceToServicetemplate` (
   `idSort` int(11) NOT NULL,
   `idTable` tinyint(4) NOT NULL,
   PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServiceToVariabledefinition`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServiceToVariabledefinition`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServiceToVariabledefinition` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServicedependencyToHost_DH`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHost_DH`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicedependencyToHost_DH` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServicedependencyToHost_H`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHost_H`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicedependencyToHost_H` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServicedependencyToHostgroup_DH`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHostgroup_DH`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicedependencyToHostgroup_DH` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServicedependencyToHostgroup_H`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToHostgroup_H`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicedependencyToHostgroup_H` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServicedependencyToService_DS`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToService_DS`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicedependencyToService_DS` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServicedependencyToService_S`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicedependencyToService_S`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicedependencyToService_S` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServiceescalationToContact`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToContact`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServiceescalationToContact` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServiceescalationToContactgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToContactgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServiceescalationToContactgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServiceescalationToHost`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToHost`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServiceescalationToHost` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServiceescalationToHostgroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToHostgroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServiceescalationToHostgroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServiceescalationToService`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServiceescalationToService`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServiceescalationToService` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServicegroupToService`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicegroupToService`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicegroupToService` (
-  `idMaster` int(11) NOT NULL,
-  `idSlaveH` int(11) NOT NULL,
-  `idSlaveHG` int(11) NOT NULL,
-  `idSlaveS` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlaveH`,`idSlaveHG`,`idSlaveS`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkServicegroupToServicegroup`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicegroupToServicegroup`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicegroupToServicegroup` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1631,69 +866,6 @@ CREATE TABLE `icinga2_lnkServicetemplateToServicetemplate` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `icinga2_lnkServicetemplateToVariabledefinition`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkServicetemplateToVariabledefinition`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkServicetemplateToVariabledefinition` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_lnkTimeperiodToTimeperiod`
---
-
-DROP TABLE IF EXISTS `icinga2_lnkTimeperiodToTimeperiod`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_lnkTimeperiodToTimeperiod` (
-  `idMaster` int(11) NOT NULL,
-  `idSlave` int(11) NOT NULL,
-  PRIMARY KEY (`idMaster`,`idSlave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_logbook`
---
-
-DROP TABLE IF EXISTS `icinga2_logbook`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_logbook` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `user` varchar(255) NOT NULL,
-  `ipadress` varchar(255) NOT NULL,
-  `domain` varchar(255) NOT NULL,
-  `entry` tinytext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_mainmenu`
---
-
-DROP TABLE IF EXISTS `icinga2_mainmenu`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_mainmenu` (
-  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
-  `order_id` tinyint(4) NOT NULL DEFAULT '0',
-  `menu_id` tinyint(4) NOT NULL DEFAULT '0',
-  `item` varchar(20) NOT NULL DEFAULT '',
-  `link` varchar(50) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `icinga2_service`
 --
 
@@ -1758,91 +930,7 @@ CREATE TABLE `icinga2_service` (
   `access_rights` varchar(8) DEFAULT NULL,
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_servicedependency`
---
-
-DROP TABLE IF EXISTS `icinga2_servicedependency`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_servicedependency` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `config_name` varchar(255) NOT NULL,
-  `dependent_host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `dependent_hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `dependent_service_description` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `service_description` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `inherits_parent` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `execution_failure_criteria` varchar(20) DEFAULT '',
-  `notification_failure_criteria` varchar(20) DEFAULT '',
-  `dependency_period` int(11) NOT NULL DEFAULT '0',
-  `active` enum('0','1') NOT NULL DEFAULT '1',
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `access_rights` varchar(8) DEFAULT NULL,
-  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_serviceescalation`
---
-
-DROP TABLE IF EXISTS `icinga2_serviceescalation`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_serviceescalation` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `config_name` varchar(255) NOT NULL,
-  `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `service_description` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `contacts` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `contact_groups` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `first_notification` int(11) DEFAULT NULL,
-  `last_notification` int(11) DEFAULT NULL,
-  `notification_interval` int(11) DEFAULT NULL,
-  `escalation_period` int(11) NOT NULL DEFAULT '0',
-  `escalation_options` varchar(20) DEFAULT '',
-  `active` enum('0','1') NOT NULL DEFAULT '1',
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `access_rights` varchar(8) DEFAULT NULL,
-  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `config_name` (`config_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_serviceextinfo`
---
-
-DROP TABLE IF EXISTS `icinga2_serviceextinfo`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_serviceextinfo` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `host_name` int(11) DEFAULT NULL,
-  `service_description` int(11) NOT NULL,
-  `notes` varchar(255) NOT NULL,
-  `notes_url` varchar(255) NOT NULL,
-  `action_url` varchar(255) NOT NULL,
-  `statistic_url` varchar(255) NOT NULL,
-  `icon_image` varchar(255) NOT NULL,
-  `icon_image_alt` varchar(255) NOT NULL,
-  `active` enum('0','1') NOT NULL DEFAULT '1',
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `access_rights` varchar(8) DEFAULT NULL,
-  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `config_name` (`host_name`,`service_description`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=639 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1868,7 +956,7 @@ CREATE TABLE `icinga2_servicegroup` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`servicegroup_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1936,59 +1024,7 @@ CREATE TABLE `icinga2_servicetemplate` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `config_name` (`template_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_settings`
---
-
-DROP TABLE IF EXISTS `icinga2_settings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_settings` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `category` varchar(20) NOT NULL,
-  `name` varchar(30) NOT NULL,
-  `value` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_submenu`
---
-
-DROP TABLE IF EXISTS `icinga2_submenu`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_submenu` (
-  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
-  `id_main` tinyint(4) NOT NULL DEFAULT '0',
-  `order_id` tinyint(4) NOT NULL DEFAULT '0',
-  `item` varchar(20) NOT NULL DEFAULT '',
-  `link` varchar(50) NOT NULL DEFAULT '',
-  `access_rights` varchar(8) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_timedefinition`
---
-
-DROP TABLE IF EXISTS `icinga2_timedefinition`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_timedefinition` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `tipId` int(10) unsigned NOT NULL,
-  `definition` varchar(255) NOT NULL,
-  `range` text NOT NULL,
-  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=184 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2011,47 +1047,7 @@ CREATE TABLE `icinga2_timeperiod` (
   `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `timeperiod_name` (`timeperiod_name`,`config_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 PACK_KEYS=0;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_user`
---
-
-DROP TABLE IF EXISTS `icinga2_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_user` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `username` varchar(255) NOT NULL,
-  `alias` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `access_rights` varchar(8) DEFAULT NULL,
-  `wsauth` enum('0','1') NOT NULL DEFAULT '0',
-  `active` enum('0','1') NOT NULL DEFAULT '0',
-  `nodelete` enum('0','1') NOT NULL DEFAULT '0',
-  `last_login` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `last_modified` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `locale` varchar(6) DEFAULT 'en_EN',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `icinga2_variabledefinition`
---
-
-DROP TABLE IF EXISTS `icinga2_variabledefinition`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `icinga2_variabledefinition` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `value` varchar(255) NOT NULL,
-  `last_modified` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 PACK_KEYS=0;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2063,13 +1059,13 @@ DROP TABLE IF EXISTS `ipv4_assignments`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ipv4_assignments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip_block` varchar(45) NOT NULL,
-  `parent_block` varchar(45) NOT NULL,
+  `ip_block` varchar(18) NOT NULL,
+  `parent_block` varchar(18) NOT NULL DEFAULT '',
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`,`ip_block`,`parent_block`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4594 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2097,6 +1093,68 @@ CREATE TABLE `ipv4_blocks` (
   PRIMARY KEY (`id`,`ip_block_name`,`ip_block`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `ip_block_name_UNIQUE` (`ip_block_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ipv6_assignments`
+--
+
+DROP TABLE IF EXISTS `ipv6_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ipv6_assignments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_block` varchar(43) NOT NULL,
+  `parent_block` varchar(43) DEFAULT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL,
+  PRIMARY KEY (`id`,`ip_block`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ipv6_blocks`
+--
+
+DROP TABLE IF EXISTS `ipv6_blocks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ipv6_blocks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_block_name` varchar(45) NOT NULL,
+  `ip_block_description` varchar(128) DEFAULT NULL,
+  `ip_block` varchar(43) NOT NULL,
+  `gateway` varchar(39) DEFAULT NULL,
+  `range_for_use` varchar(81) DEFAULT NULL,
+  `range_for_use_subnet` varchar(39) DEFAULT NULL,
+  `dns1` varchar(39) DEFAULT NULL,
+  `dns2` varchar(39) DEFAULT NULL,
+  `ntp1` varchar(39) DEFAULT NULL,
+  `ntp2` varchar(39) DEFAULT NULL,
+  `percent_used` varchar(5) DEFAULT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modified_by` varchar(128) NOT NULL,
+  PRIMARY KEY (`id`,`ip_block_name`,`ip_block`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `ip_block_name_UNIQUE` (`ip_block_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `job_queue`
+--
+
+DROP TABLE IF EXISTS `job_queue`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `job_queue` (
+  `job_id` int(11) NOT NULL,
+  `override` int(1) NOT NULL DEFAULT '0',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`job_id`),
+  UNIQUE KEY `job_id_UNIQUE` (`job_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2119,7 +1177,7 @@ CREATE TABLE `job_status` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`,`job_id`),
   KEY `idx_job_status_job_id` (`job_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=86870 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2138,7 +1196,7 @@ CREATE TABLE `jobs` (
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL DEFAULT 'System',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2745 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2154,7 +1212,7 @@ CREATE TABLE `lnk_command_groups_to_commands` (
   `command` int(11) NOT NULL,
   PRIMARY KEY (`id`,`command`,`group`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2170,7 +1228,7 @@ CREATE TABLE `lnk_host_groups_to_hosts` (
   `host` int(11) NOT NULL,
   PRIMARY KEY (`id`,`host`,`group`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2185,6 +1243,21 @@ CREATE TABLE `lnk_hosts_to_ipv4_assignments` (
   `host` int(11) NOT NULL,
   `ip` int(11) NOT NULL,
   PRIMARY KEY (`id`,`ip`,`host`)
+) ENGINE=InnoDB AUTO_INCREMENT=2704 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `lnk_hosts_to_ipv6_assignments`
+--
+
+DROP TABLE IF EXISTS `lnk_hosts_to_ipv6_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `lnk_hosts_to_ipv6_assignments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `host` int(11) NOT NULL,
+  `ip` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2201,7 +1274,7 @@ CREATE TABLE `lnk_rules_to_command_groups` (
   `command_group` int(11) NOT NULL,
   PRIMARY KEY (`id`,`command_group`,`rule`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2217,7 +1290,7 @@ CREATE TABLE `lnk_rules_to_commands` (
   `command` int(11) NOT NULL,
   PRIMARY KEY (`id`,`command`,`rule`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=97 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2233,7 +1306,7 @@ CREATE TABLE `lnk_rules_to_host_groups` (
   `host_group` int(11) NOT NULL,
   PRIMARY KEY (`id`,`host_group`,`rule`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2249,7 +1322,7 @@ CREATE TABLE `lnk_rules_to_hosts` (
   `host` int(11) NOT NULL,
   PRIMARY KEY (`id`,`host`,`rule`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2265,7 +1338,7 @@ CREATE TABLE `lnk_rules_to_user_groups` (
   `user_group` int(11) NOT NULL,
   PRIMARY KEY (`id`,`user_group`,`rule`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2281,7 +1354,7 @@ CREATE TABLE `lnk_rules_to_users` (
   `user` int(11) NOT NULL,
   PRIMARY KEY (`id`,`user`,`rule`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2297,7 +1370,7 @@ CREATE TABLE `lnk_user_groups_to_users` (
   `user` int(11) NOT NULL,
   PRIMARY KEY (`id`,`user`,`group`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2325,6 +1398,1010 @@ CREATE TABLE `lock` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `nagios_contacttemplate`
+--
+
+DROP TABLE IF EXISTS `nagios_contacttemplate`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_contacttemplate` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `template_name` varchar(255) NOT NULL,
+  `alias` varchar(255) NOT NULL,
+  `contactgroups` int(10) unsigned NOT NULL DEFAULT '0',
+  `contactgroups_tploptions` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `host_notifications_enabled` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `service_notifications_enabled` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `host_notification_period` int(11) NOT NULL DEFAULT '0',
+  `service_notification_period` int(11) NOT NULL DEFAULT '0',
+  `host_notification_options` varchar(20) NOT NULL,
+  `service_notification_options` varchar(20) NOT NULL,
+  `host_notification_commands` int(10) unsigned NOT NULL DEFAULT '0',
+  `host_notification_commands_tploptions` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `service_notification_commands` int(10) unsigned NOT NULL DEFAULT '0',
+  `service_notification_commands_tploptions` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `can_submit_commands` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `retain_status_information` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `retain_nonstatus_information` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `email` varchar(255) DEFAULT NULL,
+  `pager` varchar(255) DEFAULT NULL,
+  `address1` varchar(255) DEFAULT NULL,
+  `address2` varchar(255) DEFAULT NULL,
+  `address3` varchar(255) DEFAULT NULL,
+  `address4` varchar(255) DEFAULT NULL,
+  `address5` varchar(255) DEFAULT NULL,
+  `address6` varchar(255) DEFAULT NULL,
+  `use_variables` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `use_template` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `use_template_tploptions` tinyint(3) unsigned NOT NULL DEFAULT '2',
+  `active` enum('0','1') NOT NULL DEFAULT '1',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `access_rights` varchar(8) DEFAULT NULL,
+  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `config_name` (`template_name`,`config_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_domain`
+--
+
+DROP TABLE IF EXISTS `nagios_domain`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_domain` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `domain` varchar(255) NOT NULL,
+  `alias` varchar(255) NOT NULL,
+  `server` varchar(255) NOT NULL,
+  `method` varchar(255) NOT NULL,
+  `user` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `basedir` varchar(255) NOT NULL,
+  `hostconfig` varchar(255) NOT NULL,
+  `serviceconfig` varchar(255) NOT NULL,
+  `backupdir` varchar(255) NOT NULL,
+  `hostbackup` varchar(255) NOT NULL,
+  `servicebackup` varchar(255) NOT NULL,
+  `nagiosbasedir` varchar(255) NOT NULL,
+  `importdir` varchar(255) NOT NULL,
+  `commandfile` varchar(255) NOT NULL,
+  `binaryfile` varchar(255) NOT NULL,
+  `pidfile` varchar(255) NOT NULL,
+  `version` tinyint(3) unsigned NOT NULL,
+  `access_rights` varchar(255) NOT NULL,
+  `active` enum('0','1') NOT NULL,
+  `nodelete` enum('0','1') NOT NULL DEFAULT '0',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `domain` (`domain`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_hostdependency`
+--
+
+DROP TABLE IF EXISTS `nagios_hostdependency`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_hostdependency` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `config_name` varchar(255) NOT NULL,
+  `dependent_host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `dependent_hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `inherits_parent` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `execution_failure_criteria` varchar(20) DEFAULT '',
+  `notification_failure_criteria` varchar(20) DEFAULT '',
+  `dependency_period` int(11) NOT NULL DEFAULT '0',
+  `active` enum('0','1') NOT NULL DEFAULT '1',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `access_rights` varchar(8) DEFAULT NULL,
+  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `config_name` (`config_name`,`config_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_hostescalation`
+--
+
+DROP TABLE IF EXISTS `nagios_hostescalation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_hostescalation` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `config_name` varchar(255) NOT NULL,
+  `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `contacts` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `contact_groups` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `first_notification` int(11) DEFAULT NULL,
+  `last_notification` int(11) DEFAULT NULL,
+  `notification_interval` int(11) DEFAULT NULL,
+  `escalation_period` int(11) NOT NULL DEFAULT '0',
+  `escalation_options` varchar(20) DEFAULT '',
+  `active` enum('0','1') NOT NULL DEFAULT '1',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `access_rights` varchar(8) DEFAULT NULL,
+  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `config_name` (`config_name`,`config_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_hostextinfo`
+--
+
+DROP TABLE IF EXISTS `nagios_hostextinfo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_hostextinfo` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `host_name` int(11) DEFAULT NULL,
+  `notes` varchar(255) NOT NULL,
+  `notes_url` varchar(255) NOT NULL,
+  `action_url` varchar(255) NOT NULL,
+  `statistik_url` varchar(255) NOT NULL,
+  `icon_image` varchar(255) NOT NULL,
+  `icon_image_alt` varchar(255) NOT NULL,
+  `vrml_image` varchar(255) NOT NULL,
+  `statusmap_image` varchar(255) NOT NULL,
+  `2d_coords` varchar(255) NOT NULL,
+  `3d_coords` varchar(255) NOT NULL,
+  `active` enum('0','1') NOT NULL DEFAULT '1',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `access_rights` varchar(8) DEFAULT NULL,
+  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `config_name` (`host_name`,`config_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_info`
+--
+
+DROP TABLE IF EXISTS `nagios_info`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_info` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `key1` varchar(200) NOT NULL,
+  `key2` varchar(200) NOT NULL,
+  `version` varchar(50) NOT NULL,
+  `language` varchar(50) NOT NULL,
+  `infotext` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `keypair` (`key1`,`key2`,`version`,`language`)
+) ENGINE=InnoDB AUTO_INCREMENT=223 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContactToContactgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContactToContactgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContactToContactgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContactToContacttemplate`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContactToContacttemplate`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContactToContacttemplate` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  `idSort` int(11) NOT NULL,
+  `idTable` tinyint(4) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContactToVariabledefinition`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContactToVariabledefinition`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContactToVariabledefinition` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContactgroupToContact`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContactgroupToContact`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContactgroupToContact` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContactgroupToContactgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContactgroupToContactgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContactgroupToContactgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContacttemplateToCommandHost`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContacttemplateToCommandHost`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContacttemplateToCommandHost` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContacttemplateToCommandService`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContacttemplateToCommandService`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContacttemplateToCommandService` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContacttemplateToContactgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContacttemplateToContactgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContacttemplateToContactgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContacttemplateToContacttemplate`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContacttemplateToContacttemplate`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContacttemplateToContacttemplate` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  `idSort` int(11) NOT NULL,
+  `idTable` tinyint(4) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`,`idTable`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkContacttemplateToVariabledefinition`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkContacttemplateToVariabledefinition`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkContacttemplateToVariabledefinition` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostToContact`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostToContact`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostToContact` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostToHostgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostToHostgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostToHostgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostToVariabledefinition`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostToVariabledefinition`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostToVariabledefinition` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostdependencyToHost_DH`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHost_DH`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostdependencyToHost_DH` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostdependencyToHost_H`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHost_H`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostdependencyToHost_H` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostdependencyToHostgroup_DH`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHostgroup_DH`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostdependencyToHostgroup_DH` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostdependencyToHostgroup_H`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostdependencyToHostgroup_H`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostdependencyToHostgroup_H` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostescalationToContact`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostescalationToContact`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostescalationToContact` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostescalationToContactgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostescalationToContactgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostescalationToContactgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostescalationToHost`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostescalationToHost`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostescalationToHost` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostescalationToHostgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostescalationToHostgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostescalationToHostgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostgroupToHost`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostgroupToHost`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostgroupToHost` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHostgroupToHostgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHostgroupToHostgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHostgroupToHostgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHosttemplateToContact`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHosttemplateToContact`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHosttemplateToContact` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHosttemplateToHostgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHosttemplateToHostgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHosttemplateToHostgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkHosttemplateToVariabledefinition`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkHosttemplateToVariabledefinition`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkHosttemplateToVariabledefinition` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServiceToHostgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServiceToHostgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServiceToHostgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServiceToVariabledefinition`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServiceToVariabledefinition`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServiceToVariabledefinition` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicedependencyToHost_DH`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHost_DH`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicedependencyToHost_DH` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicedependencyToHost_H`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHost_H`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicedependencyToHost_H` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicedependencyToHostgroup_DH`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHostgroup_DH`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicedependencyToHostgroup_DH` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicedependencyToHostgroup_H`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicedependencyToHostgroup_H`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicedependencyToHostgroup_H` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicedependencyToService_DS`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicedependencyToService_DS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicedependencyToService_DS` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicedependencyToService_S`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicedependencyToService_S`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicedependencyToService_S` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServiceescalationToContact`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServiceescalationToContact`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServiceescalationToContact` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServiceescalationToContactgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServiceescalationToContactgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServiceescalationToContactgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServiceescalationToHost`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServiceescalationToHost`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServiceescalationToHost` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServiceescalationToHostgroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServiceescalationToHostgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServiceescalationToHostgroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServiceescalationToService`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServiceescalationToService`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServiceescalationToService` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicegroupToService`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicegroupToService`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicegroupToService` (
+  `idMaster` int(11) NOT NULL,
+  `idSlaveH` int(11) NOT NULL,
+  `idSlaveHG` int(11) NOT NULL,
+  `idSlaveS` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlaveH`,`idSlaveHG`,`idSlaveS`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicegroupToServicegroup`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicegroupToServicegroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicegroupToServicegroup` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkServicetemplateToVariabledefinition`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkServicetemplateToVariabledefinition`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkServicetemplateToVariabledefinition` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_lnkTimeperiodToTimeperiod`
+--
+
+DROP TABLE IF EXISTS `nagios_lnkTimeperiodToTimeperiod`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_lnkTimeperiodToTimeperiod` (
+  `idMaster` int(11) NOT NULL,
+  `idSlave` int(11) NOT NULL,
+  PRIMARY KEY (`idMaster`,`idSlave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_logbook`
+--
+
+DROP TABLE IF EXISTS `nagios_logbook`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_logbook` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `user` varchar(255) NOT NULL,
+  `ipadress` varchar(255) NOT NULL,
+  `domain` varchar(255) NOT NULL,
+  `entry` tinytext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_mainmenu`
+--
+
+DROP TABLE IF EXISTS `nagios_mainmenu`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_mainmenu` (
+  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
+  `order_id` tinyint(4) NOT NULL DEFAULT '0',
+  `menu_id` tinyint(4) NOT NULL DEFAULT '0',
+  `item` varchar(20) NOT NULL DEFAULT '',
+  `link` varchar(50) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_servicedependency`
+--
+
+DROP TABLE IF EXISTS `nagios_servicedependency`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_servicedependency` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `config_name` varchar(255) NOT NULL,
+  `dependent_host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `dependent_hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `dependent_service_description` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `service_description` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `inherits_parent` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `execution_failure_criteria` varchar(20) DEFAULT '',
+  `notification_failure_criteria` varchar(20) DEFAULT '',
+  `dependency_period` int(11) NOT NULL DEFAULT '0',
+  `active` enum('0','1') NOT NULL DEFAULT '1',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `access_rights` varchar(8) DEFAULT NULL,
+  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `config_name` (`config_name`,`config_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_serviceescalation`
+--
+
+DROP TABLE IF EXISTS `nagios_serviceescalation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_serviceescalation` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `config_name` varchar(255) NOT NULL,
+  `host_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `hostgroup_name` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `service_description` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `contacts` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `contact_groups` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `first_notification` int(11) DEFAULT NULL,
+  `last_notification` int(11) DEFAULT NULL,
+  `notification_interval` int(11) DEFAULT NULL,
+  `escalation_period` int(11) NOT NULL DEFAULT '0',
+  `escalation_options` varchar(20) DEFAULT '',
+  `active` enum('0','1') NOT NULL DEFAULT '1',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `access_rights` varchar(8) DEFAULT NULL,
+  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `config_name` (`config_name`,`config_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_serviceextinfo`
+--
+
+DROP TABLE IF EXISTS `nagios_serviceextinfo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_serviceextinfo` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `host_name` int(11) DEFAULT NULL,
+  `service_description` int(11) NOT NULL,
+  `notes` varchar(255) NOT NULL,
+  `notes_url` varchar(255) NOT NULL,
+  `action_url` varchar(255) NOT NULL,
+  `statistic_url` varchar(255) NOT NULL,
+  `icon_image` varchar(255) NOT NULL,
+  `icon_image_alt` varchar(255) NOT NULL,
+  `active` enum('0','1') NOT NULL DEFAULT '1',
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `access_rights` varchar(8) DEFAULT NULL,
+  `config_id` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `config_name` (`host_name`,`service_description`,`config_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_settings`
+--
+
+DROP TABLE IF EXISTS `nagios_settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_settings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `category` varchar(20) NOT NULL,
+  `name` varchar(30) NOT NULL,
+  `value` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_submenu`
+--
+
+DROP TABLE IF EXISTS `nagios_submenu`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_submenu` (
+  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
+  `id_main` tinyint(4) NOT NULL DEFAULT '0',
+  `order_id` tinyint(4) NOT NULL DEFAULT '0',
+  `item` varchar(20) NOT NULL DEFAULT '',
+  `link` varchar(50) NOT NULL DEFAULT '',
+  `access_rights` varchar(8) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_timedefinition`
+--
+
+DROP TABLE IF EXISTS `nagios_timedefinition`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_timedefinition` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tipId` int(10) unsigned NOT NULL,
+  `definition` varchar(255) NOT NULL,
+  `range` text NOT NULL,
+  `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_user`
+--
+
+DROP TABLE IF EXISTS `nagios_user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_user` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `alias` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `access_rights` varchar(8) DEFAULT NULL,
+  `wsauth` enum('0','1') NOT NULL DEFAULT '0',
+  `active` enum('0','1') NOT NULL DEFAULT '0',
+  `nodelete` enum('0','1') NOT NULL DEFAULT '0',
+  `last_login` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `last_modified` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `locale` varchar(6) DEFAULT 'en_EN',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nagios_variabledefinition`
+--
+
+DROP TABLE IF EXISTS `nagios_variabledefinition`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nagios_variabledefinition` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `value` varchar(255) NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `notes`
 --
 
@@ -2340,7 +2417,7 @@ CREATE TABLE `notes` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2363,7 +2440,7 @@ CREATE TABLE `redirect` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2399,7 +2476,7 @@ CREATE TABLE `reverse_proxy` (
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2416,7 +2493,7 @@ CREATE TABLE `rules` (
   `run_as` varchar(128) NOT NULL,
   `nopasswd` int(1) NOT NULL DEFAULT '0',
   `noexec` int(1) NOT NULL DEFAULT '1',
-  `expires` date NOT NULL,
+  `expires` date DEFAULT NULL,
   `active` int(1) NOT NULL DEFAULT '1',
   `approved` int(1) NOT NULL DEFAULT '0',
   `last_approved` datetime NOT NULL,
@@ -2426,7 +2503,7 @@ CREATE TABLE `rules` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2440,14 +2517,14 @@ CREATE TABLE `user_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupname` varchar(128) NOT NULL,
   `system_group` int(1) NOT NULL DEFAULT '0',
-  `expires` date NOT NULL,
+  `expires` date DEFAULT NULL,
   `active` int(1) NOT NULL DEFAULT '1',
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `groupname_UNIQUE` (`groupname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2460,14 +2537,14 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(128) NOT NULL,
-  `expires` date NOT NULL,
+  `expires` date DEFAULT NULL,
   `active` int(1) NOT NULL DEFAULT '1',
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2486,13 +2563,13 @@ CREATE TABLE `zone_records` (
   `options` varchar(45) DEFAULT NULL,
   `target` varchar(128) NOT NULL,
   `zone` int(1) NOT NULL DEFAULT '0',
-  `expires` date NOT NULL,
+  `expires` date DEFAULT NULL,
   `active` int(1) NOT NULL DEFAULT '1',
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modified_by` varchar(128) NOT NULL,
   PRIMARY KEY (`id`,`source`,`target`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -2504,4 +2581,4 @@ CREATE TABLE `zone_records` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-15 21:38:18
+-- Dump completed on 2017-06-23 19:07:12

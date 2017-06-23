@@ -1002,7 +1002,7 @@ sub add_rule {
 	}
 
 	if ($Expires_Toggle_Add ne 'on') {
-		$Expires_Date_Add = '0000-00-00';
+		$Expires_Date_Add = undef;
 	}
 
 	my $Approver_Name;
@@ -1035,7 +1035,7 @@ sub add_rule {
 	my $Rule_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
-	if ($Expires_Date_Add eq '0000-00-00') {
+	if (!$Expires_Date_Add || $Expires_Date_Add eq '0000-00-00') {
 		$Expires_Date_Add = 'not expire';
 	}
 	else {
@@ -1305,7 +1305,7 @@ while (my @DB_Rule = $Select_Rule->fetchrow_array() )
 
 my $Checked;
 my $Disabled;
-if ($Expires_Extract eq '0000-00-00') {
+if (!$Expires_Extract || $Expires_Extract eq '0000-00-00') {
 	$Checked = '';
 	$Disabled = 'disabled';
 	$Expires_Extract = strftime "%Y-%m-%d", localtime;
@@ -2364,7 +2364,7 @@ sub edit_rule {
 	}
 
 	if ($Expires_Toggle_Edit ne 'on') {
-		$Expires_Date_Edit = '0000-00-00';
+		$Expires_Date_Edit = undef;
 	}
 
 	my $Update_Rule = $DB_Connection->prepare("UPDATE `rules` SET
@@ -2382,7 +2382,7 @@ sub edit_rule {
 	$Update_Rule->execute($Rule_Name_Edit, $ALL_Hosts, $Run_As_Edit, $NOPASSWD_Edit, $NOEXEC_Edit, $Expires_Date_Edit, $Active_Edit, $Approved, $Approved_By, $User_Name, $Edit_Rule);
 
 	# Audit Log
-	if ($Expires_Date_Edit eq '0000-00-00' || !$Expires_Date_Edit) {
+	if (!$Expires_Date_Edit || $Expires_Date_Edit eq '0000-00-00') {
 		$Expires_Date_Edit = 'not expire';
 	}
 	else {
@@ -2660,7 +2660,7 @@ sub delete_rule {
 		if ($NOPASSWD == 1) {$NOPASSWD = 'NOPASSWD'} else {$NOPASSWD = 'PASSWD'}
 		if ($NOEXEC == 1) {$NOEXEC = 'NOEXEC'} else {$NOEXEC = 'EXEC'}
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {
@@ -3199,7 +3199,7 @@ sub html_output {
 		my $Approved = $Select_Rules[8];
 			if ($Approved == 1) {$Approved = "Yes"} else {$Approved = "No"};
 		my $Last_Approved = $Select_Rules[9];
-			if ($Last_Approved eq '0000-00-00 00:00:00') {$Last_Approved = "<span style='color: #FF0000'>Unapproved</span>"} else {$Last_Approved = "<span style='color: #B6B600'>$Last_Approved</span>"};
+			if (!$Last_Approved || $Last_Approved eq '0000-00-00 00:00:00') {$Last_Approved = "<span style='color: #FF0000'>Unapproved</span>"} else {$Last_Approved = "<span style='color: #B6B600'>$Last_Approved</span>"};
 		my $Approved_By = $Select_Rules[10];
 			if ($Approved_By eq undef) {$Approved_By = "<span style='color: #FF0000'>Unapproved</span>"}
 			elsif ($Approved_By =~ /^Approval Revoked by /) {$Approved_By = "<span style='color: #FF6100'>$Approved_By</span>"}
@@ -3269,7 +3269,7 @@ sub html_output {
 	
 							my $Expires_Epoch;
 							my $Today_Epoch = time;
-							if ($Host_Expires =~ /^0000-00-00$/) {
+							if (!$Host_Expires || $Host_Expires =~ /^0000-00-00$/) {
 								$Host_Expires = 'Never';
 							}
 							else {
@@ -3298,7 +3298,7 @@ sub html_output {
 							
 					my $Expires_Epoch;
 					my $Today_Epoch = time;
-					if ($Group_Expires =~ /^0000-00-00$/) {
+					if (!$Group_Expires || $Group_Expires =~ /^0000-00-00$/) {
 						$Group_Expires = 'Never';
 					}
 					else {
@@ -3367,7 +3367,7 @@ sub html_output {
 
 					my $Expires_Epoch;
 					my $Today_Epoch = time;
-					if ($Expires =~ /^0000-00-00$/) {
+					if (!$Expires || $Expires =~ /^0000-00-00$/) {
 						$Expires = 'Never';
 					}
 					else {
@@ -3461,7 +3461,7 @@ sub html_output {
 
 						my $Expires_Epoch;
 						my $Today_Epoch = time;
-						if ($User_Expires =~ /^0000-00-00$/) {
+						if (!$User_Expires || $User_Expires =~ /^0000-00-00$/) {
 							$User_Expires = 'Never';
 						}
 						else {
@@ -3488,7 +3488,7 @@ sub html_output {
 
 				my $Expires_Epoch;
 				my $Today_Epoch = time;
-				if ($Group_Expires =~ /^0000-00-00$/) {
+				if (!$Group_Expires || $Group_Expires =~ /^0000-00-00$/) {
 					$Group_Expires = 'Never';
 				}
 				else {
@@ -3556,7 +3556,7 @@ sub html_output {
 
 				my $Expires_Epoch;
 				my $Today_Epoch = time;
-				if ($Expires =~ /^0000-00-00$/) {
+				if (!$Expires || $Expires =~ /^0000-00-00$/) {
 					$Expires = 'Never';
 				}
 				else {
@@ -3643,7 +3643,7 @@ sub html_output {
 
 						my $Expires_Epoch;
 						my $Today_Epoch = time;
-						if ($Command_Expires =~ /^0000-00-00$/) {
+						if (!$Command_Expires || $Command_Expires =~ /^0000-00-00$/) {
 							$Command_Expires = 'Never';
 						}
 						else {
@@ -3670,7 +3670,7 @@ sub html_output {
 
 				my $Expires_Epoch;
 				my $Today_Epoch = time;
-				if ($Group_Expires =~ /^0000-00-00$/) {
+				if (!$Group_Expires || $Group_Expires =~ /^0000-00-00$/) {
 					$Group_Expires = 'Never';
 				}
 				else {
@@ -3729,7 +3729,7 @@ sub html_output {
 
 				my $Expires_Epoch;
 				my $Today_Epoch = time;
-				if ($Command_Expires =~ /^0000-00-00$/) {
+				if (!$Command_Expires || $Command_Expires =~ /^0000-00-00$/) {
 					$Command_Expires = 'Never';
 				}
 				else {
@@ -3775,7 +3775,7 @@ sub html_output {
 
 		my $Expires_Epoch;
 		my $Today_Epoch = time;
-		if ($Rule_Expires_Clean =~ /^0000-00-00$/) {
+		if (!$Rule_Expires_Clean || $Rule_Expires_Clean =~ /^0000-00-00$/) {
 			$Rule_Expires = 'Never';
 		}
 		else {

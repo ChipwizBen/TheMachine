@@ -379,7 +379,7 @@ sub add_group {
 	### / Existing Group_Name Check
 
 	if ($Expires_Toggle_Add ne 'on') {
-		$Expires_Date_Add = '0000-00-00';
+		$Expires_Date_Add = undef;
 	}
 
 	my $Group_Insert = $DB_Connection->prepare("INSERT INTO `host_groups` (
@@ -424,7 +424,7 @@ sub add_group {
 
 	if ($Active_Add) {$Active_Add = 'Active'} else {$Active_Add = 'Inactive'}
 
-	if ($Expires_Date_Add eq '0000-00-00') {
+	if (!$Expires_Date_Add || $Expires_Date_Add eq '0000-00-00') {
 		$Expires_Date_Add = 'not expire';
 	}
 	else {
@@ -587,7 +587,7 @@ if (!$Group_Name_Edit) {
 
 my $Expires_Checked;
 my $Expires_Disabled;
-if ($Expires_Date_Edit eq '0000-00-00') {
+if (!$Expires_Date_Edit || $Expires_Date_Edit eq '0000-00-00') {
 	$Expires_Checked = '';
 	$Expires_Disabled = 'disabled';
 	$Expires_Date_Edit = strftime "%Y-%m-%d", localtime;
@@ -793,7 +793,7 @@ sub edit_group {
 	### / Existing Group_Name Check
 
 	if ($Expires_Toggle_Edit ne 'on') {
-		$Expires_Date_Edit = '0000-00-00';
+		$Expires_Date_Edit = undef;
 	}
 
 	### Revoke Rule Approval ###
@@ -846,7 +846,7 @@ sub edit_group {
 
 	# Audit Log
 
-	if ($Expires_Date_Edit eq '0000-00-00') {
+	if (!$Expires_Date_Edit || $Expires_Date_Edit eq '0000-00-00') {
 		$Expires_Date_Edit = 'does not expire';
 	}
 	else {
@@ -1096,7 +1096,7 @@ sub html_output {
 
 		my $Expires_Epoch;
 		my $Today_Epoch = time;
-		if ($Expires_Clean =~ /^0000-00-00$/) {
+		if (!$Expires_Clean || $Expires_Clean =~ /^0000-00-00$/) {
 			$Expires = 'Never';
 		}
 		else {

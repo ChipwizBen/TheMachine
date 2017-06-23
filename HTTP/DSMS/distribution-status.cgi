@@ -113,7 +113,7 @@ sub html_edit_host_parameters {
 
 		$Host_Name = $DB_Host[0];
 		$Expires = $DB_Host[1];
-			if ($Expires eq '0000-00-00') {
+			if (!$Expires || $Expires eq '0000-00-00') {
 				$Expires = 'Never';
 			}
 		$Active = $DB_Host[2];
@@ -369,16 +369,16 @@ sub html_output {
 			$Status_Message =~ s/\s(\d\))/<span style='color: #FFC600'>$1<\/span>/gm;
 			$Status_Message =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Last_Updated = $Select_Hosts[9];
-			if ($Last_Updated eq '0000-00-00 00:00:00') {$Last_Updated = 'Never';}
+			if (!$Last_Updated || $Last_Updated eq '0000-00-00 00:00:00') {$Last_Updated = 'Never';}
 			$Last_Updated =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Last_Successful_Transfer = $Select_Hosts[10];
-			if ($Last_Successful_Transfer eq '0000-00-00 00:00:00') {$Last_Successful_Transfer = 'Never';}
+			if (!$Last_Successful_Transfer || $Last_Successful_Transfer eq '0000-00-00 00:00:00') {$Last_Successful_Transfer = 'Never';}
 			$Last_Successful_Transfer =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Last_Successful_Checkin = $Select_Hosts[11];
-			if ($Last_Successful_Checkin eq '0000-00-00 00:00:00') {$Last_Successful_Checkin = 'Unknown';}
+			if (!$Last_Successful_Checkin || $Last_Successful_Checkin eq '0000-00-00 00:00:00') {$Last_Successful_Checkin = 'Unknown';}
 			$Last_Successful_Checkin =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Last_Modified = $Select_Hosts[12];
-			if ($Last_Modified eq "0000-00-00 00:00:00") {$Last_Modified = "Never";}
+			if (!$Last_Modified || $Last_Modified eq "0000-00-00 00:00:00") {$Last_Modified = "Never";}
 			$Last_Modified =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
 		my $Modified_By = $Select_Hosts[13];
 			$Modified_By =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;

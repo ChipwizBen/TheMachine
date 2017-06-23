@@ -277,7 +277,7 @@ sub add_user {
 	### / Existing User_Name Check
 
 	if ($Expires_Toggle_Add ne 'on') {
-		$Expires_Date_Add = '0000-00-00';
+		$Expires_Date_Add = undef;
 	}
 
 	my $User_Insert = $DB_Connection->prepare("INSERT INTO `users` (
@@ -300,7 +300,7 @@ sub add_user {
 	my $User_Insert_ID = $DB_Connection->{mysql_insertid};
 
 	# Audit Log
-	if ($Expires_Date_Add eq '0000-00-00') {
+	if (!$Expires_Date_Add || $Expires_Date_Add eq '0000-00-00') {
 		$Expires_Date_Add = 'not expire';
 	}
 	else {
@@ -335,7 +335,7 @@ sub html_edit_user {
 
 		my $Checked;
 		my $Disabled;
-		if ($Expires_Extract eq '0000-00-00') {
+		if (!$Expires_Extract || $Expires_Extract eq '0000-00-00') {
 			$Checked = '';
 			$Disabled = 'disabled';
 			$Expires_Extract = strftime "%Y-%m-%d", localtime;
@@ -465,7 +465,7 @@ sub edit_user {
 	### / Revoke Rule Approval ###
 
 	if ($Expires_Toggle_Edit ne 'on') {
-		$Expires_Date_Edit = '0000-00-00';
+		$Expires_Date_Edit = undef;
 	}
 
 	my $Update_User = $DB_Connection->prepare("UPDATE `users` SET
@@ -478,7 +478,7 @@ sub edit_user {
 	$Update_User->execute($User_Name_Edit, $Expires_Date_Edit, $Active_Edit, $User_Name, $Edit_User_Post);
 
 	# Audit Log
-	if ($Expires_Date_Edit eq '0000-00-00') {
+	if (!$Expires_Date_Edit || $Expires_Date_Edit eq '0000-00-00') {
 		$Expires_Date_Edit = 'does not expire';
 	}
 	else {
@@ -572,7 +572,7 @@ sub delete_user {
 	while (( my $Username, my $Expires, my $Active ) = $Select_Users->fetchrow_array() )
 	{
 
-		if ($Expires eq '0000-00-00') {
+		if (!$Expires || $Expires eq '0000-00-00') {
 			$Expires = 'does not expire';
 		}
 		else {
@@ -924,7 +924,7 @@ sub html_output {
 
 		my $Expires_Epoch;
 		my $Today_Epoch = time;
-		if ($Expires_Clean =~ /^0000-00-00$/) {
+		if (!$Expires_Clean || $Expires_Clean =~ /^0000-00-00$/) {
 			$Expires = 'Never';
 		}
 		else {

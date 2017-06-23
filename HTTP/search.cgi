@@ -98,7 +98,7 @@ while ( my @Search = $Search_Host_Groups->fetchrow_array() ) {
 
 	my $Expires_Epoch;
 	my $Today_Epoch = time;
-	if ($Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
+	if ($Expires && $Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
 		$Expires = '<br /><span style=\'color: #BDBDBD\'>Expired</span>';
 	}
 	else {
@@ -139,7 +139,7 @@ while ( my @Search = $Search_User_Groups->fetchrow_array() ) {
 
 	my $Expires_Epoch;
 	my $Today_Epoch = time;
-	if ($Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
+	if ($Expires && $Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
 		$Expires = '<br /><span style=\'color: #BDBDBD\'>Expired</span>';
 	}
 	else {
@@ -180,7 +180,7 @@ while ( my @Search = $Search_Command_Groups->fetchrow_array() ) {
 
 	my $Expires_Epoch;
 	my $Today_Epoch = time;
-	if ($Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
+	if ($Expires && $Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
 		$Expires = '<br /><span style=\'color: #BDBDBD\'>Expired</span>';
 	}
 	else {
@@ -220,7 +220,7 @@ while ( my @Search = $Search_Hosts->fetchrow_array() ) {
 
 	my $Expires_Epoch;
 	my $Today_Epoch = time;
-	if ($Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
+	if ($Expires && $Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
 		$Expires = '<br /><span style=\'color: #BDBDBD\'>Expired</span>';
 	}
 	else {
@@ -260,7 +260,7 @@ while ( my @Search = $Search_Users->fetchrow_array() ) {
 
 	my $Expires_Epoch;
 	my $Today_Epoch = time;
-	if ($Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
+	if ($Expires && $Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
 		$Expires = '<br /><span style=\'color: #BDBDBD\'>Expired</span>';
 	}
 	else {
@@ -303,7 +303,7 @@ while ( my @Search = $Search_Commands->fetchrow_array() ) {
 
 	my $Expires_Epoch;
 	my $Today_Epoch = time;
-	if ($Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
+	if ($Expires && $Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
 		$Expires = '<br /><span style=\'color: #BDBDBD\'>Expired</span>';
 	}
 	else {
@@ -343,7 +343,7 @@ while ( my @Search = $Search_Rules->fetchrow_array() ) {
 
 	my $Expires_Epoch;
 	my $Today_Epoch = time;
-	if ($Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
+	if ($Expires && $Expires ne '0000-00-00' && $Expires_Epoch < $Today_Epoch) {
 		$Expires = '<br /><span style=\'color: #BDBDBD\'>Expired</span>';
 	}
 	else {
