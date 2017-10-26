@@ -127,11 +127,16 @@ print <<ENDHTML;
 					<li><a href="/Resources/The_Machine_Manual.pdf">System Manual</a></li>
 				</ul>
 			</li>
-			<li><a href="/#"><span>IP</span></a>
+			<li><a href="/#"><span>Hosts &amp; Services</span></a>
 				<ul>
 					<li><a href="/IP/host-types.cgi">Host Types</a></li>
 					<li><a href="/IP/host-groups.cgi">Host Groups</a></li>
 					<li><a href="/IP/hosts.cgi">Hosts</a></li>
+					<li><a href="/IP/services.cgi">Services</a></li>
+				</ul>
+			</li>
+			<li><a href="/#"><span>IP</span></a>
+				<ul>
 					<li><a href="/IP/ipv4-blocks.cgi">IPv4 Blocks</a></li>
 					<li><a href="/IP/ipv6-blocks.cgi">IPv6 Blocks</a></li>
 					<li><a href="/IP/ipv4-assignments.cgi">IPv4 Assignments</a></li>
