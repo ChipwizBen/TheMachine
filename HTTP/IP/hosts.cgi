@@ -798,7 +798,7 @@ sub html_output {
 
 	my $Rows = $Select_Hosts->rows();
 
-	$Table->addRow( "ID", "Host Name", "Type", "Assigned Blocks", "Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->addRow( "ID", "Host Name", "Type", "Assigned Blocks", "Services Provided", "Last Modified", "Modified By", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Host_Row_Count=1;
@@ -901,11 +901,38 @@ sub html_output {
 		
 		if ($IPv4_Blocks && $IPv6_Blocks) {$IPv4_Blocks = $IPv4_Blocks . '<br />'}
 
+		## Services
+		my $Select_Service_Links = $DB_Connection->prepare("SELECT `service_id`, `type`
+			FROM `lnk_services_to_hosts`
+			WHERE `host_id` = ?");
+		$Select_Service_Links->execute($DBID_Clean);
+
+		my $Services;
+		while (my ($Service_ID, $Type) = $Select_Service_Links->fetchrow_array() ) {
+
+			my $Select_Service_Name = $DB_Connection->prepare("SELECT `service`
+				FROM `services`
+				WHERE `id` = ?");
+			$Select_Service_Name->execute($Service_ID);
+
+			while (my ($Service) = $Select_Service_Name->fetchrow_array() ) {
+
+				if ($Type == 0) {$Type = '(<span style="color: #FFC600;">Required</span>)';}
+				elsif ($Type == 1) {$Type = '(<span style="color: #00FF00;">HA</span>)';}
+
+				$Services = $Services . "<a href='/IP/services.cgi?ID_Filter=$Service_ID'>$Service $Type</a>,";
+
+			}
+		}
+
+		$Services =~ s/,$//;
+
 		$Table->addRow(
 			"$DBID",
 			"$Host_Name",
 			"$Type",
 			"${IPv4_Blocks}${IPv6_Blocks}",
+			"$Services",
 			"$Last_Modified",
 			"$Modified_By",
 			"<a href='/IP/hosts.cgi?Edit_Host=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Host ID $DBID_Clean\" ></a>",
@@ -918,13 +945,13 @@ sub html_output {
 
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(5, '110px');
 	$Table->setColWidth(6, '110px');
-	$Table->setColWidth(7, '1px');
+	$Table->setColWidth(7, '110px');
 	$Table->setColWidth(8, '1px');
+	$Table->setColWidth(9, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (5..8) {
+	for (6..9) {
 		$Table->setColAlign($_, 'center');
 	}
 

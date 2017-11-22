@@ -10,13 +10,14 @@ CREATE TABLE `TheMachine`.`services` (
 CREATE TABLE `TheMachine`.`service_dependency` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `service_id` INT(11) NOT NULL,
-  `dependent_service_id` INT(11) NOT NULL,
-  `dependent_host_id` INT(11) NOT NULL,
+  `dependent_service_id` INT(11),
   PRIMARY KEY (`id`));
 
-CREATE TABLE `TheMachine`.`services_to_hosts_lnk` (
+CREATE TABLE `TheMachine`.`lnk_services_to_hosts` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `service_id` INT(11) NOT NULL,
   `host_id` INT(11) NOT NULL,
+  `type` INT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`));
+
 
