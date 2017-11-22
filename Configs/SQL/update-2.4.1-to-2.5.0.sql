@@ -20,4 +20,6 @@ CREATE TABLE `TheMachine`.`lnk_services_to_hosts` (
   `type` INT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`));
 
+ALTER TABLE `TheMachine`.`reverse_proxy` 
+ADD COLUMN `oscp_stapling` INT(1) NOT NULL DEFAULT 0 AFTER `hsts`;
 

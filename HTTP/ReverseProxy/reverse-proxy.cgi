@@ -37,6 +37,7 @@ my $Add_Reverse_Proxy = $CGI->param("Add_Reverse_Proxy");
 		my $RC4_Add = $CGI->param("RC4_Add");
 		my $Enforce_SSL_Add = $CGI->param("Enforce_SSL_Add");
 			my $HSTS_Add = $CGI->param("HSTS_Add");
+			my $OSCP_Stapling_Add = $CGI->param("OSCP_Stapling_Add");
 	my $X_Frame_Options_Add = $CGI->param("X_Frame_Options_Add");
 	my $X_XSS_Protection_Add = $CGI->param("X_XSS_Protection_Add");
 	my $X_Content_Type_Options_Add = $CGI->param("X_Content_Type_Options_Add");
@@ -67,6 +68,7 @@ my $Edit_Reverse_Proxy = $CGI->param("Edit_Reverse_Proxy");
 		my $RC4_Edit = $CGI->param("RC4_Edit");
 		my $Enforce_SSL_Edit = $CGI->param("Enforce_SSL_Edit");
 			my $HSTS_Edit = $CGI->param("HSTS_Edit");
+			my $OSCP_Stapling_Edit = $CGI->param("OSCP_Stapling_Edit");
 	my $X_Frame_Options_Edit = $CGI->param("X_Frame_Options_Edit");
 	my $X_XSS_Protection_Edit = $CGI->param("X_XSS_Protection_Edit");
 	my $X_Content_Type_Options_Edit = $CGI->param("X_Content_Type_Options_Edit");
@@ -228,6 +230,7 @@ function SSL_Toggle(value) {
 		document.getElementById('Enforce').style.display='table-row';
 		document.getElementById('PFS').style.display='table-row';
 		document.getElementById('RC4').style.display='table-row';
+		document.getElementById('OSCP_Stapling').style.display='table-row';
 	}
 	else if(value=="Off") {
 		document.getElementById('Cert').style.display='none';
@@ -236,6 +239,7 @@ function SSL_Toggle(value) {
 		document.getElementById('Enforce').style.display='none';
 		document.getElementById('PFS').style.display='none';
 		document.getElementById('RC4').style.display='none';
+		document.getElementById('OSCP_Stapling').style.display='none';
 	}
 	else {
 		document.getElementById('Cert').style.display='none';
@@ -244,6 +248,7 @@ function SSL_Toggle(value) {
 		document.getElementById('Enforce').style.display='none';
 		document.getElementById('PFS').style.display='none';
 		document.getElementById('RC4').style.display='none';
+		document.getElementById('OSCP_Stapling').style.display='none';
 	}
 }
 function Enforce_SSL_Toggle(value) {
@@ -319,6 +324,15 @@ function Enforce_SSL_Toggle(value) {
 			<select name='RC4_Add'">
 				<option value='0'>Off (Recommended)</option>
 				<option value='1'>On (Not Safe)</option>
+			</select>
+		</td>
+	</tr>
+	<tr style="display: none;" id="OSCP_Stapling">
+		<td style="text-align: right;">OSCP Stapling:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='OSCP_Stapling_Add'">
+				<option value='1'>On</option>
+				<option value='0'>Off</option>
 			</select>
 		</td>
 	</tr>
@@ -424,6 +438,13 @@ sub add_reverse_proxy {
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
+	if (!$Transfer_Log_Add) {$Transfer_Log_Add = $Default_Transfer_Log;}
+	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log;}
+	if (!$Certificate_Add) {$Certificate_Add = $Default_SSL_Certificate_File;}
+	if (!$Certificate_Key_Add) {$Certificate_Key_Add = $Default_SSL_Certificate_Key_File;}
+	if (!$CA_Certificate_Add) {$CA_Certificate_Add = $Default_SSL_CA_Certificate_File;}
+	if ($Enforce_SSL_Add == 0) {$HSTS_Add = '0'};
+
 	if ($SSL_Toggle_Add ne 'On') {
 		$Certificate_Add = '';
 		$Certificate_Key_Add = '';
@@ -432,11 +453,8 @@ sub add_reverse_proxy {
 		$RC4_Add = 0;
 		$Enforce_SSL_Add = 0;
 		$HSTS_Add = 0;
+		$OSCP_Stapling_Add = 0;
 	}
-
-	if (!$Transfer_Log_Add) {$Transfer_Log_Add = $Default_Transfer_Log;}
-	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log;}
-	if ($Enforce_SSL_Add == 0) {$HSTS_Add = '0'};
 
 	my $Reverse_Proxy_Insert = $DB_Connection->prepare("INSERT INTO `reverse_proxy` (
 		`server_name`,
@@ -451,6 +469,7 @@ sub add_reverse_proxy {
 		`rc4`,
 		`enforce_ssl`,
 		`hsts`,
+		`oscp_stapling`,
 		`frame_options`,
 		`xss_protection`,
 		`content_type_options`,
@@ -463,14 +482,14 @@ sub add_reverse_proxy {
 	VALUES (
 		?, ?, ?, ?,
 		?, ?, ?, ?,
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?, ?, ?, ?,
 		?, ?, ?, ?
 	)");
 
 	$Reverse_Proxy_Insert->execute($Server_Name_Add, $Source_Add, $Destination_Add, $Transfer_Log_Add, 
 	$Error_Log_Add, $Certificate_Add, $Certificate_Key_Add, $CA_Certificate_Add, 
-	$PFS_Add, $RC4_Add, $Enforce_SSL_Add, $HSTS_Add, 
+	$PFS_Add, $RC4_Add, $Enforce_SSL_Add, $HSTS_Add, $OSCP_Stapling_Add,
 	$X_Frame_Options_Add, $X_XSS_Protection_Add, $X_Content_Type_Options_Add, $Content_Security_Policy_Add,
 	$X_Permitted_Cross_Domain_Policies_Add, $X_Powered_By_Add, $Custom_Attributes_Add, $User_Name);
 
@@ -495,7 +514,7 @@ sub html_edit_reverse_proxy {
 
 	my $Select_Reverse_Proxy = $DB_Connection->prepare("SELECT `server_name`, `proxy_pass_source`,
 		`proxy_pass_destination`, `transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, 
-		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,
+		`ssl_ca_certificate_file`, `pfs`, `rc4`, `enforce_ssl`, `hsts`, `oscp_stapling`, `frame_options`, `xss_protection`, `content_type_options`,
 		`content_security_policy`, `permitted_cross_domain_policies`, `powered_by`, `custom_attributes`
 		FROM `reverse_proxy`
 		WHERE `id` = ?");
@@ -516,13 +535,14 @@ sub html_edit_reverse_proxy {
 		my $RC4 = $Reverse_Proxy_Values[9];
 		my $Enforce_SSL = $Reverse_Proxy_Values[10];
 		my $HSTS = $Reverse_Proxy_Values[11];
-		my $X_Frame_Options = $Reverse_Proxy_Values[12];
-		my $X_XSS_Protection = $Reverse_Proxy_Values[13];
-		my $X_Content_Type_Options = $Reverse_Proxy_Values[14];
-		my $Content_Security_Policy = $Reverse_Proxy_Values[15];
-		my $X_Permitted_Cross_Domain_Policies = $Reverse_Proxy_Values[16];
-		my $X_Powered_By = $Reverse_Proxy_Values[17];
-		my $Custom_Attributes = $Reverse_Proxy_Values[18];
+		my $OSCP_Stapling = $Reverse_Proxy_Values[12];
+		my $X_Frame_Options = $Reverse_Proxy_Values[13];
+		my $X_XSS_Protection = $Reverse_Proxy_Values[14];
+		my $X_Content_Type_Options = $Reverse_Proxy_Values[15];
+		my $Content_Security_Policy = $Reverse_Proxy_Values[16];
+		my $X_Permitted_Cross_Domain_Policies = $Reverse_Proxy_Values[17];
+		my $X_Powered_By = $Reverse_Proxy_Values[18];
+		my $Custom_Attributes = $Reverse_Proxy_Values[19];
 
 		my $SSL_Display;
 		my $SSL_Toggle;
@@ -570,6 +590,7 @@ function SSL_Toggle(value) {
 		document.getElementById('Enforce').style.display='table-row';
 		document.getElementById('PFS').style.display='table-row';
 		document.getElementById('RC4').style.display='table-row';
+		document.getElementById('OSCP_Stapling').style.display='table-row';
 	}
 	else if(value=="Off") {
 		document.getElementById('Cert').style.display='none';
@@ -578,6 +599,7 @@ function SSL_Toggle(value) {
 		document.getElementById('Enforce').style.display='none';
 		document.getElementById('PFS').style.display='none';
 		document.getElementById('RC4').style.display='none';
+		document.getElementById('OSCP_Stapling').style.display='none';
 	}
 	else {
 		document.getElementById('Cert').style.display='$SSL_Display';
@@ -586,6 +608,7 @@ function SSL_Toggle(value) {
 		document.getElementById('Enforce').style.display='$SSL_Display';
 		document.getElementById('PFS').style.display='$Enforce_SSL_Display';
 		document.getElementById('RC4').style.display='$Enforce_SSL_Display';
+		document.getElementById('OSCP_Stapling').style.display='$Enforce_SSL_Display';
 	}
 }
 function Enforce_SSL_Toggle(value) {
@@ -677,6 +700,25 @@ ENDHTML
 	else {
 		print "<option value='0'>Off (Recommended)</option>
 				<option value='1' selected>On (Not Safe)</option>";
+	}
+
+print <<ENDHTML;
+			</select>
+		</td>
+	</tr>
+	<tr style="display: $SSL_Display;" id="OSCP_Stapling">
+		<td style="text-align: right;">OSCP Stapling:</td>
+		<td colspan="2" style="text-align: left;">
+			<select name='OSCP_Stapling_Edit'">
+ENDHTML
+
+	if ($OSCP_Stapling) {
+		print "<option value='0'>Off</option>
+				<option value='1' selected>On</option>";
+	}
+	else {
+		print "<option value='0' selected>Off</option>
+				<option value='1'>On</option>";
 	}
 
 print <<ENDHTML;
@@ -871,6 +913,13 @@ sub edit_reverse_proxy {
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
+	if (!$Transfer_Log_Edit) {$Transfer_Log_Edit = $Default_Transfer_Log;}
+	if (!$Error_Log_Edit) {$Error_Log_Edit = $Default_Error_Log;}
+	if (!$Certificate_Edit) {$Certificate_Edit = $Default_SSL_Certificate_File;}
+	if (!$Certificate_Key_Edit) {$Certificate_Key_Edit = $Default_SSL_Certificate_Key_File;}
+	if (!$CA_Certificate_Edit) {$CA_Certificate_Edit = $Default_SSL_CA_Certificate_File;}
+	if ($Enforce_SSL_Edit == 0) {$HSTS_Edit = '0'};
+
 	if ($SSL_Toggle_Edit ne 'On') {
 		$Certificate_Edit = '';
 		$Certificate_Key_Edit = '';
@@ -879,11 +928,8 @@ sub edit_reverse_proxy {
 		$RC4_Edit = 0;
 		$Enforce_SSL_Edit = 0;
 		$HSTS_Edit = 0;
+		$OSCP_Stapling_Edit = 0;
 	}
-
-	if (!$Transfer_Log_Edit) {$Transfer_Log_Edit = $Default_Transfer_Log;}
-	if (!$Error_Log_Edit) {$Error_Log_Edit = $Default_Error_Log;}
-	if ($Enforce_SSL_Edit == 0) {$HSTS_Edit = '0'};
 
 	my $Update_Reverse_Proxy = $DB_Connection->prepare("UPDATE `reverse_proxy` SET
 		`server_name` = ?,
@@ -898,6 +944,7 @@ sub edit_reverse_proxy {
 		`rc4` = ?,
 		`enforce_ssl` = ?,
 		`hsts` = ?,
+		`oscp_stapling` = ?,
 		`frame_options` = ?,
 		`xss_protection` = ?,
 		`content_type_options` = ?,
@@ -909,7 +956,7 @@ sub edit_reverse_proxy {
 		WHERE `id` = ?");
 
 	$Update_Reverse_Proxy->execute($Server_Name_Edit, $Source_Edit, $Destination_Edit, $Transfer_Log_Edit, $Error_Log_Edit,
-		$Certificate_Edit, $Certificate_Key_Edit, $CA_Certificate_Edit, $PFS_Edit, $RC4_Edit, $Enforce_SSL_Edit, $HSTS_Edit,
+		$Certificate_Edit, $Certificate_Key_Edit, $CA_Certificate_Edit, $PFS_Edit, $RC4_Edit, $Enforce_SSL_Edit, $HSTS_Edit, $OSCP_Stapling_Edit,
 		$X_Frame_Options_Edit, $X_XSS_Protection_Edit, $X_Content_Type_Options_Edit, $Content_Security_Policy_Edit,
 		$X_Permitted_Cross_Domain_Policies_Edit, $X_Powered_By_Edit, $Custom_Attributes_Edit, $User_Name, $Edit_Reverse_Proxy_Post);
 
@@ -1017,7 +1064,7 @@ sub html_view_reverse_proxy {
 
 	my $Record_Query = $DB_Connection->prepare("SELECT `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
 	`transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_ca_certificate_file`,
-	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
+	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `oscp_stapling`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
 	`permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
 	FROM `reverse_proxy`
 	WHERE `id` = ?");
@@ -1038,16 +1085,17 @@ sub html_view_reverse_proxy {
 		my $RC4 = $Proxy_Entry[9];
 		my $Enforce_SSL = $Proxy_Entry[10];
 		my $HSTS = $Proxy_Entry[11];
-		my $Frame_Options = $Proxy_Entry[12];
-		my $XSS_Protection = $Proxy_Entry[13];
-		my $Content_Type_Options = $Proxy_Entry[14];
-		my $Content_Security_Policy = $Proxy_Entry[15];
-		my $Permitted_Cross_Domain_Policies = $Proxy_Entry[16];
-		my $Powered_By = $Proxy_Entry[17];
-		my $Custom_Attributes = $Proxy_Entry[18];
+		my $OSCP_Stapling = $Proxy_Entry[12];
+		my $Frame_Options = $Proxy_Entry[13];
+		my $XSS_Protection = $Proxy_Entry[14];
+		my $Content_Type_Options = $Proxy_Entry[15];
+		my $Content_Security_Policy = $Proxy_Entry[16];
+		my $Permitted_Cross_Domain_Policies = $Proxy_Entry[17];
+		my $Powered_By = $Proxy_Entry[18];
+		my $Custom_Attributes = $Proxy_Entry[19];
 			$Custom_Attributes =~ s/\n/\n    /g;
-		my $Last_Modified = $Proxy_Entry[19];
-		my $Modified_By = $Proxy_Entry[20];
+		my $Last_Modified = $Proxy_Entry[20];
+		my $Modified_By = $Proxy_Entry[21];
 
 		my $ServerAliases;
 		my @ServerAliases = split(',', $Server_Name);
@@ -1129,6 +1177,12 @@ sub html_view_reverse_proxy {
 				$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000"';
 			}
 
+			my $OSCP_Stapling_Cache;
+			if ($OSCP_Stapling) {
+				$OSCP_Stapling = 'SSLUseStapling on';
+				$OSCP_Stapling_Cache = 'SSLStaplingCache shmcb:/tmp/stapling_cache(128000)';
+			} else {$OSCP_Stapling = ''}
+
 			$Reverse_Proxy_HTML = "
 <VirtualHost *:80>
     $Server_Names
@@ -1136,6 +1190,7 @@ sub html_view_reverse_proxy {
 </VirtualHost>
 
 <IfModule mod_ssl.c>
+$OSCP_Stapling_Cache
 <VirtualHost *:443>
     $Server_Names
 
@@ -1147,6 +1202,7 @@ sub html_view_reverse_proxy {
 
     SSLEngine                On
     $HSTS_Header
+    $OSCP_Stapling
     $Headers
     SSLProtocol              ALL -SSLv2 -SSLv3
     $CipherOrder

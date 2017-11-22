@@ -103,7 +103,7 @@ sub write_reverse_proxy {
 
 	my $Record_Query = $DB_Connection->prepare("SELECT `id`, `server_name`, `proxy_pass_source`, `proxy_pass_destination`, 
 	`transfer_log`, `error_log`, `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_ca_certificate_file`,
-	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
+	`pfs`, `rc4`, `enforce_ssl`, `hsts`, `oscp_stapling`, `frame_options`, `xss_protection`, `content_type_options`,	`content_security_policy`, 
 	`permitted_cross_domain_policies`, `powered_by`, `custom_attributes`, `last_modified`, `modified_by`
 	FROM `reverse_proxy`
 	WHERE `active` = '1'
@@ -127,16 +127,17 @@ sub write_reverse_proxy {
 		my $RC4 = $Proxy_Entry[10];
 		my $Enforce_SSL = $Proxy_Entry[11];
 		my $HSTS = $Proxy_Entry[12];
-		my $Frame_Options = $Proxy_Entry[13];
-		my $XSS_Protection = $Proxy_Entry[14];
-		my $Content_Type_Options = $Proxy_Entry[15];
-		my $Content_Security_Policy = $Proxy_Entry[16];
-		my $Permitted_Cross_Domain_Policies = $Proxy_Entry[17];
-		my $Powered_By = $Proxy_Entry[18];
-		my $Custom_Attributes = $Proxy_Entry[19];
+		my $OSCP_Stapling = $Proxy_Entry[13];
+		my $Frame_Options = $Proxy_Entry[14];
+		my $XSS_Protection = $Proxy_Entry[15];
+		my $Content_Type_Options = $Proxy_Entry[16];
+		my $Content_Security_Policy = $Proxy_Entry[17];
+		my $Permitted_Cross_Domain_Policies = $Proxy_Entry[18];
+		my $Powered_By = $Proxy_Entry[19];
+		my $Custom_Attributes = $Proxy_Entry[20];
 			$Custom_Attributes =~ s/\n/\n    /g;
-		my $Last_Modified = $Proxy_Entry[20];
-		my $Modified_By = $Proxy_Entry[21];
+		my $Last_Modified = $Proxy_Entry[21];
+		my $Modified_By = $Proxy_Entry[22];
 
 		my $ServerAliases;
 		my @ServerAliases = split(',', $Server_Name);
@@ -248,6 +249,12 @@ sub write_reverse_proxy {
 				$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000"';
 			}			
 
+			my $OSCP_Stapling_Cache;
+			if ($OSCP_Stapling) {
+				$OSCP_Stapling = 'SSLUseStapling on';
+				$OSCP_Stapling_Cache = 'SSLStaplingCache shmcb:/tmp/stapling_cache(128000)';
+			} else {$OSCP_Stapling = ''}
+
 			print Reverse_Proxy_Config <<RP_EOF;
 <VirtualHost *:80>
     $Server_Names
@@ -255,6 +262,7 @@ sub write_reverse_proxy {
 </VirtualHost>
 
 <IfModule mod_ssl.c>
+$OSCP_Stapling_Cache
 <VirtualHost *:443>
     $Server_Names
 
@@ -270,6 +278,8 @@ sub write_reverse_proxy {
 
     SSLEngine			On
     $HSTS_Header
+    $OSCP_Stapling
+
     $Headers
     SSLProtocol			ALL -SSLv2 -SSLv3
     $CipherOrder
