@@ -1,3 +1,6 @@
+2.5.0   - Introduced Service dependency management.
+        - Added OSCP Stapling option to Reverse Proxy.
+        - Fixed a couple of minor bugs. 
 2.4.1   - Fixed an issue caused by MySQL behaviour changes on null dates. Changed several inputs to match.
         - Enabled Hosts to be set to expire or inactive for sudo inclusion.
         - Fixed a bug where hosts that used to have sudo managed that was later turned off would not disappear from the sudo list.

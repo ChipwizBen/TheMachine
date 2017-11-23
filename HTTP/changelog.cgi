@@ -39,6 +39,11 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.5.0
+	$Table->addRow('2.5.0', 'Introduced Service dependency management.');
+	$Table->addRow('', 'Added OSCP Stapling option to Reverse Proxy.');
+	$Table->addRow('', 'Fixed a couple of minor bugs.');
+	$Table->addRow('<hr />', '');
 
 	$Table->addRow('2.4.1', 'Fixed an issue caused by MySQL behaviour changes on null dates. Changed several inputs to match.');
 	$Table->addRow('', 'Enabled Hosts to be set to expire or inactive for sudo inclusion.');

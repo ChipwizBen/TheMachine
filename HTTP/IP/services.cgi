@@ -464,7 +464,7 @@ function Expire_Toggle() {
 		<td style="text-align: left;"><input type="radio" name="Active_Add" value="0"> No</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Add Service:</td>
+		<td style="text-align: right;">Add Service Dependency:</td>
 		<td></td>
 		<td colspan='3'>
 			<select name='Add_Service_Dependency_Temp_New' onchange='this.form.submit()' style="width: 300px">
@@ -511,7 +511,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Add Host Sets:</td>
+		<td style="text-align: right;">Add Host Set Dependency:</td>
 		<td></td>
 		<td colspan='3'>
 			<select name='Add_Host_Set_Temp_New' onchange='this.form.submit()' style="width: 300px">
@@ -550,7 +550,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Add HA Hosts:</td>
+		<td style="text-align: right;">Add HA Host Dependency:</td>
 		<td></td>
 		<td colspan='3'>
 			<select name='Add_Host_HA_Temp_New' onchange='this.form.submit()' style="width: 300px">
@@ -589,7 +589,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Services Depended On:</td>
+		<td style="text-align: right;">Service Dependencies:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
@@ -612,7 +612,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Host Sets:</td>
+		<td style="text-align: right;">Host Set Dependencies:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
@@ -637,7 +637,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">HA Hosts:</td>
+		<td style="text-align: right;">HA Host Dependencies:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
@@ -670,6 +670,15 @@ print <<ENDHTML;
 <input type='hidden' name='Add_Service_Dependency_Temp_Existing' value='$Add_Service_Dependency_Temp_Existing'>
 <input type='hidden' name='Add_Host_Set_Temp_Existing' value='$Add_Host_Set_Temp_Existing'>
 <input type='hidden' name='Add_Host_HA_Temp_Existing' value='$Add_Host_HA_Temp_Existing'>
+
+<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
+	<li>Service dependencies are the services that this service depends on to function.</li>
+	<li>Host dependencies are the hosts that this service will run on.</li>
+	<li>A Host Set is a set of hosts that deliver the service as a group. All of the hosts must be online for the service to be delivered. 
+	A typical Host Set example might be a single service with components of that service on individual hosts to spread load. e.g. Most bloated server software from Microsoft.</li>
+	<li>A HA Host is a High Availability host that is able to deliver this service independent of the failure of other HA hosts. 
+	A typical HA Host example might be a DNS server where two DNS servers provide service redundancy should one fail.</li>
+</ul>
 
 <hr width="50%">
 <div style="text-align: center"><input type=submit name='Add_Service_Final' value='Add Service'></div>
@@ -1144,7 +1153,7 @@ ENDHTML
 print <<ENDHTML;
 	</tr>
 	<tr>
-		<td style="text-align: right;">Add Service:</td>
+		<td style="text-align: right;">Add Service Dependency:</td>
 		<td></td>
 		<td colspan='3'>
 			<select name='Edit_Service_Dependency_Temp_New' onchange='this.form.submit()' style="width: 300px">
@@ -1191,7 +1200,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Add Host Sets:</td>
+		<td style="text-align: right;">Add Host Set Dependency:</td>
 		<td></td>
 		<td colspan='3'>
 			<select name='Edit_Host_Set_Temp_New' onchange='this.form.submit()' style="width: 300px">
@@ -1230,7 +1239,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Add HA Hosts:</td>
+		<td style="text-align: right;">Add HA Host Dependency:</td>
 		<td></td>
 		<td colspan='3'>
 			<select name='Edit_Host_HA_Temp_New' onchange='this.form.submit()' style="width: 300px">
@@ -1269,7 +1278,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Services Depended On:</td>
+		<td style="text-align: right;">Service Dependencies:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
@@ -1292,7 +1301,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">Host Sets:</td>
+		<td style="text-align: right;">Host Set Dependencies:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
@@ -1317,7 +1326,7 @@ print <<ENDHTML;
 		</td>
 	</tr>
 	<tr>
-		<td style="text-align: right;">HA Hosts:</td>
+		<td style="text-align: right;">HA Host Dependencies:</td>
 		<td></td>
 		<td colspan='3' style="text-align: left;">
 ENDHTML
@@ -1350,6 +1359,15 @@ print <<ENDHTML;
 <input type='hidden' name='Edit_Service_Dependency_Temp_Existing' value='$Edit_Service_Dependency_Temp_Existing'>
 <input type='hidden' name='Edit_Host_Set_Temp_Existing' value='$Edit_Host_Set_Temp_Existing'>
 <input type='hidden' name='Edit_Host_HA_Temp_Existing' value='$Edit_Host_HA_Temp_Existing'>
+
+<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
+	<li>Service dependencies are the services that this service depends on to function.</li>
+	<li>Host dependencies are the hosts that this service will run on.</li>
+	<li>A Host Set is a set of hosts that deliver the service as a group. All of the hosts must be online for the service to be delivered. 
+	A typical Host Set example might be a single service with components of that service on individual hosts to spread load. e.g. Most bloated server software from Microsoft.</li>
+	<li>A HA Host is a High Availability host that is able to deliver this service independent of the failure of other HA hosts. 
+	A typical HA Host example might be a DNS server where two DNS servers provide service redundancy should one fail.</li>
+</ul>
 
 <hr width="50%">
 <div style="text-align: center"><input type=submit name='Edit_Service_Final' value='Edit Service'></div>
@@ -1613,45 +1631,6 @@ sub delete_service {
 
 } # sub delete_service
 
-sub html_show_links {
-
-	my $Counter;
-
-	my $Table = new HTML::Table(
-		-cols=>4,
-                -align=>'center',
-                -border=>0,
-                -rules=>'cols',
-                -evenrowclass=>'tbeven',
-                -oddrowclass=>'tbodd',
-                -width=>'90%',
-                -spacing=>0,
-                -padding=>1
-	);
-
-	$Table->addRow( "#", "Category", "Name", "Status", "View" );
-	$Table->setRowClass (1, 'tbrow1');
-
-if ($Counter eq undef) {$Counter = 0};
-
-print <<ENDHTML;
-
-<div id="wide-popup-box">
-<a href="/IP/services.cgi">
-<div id="blockclosebutton">
-</div>
-</a>
-
-<h2 style="text-align: center; font-weight: bold;">Items linked to $Show_Links_Name</h2>
-
-<p>There are <span style="color: #00FF00;">$Counter</span> items linked to $Show_Links_Name.</p>
-
-$Table
-
-ENDHTML
-
-} # sub html_show_links
-
 sub html_notes {
 
 	my $Table = new HTML::Table(
@@ -1824,7 +1803,7 @@ sub html_chart {
 
 			my $Select_Service_Depends_On = $DB_Connection->prepare("SELECT `service_id`
 				FROM `service_dependency`
-					WHERE `dependent_service_id` LIKE ?");
+				WHERE `dependent_service_id` LIKE ?");
 
 			$Select_Service_Depends_On->execute($Dependency_ID);
 		
@@ -1853,8 +1832,8 @@ sub html_chart {
 		$Random_Colour = '#' . $Random_Colour;
 
 		my $Select_Service_Name = $DB_Connection->prepare("SELECT `service`
-				FROM `services`
-				WHERE `id` LIKE ?");
+			FROM `services`
+			WHERE `id` LIKE ?");
 		$Select_Service_Name->execute($Dependency_ID);
 		my $Service_Name = $Select_Service_Name->fetchrow_array();
 
@@ -1863,7 +1842,7 @@ sub html_chart {
 
 		my $Select_Service_Depends_On = $DB_Connection->prepare("SELECT `service_id`
 			FROM `service_dependency`
-				WHERE `dependent_service_id` LIKE ?");
+			WHERE `dependent_service_id` LIKE ?");
 
 		$Select_Service_Depends_On->execute($Dependency_ID);
 
@@ -1928,18 +1907,18 @@ sub html_chart {
 					text => "$Service_Name",
 				},
 			]);
-			$Graph -> add_node(name => "$Dependency_Service_Name", URL => "/IP/services.cgi?Show_Chart=$Dependency_Service_ID", color => $Random_Colour, label => [
+			$Graph -> add_node(name => "$Dependency_Service_Name", URL => "/IP/services.cgi?Show_Chart=$Dependency_Service_ID", label => [
 				{
 					text => "$Dependency_Service_Name",
 				},
 			]);
 
-			$Graph -> add_edge(from => "$Service_Name", to => "$Dependency_Service_Name", minlen => 1);
+			$Graph -> add_edge(color => $Random_Colour, from => "$Service_Name", to => "$Dependency_Service_Name", minlen => 1);
 
 		}
 	}
 
-	$Graph->run();
+	$Graph->run(driver => '/usr/bin/dot', timeout => '60');
 	my $SVG = $Graph->dot_output();
 	#$SVG = "<svg zoomAndPan='magnify' fill-opacity='0.8' viewBox='0 0 2000 1500'>$SVG</svg>";
 	#$SVG = "<svgfill-opacity='0.8'>$SVG</svg>";
@@ -2154,7 +2133,7 @@ use Algorithm::Dependency::Source::HoA;
 		}
 	}
 
-	$Graph->run();
+	$Graph->run(driver => '/usr/bin/dot', timeout => '60');
 	#my $SVG = $Graph->as_svg;
 	my $SVG = $Graph->dot_output();
 	#$SVG = "<svg zoomAndPan='magnify' fill-opacity='0.8' viewBox='0 0 2000 1500'>$SVG</svg>";
@@ -2203,7 +2182,7 @@ sub add_note {
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>14,
+		-cols=>13,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -2237,7 +2216,7 @@ sub html_output {
 
 	my $Rows = $Select_Services->rows();
 
-	$Table->addRow( "ID", "Service Name", "Required Services", "Required Service Provider Hosts", "HA Service Provider Hosts", "Expires", "Active", "Last Modified", "Modified By", "Show Deps.", "Show Links", "Notes", "Edit", "Delete" );
+	$Table->addRow( "ID", "Service Name", "Required Services", "Required Service Provider Hosts", "HA Service Provider Hosts", "Expires", "Active", "Last Modified", "Modified By", "Show Deps.", "Notes", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Service_Row_Count=1;
@@ -2434,7 +2413,6 @@ sub html_output {
 			"$Last_Modified",
 			"$Modified_By",
 			"<a href='/IP/services.cgi?Show_Chart=$DBID_Clean'><img src=\"/Resources/Images/graph.png\" alt=\"Dependencies of Service ID $DBID_Clean\" ></a>",
-			"<a href='/IP/services.cgi?Show_Links=$DBID_Clean&Show_Links_Name=$DB_Service_Name_Clean'><img src=\"/Resources/Images/linked.png\" alt=\"Linked Objects to Service ID $DBID_Clean\" ></a>",
 			"<a href='/IP/services.cgi?View_Notes=$DBID_Clean'>
 				<div style='position: relative; background: url(\"/Resources/Images/view-notes.png\") no-repeat; width: 22px; height: 22px;'> 
 					<p style='position: absolute; width: 22px; text-align: center; font-weight: bold; color: #FF0000;'>
@@ -2469,10 +2447,9 @@ sub html_output {
 	$Table->setColWidth(11, '1px');
 	$Table->setColWidth(12, '1px');
 	$Table->setColWidth(13, '1px');
-	$Table->setColWidth(14, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (4..14) {
+	for (4..13) {
 		$Table->setColAlign($_, 'center');
 	}
 

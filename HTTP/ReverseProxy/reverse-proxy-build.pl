@@ -215,11 +215,11 @@ sub write_reverse_proxy {
 			my $CipherOrder;
 			my $CipherSuite;
 			if ($PFS && $RC4) {
-				$CipherOrder = 'SSLHonorCipherOrder	on';
+				$CipherOrder = 'SSLHonorCipherOrder	On';
 				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS";
 			}
 			elsif ($PFS && !$RC4) {
-				$CipherOrder = 'SSLHonorCipherOrder	on';
+				$CipherOrder = 'SSLHonorCipherOrder	On';
 				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4";
 			}
 			else {
@@ -232,7 +232,7 @@ sub write_reverse_proxy {
 				$Enforce_SSL_Header = "
     <IfModule mod_rewrite.c>
         RewriteEngine		On
-        RewriteCond		%{HTTPS} off
+        RewriteCond		%{HTTPS} Off
         RewriteRule		(.*)	https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
     </IfModule>
     <IfModule !mod_rewrite.c>
@@ -251,7 +251,7 @@ sub write_reverse_proxy {
 
 			my $OSCP_Stapling_Cache;
 			if ($OSCP_Stapling) {
-				$OSCP_Stapling = 'SSLUseStapling on';
+				$OSCP_Stapling = 'SSLUseStapling On';
 				$OSCP_Stapling_Cache = 'SSLStaplingCache shmcb:/tmp/stapling_cache(128000)';
 			} else {$OSCP_Stapling = ''}
 
@@ -268,9 +268,9 @@ $OSCP_Stapling_Cache
 
     SSLProxyEngine		On
     #SSLProxyVerify		none
-    #SSLProxyCheckPeerCN	off
-    #SSLProxyCheckPeerName	off
-    #SSLProxyCheckPeerExpire	off
+    #SSLProxyCheckPeerCN	Off
+    #SSLProxyCheckPeerName	Off
+    #SSLProxyCheckPeerExpire	Off
     ProxyRequests		Off
     ProxyPreserveHost		On
     ProxyPass			$Source	$Destination
