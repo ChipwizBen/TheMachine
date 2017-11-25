@@ -308,6 +308,7 @@ textarea:focus {
 #navigation li {
 	float: left;
 	list-style: none;
+    background-color: #293E77;
 	}
 
 #navigation a {
