@@ -241,7 +241,7 @@ textarea:focus {
 #buttons {
 	margin: 0 auto;
 	position:relative;
-	width: 1200px;
+	width: 1360px;
 	height: 20px;
 	}
 
@@ -273,8 +273,7 @@ textarea:focus {
 }
 
 .tooltip:hover:after {
-	background: #333333;
-	background: rgba(0,0,0.8);
+	background-color: #333333;
 	border-radius: 5px;
 	bottom: 20px;
 	left:0;
@@ -309,6 +308,7 @@ textarea:focus {
 #navigation li {
 	float: left;
 	list-style: none;
+    background-color: #293E77;
 	}
 
 #navigation a {
@@ -322,7 +322,7 @@ textarea:focus {
 
 #navigation span {
 	display: block;
-	width: 161px;
+	width: 160px;
 	height: 20px;
 	background-image: url(resources/imgs/buttons/nav.jpg);
 	background-repeat: no-repeat;

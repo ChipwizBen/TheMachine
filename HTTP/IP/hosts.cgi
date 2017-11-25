@@ -53,6 +53,8 @@ my $Delete_Host = $CGI->param("Delete_Host");
 my $Delete_Host_Confirm = $CGI->param("Delete_Host_Confirm");
 my $Host_Name_Delete = $CGI->param("Host_Name_Delete");
 
+my $Show_Links = $CGI->param("Show_Links");
+
 my $User_Name = $Session->param("User_Name");
 my $User_IP_Admin = $Session->param("User_IP_Admin");
 
@@ -164,6 +166,12 @@ elsif ($Delete_Host_Confirm) {
 		print "Location: /IP/hosts.cgi\n\n";
 		exit(0);
 	}
+}
+elsif ($Show_Links) {
+	require $Header;
+	&html_output;
+	require $Footer;
+	&html_show_links;
 }
 else {
 	require $Header;
@@ -762,10 +770,127 @@ sub delete_host {
 
 } # sub delete_host
 
+sub html_show_links {
+
+	my $Counter;
+	my $Select_Hostname = $DB_Connection->prepare("SELECT `hostname`
+		FROM `hosts`
+		WHERE `id` LIKE ?");
+	$Select_Hostname->execute($Show_Links);
+
+	my $Hostname = $Select_Hostname->fetchrow_array();
+
+	my $Table = new HTML::Table(
+		-cols=>4,
+		-align=>'center',
+		-border=>0,
+		-rules=>'cols',
+		-evenrowclass=>'tbeven',
+		-oddrowclass=>'tbodd',
+		-width=>'90%',
+		-spacing=>0,
+		-padding=>1
+	);
+	
+	$Table->addRow( "Service ID", "Service Name", "Type", "Show Deps.");
+	$Table->setRowClass (1, 'tbrow1');
+	$Table->setColWidth(1, '1px');
+
+	my $Select_Services = $DB_Connection->prepare("SELECT `service_id`, `type`
+		FROM `lnk_services_to_hosts`
+		WHERE `host_id` LIKE ?");
+
+	$Select_Services->execute($Show_Links);
+
+	my (%Dependency_Marker, %Type_Marker);
+	while ( my @Services = $Select_Services->fetchrow_array() )
+	{
+		my $Service_ID = $Services[0];
+		my $Type_ID = $Services[1];
+		$Dependency_Marker{$Service_ID} = 0;
+		$Type_Marker{$Service_ID} = $Type_ID;
+	}
+
+	LOOP: while (1) {
+		my $Reloop = 0;
+		my $Count = 0;
+		foreach my $Dependency_ID (keys(%Dependency_Marker)) {
+			`echo "DID: $Dependency_ID" >> /tmp/test`;
+			$Count++;
+			my $Dependency_Complete_Flag = $Dependency_Marker{$Dependency_ID};
+			if ($Dependency_Complete_Flag) {
+				$Reloop++;
+				next;
+			}
+			else {
+				`echo "DID2: $Dependency_ID" >> /tmp/test`;
+				$Dependency_Marker{$Dependency_ID} = 1;
+			}
+
+			my $Select_Service_Depends_On = $DB_Connection->prepare("SELECT `dependent_service_id`
+				FROM `service_dependency`
+				WHERE `service_id` LIKE ?");
+
+			$Select_Service_Depends_On->execute($Dependency_ID);
+		
+			while ( my @Service_Depends_On = $Select_Service_Depends_On->fetchrow_array() )
+			{
+				my $Service_ID = $Service_Depends_On[0];
+				`echo "SID: $Service_ID" >> /tmp/test`;
+				if (!defined $Dependency_Marker{$Service_ID}) {
+					$Dependency_Marker{$Service_ID} = 0;
+				}
+			}
+
+		}
+		if ($Reloop == $Count) {last LOOP} else {next LOOP}
+	}
+
+	foreach my $Dependency_ID (keys(%Dependency_Marker)) {
+
+		$Counter++;
+
+		my $Select_Service_Name = $DB_Connection->prepare("SELECT `service`
+			FROM `services`
+			WHERE `id` LIKE ?");
+		$Select_Service_Name->execute($Dependency_ID);
+		my $Service_Name = $Select_Service_Name->fetchrow_array();
+
+		my $Type = $Type_Marker{$Dependency_ID};
+			if (defined $Type && $Type == 0) {$Type = 'Direct (<span style="color: #FFC600;">Required</span>)';}
+			elsif ($Type == 1) {$Type = 'Direct (<span style="color: #00FF00;">HA</span>)';}
+			else {$Type = 'Indirect'}
+
+		$Table->addRow($Dependency_ID, "<a href='/IP/services.cgi?ID_Filter=$Dependency_ID'>$Service_Name</a>", $Type, "<a href='/IP/services.cgi?Show_Chart=$Dependency_ID'><img src=\"/Resources/Images/graph.png\" alt=\"Dependencies of Service ID $Dependency_ID\" ></a>",);
+	}
+
+if ($Counter eq undef) {$Counter = 0};
+
+$Table->setColWidth(1, '1px');
+$Table->setColWidth(4, '1px');
+
+print <<ENDHTML;
+
+<div id="wide-popup-box">
+<a href="/IP/hosts.cgi">
+<div id="blockclosebutton">
+</div>
+</a>
+
+<h2 style="text-align: center; font-weight: bold;">Services Dependent on $Hostname</h2>
+
+<p>There are <span style="color: #00FF00;">$Counter</span> services that directly or indirectly depend on $Hostname.</p>
+
+$Table
+
+ENDHTML
+
+} # sub html_show_links
+
 sub html_output {
 
 	my $Table = new HTML::Table(
-		-cols=>7,
+		-cols=>10,
 		-align=>'center',
 		-border=>0,
 		-rules=>'cols',
@@ -798,7 +923,7 @@ sub html_output {
 
 	my $Rows = $Select_Hosts->rows();
 
-	$Table->addRow( "ID", "Host Name", "Type", "Assigned Blocks", "Last Modified", "Modified By", "Edit", "Delete" );
+	$Table->addRow( "ID", "Host Name", "Type", "Assigned Blocks", "Services Provided", "Last Modified", "Modified By", "Show Links", "Edit", "Delete" );
 	$Table->setRowClass (1, 'tbrow1');
 
 	my $Host_Row_Count=1;
@@ -901,13 +1026,41 @@ sub html_output {
 		
 		if ($IPv4_Blocks && $IPv6_Blocks) {$IPv4_Blocks = $IPv4_Blocks . '<br />'}
 
+		## Services
+		my $Select_Service_Links = $DB_Connection->prepare("SELECT `service_id`, `type`
+			FROM `lnk_services_to_hosts`
+			WHERE `host_id` = ?");
+		$Select_Service_Links->execute($DBID_Clean);
+
+		my $Services;
+		while (my ($Service_ID, $Type) = $Select_Service_Links->fetchrow_array() ) {
+
+			my $Select_Service_Name = $DB_Connection->prepare("SELECT `service`
+				FROM `services`
+				WHERE `id` = ?");
+			$Select_Service_Name->execute($Service_ID);
+
+			while (my ($Service) = $Select_Service_Name->fetchrow_array() ) {
+
+				if ($Type == 0) {$Type = '(<span style="color: #FFC600;">Required</span>)';}
+				elsif ($Type == 1) {$Type = '(<span style="color: #00FF00;">HA</span>)';}
+
+				$Services = $Services . "<a href='/IP/services.cgi?ID_Filter=$Service_ID'>$Service $Type</a>, ";
+
+			}
+		}
+
+		$Services =~ s/,\s$//;
+
 		$Table->addRow(
 			"$DBID",
 			"$Host_Name",
 			"$Type",
 			"${IPv4_Blocks}${IPv6_Blocks}",
+			"$Services",
 			"$Last_Modified",
 			"$Modified_By",
+						"<a href='/IP/hosts.cgi?Show_Links=$DBID_Clean'><img src=\"/Resources/Images/linked.png\" alt=\"Linked Objects to Service ID $DBID_Clean\" ></a>",
 			"<a href='/IP/hosts.cgi?Edit_Host=$DBID_Clean'><img src=\"/Resources/Images/edit.png\" alt=\"Edit Host ID $DBID_Clean\" ></a>",
 			"<a href='/IP/hosts.cgi?Delete_Host=$DBID_Clean'><img src=\"/Resources/Images/delete.png\" alt=\"Delete Host ID $DBID_Clean\" ></a>"
 		);
@@ -918,13 +1071,14 @@ sub html_output {
 
 
 	$Table->setColWidth(1, '1px');
-	$Table->setColWidth(5, '110px');
 	$Table->setColWidth(6, '110px');
-	$Table->setColWidth(7, '1px');
+	$Table->setColWidth(7, '110px');
 	$Table->setColWidth(8, '1px');
+	$Table->setColWidth(9, '1px');
+	$Table->setColWidth(10, '1px');
 
 	$Table->setColAlign(1, 'center');
-	for (5..8) {
+	for (6..10) {
 		$Table->setColAlign($_, 'center');
 	}
 

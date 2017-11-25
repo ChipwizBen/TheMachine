@@ -458,7 +458,6 @@ ENDHTML
 
 print <<ENDHTML;
 	</tr>
-	</tr>
 </table>
 
 <input type='hidden' name='Edit_Command_Post' value='$Edit_Command'>

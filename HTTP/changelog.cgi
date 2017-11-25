@@ -39,12 +39,23 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.5.1
+	$Table->addRow('2.5.1', 'Minor CSS fix (credit Dr Caroline Johnston).');
+	$Table->addRow('---', '');
 
+	## Version 2.5.0
+	$Table->addRow('2.5.0', 'Introduced Service dependency management.');
+	$Table->addRow('', 'Added OSCP Stapling option to Reverse Proxy.');
+	$Table->addRow('', 'Fixed a couple of minor bugs.');
+	$Table->addRow('<hr />', '');
+
+	## Version 2.4.1
 	$Table->addRow('2.4.1', 'Fixed an issue caused by MySQL behaviour changes on null dates. Changed several inputs to match.');
 	$Table->addRow('', 'Enabled Hosts to be set to expire or inactive for sudo inclusion.');
 	$Table->addRow('', 'Fixed a bug where hosts that used to have sudo managed that was later turned off would not disappear from the sudo list.');
 	$Table->addRow('---', '');
 
+	## Version 2.4.0
 	$Table->addRow('2.4.0', 'Fixed an issue with SSH connections trying indefinitely.');
 	$Table->addRow('', 'Fixed an issue with jobs not being removed from the queue when manually stopped.');
 	$Table->addRow('', 'Made counters appear in verbose output for D-Shell connections.');

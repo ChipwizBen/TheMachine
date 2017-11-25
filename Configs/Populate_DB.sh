@@ -14,7 +14,7 @@ if [ -e $DIR/HTTP/common.pl ]; then
 
 fi
 
-echo "Please provide MariaDB root password for DB setup. This will CLEAR any existing database. CTRL+C to abort:"
+echo "Please provide MariaDB root password for DB setup. This will CLEAR any existing database. If you do not have a root password set for MariaDB (such as if this is a new server build) then press return at each password prompt. CTRL+C to abort:"
 echo -n "Password: "
 read -s MariaDB_Root_Password
 
@@ -34,7 +34,7 @@ SET PASSWORD FOR 'TheMachine'@'localhost' = PASSWORD('$Random_Password');
 FLUSH PRIVILEGES;
 _EOF_
 
-echo "Creating starter account (admin/admin)..."
+echo "Creating starter account (Username/Password: admin/admin)..."
 mysql -u root -p$MariaDB_Root_Password << _EOF_
 INSERT INTO \`TheMachine\`.\`credentials\` (\`username\`, \`password\`, \`admin\`, \`ip_admin\`, \`icinga_admin\`, \`dshell_admin\`, \`dns_admin\`, \`reverse_proxy_admin\`, \`dsms_admin\`, \`approver\`, \`requires_approval\`) VALUES ('admin', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec', '1', '1', '1', '1', '1', '1', '1', '1', '0');
 _EOF_
