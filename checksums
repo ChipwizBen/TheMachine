@@ -1,4 +1,4 @@
-b847a7fe13fcf4872062fb7370a654b0  ./changelog
+818f2bdfe3866193119a77ce1064be85  ./changelog
 86b25aa8e425e7a993c7c93a0ff44d41  ./HTTP/Resources/index.cgi
 b3dba428ad19042b9ff17a1677695200  ./HTTP/Resources/Images/add-note.png
 1ceb49ca7e6d8fa44417a08afd9d17d7  ./HTTP/Resources/Images/back.png
@@ -44,7 +44,7 @@ e41d1e9a5294d8115fa772be11396552  ./HTTP/audit-log.cgi
 4a5c0bc439991893b42f88ba77a5a479  ./HTTP/access-log.cgi
 a1eb6fca018b006fc7c3e3097a5f01b8  ./HTTP/account-management.cgi
 d160a7e4a44dfbe69919cf52c1b27a5f  ./HTTP/register.pl
-a6bb97596246aa85b5b5469288184094  ./HTTP/changelog.cgi
+246d24096e8b6920b97ab9ba7d95e675  ./HTTP/changelog.cgi
 1890c290456cd3ebaae318f50a75f874  ./HTTP/lockout.cgi
 86b25aa8e425e7a993c7c93a0ff44d41  ./HTTP/ReverseProxy/index.cgi
 bebebd35b225344d00325a1245afebd1  ./HTTP/ReverseProxy/redirects.cgi
@@ -113,7 +113,7 @@ fb5e25656199101050b6e69311edd84c  ./HTTP/Icinga2/icinga2-contact-groups.cgi
 903b6b30eb7e570dc07843eee29a9d58  ./HTTP/Storage/D-Shell/Job-Log/index.cgi
 9162ab9165bfb44e6363d9c7edd4cfdc  ./HTTP/Storage/DSMS/index.cgi
 9162ab9165bfb44e6363d9c7edd4cfdc  ./HTTP/Storage/DNS/index.cgi
-177d067362af165171e27d7cb59e4cc7  ./HTTP/common.pl
+2b531ae1846dcf9ad56d33452702a900  ./HTTP/common.pl
 7daddc66c26cdc61a23ed95cc2f1d4fb  ./HTTP/login.cgi
 86b25aa8e425e7a993c7c93a0ff44d41  ./HTTP/DNS/index.cgi
 3fa9c282535d8c67ebe31cb8578ac39d  ./HTTP/DNS/zone-records.cgi
