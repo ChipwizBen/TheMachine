@@ -1152,11 +1152,11 @@ sub html_view_reverse_proxy {
 			my $CipherOrder;
 			my $CipherSuite;
 			if ($PFS && $RC4) {
-				$CipherOrder = 'SSLHonorCipherOrder On';
+				$CipherOrder = 'SSLHonorCipherOrder      On';
 				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS";
 			}
 			elsif ($PFS && !$RC4) {
-				$CipherOrder = 'SSLHonorCipherOrder On';
+				$CipherOrder = 'SSLHonorCipherOrder      On';
 				$CipherSuite = "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4";
 			}
 			else {
@@ -1179,14 +1179,14 @@ sub html_view_reverse_proxy {
 
 			my $HSTS_Header;
 			if ($HSTS) {
-				#$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000; includeSubDomains"';
-				$HSTS_Header = 'Header always set		Strict-Transport-Security "max-age=31536000"';
+				#$HSTS_Header = 'Header always set        Strict-Transport-Security "max-age=31536000; includeSubDomains"';
+				$HSTS_Header = 'Header always set        Strict-Transport-Security "max-age=31536000"';
 			}
 
 			my $OSCP_Stapling_Cache;
 			if ($OSCP_Stapling) {
-				$OSCP_Stapling = 'SSLUseStapling On';
-				$OSCP_Stapling_Cache = 'SSLStaplingCache shmcb:/tmp/stapling_cache(128000)';
+				$OSCP_Stapling = 'SSLUseStapling           On';
+				$OSCP_Stapling_Cache = '    SSLStaplingCache         shmcb:/tmp/stapling_cache(128000)';
 			} else {$OSCP_Stapling = ''}
 
 			$Reverse_Proxy_HTML = "
