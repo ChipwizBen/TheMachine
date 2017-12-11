@@ -211,6 +211,12 @@ else {
 
 sub html_add_reverse_proxy {
 
+	my ($Default_Transfer_Log,
+		$Default_Error_Log,
+		$Default_SSL_Certificate_File,
+		$Default_SSL_Certificate_Key_File,
+		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
+
 print <<ENDHTML;
 
 <div id="wide-popup-box">
@@ -282,11 +288,11 @@ function Enforce_SSL_Toggle(value) {
 	</tr>
 	<tr>
 		<td style="text-align: right;">Transfer Log:</td>
-		<td colspan="2"><input type='text' name='Transfer_Log_Add' style="width:100%" placeholder="/var/log/domain-access.log"></td>
+		<td colspan="2"><input type='text' name='Transfer_Log_Add' style="width:100%" placeholder="$Default_Transfer_Log"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Error Log:</td>
-		<td colspan="2"><input type='text' name='Error_Log_Add' style="width:100%" placeholder="/var/log/domain-error.log"></td>
+		<td colspan="2"><input type='text' name='Error_Log_Add' style="width:100%" placeholder="$Default_Error_Log"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">SSL:</td>
@@ -299,15 +305,15 @@ function Enforce_SSL_Toggle(value) {
 	</tr>
 	<tr style="display: none;" id="Cert">
 		<td style="text-align: right;">Certificate File:</td>
-		<td colspan="2"><input type='text' name='Certificate_Add' style="width:100%" placeholder="/etc/ssl/domain.crt"></td>
+		<td colspan="2"><input type='text' name='Certificate_Add' style="width:100%" placeholder="$Default_SSL_Certificate_File"></td>
 	</tr>
 	<tr style="display: none;" id="Key">
 		<td style="text-align: right;">Certificate Key File:</td>
-		<td colspan="2"><input type='text' name='Certificate_Key_Add' style="width:100%" placeholder="/etc/ssl/domain.key"></td>
+		<td colspan="2"><input type='text' name='Certificate_Key_Add' style="width:100%" placeholder="$Default_SSL_Certificate_Key_File"></td>
 	</tr>
 	<tr style="display: none;" id="CA">
 		<td style="text-align: right;">CA Certificate File:</td>
-		<td colspan="2"><input type='text' name='CA_Certificate_Add' style="width:100%" placeholder="/etc/ssl/CA-Bundle.pem"></td>
+		<td colspan="2"><input type='text' name='CA_Certificate_Add' style="width:100%" placeholder="$Default_SSL_CA_Certificate_File"></td>
 	</tr>
 	<tr style="display: none;" id="PFS">
 		<td style="text-align: right;">PFS (Perfect Forward Secrecy):</td>
