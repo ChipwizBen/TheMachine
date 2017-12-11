@@ -183,7 +183,7 @@ textarea:focus {
 	}
 
 #strip-image {
-	background: #fff url(/resources/imgs/strip.png) no-repeat 0 0;
+	background: #fff url(Resources/Images/strip.png) no-repeat 0 0;
 	background-color: #293E77;
 	background-position:center;
 	height: 90px;
@@ -252,7 +252,7 @@ textarea:focus {
 	right: 2px;
 	height: 20px;
 	width: 20px;
-	background-image: url(resources/imgs/buttons/close.png);
+	background-image: url(Resources/Images/Buttons/close.png);
 	}
 
 #blockclosebutton:hover {
@@ -262,7 +262,7 @@ textarea:focus {
 	right: 2px;
 	height: 20px;
 	width: 20px;
-	background-image: url(resources/imgs/buttons/close-hover.png);
+	background-image: url(Resources/Images/Buttons/close-hover.png);
 	}
 
 .tooltip {
@@ -308,7 +308,6 @@ textarea:focus {
 #navigation li {
 	float: left;
 	list-style: none;
-    background-color: #293E77;
 	}
 
 #navigation a {
@@ -324,7 +323,7 @@ textarea:focus {
 	display: block;
 	width: 160px;
 	height: 20px;
-	background-image: url(resources/imgs/buttons/nav.jpg);
+	background-image: url(Resources/Images/Buttons/nav.jpg);
 	background-repeat: no-repeat;
 	cursor: pointer;
     text-align: center;
@@ -336,7 +335,7 @@ textarea:focus {
 
 #navigation a:hover span {
 	color:#FFFFFF !important;
-	background-image: url(resources/imgs/buttons/nav2.jpg);
+	background-image: url(Resources/Images/Buttons/nav2.jpg);
 	}
 
 #navigation li ul {
@@ -395,7 +394,7 @@ textarea:focus {
 	display: block;
 	width: 155px;
 	height: 20px;
-	background-image: url(resources/imgs/buttons/nav.jpg);
+	background-image: url(Resources/Images/Buttons/nav.jpg);
 	background-repeat: no-repeat;
 	cursor: pointer;
 	}
@@ -523,19 +522,6 @@ textarea:focus {
 #arrowright {
 	float: right;
 	z-index: 100;
-	}
-
-
-/*
------Heading-----
-*/
-
-#heading {
-	margin: 0 auto;	
-	background-image: url(resources/imgs/landing.jpg);
-	top: 0px;
-	width: 1000px;
-	height: 458px;
 	}
 
 
