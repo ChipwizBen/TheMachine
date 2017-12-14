@@ -20,7 +20,7 @@ It's the uninspiring name given to the remote execution component of The Machine
 **D-Shell does not require a remote agent in order to function.** It uses SSH and is limited to the rights of the user running the script - which is how it should be. That means that you don't have to deal with several sets of conflicting permissions on the host and the tool like with other management systems, nor do you need to have a 'super mega ultra god mode' account that's shared between all staff (either directly or a via single root level tool like Ansible) - shared accounts are dangerous and we don't like them. Also, unlike other remote management or configuration management systems, D-Shell isn't limited to systems with a specific set of software (like agents, Python, SNMP, etc). If you can SSH to something, The Machine can drive it with D-Shell.
 
 ## So it's like PSSH/DSH? ##
-Not quite. It is similar in that it can run sets of commands in parallel across several systems, but with The Machine you can run whole scripts with just a click instead of several different commands. It also means that, because it's a single script that's executing, you can use everything that's available to you in a normal shell script such as variables, cases, loops etc. D-Shell has a few more smarts such as reboot control, execution status checking, key or password auth, etc. PSSH/DSH are handy tools for quick one line SSH tasks over many hosts, but D-Shell does that and a lot more and it's trivilally easy to use.
+Not quite. It is similar in that it can run sets of commands in parallel across several systems, but with The Machine you can run whole scripts with just a click instead of several different commands. It also means that, because it's a single script that's executing, you can use everything that's available to you in a normal shell script such as variables, cases, loops etc. D-Shell has a few more smarts such as reboot control, execution status checking, key or password auth, etc. PSSH/DSH are handy tools for quick one line SSH tasks over many hosts, but D-Shell does that and a lot more and it's trivially easy to use.
 
 ## What's this 'reboot control' stuff? ##
 With The Machine, you can reboot a host mid-way through a script's execution and continue processing the script when the host returns. It's very useful when running updates (such as kernel updates) to be able to reboot and then resume processing later on, such as for checking that services came up correctly after the update. It might also be useful as part of a host's baseline test to reboot as a clean starting point before performing other checks. Like the rest of The Machine, reboot control is simple to use - it's a simple tag in your executing script (*REBOOT).
@@ -34,7 +34,7 @@ That's another tag. If you have a runtime variable tag in a script The Machine w
 ## So what else does it do? ##
 The Machine can manage sudo on remote systems, so you have fine-grained control options about what people can and can't execute on hosts. It can manage IP allocation and tracking for you letting you know how full your blocks are getting - it supports CIDR notated addresses, allocating blocks or IPs from other blocks, overlap checking, IPv4 and IPv6 addresses, host and IP network bulk discovery, floating addresses and pairing IPs with hosts. You can also track services visually allowing you to see how your company's services depend on each other - The Machine creates a visualisation for you. The Machine can also create Apache config, DNS config and Icinga 2 config for you through the GUI. No editing manifests, playbooks, SLS files or any of the other confusing names given to config files. It's designed to be easy and secure.
 
-## Authenticaion? ##
+## Authentication? ##
 The Machine supports local (internal) authentication, LDAP authentication or Active Directory (AD) authentication.
 
 ## Installation ##
@@ -63,10 +63,10 @@ yum -y install themachine
 ```
 
 
-The Machine also runs well on Debian varients including Ubuntu and other Linux varients but there has so far not been enough demand on these distributions to justify building and testing packages for them. If you would like packages for a specfic distribution and are willing to assist with testing, please get in touch.
+The Machine also runs well on Debian variants including Ubuntu and other Linux variants but there has so far not been enough demand on these distributions to justify building and testing packages for them. If you would like packages for a specific distribution and are willing to assist with testing, please get in touch.
 
 ## Who's using The Machine? ##
-As it's an open source project with code freely available to download, it's hard to tell exacty who's using it as we don't collect stats. But from what we do know, The Machine is used from small companies managing tens of servers to large companies and government departments managing thousands of hosts and services. Parts of The Machine are even used in military environments - we know because we helped set it up.
+As it's an open source project with code freely available to download, it's hard to tell exactly who's using it as we don't collect stats. But from what we do know, The Machine is used from small companies managing tens of servers to large companies and government departments managing thousands of hosts and services. Parts of The Machine are even used in military environments - we know because we helped set it up.
 
 ## What about my privacy and company data? ##
 We do NOT collect any data or stats and we have no plans to. The data you put into The Machine stays in The Machine and on any hosts that you explicitly push config data or commands to. There are no caveats or special exceptions, it's your data, not ours.
