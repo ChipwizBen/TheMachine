@@ -1,3 +1,7 @@
+2.5.2   - Format URI fixes.
+        - Added sensible defaults to Apache file locations.
+        - Fixed some text alignment in reverse proxy configs.
+        - Added missing audit colours from account.
 2.5.1   - Minor CSS fix (credit Dr Caroline Johnston).
 2.5.0   - Introduced Service dependency management.
         - Added OSCP Stapling option to Reverse Proxy.

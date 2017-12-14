@@ -39,6 +39,13 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.5.2
+	$Table->addRow('2.5.2', 'Format URI fixes.');
+	$Table->addRow('', 'Added sensible defaults to Apache file locations.');
+	$Table->addRow('', 'Fixed some text alignment in reverse proxy configs.');
+	$Table->addRow('', 'Added missing audit colours from account.');
+	$Table->addRow('---', '');
+
 	## Version 2.5.1
 	$Table->addRow('2.5.1', 'Minor CSS fix (credit Dr Caroline Johnston).');
 	$Table->addRow('---', '');
