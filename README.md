@@ -44,7 +44,7 @@ The Machine supports local (internal) authentication, LDAP authentication or Act
 
 The Machine has RPM packages available for CentOS 7 and Red Hat Enterprise Linux (RHEL) 7. To install on one of these, run the following:
 
-`# yum repo setup
+```# yum repo setup
 cat << EOF > /etc/yum.repos.d/TheMachine.repo
 [TheMachine]
 name=The Machine
@@ -58,7 +58,7 @@ EOF
 yum -y install themachine
 
 # Initial database setup (only required on first installation)
-/opt/TheMachine/Configs/Populate_DB.sh`
+/opt/TheMachine/Configs/Populate_DB.sh```
 
 
 The Machine also runs well on Debian varients including Ubuntu and other Linux varients but there has so far not been enough demand on these distributions to justify building and testing packages for them. If you would like packages for a specfic distribution and are willing to assist with testing, please get in touch.
@@ -72,22 +72,33 @@ We do NOT collect any data or stats and we have no plans to. The data you put in
 ## Can I see some screenshots? ##
 Right this way! Some of these screenshots are from test systems and some are from live systems - some data have been redacted and some things haven't been included.
 
+### Audit Log ###
 ![picture alt](https://nwk1.com/TheMachine/AuditLog.png "Audit Log")
+### D-Shell Command Set Queue ###
 ![picture alt](https://nwk1.com/TheMachine/CommandSetQueue.png "Command Set Queue")
+### D-Shell Command Sets ###
 ![picture alt](https://nwk1.com/TheMachine/CommandSets.png "Command Sets")
+### Hosts ###
 ![picture alt](https://nwk1.com/TheMachine/Hosts.png "Hosts")
+### IPv4 Assignment ###
 ![picture alt](https://nwk1.com/TheMachine/IPv4Assignment.png "IPv4 Assignment")
+### IPv4 Assignments ###
 ![picture alt](https://nwk1.com/TheMachine/IPv4Assignments.png "IPv4 Assignments")
+### IPv4 Blocks ###
 ![picture alt](https://nwk1.com/TheMachine/IPv4Blocks.png "IPv4 Blocks")
+### D-Shell Jobs ###
 ![picture alt](https://nwk1.com/TheMachine/Jobs.png "Jobs")
+### User Management ###
 ![picture alt](https://nwk1.com/TheMachine/Management.png "Management")
+### Account Management ###
 ![picture alt](https://nwk1.com/TheMachine/MyAccount.png "My Account")
+### Reverse Proxy ###
 ![picture alt](https://nwk1.com/TheMachine/ReverseProxy.png "Reverse Proxy")
+### Sudo Rules ###
 ![picture alt](https://nwk1.com/TheMachine/Rules.png "Sudo Rules")
+### Single Service Dependency ###
 ![picture alt](https://nwk1.com/TheMachine/SingleService.png "Single Service")
+### Example Generated Service Dependency Tree ###
 ![picture alt](https://nwk1.com/TheMachine/Services.png "Services")
-
-
-
 
 
