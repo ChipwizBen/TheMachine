@@ -44,7 +44,8 @@ The Machine supports local (internal) authentication, LDAP authentication or Act
 
 The Machine has RPM packages available for CentOS 7 and Red Hat Enterprise Linux (RHEL) 7. To install on one of these, run the following:
 
-```# yum repo setup
+```shell
+# yum repo setup
 cat << EOF > /etc/yum.repos.d/TheMachine.repo
 [TheMachine]
 name=The Machine
@@ -58,7 +59,8 @@ EOF
 yum -y install themachine
 
 # Initial database setup (only required on first installation)
-/opt/TheMachine/Configs/Populate_DB.sh```
+/opt/TheMachine/Configs/Populate_DB.sh
+```
 
 
 The Machine also runs well on Debian varients including Ubuntu and other Linux varients but there has so far not been enough demand on these distributions to justify building and testing packages for them. If you would like packages for a specfic distribution and are willing to assist with testing, please get in touch.
