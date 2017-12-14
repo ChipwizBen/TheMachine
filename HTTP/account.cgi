@@ -437,6 +437,9 @@ sub html_output {
 		elsif ($Method_Clean eq 'Modify') {
 			$Audit_Table->setCellClass (-1, 2, 'tbroworange');
 		}
+		elsif ($Method_Clean eq 'View') {
+			$Audit_Table->setCellClass (-1, 2, 'tbrowdarkgrey');
+		}
 		elsif ($Method_Clean eq 'Deployment Succeeded') {
 			$Audit_Table->setCellClass (-1, 2, 'tbrowgreen');
 		}
@@ -458,8 +461,17 @@ sub html_output {
 		elsif ($Method_Clean eq 'Queue') {
 			$Audit_Table->setCellClass (-1, 2, 'tbrowyellow');
 		}
+		elsif ($Method_Clean eq 'Pause') {
+			$Audit_Table->setCellClass (-1, 2, 'tbrowyellow');
+		}
+		elsif ($Method_Clean eq 'Resume') {
+			$Audit_Table->setCellClass (-1, 2, 'tbrowgreen');
+		}
 		elsif ($Method_Clean eq 'Stop') {
 			$Audit_Table->setCellClass (-1, 2, 'tbrowred');
+		}
+		elsif ($Method_Clean eq 'Prioritise') {
+			$Audit_Table->setCellClass (-1, 2, 'tbroworange');
 		}
 
 		$Audit_Table->setColWidth(4, '110px');
