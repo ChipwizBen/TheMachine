@@ -1,5 +1,32 @@
 # The Machine #
 
+## Installation ##
+
+### RHEL / CentOS ###
+
+The Machine has RPM packages available for CentOS 7 and Red Hat Enterprise Linux (RHEL) 7. To install on one of these, run the following:
+
+```shell
+# yum repo setup
+cat << EOF > /etc/yum.repos.d/TheMachine.repo
+[TheMachine]
+name=The Machine
+baseurl=https://rpm.nwk1.com/RHEL/
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.nwk1.com/RPM-GPG-KEY-The-Machine
+EOF
+
+# Installation
+yum -y install themachine
+
+# Initial database setup (only required on first installation)
+/opt/TheMachine/Configs/Populate_DB.sh
+```
+
+
+The Machine also runs well on Debian variants including Ubuntu and other Linux variants but there has so far not been enough demand on these distributions to justify building and testing packages for them. If you would like packages for a specific distribution and are willing to assist with testing, please get in touch.
+
 ## What is The Machine? ##
 The Machine is an automation tool designed for system administrators that need to make their difficult or onerous tasks simple. The Machine is designed to do, among other things:
 
@@ -36,34 +63,6 @@ The Machine can manage sudo on remote systems, so you have fine-grained control 
 
 ## Authentication? ##
 The Machine supports local (internal) authentication, LDAP authentication or Active Directory (AD) authentication.
-
-## Installation ##
-
-
-### RHEL / CentOS ###
-
-The Machine has RPM packages available for CentOS 7 and Red Hat Enterprise Linux (RHEL) 7. To install on one of these, run the following:
-
-```shell
-# yum repo setup
-cat << EOF > /etc/yum.repos.d/TheMachine.repo
-[TheMachine]
-name=The Machine
-baseurl=https://rpm.nwk1.com/RHEL/
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm.nwk1.com/RPM-GPG-KEY-The-Machine
-EOF
-
-# Installation
-yum -y install themachine
-
-# Initial database setup (only required on first installation)
-/opt/TheMachine/Configs/Populate_DB.sh
-```
-
-
-The Machine also runs well on Debian variants including Ubuntu and other Linux variants but there has so far not been enough demand on these distributions to justify building and testing packages for them. If you would like packages for a specific distribution and are willing to assist with testing, please get in touch.
 
 ## Who's using The Machine? ##
 As it's an open source project with code freely available to download, it's hard to tell exactly who's using it as we don't collect stats. But from what we do know, The Machine is used from small companies managing tens of servers to large companies and government departments managing thousands of hosts and services. Parts of The Machine are even used in military environments - we know because we helped set it up.
