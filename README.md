@@ -22,8 +22,10 @@ yum -y install themachine
 
 # Initial database setup (only required on first installation)
 /opt/TheMachine/Configs/Populate_DB.sh
-```
 
+# To start using it visit:
+https://<YourServersIP>/
+```
 
 The Machine also runs well on Debian variants including Ubuntu and other Linux variants but there has so far not been enough demand on these distributions to justify building and testing packages for them. If you would like packages for a specific distribution and are willing to assist with testing, please get in touch.
 
