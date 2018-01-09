@@ -38,7 +38,7 @@ The Machine is an automation tool designed for system administrators that need t
 * VMWare snapshot integration (via API)
 * Service dependency management and automatic dependency visualisation
 * Full auditability of actions
-* Icinaga 2 configuration (beta)
+* Icinga 2 configuration (beta)
 
 ## D-Shell? What is that? ##
 It's the uninspiring name given to the remote execution component of The Machine which allows you to control other systems via SSH either individually or in bulk. It's short for Distributed Shell. You provide a shell script (with optional 'tags' to do special things) and it executes the script line by line, flagging or halting on any errors - you decide which. It has a few clever tricks like being able to specify dependencies on other scripts (dependencies execute first), being able to make API calls to VMWare to make snapshots of VMs during script execution, handle reboots mid-execution (any host type) and is able to drive interactive prompts that even regular shell scripts can't manage (through optional 'tags'). It does a few other things but I won't list them all here; there's documentation for that. But most of all, it's really easy to use and very powerful.
