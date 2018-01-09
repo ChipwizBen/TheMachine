@@ -37,7 +37,7 @@ Options are:
 	${Blue}-t, --threads\t\t${Green}Sets the number of threads to use for sweeping. Default is 256.
 	${Blue}-b, --block-id\t\t${Green}A specific block ID to sweep.
 	${Blue}-v, --verbose\t\t${Green}Turns on verbose output (useful for debug).
-	${Blue}-V, --very-verbose\t\t${Green}Turns on very verbose output (useful for debug).
+	${Blue}-V, --very-verbose\t${Green}Turns on very verbose output (useful for debug).
 	${Blue}-h, --help\t\t${Green}This help.
 
 ${Green}Examples:
