@@ -74,7 +74,7 @@ sub Paper_Trail {
 
 sub System_Log_File {
 
-	# This is the system log file. This is where some system log and paper trail entires go.
+	# This is the system log file. This is where some system log and paper trail entries go.
 
 	my $System_Log_File = '/var/log/TheMachine/System.log';
 	return $System_Log_File;
@@ -979,7 +979,7 @@ sub Version {
 
 	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
 
-	my $Version = '2.5.2';
+	my $Version = '2.5.3';
 	return $Version;
 
 } # sub Version

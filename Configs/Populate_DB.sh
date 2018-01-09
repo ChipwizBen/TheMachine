@@ -14,7 +14,7 @@ if [ -e $DIR/HTTP/common.pl ]; then
 
 fi
 
-echo "Please provide MariaDB root password for DB setup. This will CLEAR any existing database. If you do not have a root password set for MariaDB (such as if this is a new server build) then press return at each password prompt. CTRL+C to abort:"
+echo "Please provide MariaDB root password for DB setup. This will CLEAR any existing Machine database. If you do not have a root password set for MariaDB (such as if this is a new server build) then press return at each password prompt. CTRL+C to abort:"
 echo -n "Password: "
 read -s MariaDB_Root_Password
 

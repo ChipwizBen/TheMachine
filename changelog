@@ -1,3 +1,8 @@
+2.5.3   - Added D-Shell connection via IPv6, IPv4 and failback hostname in that order.
+        - Fixed warning output when attempting to take a VMWare snapshot of a non-VMWare system.
+        - Fixed issue where a job status showed it as starting while it was running.
+        - Added control provisions for Microsoft Windows OpenSSH Server.
+        - Fixed issue where rebooted hosts clobbered transaction logs.
 2.5.2   - Format URI fixes.
         - Added sensible defaults to Apache file locations.
         - Fixed some text alignment in reverse proxy configs.

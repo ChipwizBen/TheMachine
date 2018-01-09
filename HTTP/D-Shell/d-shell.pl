@@ -18,6 +18,7 @@ my $Paper_Trail = Paper_Trail();
 my $Version = Version();
 my $DB_Connection = DB_Connection();
 my $DShell_Job_Log_Location = DShell_Job_Log_Location();
+	my $Log_Retention;
 my $DShell_tmp_Location = DShell_tmp_Location();
 my $nmap = nmap();
 my $grep = sudo_grep();
@@ -33,6 +34,7 @@ my $Reboot_Max_Retry_Count = 20;
 my $Reboot_Connection_Timeout = 5;
 my $Max_Attempts = 10;
 my $Reboot_Max_Attempts = 1200;
+my $System_Is_Windows;
 
 $0 = 'D-Shell';
 $| = 1;
@@ -333,7 +335,8 @@ else {
 }
 
 my $Host;
-my $DShell_Job_Log_File = "$DShell_Job_Log_Location/$Parent_ID-$Dependency_Chain_ID";
+my $Host_Connection_IP_or_Hostname;
+my $DShell_Job_Log_File = "$DShell_Job_Log_Location/$Parent_ID-$Dependency_Chain_ID-Log";
 my $DShell_Transactional_File = "$DShell_Job_Log_Location/$Parent_ID-$Dependency_Chain_ID-Transactions";
 open( LOG, ">$DShell_Job_Log_File" ) or die "Can't open $DShell_Job_Log_File";
 if ($Verbose) {
@@ -502,9 +505,27 @@ else {
 	$Delete_Queue_Entry->execute($Discovered_Job_ID);
 	exit(1);
 }
+
 close LOG;
-system("sed -i 's/$Predictable_Prompt\n//g' $DShell_Transactional_File");
-system("sed -i 's/$Predictable_Prompt//g' $DShell_Transactional_File");
+
+if ($Verbose) {
+	my $Time_Stamp = strftime "%H:%M:%S", localtime;
+	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Tidying up transaction log ${Yellow}$DShell_Transactional_File${Clear}\n";
+}
+#system("sed -i 's/$Predictable_Prompt\n//g' $DShell_Transactional_File");
+#system("sed -i 's/$Predictable_Prompt//g' $DShell_Transactional_File");
+
+open( Transaction_Log, "<$DShell_Transactional_File" ) or die "Can't open $DShell_Transactional_File";
+    local $/ = undef;
+	my $Log_Content = <Transaction_Log>;
+		#$Log_Content =~ s/$Predictable_Prompt/\n$Predictable_Prompt/g;
+		$Log_Content =~ s/$Predictable_Prompt//g;
+close Transaction_Log;
+
+open( Transaction_Log, ">$DShell_Transactional_File" ) or die "Can't open $DShell_Transactional_File";
+print Transaction_Log $Log_Retention . $Log_Content;
+close Transaction_Log;
+
 
 sub job_discovery {
 
@@ -624,6 +645,85 @@ sub host_connection {
 	my $Host_ID = $_[1];
 	my $SSH;
 
+	# Discover if IP is available instead of hostname
+	my $Host_Connection_String;
+	## IPv4
+	my $Select_IPv4_Block_Links = $DB_Connection->prepare("SELECT `ip`
+		FROM `lnk_hosts_to_ipv4_assignments`
+		WHERE `host` = ?");
+	$Select_IPv4_Block_Links->execute($Host_ID);
+	
+	my $IPv4_Blocks;
+	my $IPv4_Counts = 0;
+	my $IPv4_Block;
+	while (my $Block_ID = $Select_IPv4_Block_Links->fetchrow_array() ) {
+
+		$IPv4_Counts++;
+		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+			FROM `ipv4_assignments`
+			WHERE `id` = ?");
+		$Select_Blocks->execute($Block_ID);
+	
+		$IPv4_Block = $Select_Blocks->fetchrow_array();
+	}
+
+	## IPv6
+	my $Select_IPv6_Block_Links = $DB_Connection->prepare("SELECT `ip`
+		FROM `lnk_hosts_to_ipv6_assignments`
+		WHERE `host` = ?");
+	$Select_IPv6_Block_Links->execute($Host_ID);
+	
+	my $IPv6_Blocks;
+	my $IPv6_Counts = 0;
+	my $IPv6_Block;
+	while (my $Block_ID = $Select_IPv6_Block_Links->fetchrow_array() ) {
+
+		$IPv6_Counts++;
+		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+			FROM `ipv6_assignments`
+			WHERE `id` = ?");
+		$Select_Blocks->execute($Block_ID);
+	
+		$IPv6_Block = $Select_Blocks->fetchrow_array();
+	}
+
+	if ($IPv6_Counts == 1) {
+		$Host_Connection_String = $IPv6_Block;
+		$Host_Connection_String =~ s/\/.*//;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to ${Blue}$Host${Green} using IPv6 address ${Yellow}$Host_Connection_String${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to ${Blue}$Host${Green} using IPv6 address ${Yellow}$Host_Connection_String${Clear}\n";
+		}
+	}
+	elsif ($IPv4_Counts == 1) {
+		$Host_Connection_String = $IPv4_Block;
+		$Host_Connection_String =~ s/\/.*//;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to ${Blue}$Host${Green} using IPv4 address ${Yellow}$Host_Connection_String${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to ${Blue}$Host${Green} using IPv4 address ${Yellow}$Host_Connection_String${Clear}\n";
+		}
+	}
+	elsif ($IPv4_Counts > 1 || $IPv6_Counts > 1) {
+		$Host_Connection_String = $Host;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}There are several possible IP addresses to connect to. Connecting to ${Blue}$Host${Green} using IP provided by DNS${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}There are several possible IP addresses to connect to. Connecting to ${Blue}$Host${Green} using IP provided by DNS${Clear}\n";
+		}
+	}
+	else {
+		$Host_Connection_String = $Host;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}No listed IP addresses to connect to. Connecting to ${Blue}$Host${Green} using IP provided by DNS${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}No listed IP addresses to connect to. Connecting to ${Blue}$Host${Green} using IP provided by DNS${Clear}\n";
+		}
+	}
+	# / Discover if IP is available instead of hostname
+
+
 	my $Private_Key;
 	if ($Captured_Key) {
 
@@ -680,30 +780,8 @@ sub host_connection {
 		}
 	}
 
-	my $SSH_Check;
-	my $Attempts;
-	while ($SSH_Check !~ /open/) {
-
-		CONNECTION_DISCOVERY: $Attempts++;
-
-		$SSH_Check=`$nmap $Host -PN -p ssh | $grep -E 'open'`;
-		sleep 1;
-	
-		if ($Attempts >= $Max_Attempts) {
-			print "Unresolved host, no route to host or SSH not responding. Terminating the job.\n";
-			print LOG "Unresolved host, no route to host or SSH not responding. Terminating the job.\n";
-			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
-			`status` = ?,
-			`modified_by` = ?
-			WHERE `id` = ?");
-			$Update_Job->execute('5', $User_Name, $Parent_ID);
-			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
-			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
-			$Delete_Queue_Entry->execute($Discovered_Job_ID);
-			exit(5);
-		}
-
-	}
+	my ($SSH_Check, $Attempts);
+	($SSH_Check, $Attempts) = &connection_discovery($Host_Connection_String, $Attempts);
 
 	# Fingerprint check/discovery
 	my $Find_Fingerprint = $DB_Connection->prepare("SELECT `fingerprint`
@@ -723,7 +801,7 @@ sub host_connection {
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting password login${Clear}\n";
 			}
 			$SSH = Net::SSH::Expect->new (
-				host => $Host,
+				host => $Host_Connection_String,
 				user => $User_Name,
 				log_file => $DShell_Transactional_File,
 				timeout => $Connection_Timeout,
@@ -746,7 +824,7 @@ sub host_connection {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
 				}
-				goto CONNECTION_DISCOVERY;
+				($SSH_Check, $Attempts) = &connection_discovery($Host_Connection_String, $Attempts);
 			}
 
 			if ($Fingerprint_Prompt) {
@@ -847,7 +925,7 @@ sub host_connection {
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting key login${Clear}\n";
 			}
 			$SSH = Net::SSH::Expect->new (
-				host => $Host,
+				host => $Host_Connection_String,
 				user => $User_Name,
 				log_file => $DShell_Transactional_File,
 				timeout => $Connection_Timeout,
@@ -868,7 +946,7 @@ sub host_connection {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
 				}
-				goto CONNECTION_DISCOVERY;
+				($SSH_Check, $Attempts) = &connection_discovery($Host_Connection_String, $Attempts);
 			}
 
 			if ($Fingerprint_Prompt) {
@@ -951,17 +1029,32 @@ sub host_connection {
 
 		my $Test_Command = 'id';
 		$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
+
 		if ($@) {
+			print $@;
 			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
-				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
 			}
-			goto CONNECTION_DISCOVERY;
+			($SSH_Check, $Attempts) = &connection_discovery($Host_Connection_String, $Attempts);
 		}
 
+		#if ($Hello =~ /:\\/) {
+		if ($Hello =~ /Microsoft\sWindows/) {
+			$System_Is_Windows = 1;
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Windows detected, setting control mode to 'Money for Old Rope'...${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Windows detected, setting control mode to 'Money for Old Rope'...${Clear}\n";
+			}
+		}
+
+		print "HELLO: $Hello\n";
 		last if $Hello =~ m/uid/;
+		last if $System_Is_Windows == 1;
 		last if $Retry_Count >= $Max_Retry_Count;
+
 		if ($Hello =~ m/Permission denied/) {
 			print "Supplied credentials failed. Terminating the job.\n";
 			print LOG "Supplied credentials failed. Terminating the job.\n";
@@ -1011,6 +1104,71 @@ sub host_connection {
 	return $SSH;
 
 } # sub host_connection
+
+sub connection_discovery {
+
+	my $Host_Connection_String = $_[0];
+	my $Attempts = $_[1];
+	my $SSH_Check;
+
+	while ($SSH_Check !~ /open/) {
+
+		$Attempts++;
+
+		$SSH_Check=`$nmap $Host_Connection_String -PN -p ssh | $grep -E 'open'`;
+		sleep 1;
+	
+		if ($Attempts >= $Max_Attempts) {
+			print "Unresolved host, no route to host or SSH not responding correctly. Was trying '$Host_Connection_String'. Terminating the job.\n";
+			print LOG "Unresolved host, no route to host or SSH not responding correctly. Was trying '$Host_Connection_String'. Terminating the job.\n";
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+			$Update_Job->execute('5', $User_Name, $Parent_ID);
+			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
+			exit(5);
+		}
+	}
+	return ($SSH_Check, $Attempts);
+} # sub connection_discovery
+
+sub reboot_discovery {
+
+	my $Host_Connection_String = $_[0];
+	my $Attempts = $_[1];
+	my $SSH_Check;
+
+	while ($SSH_Check !~ /open/) {
+	
+		$Attempts++;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempt ${Yellow}$Attempts${Green} at restarting SSH session... ${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempt ${Yellow}$Attempts${Green} at restarting SSH session... ${Clear}\n";
+		}
+		$SSH_Check=`$nmap $Host_Connection_String -PN -p ssh | $grep -E 'open'`;
+		sleep 1;
+	
+		if ($Attempts >= $Reboot_Max_Attempts) {
+			print "Host connection did not recover. Was trying '$Host_Connection_String'. Terminating the job.\n";
+			print LOG "Host connection did not recover. Was trying '$Host_Connection_String'. Terminating the job.\n";
+			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+			$Update_Job->execute('14', $User_Name, $Parent_ID);
+			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
+			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+			$Delete_Queue_Entry->execute($Discovered_Job_ID);
+			exit(14);
+		}
+	}
+	return ($SSH_Check, $Attempts);
+
+} # sub reboot_discovery
 
 sub processor {
 
@@ -1144,6 +1302,12 @@ sub processor {
 			$Variable_Value =~ s/\r\n/\n/g;
 			$Command =~ s/\*VAR\{$Machine_Variable\}/$Variable_Value/;
 
+			if (!$Command && $Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Pink}Found a Machine variable '$Machine_Variable' that has no value. Proceeding, but may have unexpected results.${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Pink}Found a Machine variable '$Machine_Variable' that has no value. Proceeding, but may have unexpected results.${Clear}\n";
+			}
+
 		}
 
 		my $Job_Paused;
@@ -1178,10 +1342,22 @@ sub processor {
 			}
 		}
 
-		my $Set_Predictable_Prompt = "PS1=$Predictable_Prompt";
+		my $Set_Predictable_Prompt;
+		if ($System_Is_Windows) {
+			$Set_Predictable_Prompt = "set PROMPT=$Predictable_Prompt";
+		}
+		else {
+			$Set_Predictable_Prompt = "PS1=$Predictable_Prompt";
+		}
 
 		my $Time_Stamp = strftime "%H:%M:%S", localtime;
-	
+
+		my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+			`status` = ?,
+			`modified_by` = ?
+			WHERE `id` = ?");
+		$Update_Job->execute('1', $User_Name, $Parent_ID);
+
 		my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
 			`job_id`,
 			`command`,
@@ -1234,7 +1410,7 @@ sub processor {
 				`status` = ?,
 				`modified_by` = ?
 				WHERE `id` = ?");
-			$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+			$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
 			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit($Exit_Code);
@@ -1292,17 +1468,24 @@ sub processor {
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Checking that the system resides on VMware before performing a snapshot operation${Clear}\n";
 			}
 
-			$Connected_Host->send(' export HISTFILE=/dev/null');
-			$Connected_Host->send(" $Set_Predictable_Prompt");
-			$Connected_Host->send(' echo $PS1');
-			$Command_Output = $Connected_Host->read_all();
-			$Connected_Host->send(' cat /sys/class/dmi/id/sys_vendor');
-
+			if ($System_Is_Windows) {
+				$Connected_Host->send(" $Set_Predictable_Prompt");
+				$Connected_Host->send(' echo %PROMPT%');
+				$Command_Output = $Connected_Host->read_all();
+			}
+			else {
+				$Connected_Host->send(' export HISTFILE=/dev/null');
+				$Connected_Host->send(" $Set_Predictable_Prompt");
+				$Connected_Host->send(' echo $PS1');
+				$Command_Output = $Connected_Host->read_all();
+				$Connected_Host->send(' cat /sys/class/dmi/id/sys_vendor');
+			}
 			eval { $Command_Output = $Connected_Host->read_all(); }; &epic_failure('VMware Detection Fault', $@, $Command_Output, $Job_Status_Update_ID) if $@;
 			$Command_Output =~ s/\e.*//g;
 			$Command_Output =~ s/\r//g;
 			$Command_Output =~ s/\n//g;
 			$Command_Output =~ s/\Q$Predictable_Prompt\E//g;
+			$Command_Output =~ s/\s*cat\s\/sys\/class\/dmi\/id\/sys_vendor//g;
 
 			if ($Command_Output eq 'VMware, Inc.') {
 				if ($Verbose) {
@@ -1483,7 +1666,7 @@ sub processor {
 					`status` = ?,
 					`modified_by` = ?
 					WHERE `id` = ?");
-				$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+				$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 				my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 					`exit_code` = ?,
 					`output` = ?,
@@ -1550,7 +1733,7 @@ sub processor {
 					`status` = ?,
 					`modified_by` = ?
 					WHERE `id` = ?");
-				$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+				$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 				my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
 					`exit_code` = ?,
 					`output` = ?,
@@ -1595,8 +1778,8 @@ sub processor {
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Command${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Running ${Yellow}$Command${Clear}\n";
 				if ($Reboot_Required) {
-					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Spotted ${Yellow}*REBOOT ${Green}tag, expecting host to die shortly.${Clear}\n";
-					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Spotted ${Yellow}*REBOOT ${Green}tag, expecting host to die shortly.${Clear}\n";
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Spotted ${Yellow}*REBOOT ${Green}tag, expecting host to disconnect shortly.${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Spotted ${Yellow}*REBOOT ${Green}tag, expecting host to disconnect shortly.${Clear}\n";
 				}
 			}
 
@@ -1717,7 +1900,7 @@ sub processor {
 					`status` = ?,
 					`modified_by` = ?
 					WHERE `id` = ?");
-				$Update_Job->execute( $Exit_Code, $User_Name, $Parent_ID);
+				$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
 				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
 				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit($Exit_Code);
@@ -2003,13 +2186,98 @@ sub epic_failure {
 
 sub reboot_control {
 
+	open( Transaction_Log, "<$DShell_Transactional_File" ) or die "Can't open $DShell_Transactional_File";
+	    local $/ = undef;
+		$Log_Retention = $Log_Retention . <Transaction_Log>;
+			$Log_Retention =~ s/$Predictable_Prompt/\n$Predictable_Prompt/g;
+			$Log_Retention =~ s/$Predictable_Prompt//g;
+	close Transaction_Log;
+
 	my ($Reboot_Host, $Host_ID) = @_;
 	my $SSH;
 
+	# Discover if IP is available instead of hostname
+	my $Host_Connection_String;
+	## IPv4
+	my $Select_IPv4_Block_Links = $DB_Connection->prepare("SELECT `ip`
+		FROM `lnk_hosts_to_ipv4_assignments`
+		WHERE `host` = ?");
+	$Select_IPv4_Block_Links->execute($Host_ID);
+	
+	my $IPv4_Blocks;
+	my $IPv4_Counts = 0;
+	my $IPv4_Block;
+	while (my $Block_ID = $Select_IPv4_Block_Links->fetchrow_array() ) {
+
+		$IPv4_Counts++;
+		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+			FROM `ipv4_assignments`
+			WHERE `id` = ?");
+		$Select_Blocks->execute($Block_ID);
+	
+		$IPv4_Block = $Select_Blocks->fetchrow_array();
+	}
+
+	## IPv6
+	my $Select_IPv6_Block_Links = $DB_Connection->prepare("SELECT `ip`
+		FROM `lnk_hosts_to_ipv6_assignments`
+		WHERE `host` = ?");
+	$Select_IPv6_Block_Links->execute($Host_ID);
+	
+	my $IPv6_Blocks;
+	my $IPv6_Counts = 0;
+	my $IPv6_Block;
+	while (my $Block_ID = $Select_IPv6_Block_Links->fetchrow_array() ) {
+
+		$IPv6_Counts++;
+		my $Select_Blocks = $DB_Connection->prepare("SELECT `ip_block`
+			FROM `ipv6_assignments`
+			WHERE `id` = ?");
+		$Select_Blocks->execute($Block_ID);
+	
+		$IPv6_Block = $Select_Blocks->fetchrow_array();
+	}
+
+	if ($IPv6_Counts == 1) {
+		$Host_Connection_String = $IPv6_Block;
+		$Host_Connection_String =~ s/\/.*//;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to ${Blue}$Reboot_Host${Green} using IPv6 address ${Yellow}$Host_Connection_String${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to ${Blue}$Reboot_Host${Green} using IPv6 address ${Yellow}$Host_Connection_String${Clear}\n";
+		}
+	}
+	elsif ($IPv4_Counts == 1) {
+		$Host_Connection_String = $IPv4_Block;
+		$Host_Connection_String =~ s/\/.*//;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to ${Blue}$Reboot_Host${Green} using IPv4 address ${Yellow}$Host_Connection_String${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Connecting to ${Blue}$Reboot_Host${Green} using IPv4 address ${Yellow}$Host_Connection_String${Clear}\n";
+		}
+	}
+	elsif ($IPv4_Counts > 1 || $IPv6_Counts > 1) {
+		$Host_Connection_String = $Host;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}There are several possible IP addresses to connect to. Connecting to ${Blue}$Reboot_Host${Green} using IP provided by DNS${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}There are several possible IP addresses to connect to. Connecting to ${Blue}$Reboot_Host${Green} using IP provided by DNS${Clear}\n";
+		}
+	}
+	else {
+		$Host_Connection_String = $Host;
+		if ($Verbose) {
+			my $Time_Stamp = strftime "%H:%M:%S", localtime;
+			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}No listed IP addresses to connect to. Connecting to ${Blue}$Reboot_Host${Green} using IP provided by DNS${Clear}\n";
+			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}No listed IP addresses to connect to. Connecting to ${Blue}$Reboot_Host${Green} using IP provided by DNS${Clear}\n";
+		}
+	}
+	# / Discover if IP is available instead of hostname
+
 	if ($Verbose) {
 		my $Time_Stamp = strftime "%H:%M:%S", localtime;
-		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting to reconnect to ${Yellow}$Reboot_Host ${Green}... ${Clear}\n";
-		print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting to reconnect to ${Yellow}$Reboot_Host ${Green}... ${Clear}\n";
+		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting to reconnect to ${Yellow}$Reboot_Host${Green}...${Clear}\n";
+		print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting to reconnect to ${Yellow}$Reboot_Host${Green}...${Clear}\n";
 	}
 
 	my $Private_Key;
@@ -2068,34 +2336,8 @@ sub reboot_control {
 		}
 	}
 
-	my $SSH_Check;
-	my $Attempts;
-	while ($SSH_Check !~ /open/) {
-	
-		REBOOT_DISCOVERY: $Attempts++;
-		if ($Verbose) {
-			my $Time_Stamp = strftime "%H:%M:%S", localtime;
-			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempt ${Yellow}$Attempts${Green} at restarting SSH session... ${Clear}\n";
-			print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempt ${Yellow}$Attempts${Green} at restarting SSH session... ${Clear}\n";
-		}
-		$SSH_Check=`$nmap $Reboot_Host -PN -p ssh | $grep -E 'open'`;
-		sleep 1;
-	
-		if ($Attempts >= $Reboot_Max_Attempts) {
-			print "Host connection did not recover. Terminating the job.\n";
-			print LOG "Host connection did not recover. Terminating the job.\n";
-			my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
-			`status` = ?,
-			`modified_by` = ?
-			WHERE `id` = ?");
-			$Update_Job->execute('14', $User_Name, $Parent_ID);
-			unlink "$DShell_tmp_Location/tmp.$Discovered_Job_ID";
-			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
-			$Delete_Queue_Entry->execute($Discovered_Job_ID);
-			exit(14);
-		}
-
-	}
+	my ($SSH_Check, $Attempts);
+	($SSH_Check, $Attempts) = &reboot_discovery($Host_Connection_String, $Attempts);
 
 	# Fingerprint check/discovery
 	my $Find_Fingerprint = $DB_Connection->prepare("SELECT `fingerprint`
@@ -2114,7 +2356,7 @@ sub reboot_control {
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting password login${Clear}\n";
 			}
 			$SSH = Net::SSH::Expect->new (
-				host => $Host,
+				host => $Host_Connection_String,
 				user => $User_Name,
 				password=> $User_Password,
 				log_file => $DShell_Transactional_File,
@@ -2135,7 +2377,7 @@ sub reboot_control {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
-					goto REBOOT_DISCOVERY;
+					($SSH_Check, $Attempts) = &reboot_discovery($Host_Connection_String, $Attempts);
 				}
 			}
 
@@ -2223,7 +2465,7 @@ sub reboot_control {
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Attempting key login${Clear}\n";
 			}
 			$SSH = Net::SSH::Expect->new (
-				host => $Host,
+				host => $Host_Connection_String,
 				user => $User_Name,
 				log_file => $DShell_Transactional_File,
 				timeout => $Reboot_Connection_Timeout,
@@ -2243,7 +2485,7 @@ sub reboot_control {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to discover fingerprint. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
-					goto REBOOT_DISCOVERY;
+					($SSH_Check, $Attempts) = &reboot_discovery($Host_Connection_String, $Attempts);
 				}
 			}
 
@@ -2331,11 +2573,16 @@ sub reboot_control {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
 				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
-				goto REBOOT_DISCOVERY;
+				($SSH_Check, $Attempts) = &reboot_discovery($Host_Connection_String, $Attempts);
 			}
 		}
-	
+
+		my $System_Is_Windows;
 		last if $Hello =~ m/uid/;
+		if ($Hello =~ /:\\/) {
+			$System_Is_Windows = 1;
+			last;
+		}
 		last if $Reboot_Retry_Count >= $Reboot_Max_Retry_Count;
 		if ($Hello =~ m/Permission denied/) {
 			print "Supplied credentials failed. Terminating the job.\n";

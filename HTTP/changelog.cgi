@@ -39,6 +39,14 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.5.3
+	$Table->addRow('2.5.3', 'Added D-Shell connection via IPv6, IPv4 and failback hostname in that order.');
+	$Table->addRow('', 'Fixed warning output when attempting to take a VMWare snapshot of a non-VMWare system.');
+	$Table->addRow('', 'Fixed issue where a job status showed it as starting while it was running.');
+	$Table->addRow('', 'Added control provisions for Microsoft Windows OpenSSH Server.');
+	$Table->addRow('', 'Fixed issue where rebooted hosts clobbered transaction logs.');
+	$Table->addRow('---', '');
+
 	## Version 2.5.2
 	$Table->addRow('2.5.2', 'Format URI fixes.');
 	$Table->addRow('', 'Added sensible defaults to Apache file locations.');
