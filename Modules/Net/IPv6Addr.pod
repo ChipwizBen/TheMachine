@@ -1,0 +1,492 @@
+
+=encoding UTF-8
+
+=head1 NAME
+
+Net::IPv6Addr - Check validity of IPv6 addresses
+
+=head1 VERSION
+
+This documents version 0.91 of Net::IPv6Addr corresponding to
+L<git commit c2d4788cdfc81b2f08562860e4cfe0a2373a35c2|https://github.com/benkasminbullock/net-ipv6addr/commit/c2d4788cdfc81b2f08562860e4cfe0a2373a35c2> released on Fri Oct 6 12:00:28 2017 +0900.
+
+=head1 SYNOPSIS
+
+    
+    use Net::IPv6Addr;
+    my $addr = "dead:beef:cafe:babe::f0ad";
+    Net::IPv6Addr::ipv6_parse($addr);
+    my $x = Net::IPv6Addr->new($addr);
+    print $x->to_string_preferred(), "\n";
+
+
+produces output
+
+    dead:beef:cafe:babe:0:0:0:f0ad
+
+
+(This example is included as L<F<synopsis.pl>|https://api.metacpan.org/source/BKB/Net-IPv6Addr-0.91/examples/synopsis.pl> in the distribution.)
+
+
+=head1 DESCRIPTION
+
+C<Net::IPv6Addr> checks strings for valid IPv6 addresses, as specified
+in L<RFC1884|/RFCs>, and converts addresses into various formats. It
+is able to process addresses formatted in the following styles;
+
+=over
+
+=item preferred form: x:x:x:x:x:x:x:x
+
+=item zero-compressed form: the infamous double-colon.  
+
+Too many pattern matches to describe in this margin.
+
+=item	mixed IPv4/IPv6 format: x:x:x:x:x:x:d.d.d.d
+
+=item	mixed IPv4/IPv6 with compression: ::d.d.d.d or ::FFFF:d.d.d.d
+
+=item	base-85-encoded: [0-9A-Za-z!#$%&()*+;<=>?@^_`{|}~-]{20}
+
+(This encoding was given in L<RFC1924|/RFCs> as an April Fool's joke.)
+
+=back
+
+=head1 METHODS AND FUNCTIONS
+
+Several of the following serve as both object methods and standalone
+functions.
+
+=head2 new
+
+    my $ni = Net::IPv6Addr->new ('dead:beef:cafe:babe::f0ad');
+
+Create a new Net::IPv6Addr object from a string. Internally, the
+object is a blessed array reference containing the eight parts of the
+address as integers.
+
+=head3 Parameters
+
+A string to be interpreted as an IPv6 address.
+
+=head3 Returns
+
+A C<Net::IPv6Addr> object if successful.
+
+=head3 Notes
+
+Throws an exception if the string isn't a valid address.
+
+=head2 ipv6_parse
+
+    my ($ni, $pl) = ipv6_parse ('dead:beef:cafe:babe::f0ad');
+
+=head3 Parameters
+
+Either a string containing an IPv6 address string, which may also
+include a C</> character and a numeric prefix length,
+
+    my ($x, $y) = ipv6_parse ("a::/24");
+
+or an IPv6 address string, with an optional second argument consisting
+of a numeric prefix length:
+
+    my ($x, $y) = ipv6_parse('a::', '24');
+
+=head3 Returns
+
+Called in array context, the return value is a list consisting of the
+address string and the prefix, if it parses correctly. Called in
+scalar context, the address and prefix are concatenated with "/".
+
+=head3 Notes
+
+Throws an exception on malformed input.
+
+=head2 is_ipv6
+
+    my $niok = is_ipv6 ('dead:beef:cafe:babe::f0ad');
+
+=head3 Parameters
+
+Identical to L</ipv6_parse>.
+
+=head3 Returns
+
+This returns the return value of L</ipv6_parse>, called in scalar
+context, if it does parse out correctly, otherwise it returns
+C<undef>. Unlike L</ipv6_parse>, is_ipv6 does not throw exceptions.
+
+=head2 ipv6_chkip
+
+    my $niok = ipv6_chkip ('dead:beef:cafe:babe::f0ad');
+
+=head3 Parameters
+
+An IPv6 address string, without a prefix.
+
+=head3 Returns
+
+Something true if it's a valid address; something false otherwise.
+
+
+=head2 to_string_preferred
+
+    
+    use Net::IPv6Addr;
+    print Net::IPv6Addr::to_string_preferred ('dead:beef:cafe:babe::f0ad');
+
+
+produces output
+
+    dead:beef:cafe:babe:0:0:0:f0ad
+
+(This example is included as L<F<preferred.pl>|https://api.metacpan.org/source/BKB/Net-IPv6Addr-0.91/examples/preferred.pl> in the distribution.)
+
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+The IPv6 address, formatted in the "preferred" way (as detailed by
+RFC1884).
+
+=head3 Notes
+
+Invalid input will generate an exception.
+
+=head2 to_string_compressed
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+The IPv6 address in the "compressed" format detailed by L<RFC1884|/RFCs>.
+
+=head3 Notes
+
+Invalid input will generate an exception.
+
+
+=head2 to_string_ipv4
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+The IPv6 address in the IPv4 format detailed by L<RFC1884|/RFCs>.
+
+=head3 Notes
+
+Invalid input (such as an address that was not originally IPv4)
+will generate an exception.
+
+
+=head2 to_string_ipv4_compressed
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+The IPv6 address in the compressed IPv4 format detailed by
+L<RFC1884|/RFCs>.
+
+=head3 Notes
+
+Invalid input (such as an address that was not originally IPv4)
+will generate an exception.
+
+
+=head2 to_string_base85
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+The IPv6 address in the style detailed by L<RFC1924|/RFCs>.
+
+=head3 Notes
+
+Invalid input will generate an exception. 
+
+The base 85 encoding described in RFC1924 was an April Fool's joke.
+
+=head2 to_bigint
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+The BigInt representation of the given IPv6 address.
+
+=head3 Notes
+
+Invalid input will generate an exception.
+
+=head2 to_array
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+An array [0..7] of 16-bit hexadecimal numbers (strings).
+
+=head3 Notes
+
+Invalid input will generate an exception.
+
+=head2 to_intarray
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+An array [0..7] of numbers.
+
+=head3 Notes
+
+Invalid input will generate an exception.
+
+=head2 to_string_ip6_int
+
+=head3 Parameters
+
+If used as an object method, none; if used as a subroutine,
+an IPv6 address string in any format.
+
+=head3 Returns
+
+The reverse-address pointer as defined by L<RFC1886|/RFCs>.
+
+=head3 Notes
+
+Invalid input will generate an exception.
+
+=head2 in_network_of_size
+
+    my $obj = $x->in_network_of_size ($n);
+
+Given an input IPv6 address $x, this returns the C<$n>
+most-significant bits of C<$x> as a new Net::IPv6Addr object.
+
+=head3 Parameters
+
+If used as an object method, network size in bits
+
+    my $obj = $x->in_network_of_size (64);
+
+If used as a subroutine, an IPv6 address string in any format
+and network size in bits.
+
+    my $obj = Net::IPv6::in_network_of_size ($addr, 64);
+
+Network size may be given with / notation:
+
+    my $obj = Net::IPv6::in_network_of_size ("$addr/64");
+
+=head3 Returns
+
+Network IPv6Addr of given size.
+
+=head3 Notes
+
+Invalid input will generate an exception. 
+
+Prior to version 0.9, this did not work correctly unless the net size
+was a multiple of sixteen.
+
+=head2 in_network
+
+    my $ok = $x->in_network ("aa:bb:cc:dd::/64");
+
+=head3 Parameters
+
+If used as an object method, a network and its size in bits
+
+    my $ok = $x->in_network ("aa:bb:cc:dd::", 64);
+
+If used as a subroutine, an IPv6 address string in any format,
+followed by a network address string and its size in bits.
+
+    my $addr = 'fd00::54:20c:29fe:fe14:ab4b';
+    my $ok = Net::IPv6Addr::in_network ($addr, "aa:bb:cc:dd::", 64);
+
+The network size may also be given with the / notation after the
+network address string:
+
+    my $ok = $x->in_network("aa:bb:cc:dd::/64");
+
+=head3 Returns
+
+A true value if the address is a member of the network, false otherwise.
+
+=head3 Notes
+
+Invalid input will generate an exception.
+
+Prior to version 0.9, this did not work correctly unless the net size
+was a multiple of sixteen.
+
+=head1 EXPORTS
+
+As of version 0.91, L</in_network>, L</in_network_of_size>, L</ipv6_chkip>, L</ipv6_parse>, L</is_ipv6> may
+be exported on demand. The other routines need to be called in
+fully-qualified format, like C<Net::IPv6Addr::is_ipv6>. The exported
+functions may all be exported using
+
+    use Net::IPv6Addr ':all';
+
+=head1 BUGS
+
+Known deficiencies include the following.
+
+=over
+
+=item No tests
+
+Many of the routines do not have any tests. This means that
+alterations to the code may have unintentionally altered the module's
+behaviour.
+
+=item Compressed + IPv4 are not accepted
+
+As of 0.91, the valid format consisting of a
+compressed-but-non-zero six-element IPv6 followed by an IPv4 is not
+accepted by the module. TODO tests are in F<t/Regexp-IPv6.t>.
+
+=back
+
+Report further bugs at
+L<https://rt.cpan.org/Dist/Display.html?Name=Net-IPv6Addr> or by email
+to C<bug-Net-IPv6Addr [at] rt.cpan.org>.
+
+=head1 DEPENDENCIES
+
+L<Net::IPv4Addr>, L<Math::Base85>, L<Math::BigInt>
+
+=head2 Reverse dependencies
+
+L<Search grep.cpan.me for uses of this module|http://grep.cpan.me/?q=Net%3A%3AIPv6Addr%5Cb>
+
+=head1 SEE ALSO
+
+=head2 RFCs
+
+The following RFCs (requests for comment, internet standards
+documentation) contain information on IPv6.
+
+L<RFC1884|https://www.ietf.org/rfc/rfc1884.txt>,
+L<RFC1886|https://www.ietf.org/rfc/rfc1886.txt>,
+L<RFC1924|https://www.ietf.org/rfc/rfc1924.txt> (April Fool's joke),
+L<RFC2373|https://www.ietf.org/rfc/rfc2373.txt>
+
+The links go to the plain text online versions of the RFCs.
+
+=head2 Other CPAN modules
+
+There are a very large number of CPAN modules which deal with IPv6
+addresses. The following list gives all the ones I know about which
+overlap with this module, in alphabetical order.
+
+=over
+
+=item L<Data::Checker::IP>
+
+Uses L</NetAddr::IP>.
+
+=item L<Data::Validate::IP>
+
+Uses L<Socket> to validate IP addresses.
+
+=item L<IPv6::Address>
+
+=item L<Net::IP>
+
+=item L<Net::IP::Minimal>
+
+=item L<Net::IPAddress::Util>
+
+=item L<Net::IPv6Address>
+
+=item L<NetAddr::IP>
+
+=item L<NetAddr::IP::Lite>
+
+=item L<Regexp::IPv6>
+
+Tests and one regex from C<Regexp::IPv6> are included in this
+module. Unlike C<Net::IPv6Addr>, this module disallows the valid C<::>
+IP address, which means "the unspecified addresses". See the module's
+documentation for details.
+
+=back
+
+=head2 Other
+
+=over
+
+=item Online validator
+
+L<https://www.helpsystems.com/intermapper/ipv6-test-address-validation>
+
+=back
+
+=head1 HISTORY
+
+This module was originally written by Tony Monroe in 2001 to simplify
+the task of maintaining DNS records after he set himself up with
+Freenet6.
+
+In 2017 the module was adopted by Ben Bullock with the help of Neil
+Bowers as part of "CPAN day".
+
+Exporting of some functions was added in version 0.8.
+
+For version 0.91, IPv6 validating tests and an IPv4 validating regexp
+were taken from L<Regexp::IPv6> by Salvador Fandiño García.
+
+=head1 AUTHOR
+
+Tony Monroe(*)
+
+The module's interface resembles L<Net::IPv4Addr> by Francis
+J. Lacoste E<lt>francis dot lacoste at iNsu dot COME<gt>.
+
+Some fixes and subroutines from Jyrki Soini E<lt>jyrki dot soini
+at sonera dot comE<gt>.
+
+(*) The current module maintainer (BKB) does not have any contact
+information for Tony Monroe. Those wishing to contact him can do so
+via Neil Bowers (see his CPAN user page for contact details).
+
+=head1 LICENSE
+
+This distribution is copyright (c) 2001-2002 Tony Monroe.  All rights
+reserved.  This software is distributed under the same license terms
+as Perl itself.  This software comes with NO WARRANTIES WHATSOEVER,
+express, implied, or otherwise.
+
