@@ -911,7 +911,12 @@ sub host_connection {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
 				}
-				$SSH->send("$User_Password");
+#				if ($System_Is_Windows) {
+					$SSH->send("$User_Password");
+#				}
+#				else {
+#					$SSH->send("$User_Password");
+#				}
 			}
 			else {
 				print "${Red}Password prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
@@ -1027,11 +1032,28 @@ sub host_connection {
 			}
 		}
 
-		my $Test_Command = 'id';
-		$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
+#			my $Test_Command = 'echo %TheMachine%' . "\r";
+#			$SSH->send($Test_Command);
+			#$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
+		eval { $Hello = $SSH->waitfor("\033", 10); };
+		#eval { $Hello = $SSH->waitfor("Microsoft", 10); };
+
+		if ($Hello) {
+			$System_Is_Windows = 1;
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Windows detected, setting control mode to 'Money for Old Rope'...${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Windows detected, setting control mode to 'Money for Old Rope'...${Clear}\n";
+			}
+		}
+		else {
+			#my $Test_Command = 'echo %TheMachine%' . "\r\n";
+			#$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
+		}
+
 
 		if ($@) {
-			print $@;
+			print "Error: $@n";
 			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Max_Attempts${Yellow})...${Clear}\n";
@@ -1040,18 +1062,7 @@ sub host_connection {
 			($SSH_Check, $Attempts) = &connection_discovery($Host_Connection_String, $Attempts);
 		}
 
-		#if ($Hello =~ /:\\/) {
-		if ($Hello =~ /Microsoft\sWindows/) {
-			$System_Is_Windows = 1;
-			if ($Verbose) {
-				my $Time_Stamp = strftime "%H:%M:%S", localtime;
-				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Windows detected, setting control mode to 'Money for Old Rope'...${Clear}\n";
-				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Windows detected, setting control mode to 'Money for Old Rope'...${Clear}\n";
-			}
-		}
-
-		print "HELLO: $Hello\n";
-		last if $Hello =~ m/uid/;
+		last if $Hello =~ m/TheMachine/;
 		last if $System_Is_Windows == 1;
 		last if $Retry_Count >= $Max_Retry_Count;
 
@@ -1783,7 +1794,9 @@ sub processor {
 				}
 			}
 
-			eval { $Connected_Host->exec("stty raw -echo"); }; &epic_failure('TTY Set', $@, $Command_Output, $Job_Status_Update_ID) if $@;
+			if (!$System_Is_Windows) {
+				eval { $Connected_Host->exec("stty raw -echo"); }; &epic_failure('TTY Set', $@, $Command_Output, $Job_Status_Update_ID) if $@;
+			}
 
 			my $Prompt = $Connected_Host->peek(0);
 			if ($Prompt ne $Predictable_Prompt) {

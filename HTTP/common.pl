@@ -979,7 +979,7 @@ sub Version {
 
 	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things. You should not modify this value.
 
-	my $Version = '2.5.3';
+	my $Version = '2.6.0';
 	return $Version;
 
 } # sub Version
@@ -1112,6 +1112,18 @@ sub System_Logger {
 	}
 
 } # sub System_Logger
+
+sub Proxmox_Connection {
+
+	use DBI;
+	my $DB_Connection = DB_Connection;
+	my $Node_Query = $DB_Connection->prepare("SELECT `target_node`, `target_port`, `username`, `password`
+	FROM `config_proxmox`");
+	$Node_Query->execute();
+	my @Proxmox = $Node_Query->fetchrow_array();
+	return @Proxmox;
+
+} # sub Proxmox_Connection
 
 sub enc {
 

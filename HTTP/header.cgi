@@ -25,6 +25,10 @@ if (!$User_Name) {
 	exit(0);
 }
 
+if ($User_Admin) {
+
+}
+
 my $Message_Green = $Session->param("Message_Green");
 my $Message_Orange = $Session->param("Message_Orange");
 my $Message_Red = $Session->param("Message_Red");

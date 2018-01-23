@@ -32,7 +32,7 @@ Options are:
 				threads matches the number of hosts provided. Setting it higher than this doesn't do anything, but setting it
 				lower will help reduce load on VMware.
 	${Blue}-H, --hosts\t\t${Green}A list of hosts, comma or space seperated.
-	${Blue}-i, --host-ids\t\t${Green}A list of host IDs to snapshot, comma or space seperated.
+	${Blue}-i, --host-ids\t\t${Green}A list of (Machine) host IDs to snapshot, comma or space seperated.
 	${Blue}-c, --count\t\t${Green}Counts the snapshots belonging to the VM, including those done by $System_Name.
 	${Blue}-S, --show\t\t${Green}Shows a tree list of all snapshots taken of a VM, including those done by $System_Name.
 	${Blue}-T, --tag\t\t${Green}Used with creating, deleting and reverting snapshots as a reference tag.
