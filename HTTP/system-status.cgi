@@ -144,6 +144,7 @@ my ($Enforce_Complexity_Requirements,
 	$Minimum_Digits,
 	$Minimum_Special_Characters,
 	$Special_Characters) = Password_Complexity_Check('Wn&sCvaG%!nvz}pb|#.pNzMe~I76fRx9m;a1|9wPYNQw4$u"w^]YA5WXr2b>bzyZzNKczDt~K5VHuDe~kX5mm=Ke:U5M9#g9PylHiSO$ob2-/Oc;=j#-KHuQj&#5fA,K_k$J\sSZup3<22MpK<>J|Ptp.r"h6');
+	if ($Enforce_Complexity_Requirements) {$Enforce_Complexity_Requirements = 'Yes'} else {$Enforce_Complexity_Requirements = 'No'}
 my $md5sum = md5sum();
 my $cut = cut();
 my $visudo = visudo();
