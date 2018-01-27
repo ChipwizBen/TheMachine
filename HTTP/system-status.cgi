@@ -609,7 +609,7 @@ print <<ENDHTML;
 			<td style='color: #00FF00;'>$Key_Path</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Default SFTP Distribution Key Path</td>
+			<td style="text-align: right;">Default SFTP Distribution Timeout</td>
 			<td style='color: #00FF00;'>$Timeout seconds</td>
 		</tr>
 		<tr>
