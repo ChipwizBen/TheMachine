@@ -13,6 +13,7 @@ require $Common_Config;
 
 my $System_Short_Name = System_Short_Name();
 my $Verbose = Verbose();
+	my $Is_Verbose;
 my $Very_Verbose = Very_Verbose();
 my $Paper_Trail = Paper_Trail();
 my $Version = Version();
@@ -216,7 +217,10 @@ elsif ($Captured_Key_Passphrase && $No_Decode) {
 }
 
 
-if ($Verbose) {print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";}
+if ($Verbose) {
+	print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";
+	$Is_Verbose = '-v';
+}
 if ($Very_Verbose) {$Verbose = 1; print "${Red}## ${Green}Very Verbose is on (PID: $$).${Clear}\n";};
 if ($No_Decode) {print "${Red}## ${Green}Decode is off.${Clear}\n";}
 if ($Override) {print "${Red}## ${Pink}Override is on.${Clear}\n";}
@@ -403,8 +407,8 @@ if ($Verbose && $Paper_Trail) {
 
 if ($Verbose) {
 	my $Time_Stamp = strftime "%H:%M:%S", localtime;
-	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Queuing myself for execution. Execution cap is ${Yellow}$DShell_Queue_Execution_Cap${Green} concurrent jobs.${Clear}\n";
-	print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Queuing myself for execution. Execution cap is ${Yellow}$DShell_Queue_Execution_Cap${Green} concurrent jobs.${Clear}\n";
+	print "\n${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Queuing myself for execution. Execution cap is ${Yellow}$DShell_Queue_Execution_Cap${Green} concurrent jobs.${Clear}\n";
+	print LOG "\n${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Queuing myself for execution. Execution cap is ${Yellow}$DShell_Queue_Execution_Cap${Green} concurrent jobs.${Clear}\n";
 }
 
 if (!$High_Priority) {$High_Priority = 0}
@@ -425,7 +429,7 @@ while ($Execution_Ready ne 'GO') {
 	$Queue_Query->execute();
 	my $Total_Queued_Jobs = $Queue_Query->rows();
 
-	sleep 3; # Hack fix for race condition when queuing many jobs at once and more jobs execute than the limit allows
+	sleep 3; # Fix for race condition when queuing many jobs at once and more jobs execute than the limit allows
 
 	my $Queue_Position_Count = 0;
 	while (my ($Queue_Job_ID, $Queue_Override) = $Queue_Query->fetchrow_array()) {
@@ -912,10 +916,10 @@ sub host_connection {
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Found password prompt ${Clear}\n";
 				}
 #				if ($System_Is_Windows) {
-					$SSH->send("$User_Password");
+#					$SSH->send("$User_Password");
 #				}
 #				else {
-#					$SSH->send("$User_Password");
+					$SSH->send("$User_Password");
 #				}
 			}
 			else {
@@ -1032,11 +1036,11 @@ sub host_connection {
 			}
 		}
 
-#			my $Test_Command = 'echo %TheMachine%' . "\r";
-#			$SSH->send($Test_Command);
-			#$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
-		eval { $Hello = $SSH->waitfor("\033", 10); };
-		#eval { $Hello = $SSH->waitfor("Microsoft", 10); };
+		my $Test_Command = 'echo TheMachine';
+		$SSH->send($Test_Command);
+		#$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
+		#eval { $Hello = $SSH->waitfor("\033", 10); };
+		eval { $Hello = $SSH->waitfor("Microsoft", 1); };
 
 		if ($Hello) {
 			$System_Is_Windows = 1;
@@ -1047,10 +1051,8 @@ sub host_connection {
 			}
 		}
 		else {
-			#my $Test_Command = 'echo %TheMachine%' . "\r\n";
-			#$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
+			$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
 		}
-
 
 		if ($@) {
 			print "Error: $@n";
@@ -1392,7 +1394,7 @@ sub processor {
 			}
 			$Command_Output = 'Skipped comment / empty line.';
 			$Exit_Code = 0;
-		}
+		} # / COMMENT
 		elsif ($Command =~ /\*SEND.*/ && $Command =~ /\*WAITFOR.*/) {
 			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}Incorrect use of *WAITFOR and *SEND together.${Clear}\n";
 			print LOG "${Red}Incorrect use of *WAITFOR and *SEND together.\n";
@@ -1425,7 +1427,7 @@ sub processor {
 			my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
 			$Delete_Queue_Entry->execute($Discovered_Job_ID);
 			exit($Exit_Code);
-		}
+		} # / SEND or WAITFOR fail
 		elsif ($Command =~ /^\*PAUSE.*/) {
 
 			my $Pause = $Command;
@@ -1468,7 +1470,7 @@ sub processor {
 				$Exit_Code = 0;
 
 			}
-		}
+		} # / PAUSE
 		elsif ($Command =~ /^\*VSNAPSHOT.*/) {
 			my $Snapshot = $Command;
 			$Snapshot =~ s/\*VSNAPSHOT (.*)/$1/;
@@ -1521,10 +1523,10 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Counting snapshots${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Counting snapshots${Clear}\n";
 				}
-				$Command_Output = `./vmware-snapshot.pl -c -i $Host_ID`;
+				$Command_Output = `./vmware-snapshot.pl -c -i $Host_ID $Is_Verbose`;
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
-					$Command_Output = "There was an error counting snapshots. $Exit_Code";
+					$Command_Output = "There was an error counting snapshots.";
 				}
 			}
 			elsif ($Snapshot eq 'SHOW') {
@@ -1532,10 +1534,10 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshot tree${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshot tree${Clear}\n";
 				}
-				$Command_Output = `./vmware-snapshot.pl -S -i $Host_ID`;
+				$Command_Output = `./vmware-snapshot.pl -S -i $Host_ID $Is_Verbose`;
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
-					$Command_Output = "There was an error showing the snapshot tree. $Exit_Code";
+					$Command_Output = "There was an error showing the snapshot tree.";
 				}
 			}
 			elsif ($Snapshot =~ /^TAKE/) {
@@ -1553,18 +1555,18 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}' -X ${User_Name}`;
+					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}' -X '${User_Name}' $Is_Verbose`;
 				}
 				else {
 					if ($Verbose) {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -X ${User_Name}`;
+					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -X '${User_Name}' $Is_Verbose`;
 				}
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
-					$Command_Output = "There was an error taking a snapshot. $Exit_Code";
+					$Command_Output = "There was an error taking a snapshot.";
 				}
 			}
 			elsif ($Snapshot =~ /^REVERT/) {
@@ -1582,18 +1584,18 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID -T '${Snapshot_Tag}'`;
+					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID -T '${Snapshot_Tag}' $Is_Verbose`;
 				}
 				else {
 					if ($Verbose) {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting to the current snapshot${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting to the current snapshot${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID`;
+					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID $Is_Verbose`;
 				}
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
-					$Command_Output = "There was an error reverting a snapshot. $Exit_Code";
+					$Command_Output = "There was an error reverting a snapshot.";
 				}
 				else {
 					if ($Verbose) {
@@ -1630,19 +1632,19 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID -T '${Snapshot_Tag}'`;
+					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID -T '${Snapshot_Tag}' $Is_Verbose`;
 				}
 				else {
 					if ($Verbose) {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing current snapshot taken by $System_Short_Name${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing current snapshot taken by $System_Short_Name${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID`;
+					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID $Is_Verbose`;
 				}
 
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
-					$Command_Output = "There was an error removing $System_Short_Name snapshots. $Exit_Code";
+					$Command_Output = "There was an error removing $System_Short_Name snapshots.";
 				}
 			}
 			elsif($Snapshot eq 'REMOVEALL') {
@@ -1650,14 +1652,14 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots${Clear}\n";
 				}
-				$Command_Output = `./vmware-snapshot.pl -e -i $Host_ID`;
+				$Command_Output = `./vmware-snapshot.pl -e -i $Host_ID $Is_Verbose`;
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
-					$Command_Output = "There was an error removing all snapshots. $Exit_Code";
+					$Command_Output = "There was an error removing all snapshots.";
 				}
 			}
 			elsif($Snapshot eq 'NOTVMWARE') {
-				$Command_Output = "This is not a VMware host.";
+				$Command_Output = "This is not a VMware VM.";
 				$Exit_Code = 0;
 			}
 			else {
@@ -1692,7 +1694,217 @@ sub processor {
 				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit($Exit_Code);
 			}
-		}
+		} # / VSNAPSHOT
+		elsif ($Command =~ /^\*PSNAPSHOT.*/) {
+			my $Snapshot = $Command;
+			$Snapshot =~ s/\*PSNAPSHOT (.*)/$1/;
+
+		 	if ($Verbose) {
+				$Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Checking that the system resides on Proxmox/KVM before performing a snapshot operation${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Checking that the system resides on Proxmox/KVM before performing a snapshot operation${Clear}\n";
+			}
+
+			if ($System_Is_Windows) {
+				$Connected_Host->send(" $Set_Predictable_Prompt");
+				$Connected_Host->send(' echo %PROMPT%');
+				$Command_Output = $Connected_Host->read_all();
+			}
+			else {
+				$Connected_Host->send(' export HISTFILE=/dev/null');
+				$Connected_Host->send(" $Set_Predictable_Prompt");
+				$Connected_Host->send(' echo $PS1');
+				$Command_Output = $Connected_Host->read_all();
+				$Connected_Host->send(' cat /sys/class/dmi/id/sys_vendor');
+			}
+			eval { $Command_Output = $Connected_Host->read_all(); }; &epic_failure('Proxmox/KVM Detection Fault', $@, $Command_Output, $Job_Status_Update_ID) if $@;
+			$Command_Output =~ s/\e.*//g;
+			$Command_Output =~ s/\r//g;
+			$Command_Output =~ s/\n//g;
+			$Command_Output =~ s/\Q$Predictable_Prompt\E//g;
+			$Command_Output =~ s/\s*cat\s\/sys\/class\/dmi\/id\/sys_vendor//g;
+
+			if ($Command_Output eq 'QEMU') {
+				if ($Verbose) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System appears to be a Proxmox/KVM VM${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System appears to be a Proxmox/KVM VM${Clear}\n";
+				}
+			}
+			else {
+				if ($Verbose) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System IS NOT a Proxmox/KVM VM, it is a $Command_Output system. Skipping snapshot operations.${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}System IS NOT a Proxmox/KVM VM, it is a $Command_Output system. Skipping snapshot operations.${Clear}\n";
+				}
+				$Snapshot = 'NOTKVM';
+			}
+			
+			if ($Verbose && $Snapshot ne 'NOTKVM') {
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Performing a snapshot operation${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Performing a snapshot operation${Clear}\n";
+			}
+			if ($Snapshot eq 'SHOW') {
+				if ($Verbose) {
+					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshots${Clear}\n";
+					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshots${Clear}\n";
+				}
+				$Command_Output = `./proxmox-snapshot.pl -S -i $Host_ID $Is_Verbose`;
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error showing the snapshots: $Command_Output ($Exit_Code)";
+					$Exit_Code = 21;
+				}
+			}
+			elsif ($Snapshot =~ /^TAKE/) {
+
+				my $Snapshot_Tag = $Snapshot;
+					if ($Snapshot_Tag =~ /^TAKE /) {
+						$Snapshot_Tag =~ s/^TAKE (.*)/$1/;
+					}
+					else {
+						$Snapshot_Tag = '';
+					}
+
+				if ($Snapshot_Tag) {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+					}
+					$Command_Output = `./proxmox-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}' -X '${User_Name}' $Is_Verbose`;
+				}
+				else {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}You must provide a snapshot tag when taking snapshots${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}You must provide a snapshot tag when taking snapshots${Clear}\n";
+					}
+					print "Error: You must provide a snapshot tag when taking snapshots\n";
+					$Exit_Code = 21;
+				}
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error taking a snapshot: $Command_Output ($Exit_Code)";
+					$Exit_Code = 21;
+				}
+			}
+			elsif ($Snapshot =~ /^REVERT/) {
+
+				my $Snapshot_Tag = $Snapshot;
+					if ($Snapshot_Tag =~ /^REVERT /) {
+						$Snapshot_Tag =~ s/^REVERT (.*)/$1/;
+					}
+					else {
+						$Snapshot_Tag = '';
+					}
+
+				if ($Snapshot_Tag) {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+					}
+					$Command_Output = `./proxmox-snapshot.pl -R -y -i $Host_ID -T '${Snapshot_Tag}' $Is_Verbose`;
+					$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				}
+				else {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}You must provide a snapshot tag when reverting snapshots${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}You must provide a snapshot tag when reverting snapshots${Clear}\n";
+					}
+					print "Error: You must provide a snapshot tag when reverting snapshots\n";
+					$Exit_Code = 21;
+				}
+				
+				if ($Exit_Code) {
+					$Command_Output = "There was an error reverting a snapshot: $Command_Output ($Exit_Code)";
+					$Exit_Code = 21;
+				}
+				else {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Host appears to have reverted to a previous snapshot. Establishing session again...${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Host appears to have reverted to a previous snapshot. Establishing session again...${Clear}\n";
+					}
+					my $Update_Job_Status = $DB_Connection->prepare("INSERT INTO `job_status` (
+						`job_id`,
+						`command`,
+						`task_started`,
+						`modified_by`
+					)
+					VALUES (
+						?, ?, NOW(), ?
+					)");
+				
+					$Update_Job_Status->execute($Parent_ID, '### Host appears to have reverted to a previous snapshot. Establishing session again...', $User_Name);
+					my $Reboot_Type = 1;
+					$Connected_Host = &reboot_control($Host, $Host_ID, $Reboot_Type);
+				}
+			}
+			elsif($Snapshot =~ /^REMOVE/) {
+
+				my $Snapshot_Tag = $Snapshot;
+					if ($Snapshot_Tag =~ /^REMOVE /) {
+						$Snapshot_Tag =~ s/^REMOVE (.*)/$1/;
+					}
+					else {
+						$Snapshot_Tag = '';
+					}
+
+				if ($Snapshot_Tag) {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
+					}
+					$Command_Output = `./proxmox-snapshot.pl -d -i $Host_ID -T '${Snapshot_Tag}' $Is_Verbose`;
+				}
+				else {
+					if ($Verbose) {
+						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}You must provide a snapshot tag when removing snapshots${Clear}\n";
+						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Red}You must provide a snapshot tag when removing snapshots${Clear}\n";
+					}
+					print "Error: You must provide a snapshot tag when removing snapshots\n";
+					$Exit_Code = 21;
+				}
+
+				$Exit_Code = ${^CHILD_ERROR_NATIVE};
+				if ($Exit_Code) {
+					$Command_Output = "There was an error removing $System_Short_Name snapshots: $Command_Output ($Exit_Code)";
+					$Exit_Code = 21;
+				}
+			}
+			elsif($Snapshot eq 'NOTKVM') {
+				$Command_Output = "This is not a Proxmox/KVM VM.";
+				$Exit_Code = 0;
+			}
+			else {
+				$Command_Output = "Found that you wanted to perform a snapshot operation. Couldn't determine exactly what. Perhaps you misspelt an option.";
+				$Exit_Code = 1;
+			}
+
+			my $Select_Failure_Action = $DB_Connection->prepare("SELECT `on_failure`
+				FROM `jobs`
+				WHERE `id` = ?
+			");
+			$Select_Failure_Action->execute($Parent_ID);
+			my ($On_Failure) = $Select_Failure_Action->fetchrow_array();
+
+			if ($Exit_Code != 0 && $On_Failure) {
+				my $Update_Job = $DB_Connection->prepare("UPDATE `jobs` SET
+					`status` = ?,
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job->execute($Exit_Code, $User_Name, $Parent_ID);
+				my $Update_Job_Status = $DB_Connection->prepare("UPDATE `job_status` SET
+					`exit_code` = ?,
+					`output` = ?,
+					`task_ended` = NOW(),
+					`modified_by` = ?
+					WHERE `id` = ?");
+				$Update_Job_Status->execute($Exit_Code, $Command_Output, $User_Name, $Job_Status_Update_ID);
+				print "${Red}Snapshot operation failed.${Clear}\n";
+				print LOG "${Red}Snapshot operation failed.${Clear}\n";
+				$Connected_Host->close();
+				my $Delete_Queue_Entry = $DB_Connection->prepare("DELETE from `job_queue` WHERE `job_id` = ?");
+				$Delete_Queue_Entry->execute($Discovered_Job_ID);
+				exit($Exit_Code);
+			}
+		} # / PSNAPSHOT
 		elsif ($Command =~ /^\*WAITFOR.*/) {
 			my $Wait_For_String = $Command;
 			my $Wait_Timeout_Override;
@@ -1759,7 +1971,7 @@ sub processor {
 				$Delete_Queue_Entry->execute($Discovered_Job_ID);
 				exit($Exit_Code);
 			}
-		}
+		} # / WAITFOR
 		elsif ($Command =~ /^\*SEND.*/) {
 			my $Send = $Command;
 			$Send =~ s/\*SEND(.*)/$1/;
@@ -1773,7 +1985,7 @@ sub processor {
 			$Command_Output = "'$Command_Clean' sent.";
 			$Connected_Host->send($Send);
 			$Exit_Code = 0;
-		}
+		} # / SEND
 		else {
 
 			my $Reboot_Required;
