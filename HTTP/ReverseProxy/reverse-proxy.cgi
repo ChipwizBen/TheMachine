@@ -211,8 +211,8 @@ else {
 
 sub html_add_reverse_proxy {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log,
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path,
 		$Default_SSL_Certificate_File,
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
@@ -288,11 +288,11 @@ function Enforce_SSL_Toggle(value) {
 	</tr>
 	<tr>
 		<td style="text-align: right;">Transfer Log:</td>
-		<td colspan="2"><input type='text' name='Transfer_Log_Add' style="width:100%" placeholder="$Default_Transfer_Log"></td>
+		<td colspan="2"><input type='text' name='Transfer_Log_Add' style="width:100%" placeholder="$Default_Transfer_Log_Path/<domain>.log"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Error Log:</td>
-		<td colspan="2"><input type='text' name='Error_Log_Add' style="width:100%" placeholder="$Default_Error_Log"></td>
+		<td colspan="2"><input type='text' name='Error_Log_Add' style="width:100%" placeholder="$Default_Error_Log_Path/<domain>.error"</td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">SSL:</td>
@@ -438,14 +438,14 @@ ENDHTML
 
 sub add_reverse_proxy {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log,
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path,
 		$Default_SSL_Certificate_File,
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
-	if (!$Transfer_Log_Add) {$Transfer_Log_Add = $Default_Transfer_Log;}
-	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log;}
+	if (!$Transfer_Log_Add) {$Transfer_Log_Add = $Default_Transfer_Log_Path . '/' . $Server_Name_Add . '.log';}
+	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log_Path . '/' . $Server_Name_Add . '.error';}
 	if (!$Certificate_Add) {$Certificate_Add = $Default_SSL_Certificate_File;}
 	if (!$Certificate_Key_Add) {$Certificate_Key_Add = $Default_SSL_Certificate_Key_File;}
 	if (!$CA_Certificate_Add) {$CA_Certificate_Add = $Default_SSL_CA_Certificate_File;}
@@ -913,14 +913,14 @@ ENDHTML
 
 sub edit_reverse_proxy {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log,
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path,
 		$Default_SSL_Certificate_File,
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
 
-	if (!$Transfer_Log_Edit) {$Transfer_Log_Edit = $Default_Transfer_Log;}
-	if (!$Error_Log_Edit) {$Error_Log_Edit = $Default_Error_Log;}
+	if (!$Transfer_Log_Edit) {$Transfer_Log_Edit = $Default_Transfer_Log_Path . '/' . $Server_Name_Edit . '.log';}
+	if (!$Error_Log_Edit) {$Error_Log_Edit = $Default_Error_Log_Path . '/' . $Server_Name_Edit . '.error';}
 	if (!$Certificate_Edit) {$Certificate_Edit = $Default_SSL_Certificate_File;}
 	if (!$Certificate_Key_Edit) {$Certificate_Key_Edit = $Default_SSL_Certificate_Key_File;}
 	if (!$CA_Certificate_Edit) {$CA_Certificate_Edit = $Default_SSL_CA_Certificate_File;}
@@ -1062,8 +1062,8 @@ sub delete_reverse_proxy {
 
 sub html_view_reverse_proxy {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log,
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path,
 		$Default_SSL_Certificate_File,
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
@@ -1111,8 +1111,8 @@ sub html_view_reverse_proxy {
 		}
 		my $Server_Names = "ServerName               " . $Server_Name . $ServerAliases;
 
-		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
-		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
+		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log_Path . '/' . $Server_Name . '.log'}
+		if (!$Error_Log) {$Error_Log = $Default_Error_Log_Path . '/' . $Server_Name . '.error'}
 
 		my $Headers;
 		if ($Frame_Options == 1) {
@@ -1274,8 +1274,8 @@ ENDHTML
 
 sub html_output {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log,
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path,
 		$Default_SSL_Certificate_File,
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
@@ -1352,11 +1352,11 @@ sub html_output {
 		my $Transfer_Log = $Select_Reverse_Proxies[4];
 			my $Transfer_Log_Clean = $Transfer_Log;
 			$Transfer_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;
-				if (!$Transfer_Log_Clean) {$Transfer_Log = "$Default_Transfer_Log <span style=\"color: #FF8A00\">[Default]</span>"}
+				if (!$Transfer_Log_Clean) {$Transfer_Log = "$Default_Transfer_Log_Path/$Server_Name.log <span style=\"color: #FF8A00\">[Default]</span>"}
 		my $Error_Log = $Select_Reverse_Proxies[5];
 			my $Error_Log_Clean = $Error_Log;
 			$Error_Log =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #FFFFFF'>$2<\/span>$3/gi;
-				if (!$Error_Log_Clean) {$Error_Log = "$Default_Error_Log <span style=\"color: #FF8A00\">[Default]</span>"}
+				if (!$Error_Log_Clean) {$Error_Log = "$Default_Error_Log_Path/$Server_Name.error <span style=\"color: #FF8A00\">[Default]</span>"}
 		my $SSL_Certificate_File = $Select_Reverse_Proxies[6];
 			my $SSL_Certificate_File_Clean = $SSL_Certificate_File;
 			$SSL_Certificate_File =~ s/(.*)($Filter)(.*)/$1<span style='background-color: #B6B600'>$2<\/span>$3/gi;

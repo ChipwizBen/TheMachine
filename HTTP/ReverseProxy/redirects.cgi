@@ -178,6 +178,9 @@ else {
 
 sub html_add_redirect {
 
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path) = Redirect_Defaults();
+
 print <<ENDHTML;
 
 <div id="wide-popup-box">
@@ -209,11 +212,11 @@ print <<ENDHTML;
 	</tr>
 	<tr>
 		<td style="text-align: right;">Transfer Log:</td>
-		<td><input type='text' name='Transfer_Log_Add' style="width:100%" placeholder="/var/log/domain-access.log"></td>
+		<td><input type='text' name='Transfer_Log_Add' style="width:100%" placeholder="$Default_Transfer_Log_Path/<domain>.log"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Error Log:</td>
-		<td><input type='text' name='Error_Log_Add' style="width:100%" placeholder="/var/log/domain-error.log"></td>
+		<td><input type='text' name='Error_Log_Add' style="width:100%" placeholder="$Default_Transfer_Log_Path/<domain>.error"></td>
 	</tr>
 </table>
 
@@ -232,11 +235,11 @@ ENDHTML
 
 sub add_redirect {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log) = Redirect_Defaults();
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path) = Redirect_Defaults();
 
-	if (!$Transfer_Log_Add) {$Transfer_Log_Add = $Default_Transfer_Log;}
-	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log;}
+	if (!$Transfer_Log_Add) {$Transfer_Log_Add = $Default_Transfer_Log_Path . "/$Server_Name_Add.log";}
+	if (!$Error_Log_Add) {$Error_Log_Add = $Default_Error_Log_Path . "/$Server_Name_Add.error";}
 
 	my $Redirect_Insert = $DB_Connection->prepare("INSERT INTO `redirect` (
 		`server_name`,
@@ -268,6 +271,9 @@ sub add_redirect {
 
 sub html_edit_redirect {
 
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path) = Redirect_Defaults();
+
 	my $Filter_URL;
 	if ($Filter) {$Filter_URL = "?Filter=$Filter"}
 	if ($ID_Filter) {$Filter_URL = "?ID_Filter=$ID_Filter"}
@@ -288,6 +294,8 @@ sub html_edit_redirect {
 		my $Transfer_Log = $Redirect_Values[4];
 		my $Error_Log = $Redirect_Values[5];
 
+		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log_Path . "/$Server_Name.log";}
+		if (!$Error_Log) {$Error_Log = $Default_Error_Log_Path . "/$Server_Name.error";} 
 
 print <<ENDHTML;
 
@@ -346,6 +354,12 @@ ENDHTML
 } # sub html_edit_redirect
 
 sub edit_redirect {
+
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path) = Redirect_Defaults();
+
+	if (!$Transfer_Log_Edit) {$Transfer_Log_Edit = $Default_Transfer_Log_Path . "/$Server_Name_Edit.log";}
+	if (!$Error_Log_Edit) {$Error_Log_Edit = $Default_Error_Log_Path . "/$Server_Name_Edit.error";}
 
 	my $Update_Redirect = $DB_Connection->prepare("UPDATE `redirect` SET
 		`server_name` = ?,
@@ -456,8 +470,8 @@ sub delete_redirect {
 
 sub html_view_redirect {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log) = Redirect_Defaults();
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path) = Redirect_Defaults();
 
 	my $Server_Group_Query = $DB_Connection->prepare("SELECT `server_name`, `port`, `transfer_log`, `error_log`, `last_modified`, `modified_by`
 	FROM `redirect`
@@ -473,8 +487,8 @@ sub html_view_redirect {
 		my $Last_Modified = $Server_Entry[4];
 		my $Modified_By = $Server_Entry[5];
 
-		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
-		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
+		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log_Path . "/$Server_Name.log"}
+		if (!$Error_Log) {$Error_Log = $Default_Error_Log_Path . "/$Server_Name.error"}
 
 		my $ServerAliases;
 		my @ServerAliases = split(',', $Server_Name);

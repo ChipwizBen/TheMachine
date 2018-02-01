@@ -95,8 +95,8 @@ exit(0);
 
 sub write_reverse_proxy {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log,
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path,
 		$Default_SSL_Certificate_File,
 		$Default_SSL_Certificate_Key_File,
 		$Default_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
@@ -174,8 +174,8 @@ sub write_reverse_proxy {
 
 
 
-		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
-		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
+		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log_Path . "/$Server_Name.log"}
+		if (!$Error_Log) {$Error_Log = $Default_Error_Log_Path . "/$Server_Name.error"}
 
 		my $Headers;
 		if ($Frame_Options == 1) {
@@ -329,8 +329,8 @@ RP_EOF
 
 sub write_redirect {
 
-	my ($Default_Transfer_Log,
-		$Default_Error_Log) = Redirect_Defaults();
+	my ($Default_Transfer_Log_Path,
+		$Default_Error_Log_Path) = Redirect_Defaults();
 
 	my $Server_Group_Query = $DB_Connection->prepare("SELECT `server_name`, `port`, `transfer_log`, `error_log`, `last_modified`, `modified_by`
 	FROM `redirect`
@@ -360,8 +360,8 @@ sub write_redirect {
 		my $Config_Name = "httpd.rd-$Port-$Server_Name_Single.conf";
 		my $Config_File = "$Proxy_Redirect_Location/$Config_Name";
 
-		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log}
-		if (!$Error_Log) {$Error_Log = $Default_Error_Log}
+		if (!$Transfer_Log) {$Transfer_Log = $Default_Transfer_Log_Path . "/$Server_Name.log"}
+		if (!$Error_Log) {$Error_Log = $Default_Error_Log_Path . "/$Server_Name.error"}
 
 		open( Redirect_Config, ">$Config_File" ) or die "Can't open $Config_File";
 		print Redirect_Config "#########################################################################\n";
