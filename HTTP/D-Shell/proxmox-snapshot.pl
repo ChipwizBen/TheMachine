@@ -17,6 +17,8 @@ my $System_Short_Name = System_Short_Name();
 my $Version = Version();
 my $DB_Connection = DB_Connection();
 my ($Proxmox_Node, $Proxmox_Node_Port, $Proxmox_Username, $Proxmox_Password) = Proxmox_Connection();
+my $Verbose = Verbose();
+my $Very_Verbose = Very_Verbose();
 my $Final_Exit_Code = 0;
 
 $| = 1;
@@ -70,8 +72,6 @@ if (!@ARGV) {
 my @Hosts;
 my @Host_IDs;
 my $Threads;
-my $Verbose;
-my $Very_Verbose;
 my $Show;
 my $Snapshot;
 my $Remove;
@@ -119,10 +119,19 @@ if ($No_Colour) {
 	undef $Clear;
 }
 
+if ($Verbose) {
+	print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";
+}
+
+if (!$Tag && ($Snapshot || $Remove || $Revert)) {
+	print "You must suppy a tag when creating, removing or reverting a snapshot.\n";
+	exit(21);
+}
+
 $Tag =~ s/\W/_/g;
 
 my $Proxmox_Auth_Data = `curl --connect-timeout 10 --max-time 60 -k -sS --data "username=$Proxmox_Username&password=$Proxmox_Password"  https://$Proxmox_Node:$Proxmox_Node_Port/api2/json/access/ticket`;
-if ($?) {print "Curl Error: $?\n"; exit 1;}
+if ($?) {print "Error gathering auth token: Curl Error $?\n"; exit 21;}
 my $Proxmox_Auth_Token = $Proxmox_Auth_Data;
 	$Proxmox_Auth_Token =~ s/.*ticket":"(.*?)".*/PVEAuthCookie=$1/;
 my $Proxmox_Auth_CSRF_Preservation_Token = $Proxmox_Auth_Data;
@@ -195,13 +204,22 @@ my $Fork = new Parallel::ForkManager($Threads);
 	);
 
 	foreach my $Host_ID (@Host_IDs) {
-		my $Host_Query = $DB_Connection->prepare("SELECT `hostname`
-		FROM `hosts`
-		WHERE `id` = ?");
-		$Host_Query->execute($Host_ID);
-		my $Host_Name = $Host_Query->fetchrow_array();
-		$Host_Name =~ s/^(.*?)\..*/$1/;
-		push @Hosts, $Host_Name;
+
+		my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `vm_name`
+		FROM `host_attributes`
+		WHERE `host_id` = ?");
+		$Select_Host_Attributes->execute($Host_ID);
+	
+		my $VM_Name = $Select_Host_Attributes->fetchrow_array();
+
+		if (!$VM_Name) {
+			my $Host_Name_Query = $DB_Connection->prepare("SELECT `hostname`
+			FROM `hosts`
+			WHERE `id` = ?");
+			$Host_Name_Query->execute($Host_ID);
+			$VM_Name = $Host_Name_Query->fetchrow_array();
+		}
+		push @Hosts, $VM_Name;
 	}
 
 	foreach my $Host (@Hosts) {
@@ -328,7 +346,7 @@ sub take_snapshot {
 		--data snapname="$Snapshot_Tag" \\
 		--data description="The Machine: Snapshot taken ($VM_Type) of $Host on $VM_Node by $Username at $Time_Date_Stamp." \\
 		--data vmstate=1`;
-		if ($?) {print "Curl Error: $?\n"; exit(21);}
+		if ($?) {print "Error taking a snapshot of VMID $VM_ID: Curl Error $?\n"; exit(21);}
 	}
 
 	$Snapshot_Exists = &check_snapshot($Host, $Snapshot_Tag,  $VM_ID, $VM_Node, $VM_Type);
@@ -370,7 +388,7 @@ sub show_snapshot {
 	}
 
 	my $Snapshot_Details = `$API/nodes/$VM_Node/$VM_Type/$VM_ID/snapshot`;
-	if ($?) {print "Curl Error: $?\n"; exit(21);}
+	if ($?) {print "Error showing snapshots for VMID $VM_ID: Curl Error $?\n"; exit(21);}
 
    if (!$Snapshot_Details || $Snapshot_Details !~ /"vmstate":/) {
    		print "$Host has no snapshots.\n";
@@ -416,7 +434,7 @@ sub revert_snapshot {
 	my $Snapshot_Exists = &check_snapshot($Host, $Snapshot_Tag,  $VM_ID, $VM_Node, $VM_Type);
 	if ($Snapshot_Exists) {
 		my $Rollback_Snapshot = `$API/nodes/$VM_Node/$VM_Type/$VM_ID/snapshot/$Snapshot_Tag/rollback -X POST`;
-		if ($?) {print "Curl Error: $?\n"; exit 1;}
+		if ($?) {print "Error reverting to snapshot $Snapshot_Tag on VMID $VM_ID: Curl Error $?\n"; exit 21;}
 		if ($Verbose) {
 			my $Time_Stamp = strftime "%H:%M:%S", localtime;
 			print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Rollback to tag ${Yellow}$Snapshot_Tag${Green} initiated for host ${Blue}$Host${Pink}.${Clear}\n";
@@ -449,7 +467,7 @@ sub check_snapshot {
 	}
 
 	my $Snapshot_Details = `$API/nodes/$VM_Node/$VM_Type/$VM_ID/snapshot`;
-	if ($?) {print "Curl Error: $?\n"; exit 1;}
+	if ($?) {print "Error checking snapshots for VMID $VM_ID: Curl Error $?\n"; exit 21;}
 
 	my $Return = 0;
 	if (!$Snapshot_Details || $Snapshot_Details !~ /"vmstate":/) {
@@ -503,7 +521,7 @@ sub check_locks {
 
 	sleep 5; # Allow Proxmox time to lock VM
 	my $VM_Lock_Status = `$API/nodes/$VM_Node/$VM_Type/$VM_ID/config`;
-	if ($?) {print "Curl Error: $?\n"; exit 1;}
+	if ($?) {print "Error gathering lock details for VMID $VM_ID: Curl Error $?\n"; exit 21;}
 		if ($VM_Lock_Status !~ '"lock":"') {undef $VM_Lock_Status}
 		$VM_Lock_Status =~ s/.*"lock":"(.*?)".*/$1/;
 	
@@ -511,7 +529,7 @@ sub check_locks {
 		$Was_Locked = 1;
 		sleep 5;
 		$VM_Lock_Status = `$API/nodes/$VM_Node/$VM_Type/$VM_ID/config`;
-		if ($?) {print "Curl Error: $?\n"; exit 1;}
+		if ($?) {print "Error gathering lock details for VMID $VM_ID: Curl Error $?\n"; exit 21;}
 			if ($VM_Lock_Status !~ '"lock":"') {undef $VM_Lock_Status}
 			$VM_Lock_Status =~ s/.*"lock":"(.*?)".*/$1/;
 		if ($Verbose && $VM_Lock_Status) {
@@ -533,7 +551,7 @@ sub cluster_details {
 
 	my ($VM_ID, $VM_Node, $VM_Type);
 	my $Cluster_Details = `$API/cluster/resources`;
-	if ($?) {print "Curl Error: $?\n"; exit 1;}
+	if ($?) {print "Error gathering cluster details (Credentials correct?): Curl Error $?\n"; exit 21;}
 
 	if ($Cluster_Details =~ /"name":"$VM_Name"/) {
 		$Cluster_Details =~ s/.*{(.*$VM_Name.*?)}.*/$1/;
@@ -551,7 +569,7 @@ sub cluster_details {
 	}
 	else {
 		print "Error: $VM_Name not found on any online node.\n";
-		return(1);
+		exit(21);
 	}
 } # sub cluster_details
 
