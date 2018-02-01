@@ -14,6 +14,8 @@ require $Common_Config;
 my $System_Name = System_Name();
 my $Version = Version();
 my $DB_Connection = DB_Connection();
+my $Verbose = Verbose();
+my $Very_Verbose = Very_Verbose();
 my $Final_Exit_Code = 0;
 
 $| = 1;
@@ -72,8 +74,6 @@ if (!@ARGV) {
 my @Hosts;
 my @Host_IDs;
 my $Threads;
-my $Verbose;
-my $Very_Verbose;
 my $Count;
 my $Show;
 my $Snapshot;
@@ -125,6 +125,10 @@ if ($No_Colour) {
 	undef $Pink;
 	undef $Blue;
 	undef $Clear;
+}
+
+if ($Verbose) {
+	print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";
 }
 
 @Hosts = split(/[\s,]+/,join(',' , @Hosts));
@@ -191,13 +195,21 @@ my $Fork = new Parallel::ForkManager($Threads);
 	);
 
 	foreach my $Host_ID (@Host_IDs) {
-		my $Host_Query = $DB_Connection->prepare("SELECT `hostname`
-		FROM `hosts`
-		WHERE `id` = ?");
-		$Host_Query->execute($Host_ID);
-		my $Host_Name = $Host_Query->fetchrow_array();
-		$Host_Name =~ s/^(.*?)\..*/$1/;
-		push @Hosts, $Host_Name;
+		my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `vm_name`
+		FROM `host_attributes`
+		WHERE `host_id` = ?");
+		$Select_Host_Attributes->execute($Host_ID);
+	
+		my $VM_Name = $Select_Host_Attributes->fetchrow_array();
+
+		if (!$VM_Name) {
+			my $Host_Name_Query = $DB_Connection->prepare("SELECT `hostname`
+			FROM `hosts`
+			WHERE `id` = ?");
+			$Host_Name_Query->execute($Host_ID);
+			$VM_Name = $Host_Name_Query->fetchrow_array();
+		}
+		push @Hosts, $VM_Name;
 	}
 
 	foreach my $Host (@Hosts) {
