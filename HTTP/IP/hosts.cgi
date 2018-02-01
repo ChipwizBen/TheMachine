@@ -21,6 +21,9 @@ my $Edit_Host = $CGI->param("Edit_Host");
 my $Host_Name_Add = $CGI->param("Host_Name_Add");
 	$Host_Name_Add =~ s/\s//g;
 	$Host_Name_Add =~ s/[^a-zA-Z0-9\-\.]//g;
+my $VM_Name_Add = $CGI->param("VM_Name_Add");
+	$VM_Name_Add =~ s/\s//g;
+	$VM_Name_Add =~ s/[^a-zA-Z0-9\-\.]//g;
 my $Host_Type_Add = $CGI->param("Host_Type_Add");
 my $Host_Fingerprint_Add = $CGI->param("Host_Fingerprint_Add");
 my $DHCP_Toggle_Add = $CGI->param("DHCP_Toggle_Add");
@@ -37,6 +40,9 @@ my $Edit_Host_Post = $CGI->param("Edit_Host_Post");
 my $Host_Name_Edit = $CGI->param("Host_Name_Edit");
 	$Host_Name_Edit =~ s/\s//g;
 	$Host_Name_Edit =~ s/[^a-zA-Z0-9\-\.]//g;
+my $VM_Name_Edit = $CGI->param("VM_Name_Edit");
+	$VM_Name_Edit =~ s/\s//g;
+	$VM_Name_Edit =~ s/[^a-zA-Z0-9\-\.]//g;
 my $Host_Type_Edit = $CGI->param("Host_Type_Edit");
 my $Host_Fingerprint_Edit = $CGI->param("Host_Fingerprint_Edit");
 my $DHCP_Toggle_Edit = $CGI->param("DHCP_Toggle_Edit");
@@ -235,7 +241,11 @@ function Expire_Toggle() {
 <table align = "center">
 	<tr>
 		<td style="text-align: right;">Host Name:</td>
-		<td colspan="2"><input type='text' name='Host_Name_Add' style="width:100%" maxlength='128' placeholder="Host Name" required autofocus></td>
+		<td colspan="2"><input type='text' name='Host_Name_Add' style="width:100%" maxlength='128' placeholder="HostName.domain.com" required autofocus></td>
+	</tr>
+	<tr>
+		<td style="text-align: right;">VM Name:</td>
+		<td colspan="2"><input type='text' name='VM_Name_Add' style="width:100%" maxlength='128' placeholder="HostName-prod-dc01"></td>
 	</tr>
 	<tr>
 		<td style="text-align: right;">Host Type:</td>
@@ -284,6 +294,7 @@ print <<ENDHTML
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 	<li>Host Names must be unique and POSIX compliant.</li>
+	<li>VM Name should be set if this system's VM name does not match the hostname.</li>
 	<li>If you do not specify a fingerprint, it will be recorded on the host's first connection.</li>
 </ul>
 
@@ -343,14 +354,16 @@ sub add_host {
 		`host_id`,
 		`fingerprint`,
 		`dhcp`,
-		`dsms`
+		`dsms`,
+		`vm_name`
 	)
 	VALUES (
-		?, ?, ?, ?
+		?, ?, ?, ?, ?
 	)
-	ON DUPLICATE KEY UPDATE `fingerprint` = ?, `dhcp` = ?, `dsms` = ?");
+	ON DUPLICATE KEY UPDATE `fingerprint` = ?, `dhcp` = ?, `dsms` = ?, `vm_name` = ?");
 	
-	$Host_Attribute_Insert->execute($Host_Insert_ID, $Host_Fingerprint_Add, $DHCP_Toggle_Add, $DSMS_Toggle_Add, $Host_Fingerprint_Add, $DHCP_Toggle_Add, $DSMS_Toggle_Add);
+	$Host_Attribute_Insert->execute($Host_Insert_ID, $Host_Fingerprint_Add, $DHCP_Toggle_Add, $DSMS_Toggle_Add, $VM_Name_Add,
+		$Host_Fingerprint_Add, $DHCP_Toggle_Add, $DSMS_Toggle_Add, $VM_Name_Add);
 
 	if ($DSMS_Toggle_Add) {
 		my $Distribution_Insert = $DB_Connection->prepare("INSERT INTO `distribution` (
@@ -402,12 +415,12 @@ sub html_edit_host {
 			$Disabled = '';
 		}
 
-		my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `fingerprint`, `dhcp`, `dsms`
+		my $Select_Host_Attributes = $DB_Connection->prepare("SELECT `fingerprint`, `dhcp`, `dsms`, `vm_name`
 		FROM `host_attributes`
 		WHERE `host_id` = ?");
 		$Select_Host_Attributes->execute($Edit_Host);
 	
-		my ($Host_Fingerprint_Extract, $DHCP_Extract, $DSMS_Extract) = $Select_Host_Attributes->fetchrow_array();
+		my ($Host_Fingerprint_Extract, $DHCP_Extract, $DSMS_Extract, $VM_Name_Extract) = $Select_Host_Attributes->fetchrow_array();
 	
 			my $DHCP_Checked;
 			if ($DHCP_Extract) {
@@ -480,6 +493,11 @@ function Expire_Toggle() {
 		<td style="text-align: right;">Host Name:</td>
 		<td colspan="2"><input type='text' name='Host_Name_Edit' style="width:100%" value='$Host_Name_Extract' maxlength='128' placeholder="$Host_Name_Extract" required autofocus></td>
 	</tr>
+	<tr>
+		<td style="text-align: right;">VM Name:</td>
+		<td colspan="2"><input type='text' name='VM_Name_Edit' style="width:100%" maxlength='128' value='$VM_Name_Extract' placeholder="$VM_Name_Extract"></td>
+	</tr>
+	<tr>
 		<td style="text-align: right;">Host Type:</td>
 		<td colspan='2' style="text-align: left;">
 			<select name='Host_Type_Edit' style="width: 300px">
@@ -549,6 +567,7 @@ print <<ENDHTML;
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 	<li>Host Names must be unique and POSIX compliant.</li>
+	<li>VM Name should be set if this system's VM name does not match the hostname.</li>
 	<li>If you do not specify a fingerprint, it will be recorded on the host's first connection.</li>
 </ul>
 
@@ -604,14 +623,16 @@ sub edit_host {
 		`host_id`,
 		`fingerprint`,
 		`dhcp`,
-		`dsms`
+		`dsms`,
+		`vm_name`
 	)
 	VALUES (
-		?, ?, ?, ?
+		?, ?, ?, ?, ?
 	)
-	ON DUPLICATE KEY UPDATE `fingerprint` = ?, `dhcp` = ?, `dsms` = ?");
+	ON DUPLICATE KEY UPDATE `fingerprint` = ?, `dhcp` = ?, `dsms` = ?, `vm_name` = ?");
 	
-	$Host_Attribute_Insert->execute($Edit_Host_Post, $Host_Fingerprint_Edit, $DHCP_Toggle_Edit, $DSMS_Toggle_Edit, $Host_Fingerprint_Edit, $DHCP_Toggle_Edit, $DSMS_Toggle_Edit);
+	$Host_Attribute_Insert->execute($Edit_Host_Post, $Host_Fingerprint_Edit, $DHCP_Toggle_Edit, $DSMS_Toggle_Edit, $VM_Name_Edit,
+		$Host_Fingerprint_Edit, $DHCP_Toggle_Edit, $DSMS_Toggle_Edit, $VM_Name_Edit);
 
 	if ($DSMS_Toggle_Edit) {
 		my $Distribution_Insert = $DB_Connection->prepare("INSERT INTO `distribution` (
