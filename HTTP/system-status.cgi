@@ -131,6 +131,7 @@ my $System_Short_Name = System_Short_Name();
 my $Recovery_Email_Address = Recovery_Email_Address();
 my $DNS_Server = DNS_Server();
 my $LDAP_Check = LDAP_Login('Status_Check');
+if ($LDAP_Check) {$LDAP_Check = 'On'} else {$LDAP_Check = 'Off'}
 my ($LDAP_Server,
 	$LDAP_Port,
 	$Timeout,
@@ -186,14 +187,14 @@ print <<ENDHTML;
 			<td style="text-align: right;">Failback DNS Server</td>
 			<td style='color: #00FF00;'>$DNS_Server</td>
 		</tr>		
-		<tr>
-			<td style="text-align: right;">LDAP Authentication</td>
-			<td style='color: #00FF00;'>$LDAP_Check</td>
-		</tr>
 ENDHTML
 
 if ($LDAP_Check eq 'On') {
 	print <<ENDHTML;
+		<tr>
+			<td style="text-align: right;">LDAP Status</td>
+			<td style='color: #00FF00;'>$LDAP_Check</td>
+		</tr>
 		<tr>
 			<td style="text-align: right;">LDAP Server</td>
 			<td style='color: #00FF00;'>$LDAP_Server</td>
@@ -217,6 +218,14 @@ if ($LDAP_Check eq 'On') {
 		<tr>
 			<td style="text-align: right;">LDAP Search Base</td>
 			<td style='color: #00FF00;'>$LDAP_Search_Base</td>
+		</tr>
+ENDHTML
+}
+else {
+print <<ENDHTML;
+		<tr>
+			<td style="text-align: right;">LDAP Status</td>
+			<td style='color: #FF0000;'>$LDAP_Check</td>
 		</tr>
 ENDHTML
 }
@@ -589,7 +598,7 @@ print <<ENDHTML;
 			<td style='color: #00FF00;'>$Sudoers_Location</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Legacy Sudoers Storage Directory Location</td>
+			<td style="text-align: right;">Archived Sudoers Storage Directory Location</td>
 			<td style='color: #00FF00;'>$Sudoers_Storage/</td>
 		</tr>
 		<tr>
@@ -668,7 +677,7 @@ print <<ENDHTML;
 			<td style='color: #00FF00;'>$Zone_Master_File</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Legacy DNS File Storage Location</td>
+			<td style="text-align: right;">Archived DNS File Storage Location</td>
 			<td style='color: #00FF00;'>$DNS_Storage</td>
 		</tr>
 		<tr>
@@ -778,8 +787,8 @@ my $Reverse_Proxy_Location = Reverse_Proxy_Location();
 my $Proxy_Redirect_Location = Proxy_Redirect_Location();
 my $Reverse_Proxy_Storage = Reverse_Proxy_Storage();
 my $Proxy_Redirect_Storage = Proxy_Redirect_Storage();
-my ($Reverse_Proxy_Transfer_Log,
-	$Reverse_Proxy_Error_Log,
+my ($Reverse_Proxy_Transfer_Log_Path,
+	$Reverse_Proxy_Error_Log_Path,
 	$Reverse_Proxy_SSL_Certificate_File,
 	$Reverse_Proxy_SSL_Certificate_Key_File,
 	$Reverse_Proxy_SSL_CA_Certificate_File) = Reverse_Proxy_Defaults();
@@ -798,11 +807,11 @@ print <<ENDHTML;
 			<td style='color: #00FF00;'>$Proxy_Redirect_Location</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Legacy Reverse Proxy File Storage Location</td>
+			<td style="text-align: right;">Archived Reverse Proxy File Storage Location</td>
 			<td style='color: #00FF00;'>$Reverse_Proxy_Storage</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Legacy Proxy Rediret File Storage Location</td>
+			<td style="text-align: right;">Archived Proxy Redirect File Storage Location</td>
 			<td style='color: #00FF00;'>$Proxy_Redirect_Storage</td>
 		</tr>
 		<tr>
@@ -810,12 +819,12 @@ print <<ENDHTML;
 			<td>&nbsp;</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Default Reverse Proxy Transfer Log</td>
-			<td style='color: #00FF00;'>$Reverse_Proxy_Transfer_Log</td>
+			<td style="text-align: right;">Default Reverse Proxy Transfer Log Path</td>
+			<td style='color: #00FF00;'>$Reverse_Proxy_Transfer_Log_Path</td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">Default Reverse Proxy Error Log</td>
-			<td style='color: #00FF00;'>$Reverse_Proxy_Error_Log</td>
+			<td style="text-align: right;">Default Reverse Proxy Error Log Path</td>
+			<td style='color: #00FF00;'>$Reverse_Proxy_Error_Log_Path</td>
 		</tr>
 		<tr>
 			<td style="text-align: right;">Default Reverse Proxy Certificate File</td>
