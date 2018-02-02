@@ -231,7 +231,7 @@ sub LDAP_Login {
 
 			 my $Get_User_Details = $LDAP_Connection->search(
 			 	base   => $LDAP_Search_Base,
-			 	filter => "(uid=$LDAP_User_Name)"
+			 	filter => "($LDAP_Filter=$LDAP_User_Name)"
 			 );
 
 			die $Get_User_Details->error if $Get_User_Details->code;
@@ -241,7 +241,8 @@ sub LDAP_Login {
 			foreach my $User_Values ($Get_User_Details->entries) {
 
 				$Display_Name = $User_Values->get_value("displayName");
-				if (!$Display_Name) {$Display_Name = $User_Values->get_value("userPrincipalName");}
+					if (!$Display_Name) {$Display_Name = $User_Values->get_value("userPrincipalName");}
+					if (!$Display_Name) {$Display_Name = $LDAP_User_Name}
 				$Email = $User_Values->get_value("mail");
 			}
 
@@ -1510,11 +1511,28 @@ sub git {
 
 sub Version {
 
-	# This is where the system discovers its version number, which assists with both manual and automated Upgrading, among other things.
+	### Note ###
+	# This section is now configured in the GUI via Home -> Management -> Configuration. You should not edit anything below.
+	### /Note ###
+
+	# This is where the system discovers its version number, which assists with both manual and automated upgrading, among other things.
 	# You should not modify this value.
 
-	my $Version = '2.6.0';
-	return $Version;
+	my $DB_Connection = &DB_Connection;
+
+	my $Select_Config = $DB_Connection->prepare("SELECT `Version`, `Latest_Version`, `URL`, `Notification`
+		FROM `version`");
+	$Select_Config->execute();
+
+	my ($Version, $Latest_Version, $URL, $Notification) = $Select_Config->fetchrow_array();
+
+	my $Parameter = $_[0];
+	if ($Parameter =~ /Version_Check/) {
+		return ($Version, $Latest_Version, $URL, $Notification);
+	}
+	else {
+		return $Version;
+	}
 
 } # sub Version
 
