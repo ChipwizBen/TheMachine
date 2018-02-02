@@ -36,8 +36,7 @@ sub html_output {
 
 my $Sudoers_Not_Found;
 open(SUDOERS, $Sudoers_Location) or $Sudoers_Not_Found = "Sudoers file not found at $Sudoers_Location (or the HTTP server does not have permission to read the file).
-Consider setting the sudoers file location in './common.pl' or generating a sudoers file by running 'sudoers-build.pl'.
-If this is your first time running this system, first create some <a href='sudoers-hosts.cgi'>Hosts</a>, <a href='sudoers-users.cgi'>Users</a> and <a href='sudoers-commands.cgi'>Commands</a> and then attach those to <a href='sudoers-rules.cgi'>Rules</a> before running 'sudoers-build.pl'.";
+If this is your first time running this system, first create some <a href='sudoers-hosts.cgi'>Hosts</a>, <a href='sudoers-users.cgi'>Users</a> and <a href='sudoers-commands.cgi'>Commands</a> and then attach those to <a href='sudoers-rules.cgi'>Rules</a>.";
 
 my $MD5_Checksum;
 my $MD5_HTML;
@@ -134,7 +133,7 @@ ENDHTML
 
 print <<ENDHTML;
 
-$Sudoers_Not_Found
+<p align='center'>$Sudoers_Not_Found</p>
 
 </div>
 
