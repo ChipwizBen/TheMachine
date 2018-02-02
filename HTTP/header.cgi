@@ -12,7 +12,10 @@ require $Common_Config;
 
 my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
-my $Version = Version();
+my ($Version, $Latest_Version, $URL, $Notification) = Version('Version_Check');
+	if ($Version eq $Latest_Version) {undef $Latest_Version}
+		else {$Latest_Version = " | <span style='color: #FC44FF'>New version available: $Latest_Version </span>"}
+	if ($Notification) {$Notification = " | <span style='color: #FF8A00'>Notification: $Notification </span>"}
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 my $Server_Hostname = Server_Hostname();
@@ -25,8 +28,10 @@ if (!$User_Name) {
 	exit(0);
 }
 
-if ($User_Admin) {
-
+if (!$User_Admin) {
+	undef $Latest_Version;
+	undef $URL;
+	undef $Notification;
 }
 
 my $Message_Green = $Session->param("Message_Green");
@@ -86,6 +91,7 @@ if (-f $CSS_Config) {$CSS_Config = 'format.css';} else {$CSS_Config = '../format
 
 print $CGI->header(-cookie=>$Cookie, -charset=>'utf-8');
 
+
 print <<ENDHTML;
 <!DOCTYPE html>
 <head>
@@ -103,7 +109,7 @@ print <<ENDHTML;
 	<div id="loginlink">
 
 		<div id="loginlinkleft">
-			$System_Short_Name version <span style="color: #00FF00;">$Version</span> on <span style="color: #00FF00;">$Server_Hostname</span> | Welcome <a href="account.cgi">$User_Name</a> <span id="logoutlink"><a href="/logout.cgi">[ Logout ]</a></span>
+			$System_Short_Name version <span style="color: #00FF00;">$Version</span> on <span style="color: #00FF00;">$Server_Hostname</span> | Welcome <a href="account.cgi">$User_Name</a> <span id="logoutlink"><a href="/logout.cgi">[ Logout ]</a></span>${Latest_Version}${Notification}
 		</div> <!-- loginlinkleft -->
 
 			<form action='/search.cgi' method='post' >
