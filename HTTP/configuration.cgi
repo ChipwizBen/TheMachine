@@ -632,6 +632,7 @@ my ($LDAP_Server,
 	print <<ENDHTML;
 <details>
 <summary style="text-align: center; font-weight: bold; font-size: 1.5em;">LDAP Configuration</summary>
+Note: Depending on your installation, you may need to set <b>LDAP Filter</b> to <i>uid</i>, <i>sAMAccountName</i>, or another value unique to your organisation.
 	<table align='center'>
 		<tr>
 			<td style="text-align: right;">LDAP Enabled:</td>
