@@ -438,14 +438,21 @@ print <<ENDHTML;
 
 <ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 	<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
-	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
+	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMware snapshot for the host. Options are:</li>
 		<ul style="list-style-type:circle">
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT COUNT</span> Counts the VMWare snapshots of the host.</li>
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT SHOW</span> Shows the VMWare snapshot tree of the host.</li>
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> <span style='color: #00FF00;'>Tag-Name</span> Takes a VMWare snapshot of the host with the tag 'Tag-Name'.</li>
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT REVERT</span> <span style='color: #00FF00;'>Tag-Name</span> Reverts to the VMWare snapshot with the tag 'Tag-Name'.</li>
-			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> <span style='color: #00FF00;'>Tag-Name</span> Removes VMWare snapshots with the tag 'Tag-Name'.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT COUNT</span> Counts the VMware snapshots of the host.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT SHOW</span> Shows the VMware snapshot tree of the host.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> <span style='color: #00FF00;'>Tag-Name</span> Takes a VMware snapshot of the host with the tag 'Tag-Name'.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT REVERT</span> <span style='color: #00FF00;'>Tag-Name</span> Reverts to the VMware snapshot with the tag 'Tag-Name'.</li>
+			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> <span style='color: #00FF00;'>Tag-Name</span> Removes VMware snapshots with the tag 'Tag-Name'.</li>
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
+		</ul>
+	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a Proxmox snapshot for the host. Options are:</li>
+		<ul style="list-style-type:circle">
+			<li><span style='color: #FC64FF;'>*PSNAPSHOT SHOW</span> Shows the VMWare snapshot tree of the host.</li>
+			<li><span style='color: #FC64FF;'>*PSNAPSHOT TAKE</span> <span style='color: #00FF00;'>Tag-Name</span> Takes a Proxmox snapshot of the host with the tag 'Tag-Name'.</li>
+			<li><span style='color: #FC64FF;'>*PSNAPSHOT REVERT</span> <span style='color: #00FF00;'>Tag-Name</span> Reverts to the Proxmox snapshot with the tag 'Tag-Name'.</li>
+			<li><span style='color: #FC64FF;'>*PSNAPSHOT REMOVE</span> <span style='color: #00FF00;'>Tag-Name</span> Removes Proxmox snapshots with the tag 'Tag-Name'.</li>
 		</ul>
 	<li><span style='color: #FC64FF;'>*PAUSE</span> <span style='color: #00FF00;'>xx</span> - Pauses for xx seconds before processing the next command 
 		(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot. Sending *PAUSE without a value will pause the Job indefinitely.</li>
@@ -769,14 +776,21 @@ print <<ENDHTML;
 	<summary>Tag instruction summary. Click to expand.</summary>
 	<ul style='text-align: left; display: inline-block; padding-left: 40px; padding-right: 40px;'>
 		<span style='color: #00FF00;'>You can give the job processor special instructions by using these tags (note the * before each):</span>
-		<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMWare snapshot for the host. Options are:</li>
+		<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a VMware snapshot for the host. Options are:</li>
 			<ul style="list-style-type:circle">
-				<li><span style='color: #FC64FF;'>*VSNAPSHOT COUNT</span> Counts the VMWare snapshots of the host.</li>
-				<li><span style='color: #FC64FF;'>*VSNAPSHOT SHOW</span> Shows the VMWare snapshot tree of the host.</li>
-				<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> <span style='color: #00FF00;'>Tag-Name</span> Takes a VMWare snapshot of the host with the tag 'Tag-Name'.</li>
-				<li><span style='color: #FC64FF;'>*VSNAPSHOT REVERT</span> <span style='color: #00FF00;'>Tag-Name</span> Reverts to the VMWare snapshot with the tag 'Tag-Name'.</li>
-				<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> <span style='color: #00FF00;'>Tag-Name</span> Removes VMWare snapshots with the tag 'Tag-Name'.</li>
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT COUNT</span> Counts the VMware snapshots of the host.</li>
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT SHOW</span> Shows the VMware snapshot tree of the host.</li>
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT TAKE</span> <span style='color: #00FF00;'>Tag-Name</span> Takes a VMware snapshot of the host with the tag 'Tag-Name'.</li>
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT REVERT</span> <span style='color: #00FF00;'>Tag-Name</span> Reverts to the VMware snapshot with the tag 'Tag-Name'.</li>
+				<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> <span style='color: #00FF00;'>Tag-Name</span> Removes VMware snapshots with the tag 'Tag-Name'.</li>
 				<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
+			</ul>
+		<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a Proxmox snapshot for the host. Options are:</li>
+			<ul style="list-style-type:circle">
+				<li><span style='color: #FC64FF;'>*PSNAPSHOT SHOW</span> Shows the VMWare snapshot tree of the host.</li>
+				<li><span style='color: #FC64FF;'>*PSNAPSHOT TAKE</span> <span style='color: #00FF00;'>Tag-Name</span> Takes a Proxmox snapshot of the host with the tag 'Tag-Name'.</li>
+				<li><span style='color: #FC64FF;'>*PSNAPSHOT REVERT</span> <span style='color: #00FF00;'>Tag-Name</span> Reverts to the Proxmox snapshot with the tag 'Tag-Name'.</li>
+				<li><span style='color: #FC64FF;'>*PSNAPSHOT REMOVE</span> <span style='color: #00FF00;'>Tag-Name</span> Removes Proxmox snapshots with the tag 'Tag-Name'.</li>
 			</ul>
 		<li><span style='color: #FC64FF;'>*PAUSE</span> <span style='color: #00FF00;'>xx</span> - Pauses for xx seconds before processing the next command 
 			(e.g. '*PAUSE 60' to pause processing for 60 seconds). Useful for waiting for machines to reboot. Sending *PAUSE without a value will pause the Job indefinitely.</li>
