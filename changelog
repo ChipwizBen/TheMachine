@@ -1,3 +1,10 @@
+2.6.0   - Proxmox snapshot integration added.
+        - Hosts now have a configurable VM name option for where the hostname doesn't match the VM name.
+        - All user configuration options have been moved into the database.
+        - A Configuration menu has been added to set the DB values (Home -> Management -> Configuration).
+        - Reverse Proxy log defaults have been changed.
+        - Made LDAP queries more robust (credit: Phil Conner).
+        - Many other enhancements and bug fixes.
 2.5.3   - Added D-Shell connection via IPv6, IPv4 and failback hostname in that order.
         - Fixed warning output when attempting to take a VMWare snapshot of a non-VMWare system.
         - Fixed issue where a job status showed it as starting while it was running.
