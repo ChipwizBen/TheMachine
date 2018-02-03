@@ -141,7 +141,7 @@ if ($Very_Verbose) {
 }
 
 if ($Proxmox_Auth_Data =~ /"data":null/) {print "Proxmox authentication failure. Aborting.\n"; exit 21;}
-if ($?) {print "Error gathering auth token: Curl Error $?\n"; exit 21;}
+if ($?) {print "Proxmox authentication failure. Aborting.\n"; exit 21;}
 
 my $Proxmox_Auth_Token = $Proxmox_Auth_Data;
 	$Proxmox_Auth_Token =~ s/.*ticket":"(.*?)".*/PVEAuthCookie=$1/;

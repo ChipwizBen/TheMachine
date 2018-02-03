@@ -447,7 +447,7 @@ print <<ENDHTML;
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> <span style='color: #00FF00;'>Tag-Name</span> Removes VMware snapshots with the tag 'Tag-Name'.</li>
 			<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
 		</ul>
-	<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a Proxmox snapshot for the host. Options are:</li>
+	<li><span style='color: #FC64FF;'>*PSNAPSHOT</span> - Creates/removes a Proxmox snapshot for the host. Options are:</li>
 		<ul style="list-style-type:circle">
 			<li><span style='color: #FC64FF;'>*PSNAPSHOT SHOW</span> Shows the VMWare snapshot tree of the host.</li>
 			<li><span style='color: #FC64FF;'>*PSNAPSHOT TAKE</span> <span style='color: #00FF00;'>Tag-Name</span> Takes a Proxmox snapshot of the host with the tag 'Tag-Name'.</li>
@@ -785,7 +785,7 @@ print <<ENDHTML;
 				<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVE</span> <span style='color: #00FF00;'>Tag-Name</span> Removes VMware snapshots with the tag 'Tag-Name'.</li>
 				<li><span style='color: #FC64FF;'>*VSNAPSHOT REMOVEALL</span> Removes all VMWare snapshots for the host.</li>
 			</ul>
-		<li><span style='color: #FC64FF;'>*VSNAPSHOT</span> - Creates/removes a Proxmox snapshot for the host. Options are:</li>
+		<li><span style='color: #FC64FF;'>*PSNAPSHOT</span> - Creates/removes a Proxmox snapshot for the host. Options are:</li>
 			<ul style="list-style-type:circle">
 				<li><span style='color: #FC64FF;'>*PSNAPSHOT SHOW</span> Shows the VMWare snapshot tree of the host.</li>
 				<li><span style='color: #FC64FF;'>*PSNAPSHOT TAKE</span> <span style='color: #00FF00;'>Tag-Name</span> Takes a Proxmox snapshot of the host with the tag 'Tag-Name'.</li>
