@@ -38,7 +38,7 @@ f510664b7c378d0417d09976de81ce8b  ./HTTP/Resources/Images/linked.png
 dff0e5db07d658ef63f1efa2e70929da  ./HTTP/Resources/Images/history.png
 e40ec2161fe7993196f23c8a07346306  ./HTTP/Resources/jquery.min-2.1.1.js
 38d4d0c5547f8a589cf3a9f8c309dced  ./HTTP/Resources/The_Machine_Manual.pdf
-5883b7d96506294eb12149cced48def3  ./HTTP/header.cgi
+4f429be37acee74132e40d47040c34ef  ./HTTP/header.cgi
 70da90efdcde7dee9e2fe6b14bb6d074  ./HTTP/account.cgi
 502c64155fb1ce749a6fbcf0320b1de4  ./HTTP/check-update.pl
 9aff393199875a5d608bca9b002a09fa  ./HTTP/index.cgi
@@ -224,7 +224,7 @@ b00619b55a9bc8569769c01241250a7e  ./Modules/Exporter/Tiny.pm
 1dec68bf39d89743b4d51430a535a97c  ./.csync_journal.db-wal
 8e343de0388a201749b288ee9086f8d6  ./.csync_journal.db
 ab9784299e1aa8bb0fa1d3dbf2eaf6e8  ./checksum-build.sh
-924b84d020b035846002a243f15b28d0  ./Configs/Populate_DB.sh
+e10d2713afe34570d0443865623425d3  ./Configs/Populate_DB.sh
 ecd6d3eec1db50f669c4d0475277a495  ./Configs/SQL/migrate-1.10.0-to-2.0.0.pl
 f26a066beb87928104ad855fe90a5609  ./Configs/SQL/update-2.3.x-to-2.4.0.sql
 1ccfa364bbdb34805a6c138a471c9203  ./Configs/SQL/update-2.5.3-to-2.6.0.sql
