@@ -1042,7 +1042,7 @@ sub VMware_Connection {
 
 	if (!$vSphere_Server) {$vSphere_Server = 'https://vcenter-hostname'};
 
-	use VMware::VIRuntime;
+	#use VMware::VIRuntime;
 
 	my @VMware_Connection = ($vSphere_Server, $vSphere_Username, $vSphere_Password);
 	return @VMware_Connection;
@@ -1059,8 +1059,9 @@ sub Proxmox_Connection {
 	my $Node_Query = $DB_Connection->prepare("SELECT `Proxmox_Server`, `Proxmox_Port`, `Proxmox_Username`, `Proxmox_Password`
 	FROM `config_proxmox`");
 	$Node_Query->execute();
-	my @Proxmox = $Node_Query->fetchrow_array();
-	return @Proxmox;
+	my ($Proxmox_Server, $Proxmox_Port, $Proxmox_Username, $Proxmox_Password) = $Node_Query->fetchrow_array();
+	if (!$Proxmox_Port) {$Proxmox_Port = '8006'}
+	return ($Proxmox_Server, $Proxmox_Port, $Proxmox_Username, $Proxmox_Password);
 
 } # sub Proxmox_Connection
 
