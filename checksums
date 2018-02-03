@@ -61,9 +61,9 @@ f298b9f37c4b924aa984a9c3ab804d43  ./HTTP/format.css
 5beb61319f589e360ae630a03cc60506  ./HTTP/D-Shell/job-receiver.pl
 ad1f3f84192054f309feb9da436b75ec  ./HTTP/D-Shell/vmware-snapshot.pl
 24e7f00290547d6b36bc7c756d94b70a  ./HTTP/D-Shell/jobs.cgi
-5f70f530f61174cf7b2273d11f6ce910  ./HTTP/D-Shell/proxmox-snapshot.pl
+217d117526b692129336c96e762d910d  ./HTTP/D-Shell/proxmox-snapshot.pl
 7213603696892e2814ab7c3780730fb5  ./HTTP/D-Shell/command-set-dump.pl
-72377a47c4bd7de6177d41793ddd3257  ./HTTP/D-Shell/command-sets.cgi
+915d18d9b92cb7ab17feecec8278aa7d  ./HTTP/D-Shell/command-sets.cgi
 8106fe8116a0ce9e0970115c7fe510f1  ./HTTP/D-Shell/d-shell.pl
 023ca5208f8a65ef81b8f300b1d71e22  ./HTTP/search.cgi
 6e2b4d6a89639ba644d8a316c2941f24  ./HTTP/IP/ipv4-blocks.cgi
