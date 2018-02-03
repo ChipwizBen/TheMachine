@@ -231,7 +231,7 @@ f26a066beb87928104ad855fe90a5609  ./Configs/SQL/update-2.3.x-to-2.4.0.sql
 4712b14be2f22c6d20dc59a59cd9d52f  ./Configs/SQL/update-2.2.x-to-2.3.0.sql
 d71479c15006765ff5b4c64d0c7f8865  ./Configs/SQL/migrate-2.5.3-to-2.6.0.pl
 5d072f19ac04448321bdb003b90a9fc7  ./Configs/SQL/update-2.4.1-to-2.5.0.sql
-8e965aaebf3536f0cc4d0f7c0a33e3ce  ./Configs/SQL/FullSchema.sql
+689508b4ef68e1a38e32047c482c3e4d  ./Configs/SQL/FullSchema.sql
 ee91e0c188782574211823b192dc5814  ./Configs/SQL/update-2.4.0-to-2.4.1.sql
 c5531fe947987f87be8ed0bb1c3987bb  ./Configs/SQL/my.cnf
 ced6179e0c8f03f66e70570cbe856356  ./Configs/Crontab/Client (DSMS)
