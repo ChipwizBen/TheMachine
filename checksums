@@ -38,9 +38,9 @@ f510664b7c378d0417d09976de81ce8b  ./HTTP/Resources/Images/linked.png
 dff0e5db07d658ef63f1efa2e70929da  ./HTTP/Resources/Images/history.png
 e40ec2161fe7993196f23c8a07346306  ./HTTP/Resources/jquery.min-2.1.1.js
 38d4d0c5547f8a589cf3a9f8c309dced  ./HTTP/Resources/The_Machine_Manual.pdf
-4f429be37acee74132e40d47040c34ef  ./HTTP/header.cgi
+a6c3dfd03624afc1cf9e2ec217acb284  ./HTTP/header.cgi
 70da90efdcde7dee9e2fe6b14bb6d074  ./HTTP/account.cgi
-502c64155fb1ce749a6fbcf0320b1de4  ./HTTP/check-update.pl
+f0691a4bb84812c2d6dcd28024743648  ./HTTP/check-update.pl
 9aff393199875a5d608bca9b002a09fa  ./HTTP/index.cgi
 e41d1e9a5294d8115fa772be11396552  ./HTTP/audit-log.cgi
 4a5c0bc439991893b42f88ba77a5a479  ./HTTP/access-log.cgi

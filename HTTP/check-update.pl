@@ -24,6 +24,14 @@ if ($Returned =~ /URL/) {
 	$URL = $Returned;
 		$URL =~ s/.*URL='(.*?)'.*/$1/gs;
 
+	if (!$Version && $Latest_Version) {
+		$Version = $Latest_Version;
+		my $Version_Check = $DB_Connection->prepare("UPDATE `version` SET
+		`Version` = ?
+		WHERE 1=1");
+		$Version_Check->execute($Version);
+	}
+
 	if ($Version eq $Latest_Version) {
 		print "Installed Version:\t$Version\n";
 		print "Latest Version:\t\t$Latest_Version\n";
@@ -43,12 +51,13 @@ if ($Returned =~ /URL/) {
 	}
 	if ($Notification) {
 		print "Notification: $Notification\n";
-		my $Notification_Update = $DB_Connection->prepare("UPDATE `version` SET
-		`Notification` = ?
-		WHERE 1=1");
-		
-		$Notification_Update->execute($Notification);
 	}
+	my $Notification_Update = $DB_Connection->prepare("UPDATE `version` SET
+	`Notification` = ?
+	WHERE 1=1");
+	
+	$Notification_Update->execute($Notification);
+
 	exit(0);
 }
 else {

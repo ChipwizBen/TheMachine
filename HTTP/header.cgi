@@ -13,10 +13,13 @@ require $Common_Config;
 my $System_Name = System_Name();
 my $System_Short_Name = System_Short_Name();
 my ($Version, $Latest_Version, $URL, $Notification) = Version('Version_Check');
+	if (!$Version && $Latest_Version) {$Version = $Latest_Version}
 	if ($Version eq $Latest_Version) {undef $Latest_Version}
 		else {$Latest_Version = " | <span style='color: #FC44FF'>New version available: $Latest_Version </span>"}
 		if ($Version) {$Version = " version <span style=color: #00FF00;'>$Version</span>"};
+
 	if ($Notification) {$Notification = " | <span style='color: #FF8A00'>Notification: $Notification </span>"}
+
 my $DB_Connection = DB_Connection();
 my ($CGI, $Session, $Cookie) = CGI();
 my $Server_Hostname = Server_Hostname();
