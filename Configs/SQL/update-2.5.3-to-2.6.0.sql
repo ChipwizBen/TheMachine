@@ -10,6 +10,9 @@ RENAME TO  `TheMachine`.`icinga2_timedefinition`;
 ALTER TABLE `TheMachine`.`nagios_lnkHostToHostgroup` 
 RENAME TO  `TheMachine`.`icinga2_lnkHostToHostgroup`;
 
+ALTER TABLE `TheMachine`.`credentials` 
+CHANGE COLUMN `email` `email` VARCHAR(128) NULL ;
+
 ALTER TABLE `TheMachine`.`host_attributes` 
 ADD COLUMN `vm_name` VARCHAR(128) NULL AFTER `ro_community_string`;
 
@@ -134,5 +137,13 @@ CREATE TABLE `TheMachine`.`config_proxmox` (
   `Proxmox_Port` INT(5) NOT NULL DEFAULT '8006',
   `Proxmox_Username` VARCHAR(255) NOT NULL DEFAULT 'root@pam',
   `Proxmox_Password` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id`));
+
+CREATE TABLE `TheMachine`.`version` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `Version` VARCHAR(64) NULL,
+  `Latest_Version` VARCHAR(64) NULL,
+  `URL` VARCHAR(255) NULL,
+  `Notification` VARCHAR(255) NULL,
   PRIMARY KEY (`id`));
 
