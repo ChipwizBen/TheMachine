@@ -106,7 +106,7 @@ my $Git_ReverseProxy = $CGI->param("Git_ReverseProxy");
 my $Git_CommandSets = $CGI->param("Git_CommandSets");
 my $Git_DSMS = $CGI->param("Git_DSMS");
 
-# VMWare API
+# VMware API
 my $vSphere_Server = $CGI->param("vSphere_Server");
 my $vSphere_Username = $CGI->param("vSphere_Username");
 my $vSphere_Password = $CGI->param("vSphere_Password");
@@ -750,9 +750,9 @@ sub html_vmware_configuration {
 	print <<ENDHTML;
 <details>
 <summary style="text-align: center; font-weight: bold; font-size: 1.5em;">VMware vSphere API Configuration</summary>
-<p style="text-align: center;">Note: Due to licencing restrictions and differing requirements for each vSphere version, VMWare's API module is not included by default. 
+<p style="text-align: center;">Note: Due to licencing restrictions and differing requirements for each vSphere version, VMware's API module is not included by default. 
 Installation instructions are available in $System_Name documentation, or via 
-[<a href='https://www.vmware.com/support/developer/viperltoolkit/index.html'>vSphere SDK on vmware.com</a>]. Once installed, all VMWare functions 
+[<a href='https://www.vmware.com/support/developer/viperltoolkit/index.html'>vSphere SDK on vmware.com</a>]. Once installed and enabled, VMware functions 
 in $System_Name should work automatically.</p>
 	<table align='center'>
 		<tr>
@@ -973,10 +973,10 @@ sub write_configuration {
 	$Git_Config->execute($Use_Git, $Git_Directory, $Git_Redirect, $Git_ReverseProxy, $Git_CommandSets, $Git_DSMS);
 
 
-	# VMWare
+	# VMware
 	if ($vSphere_Password) {
-		my $VMWare_Config = $DB_Connection->do("DELETE FROM `config_vmware` WHERE 1=1");
-		$VMWare_Config = $DB_Connection->prepare("INSERT INTO `config_vmware` (
+		my $VMware_Config = $DB_Connection->do("DELETE FROM `config_vmware` WHERE 1=1");
+		$VMware_Config = $DB_Connection->prepare("INSERT INTO `config_vmware` (
 			`vSphere_Server`,
 			`vSphere_Username`,
 			`vSphere_Password`
@@ -985,7 +985,7 @@ sub write_configuration {
 			?, ?, ?
 		)");
 	
-		$VMWare_Config->execute($vSphere_Server, $vSphere_Username, $vSphere_Password);
+		$VMware_Config->execute($vSphere_Server, $vSphere_Username, $vSphere_Password);
 	}
 
 
