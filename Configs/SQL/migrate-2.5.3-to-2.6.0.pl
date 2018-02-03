@@ -127,6 +127,7 @@ my $Audit_Log_Submission = Audit_Log_Submission();
 $Audit_Log_Submission->execute("Configuration", "Add", "The system configuration has been imported from common.pl to the database by the update process.", 'System');
 
 # System
+print "Migrating System configuration to DB...\n";
 my $System_Config = $DB_Connection->do("DELETE FROM `config_system` WHERE 1=1");
 $System_Config = $DB_Connection->prepare("INSERT INTO `config_system` (
 	`Recovery_Email_Address`,
@@ -164,6 +165,7 @@ $Password_Complexity_Minimum_Special_Characters, $Password_Complexity_Accepted_S
 
 
 # DSMS
+print "Migrating Sudo configuration to DB...\n";
 my $DSMS_Config = $DB_Connection->do("DELETE FROM `config_sudoers` WHERE 1=1");
 $DSMS_Config = $DB_Connection->prepare("INSERT INTO `config_sudoers` (
 	`Sudoers_Owner`,
@@ -186,6 +188,7 @@ $Distribution_User, $Key_Path, $Distribution_Timeout, $Remote_Sudoers);
 
 
 # DNS
+print "Migrating DNS configuration to DB...\n";
 my $DNS_Config = $DB_Connection->do("DELETE FROM `config_dns` WHERE 1=1");
 $DNS_Config = $DB_Connection->prepare("INSERT INTO `config_dns` (
 	`DNS_Owner`,
@@ -227,6 +230,7 @@ $External_NS3);
 
 
 # Reverse Proxy
+print "Migrating Reverse Proxy configuration to DB...\n";
 my $RP_Config = $DB_Connection->do("DELETE FROM `config_reverse_proxy` WHERE 1=1");
 $RP_Config = $DB_Connection->prepare("INSERT INTO `config_reverse_proxy` (
 	`Reverse_Proxy_Location`,
@@ -253,6 +257,7 @@ $Reverse_Proxy_SSL_Certificate_File, $Reverse_Proxy_SSL_Certificate_Key_File, $R
 
 
 # LDAP
+print "Migrating LDAP configuration to DB...\n";
 my $LDAP_Config = $DB_Connection->do("DELETE FROM `config_ldap` WHERE 1=1");
 $LDAP_Config = $DB_Connection->prepare("INSERT INTO `config_ldap` (
 	`LDAP_Enabled`,
@@ -271,6 +276,7 @@ $LDAP_Config->execute($LDAP_Enabled, $LDAP_Server, $LDAP_Port, $LDAP_Timeout, $L
 
 
 # Git
+print "Migrating Git configuration to DB...\n";
 my $Git_Config = $DB_Connection->do("DELETE FROM `config_git` WHERE 1=1");
 $Git_Config = $DB_Connection->prepare("INSERT INTO `config_git` (
 	`Use_Git`,
@@ -288,6 +294,7 @@ $Git_Config->execute($Use_Git, $Git_Directory, $Git_Redirect, $Git_ReverseProxy,
 
 
 # VMWare
+print "Migrating VMware configuration to DB...\n";
 if ($vSphere_Password) {
 	my $VMWare_Config = $DB_Connection->do("DELETE FROM `config_vmware` WHERE 1=1");
 	$VMWare_Config = $DB_Connection->prepare("INSERT INTO `config_vmware` (
@@ -304,6 +311,7 @@ if ($vSphere_Password) {
 
 
 # D-Shell
+print "Migrating D-Shell configuration to DB...\n";
 my $DShell_Config = $DB_Connection->do("DELETE FROM `config_dshell` WHERE 1=1");
 $DShell_Config = $DB_Connection->prepare("INSERT INTO `config_dshell` (
 	`DShell_WaitFor_Timeout`,

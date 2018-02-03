@@ -27,10 +27,10 @@ sub DB_Connection {
 
 	use DBI;
 
-	my $DB_Host = '';
-	my $DB_Port = '';
-	my $DB_Name = '';
-	my $DB_User = '';
+	my $DB_Host = 'localhost';
+	my $DB_Port = '3306';
+	my $DB_Name = 'TheMachine';
+	my $DB_User = 'TheMachine';
 	my $DB_Password = '';
 
 	my $DB_Connection = DBI->connect("DBI:mysql:database=$DB_Name:host=$DB_Host:port=$DB_Port",
