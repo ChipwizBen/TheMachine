@@ -32,7 +32,7 @@ my $Clear = "\e[0m";
 
 $| = 1;
 my $Override;
-my $Verbose;
+my $Verbose = Verbose();
 my $Help;
 my $Custom_Host;
 my $No_Colour;

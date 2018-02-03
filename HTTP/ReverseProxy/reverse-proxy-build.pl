@@ -18,7 +18,7 @@ my $Proxy_Redirect_Location = Proxy_Redirect_Location();
 
 $| = 1;
 my $Override;
-my $Verbose;
+my $Verbose = Verbose();
 
 foreach my $Parameter (@ARGV) {
 	if ($Parameter eq '--override') {$Override = 1}

@@ -49,8 +49,8 @@ ${Green}Examples:
 
 my $Block_ID;
 my $Threads;
-my $Verbose;
-my $Very_Verbose;
+my $Verbose = Verbose();
+my $Very_Verbose = Very_Verbose();
 my $Help_Option;
 my $No_Colour;
 
@@ -88,6 +88,7 @@ if (!$Threads) {$Threads = 64}
 if ($Verbose) {
 	my $Time_Stamp = strftime "%H:%M:%S", localtime;
 	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Verbose mode on.${Clear}\n";
+	if ($Very_Verbose) {$Verbose = 1; print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Very Verbose is on (PID: $$).${Clear}\n";};
 	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Threads set to $Threads.${Clear}\n";
 }
 
@@ -143,7 +144,7 @@ while ( my @IPv4_Block_Query_Output = $IPv4_Block_Query->fetchrow_array() )
 		}
 
 		if (($Ping_Result) && ($IP_To_Ping ne $Range_Min) && ($IP_To_Ping ne $Range_Max)) {
-			if ($Very_Verbose) {
+			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Got a response from ${Blue}$IP_To_Ping${Green}.${Clear}\n";
 			}
@@ -382,7 +383,7 @@ sub dns_lookup {
 		$Host_Name_Resolution_EC =~ s/\r.*//;
 
 	if ($Host_Name_Resolution_WC > 1) {
-		print "Error! According to DNS server $DNS_Server, $IP_To_Ping has $Host_Name_Resolution_WC hostnames:\n$Host_Name_Resolution";
+		print "Error! According to the DNS server, $IP_To_Ping has $Host_Name_Resolution_WC hostnames:\n$Host_Name_Resolution";
 		return 'Error';
 	}
 	elsif ($Host_Name_Resolution_EC) {
