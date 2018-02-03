@@ -13,7 +13,6 @@ require $Common_Config;
 
 my $System_Short_Name = System_Short_Name();
 my $Verbose = Verbose();
-	my $Is_Verbose;
 my $Very_Verbose = Very_Verbose();
 my $Paper_Trail = Paper_Trail();
 my $Version = Version();
@@ -219,7 +218,6 @@ elsif ($Captured_Key_Passphrase && $No_Decode) {
 
 if ($Verbose) {
 	print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";
-	$Is_Verbose = '-v';
 }
 if ($Very_Verbose) {$Verbose = 1; print "${Red}## ${Green}Very Verbose is on (PID: $$).${Clear}\n";};
 if ($No_Decode) {print "${Red}## ${Green}Decode is off.${Clear}\n";}
@@ -1523,7 +1521,7 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Counting snapshots${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Counting snapshots${Clear}\n";
 				}
-				$Command_Output = `./vmware-snapshot.pl -c -i $Host_ID $Is_Verbose`;
+				$Command_Output = `./vmware-snapshot.pl -c -i $Host_ID`;
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
 					$Command_Output = "There was an error counting snapshots.";
@@ -1534,7 +1532,7 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshot tree${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshot tree${Clear}\n";
 				}
-				$Command_Output = `./vmware-snapshot.pl -S -i $Host_ID $Is_Verbose`;
+				$Command_Output = `./vmware-snapshot.pl -S -i $Host_ID`;
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
 					$Command_Output = "There was an error showing the snapshot tree.";
@@ -1555,14 +1553,14 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}' -X '${User_Name}' $Is_Verbose`;
+					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}' -X '${User_Name}'`;
 				}
 				else {
 					if ($Verbose) {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -X '${User_Name}' $Is_Verbose`;
+					$Command_Output = `./vmware-snapshot.pl -s -i $Host_ID -X '${User_Name}'`;
 				}
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
@@ -1584,14 +1582,14 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID -T '${Snapshot_Tag}' $Is_Verbose`;
+					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID -T '${Snapshot_Tag}'`;
 				}
 				else {
 					if ($Verbose) {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting to the current snapshot${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting to the current snapshot${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID $Is_Verbose`;
+					$Command_Output = `./vmware-snapshot.pl -R -y -i $Host_ID`;
 				}
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
@@ -1632,14 +1630,14 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID -T '${Snapshot_Tag}' $Is_Verbose`;
+					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID -T '${Snapshot_Tag}'`;
 				}
 				else {
 					if ($Verbose) {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing current snapshot taken by $System_Short_Name${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing current snapshot taken by $System_Short_Name${Clear}\n";
 					}
-					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID $Is_Verbose`;
+					$Command_Output = `./vmware-snapshot.pl -d -i $Host_ID`;
 				}
 
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
@@ -1652,7 +1650,7 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing ALL snapshots${Clear}\n";
 				}
-				$Command_Output = `./vmware-snapshot.pl -e -i $Host_ID $Is_Verbose`;
+				$Command_Output = `./vmware-snapshot.pl -e -i $Host_ID`;
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
 					$Command_Output = "There was an error removing all snapshots.";
@@ -1747,7 +1745,7 @@ sub processor {
 					print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshots${Clear}\n";
 					print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Showing snapshots${Clear}\n";
 				}
-				$Command_Output = `./proxmox-snapshot.pl -S -i $Host_ID $Is_Verbose`;
+				$Command_Output = `./proxmox-snapshot.pl -S -i $Host_ID`;
 				$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				if ($Exit_Code) {
 					$Command_Output = "There was an error showing the snapshots: $Command_Output ($Exit_Code)";
@@ -1769,7 +1767,7 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Taking a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./proxmox-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}' -X '${User_Name}' $Is_Verbose`;
+					$Command_Output = `./proxmox-snapshot.pl -s -i $Host_ID -T '${Snapshot_Tag}' -X '${User_Name}'`;
 				}
 				else {
 					if ($Verbose) {
@@ -1800,7 +1798,7 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Reverting a snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./proxmox-snapshot.pl -R -y -i $Host_ID -T '${Snapshot_Tag}' $Is_Verbose`;
+					$Command_Output = `./proxmox-snapshot.pl -R -y -i $Host_ID -T '${Snapshot_Tag}'`;
 					$Exit_Code = ${^CHILD_ERROR_NATIVE};
 				}
 				else {
@@ -1851,7 +1849,7 @@ sub processor {
 						print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 						print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Removing $System_Short_Name snapshot with tag ${Yellow}$Snapshot_Tag${Clear}\n";
 					}
-					$Command_Output = `./proxmox-snapshot.pl -d -i $Host_ID -T '${Snapshot_Tag}' $Is_Verbose`;
+					$Command_Output = `./proxmox-snapshot.pl -d -i $Host_ID -T '${Snapshot_Tag}'`;
 				}
 				else {
 					if ($Verbose) {

@@ -122,6 +122,10 @@ if ($No_Colour) {
 if ($Verbose) {
 	print "${Red}## ${Green}Verbose is on (PID: $$).${Clear}\n";
 }
+if ($Very_Verbose) {
+	$Verbose = 1;
+	print "${Red}## ${Pink}Very Verbose mode is on (PID: $$).${Clear}\n";
+}
 
 if (!$Tag && ($Snapshot || $Remove || $Revert)) {
 	print "You must suppy a tag when creating, removing or reverting a snapshot.\n";
@@ -131,7 +135,14 @@ if (!$Tag && ($Snapshot || $Remove || $Revert)) {
 $Tag =~ s/\W/_/g;
 
 my $Proxmox_Auth_Data = `curl --connect-timeout 10 --max-time 60 -k -sS --data "username=$Proxmox_Username&password=$Proxmox_Password"  https://$Proxmox_Node:$Proxmox_Node_Port/api2/json/access/ticket`;
+if ($Very_Verbose) {
+	my $Time_Stamp = strftime "%H:%M:%S", localtime;
+	print "${Red}## Verbose (PID:$$) $Time_Stamp ## Auth Data: ${Yellow}$Proxmox_Auth_Data${Clear}\n";
+}
+
+if ($Proxmox_Auth_Data =~ /"data":null/) {print "Proxmox authentication failure. Aborting.\n"; exit 21;}
 if ($?) {print "Error gathering auth token: Curl Error $?\n"; exit 21;}
+
 my $Proxmox_Auth_Token = $Proxmox_Auth_Data;
 	$Proxmox_Auth_Token =~ s/.*ticket":"(.*?)".*/PVEAuthCookie=$1/;
 my $Proxmox_Auth_CSRF_Preservation_Token = $Proxmox_Auth_Data;
@@ -140,14 +151,17 @@ my $Proxmox_Auth_CSRF_Preservation_Token = $Proxmox_Auth_Data;
 my $Curl = qq/curl --connect-timeout 10 --max-time 60 -k -sS --cookie "$Proxmox_Auth_Token" --header "$Proxmox_Auth_CSRF_Preservation_Token"/;
 my $API = $Curl . " https://$Proxmox_Node:$Proxmox_Node_Port/api2/json";
 
+if ($Very_Verbose) {
+	my $Time_Stamp = strftime "%H:%M:%S", localtime;
+	print "${Red}## Verbose (PID:$$) $Time_Stamp ## API Link: ${Yellow}$API${Clear}\n";
+}
+
 @Hosts = split(/[\s,]+/,join(',' , @Hosts));
 if (!$Threads) {$Threads = scalar(keys @Hosts);}
 if ($Revert && !$Override) {$Threads = 1}
 
-if ($Very_Verbose) {$Verbose = 1}
 if ($Verbose) {
 	my $Time_Stamp = strftime "%H:%M:%S", localtime;
-	print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Verbose mode on.${Clear}\n";
 	if ($Revert && !$Override) {
 		print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Green}Revert requested - threads capped at ${Yellow}$Threads${Green}.${Clear}\n";
 	}
@@ -551,6 +565,7 @@ sub cluster_details {
 
 	my ($VM_ID, $VM_Node, $VM_Type);
 	my $Cluster_Details = `$API/cluster/resources`;
+	if ($Very_Verbose) {print "Cluser Details:\n$Cluster_Details\n"}
 	if ($?) {print "Error gathering cluster details (Credentials correct?): Curl Error $?\n"; exit 21;}
 
 	if ($Cluster_Details =~ /"name":"$VM_Name"/) {
