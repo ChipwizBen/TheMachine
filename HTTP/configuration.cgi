@@ -753,7 +753,7 @@ sub html_vmware_configuration {
 <p style="text-align: center;">Note: Due to licencing restrictions and differing requirements for each vSphere version, VMware's API module is not included by default. 
 Installation instructions are available in $System_Name documentation, or via 
 [<a href='https://www.vmware.com/support/developer/viperltoolkit/index.html'>vSphere SDK on vmware.com</a>]. Once installed and enabled, VMware functions 
-in $System_Name should work automatically.</p>
+in $System_Name should work automatically. To set any values here, you must also include the password.</p>
 	<table align='center'>
 		<tr>
 			<td style="text-align: right;">vSphere Server URI:</td>
@@ -783,7 +783,7 @@ sub html_proxmox_configuration {
 	print <<ENDHTML;
 <details>
 <summary style="text-align: center; font-weight: bold; font-size: 1.5em;">Proxmox API Configuration</summary>
-<p style="text-align: center;">Note: Proxmox username must include realm (e.g. 'root\@pam').</p>
+<p style="text-align: center;">Note: Proxmox username must include realm (e.g. 'root\@pam'). To set any values here, you must also include the password.</p>
 	<table align='center'>
 		<tr>
 			<td style="text-align: right;">Proxmox Server:</td>
