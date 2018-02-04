@@ -41,23 +41,17 @@ if ($Returned =~ /URL/) {
 		print "Installed Version:\t$Version\n";
 		print "Latest Version:\t\t$Latest_Version\n";
 		print "An update is available!\n";
-
-		my $Version_Check = $DB_Connection->prepare("UPDATE `version` SET
-		`Latest_Version` = ?,
-		`URL` = ?
-		WHERE 1=1");
-		$Version_Check->execute($Latest_Version, $URL);
-
 	}
 	if ($Notification) {
 		print "Notification: $Notification\n";
 	}
-	my $Notification_Update = $DB_Connection->prepare("UPDATE `version` SET
-	`Notification` = ?
-	WHERE 1=1");
-	
-	$Notification_Update->execute($Notification);
 
+	my $DB_Update = $DB_Connection->prepare("UPDATE `version` SET
+		`Latest_Version` = ?,
+		`URL` = ?,
+		`Notification` = ?
+		WHERE 1=1");
+	$DB_Update->execute($Latest_Version, $URL, $Notification);
 	exit(0);
 }
 else {
