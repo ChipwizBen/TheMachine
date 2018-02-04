@@ -41,6 +41,7 @@ sub html_output {
 
 	## Version 2.6.1
 	$Table->addRow('2.6.0', 'Path fix for temporarily created files.');
+	$Table->addRow('', 'Adjusted timeout behaviour to more quickly identify keys without passphrases during rebooting.');
 	$Table->addRow('---', ''); 
 
 	## Version 2.6.0

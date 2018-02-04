@@ -1,4 +1,4 @@
-4a2cd977bea637d8499dfea1f294992b  ./changelog
+f4f3c408edbce4dadcea05129b79623e  ./changelog
 aa83f23c93e8095f7836b8cd85b90c3a  ./README.md
 86b25aa8e425e7a993c7c93a0ff44d41  ./HTTP/Resources/index.cgi
 b3dba428ad19042b9ff17a1677695200  ./HTTP/Resources/Images/add-note.png
@@ -46,7 +46,7 @@ e41d1e9a5294d8115fa772be11396552  ./HTTP/audit-log.cgi
 4a5c0bc439991893b42f88ba77a5a479  ./HTTP/access-log.cgi
 a1eb6fca018b006fc7c3e3097a5f01b8  ./HTTP/account-management.cgi
 d160a7e4a44dfbe69919cf52c1b27a5f  ./HTTP/register.pl
-d54701d8d2b6362fc936e43429689027  ./HTTP/changelog.cgi
+1377d19d76d867ec984e1f149db0623d  ./HTTP/changelog.cgi
 1890c290456cd3ebaae318f50a75f874  ./HTTP/lockout.cgi
 86b25aa8e425e7a993c7c93a0ff44d41  ./HTTP/ReverseProxy/index.cgi
 1ae99ce08791f6d6b377636b9cc65af3  ./HTTP/ReverseProxy/redirects.cgi
