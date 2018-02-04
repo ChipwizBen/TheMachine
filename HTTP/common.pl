@@ -1527,6 +1527,8 @@ sub Version {
 
 	my ($Version, $Latest_Version, $URL, $Notification) = $Select_Config->fetchrow_array();
 
+	if (!$Version) {$Version = '2.6.1'}
+
 	my $Parameter = $_[0];
 	if ($Parameter =~ /Version_Check/) {
 		return ($Version, $Latest_Version, $URL, $Notification);
