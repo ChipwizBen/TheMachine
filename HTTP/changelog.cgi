@@ -39,6 +39,10 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.6.1
+	$Table->addRow('2.6.0', 'Path fix for temporarily created files.');
+	$Table->addRow('---', ''); 
+
 	## Version 2.6.0
 	$Table->addRow('2.6.0', 'Proxmox snapshot integration added.');
 	$Table->addRow('', 'Hosts now have a configurable VM name option for where the hostname doesn\'t match the VM name.');
@@ -47,7 +51,7 @@ sub html_output {
 	$Table->addRow('', 'Reverse Proxy log defaults have been changed.');
 	$Table->addRow('', 'Made LDAP queries more robust (credit: Phil Conner).');
 	$Table->addRow('', 'Many other enhancements and bug fixes.');
-	$Table->addRow('---', '');
+	$Table->addRow('<hr />', '');
 
 	## Version 2.5.3
 	$Table->addRow('2.5.3', 'Added D-Shell connection via IPv6, IPv4 and failback hostname in that order.');

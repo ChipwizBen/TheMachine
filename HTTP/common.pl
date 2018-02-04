@@ -315,7 +315,7 @@ sub Sudoers_Storage {
 
 	# This is the directory where replaced sudoers files are stored. You do not need a trailing slash.
 
-	if (!$Sudoers_Storage) {$Sudoers_Storage = '/opt/TheMachine/HTTP/Storage/Storage/DSMS';}
+	if (!$Sudoers_Storage) {$Sudoers_Storage = '/opt/TheMachine/HTTP/Storage/DSMS';}
 	return $Sudoers_Storage;
 
 } # sub Sudoers_Storage
@@ -833,7 +833,7 @@ sub DShell_tmp_Location {
 
 	# This is the directory where temporary files are are stored. You do not need a trailing slash.
 
-	my $DShell_tmp_Location = '/opt/TheMachine/HTTP/Storage/Storage/D-Shell/tmp';
+	my $DShell_tmp_Location = '/opt/TheMachine/HTTP/Storage/D-Shell/tmp';
 	return $DShell_tmp_Location;
 
 } # sub DShell_tmp_Location

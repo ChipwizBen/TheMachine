@@ -1,3 +1,4 @@
+2.6.1   - Path fix for temporarily created files.
 2.6.0   - Proxmox snapshot integration added.
         - Hosts now have a configurable VM name option for where the hostname doesn't match the VM name.
         - All user configuration options have been moved into the database.

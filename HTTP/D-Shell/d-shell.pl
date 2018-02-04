@@ -1038,7 +1038,7 @@ sub host_connection {
 		$SSH->send($Test_Command);
 		#$Hello = eval { $SSH->exec($Test_Command, $Connection_Timeout); };
 		#eval { $Hello = $SSH->waitfor("\033", 10); };
-		eval { $Hello = $SSH->waitfor("Microsoft", 1); };
+		eval { $Hello = $SSH->waitfor("Microsoft", $Connection_Timeout, '-re'); };
 
 		if ($Hello) {
 			$System_Is_Windows = 1;
@@ -2770,7 +2770,7 @@ sub reboot_control {
 				print LOG "${Red}Fingerprint prompt NOT Found! Last line was: $Line. Full job log at $DShell_Job_Log_Location/$Discovered_Job_ID${Clear}\n";
 			}
 
-			my $Key_Passphase_Trap = $SSH->waitfor("Enter passphrase for key", $Wait_Timeout, '-re');
+			my $Key_Passphase_Trap = $SSH->waitfor("Enter passphrase for key", $Reboot_Connection_Timeout, '-re');
 			if ($Key_Passphase_Trap) {
 				if ($Verbose) {
 					my $Time_Stamp = strftime "%H:%M:%S", localtime;
@@ -2788,10 +2788,26 @@ sub reboot_control {
 			}
 		}
 
-		my $Test_Command = 'id';
-		my $ID_Command_Timeout = 1;
-		$Hello = eval { $SSH->exec($Test_Command, $ID_Command_Timeout); };
+		my $Test_Command = 'echo TheMachine';
+		$SSH->send($Test_Command);
+		#$Hello = eval { $SSH->exec($Test_Command, $Reboot_Connection_Timeout); };
+		#eval { $Hello = $SSH->waitfor("\033", 10); };
+		eval { $Hello = $SSH->waitfor("Microsoft", $Reboot_Connection_Timeout, '-re'); };
+
+		if ($Hello) {
+			$System_Is_Windows = 1;
+			if ($Verbose) {
+				my $Time_Stamp = strftime "%H:%M:%S", localtime;
+				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Windows detected, setting control mode to 'Money for Old Rope'...${Clear}\n";
+				print LOG "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Windows detected, setting control mode to 'Money for Old Rope'...${Clear}\n";
+			}
+		}
+		else {
+			$Hello = eval { $SSH->exec($Test_Command, $Reboot_Connection_Timeout); };
+		}
+
 		if ($@) {
+			print "Error: $@n";
 			if ($Verbose) {
 				my $Time_Stamp = strftime "%H:%M:%S", localtime;
 				print "${Red}## Verbose (PID:$$) $Time_Stamp ## ${Yellow}Connection died while trying to confirm login. Trying again (attempt ${Pink}$Attempts${Yellow} of ${Pink}$Reboot_Max_Attempts${Yellow})...${Clear}\n";
@@ -2799,13 +2815,8 @@ sub reboot_control {
 				($SSH_Check, $Attempts) = &reboot_discovery($Host_Connection_String, $Attempts);
 			}
 		}
-
-		my $System_Is_Windows;
-		last if $Hello =~ m/uid/;
-		if ($Hello =~ /:\\/) {
-			$System_Is_Windows = 1;
-			last;
-		}
+		last if $Hello =~ m/TheMachine/;
+		last if $System_Is_Windows == 1;
 		last if $Reboot_Retry_Count >= $Reboot_Max_Retry_Count;
 		if ($Hello =~ m/Permission denied/) {
 			print "Supplied credentials failed. Terminating the job.\n";
