@@ -388,7 +388,7 @@ sub Distribution_Log_Location {
 
 	# This is the log location for the distribution system. You do not need a trailing slash.
 
-	my $Distribution_Log_Location = '/var/log/TheMachine/Distribution.log';
+	my $Distribution_Log_Location = '/var/log/TheMachine';
 	return $Distribution_Log_Location;
 
 } # sub Distribution_Log_Location

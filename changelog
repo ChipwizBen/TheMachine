@@ -1,3 +1,4 @@
+2.6.2   - Fixed incorrect log path for sudo distribution log.
 2.6.1   - Path fix for temporarily created files.
         - Adjusted timeout behaviour to more quickly identify keys without passphrases during rebooting.
         - Fix for version notification mismatch.

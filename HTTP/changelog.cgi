@@ -39,6 +39,10 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	## Version 2.6.2
+	$Table->addRow('2.6.2', 'Fixed incorrect log path for sudo distribution log.');
+	$Table->addRow('---', '');
+
 	## Version 2.6.1
 	$Table->addRow('2.6.0', 'Path fix for temporarily created files.');
 	$Table->addRow('', 'Adjusted timeout behaviour to more quickly identify keys without passphrases during rebooting.');
