@@ -263,6 +263,7 @@ CREATE TABLE `config_ldap` (
   `LDAP_Port` int(5) DEFAULT NULL,
   `LDAP_Timeout` int(5) DEFAULT NULL,
   `LDAP_User_Name_Prefix` varchar(255) DEFAULT NULL,
+  `LDAP_User_Name_Suffix` varchar(255) DEFAULT NULL,
   `LDAP_Filter` varchar(255) DEFAULT NULL,
   `LDAP_Search_Base` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
