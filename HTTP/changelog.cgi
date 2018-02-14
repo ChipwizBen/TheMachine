@@ -39,6 +39,13 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	# Version 2.6.3
+	$Table->addRow('2.6.3', 'Made LDAP configuration a bit more flexible by also allowing username (DN) suffixes to work with more servers.');
+	$Table->addRow('', 'Made LDAP login report the reason for a login failure.');
+	$Table->addRow('', 'Made an LDAP configured system failback to local auth if authentication fails to prevent accidental lockouts.');
+	$Table->addRow('', 'Made a CLI script to overwrite LDAP DN configuration for emergencies (script is owned by root).');
+	$Table->addRow('---', '');
+
 	## Version 2.6.2
 	$Table->addRow('2.6.2', 'Fixed incorrect log path for sudo distribution log.');
 	$Table->addRow('---', '');

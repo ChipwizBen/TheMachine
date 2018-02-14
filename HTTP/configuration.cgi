@@ -95,6 +95,7 @@ my $LDAP_Server = $CGI->param("LDAP_Server");
 my $LDAP_Port = $CGI->param("LDAP_Port");
 my $LDAP_Timeout = $CGI->param("LDAP_Timeout");
 my $LDAP_User_Name_Prefix = $CGI->param("LDAP_User_Name_Prefix");
+my $LDAP_User_Name_Suffix = $CGI->param("LDAP_User_Name_Suffix");
 my $LDAP_Filter = $CGI->param("LDAP_Filter");
 my $LDAP_Search_Base = $CGI->param("LDAP_Search_Base");
 
@@ -623,8 +624,14 @@ my ($LDAP_Server,
 	$LDAP_Port,
 	$LDAP_Timeout,
 	$LDAP_User_Name_Prefix,
+	$LDAP_User_Name_Suffix,
 	$LDAP_Filter,
 	$LDAP_Search_Base) = LDAP_Login('Parameters');
+
+	$LDAP_User_Name_Prefix =~ s/=*$//;
+	$LDAP_User_Name_Suffix =~ s/^,*//;
+
+	my $LDAP_User_Name_DN = $LDAP_User_Name_Prefix . '=<i>username</i>,' . $LDAP_User_Name_Suffix;
 
 	my ($LDAP_Yes, $LDAP_No);
 	if ($LDAP_Enabled) {$LDAP_Yes = 'checked'} else {$LDAP_No = 'checked'}
@@ -632,7 +639,20 @@ my ($LDAP_Server,
 	print <<ENDHTML;
 <details>
 <summary style="text-align: center; font-weight: bold; font-size: 1.5em;">LDAP Configuration</summary>
-Note: Depending on your installation, you may need to set <b>LDAP Filter</b> to <i>uid</i>, <i>sAMAccountName</i>, or another value unique to your organisation.
+Note: Depending on your LDAP/AD implementation, you may need to set <b>LDAP Filter</b> to <i>uid</i>, <i>sAMAccountName</i>, or another value unique to your organisation.<br />
+Use the DN prefix and suffix to define the DN to authenticate with; e.g. a prefix: of<br />
+<b>uid=</b><br />
+...and a suffix of...<br />
+<b>ou=People,dc=nwk1,dc=local</b><br />
+the DN submitted would be:<br />
+<b>uid=<i>username</i>,ou=People,dc=nwk1,dc=local</b>
+ENDHTML
+
+	if ($LDAP_Enabled) {
+		print "<p>Current DN based on saved values in the DB:<br /><b>$LDAP_User_Name_DN</b></p>";
+	}
+
+	print <<ENDHTML;
 	<table align='center'>
 		<tr>
 			<td style="text-align: right;">LDAP Enabled:</td>
@@ -651,8 +671,12 @@ Note: Depending on your installation, you may need to set <b>LDAP Filter</b> to 
 			<td style="text-align: left;"><input type='number' name='LDAP_Timeout' maxlength='5' value="$LDAP_Timeout" placeholder="$LDAP_Timeout"></td>
 		</tr>
 		<tr>
-			<td style="text-align: right;">LDAP User Prefix:</td>
+			<td style="text-align: right;">LDAP User Prefix (DN):</td>
 			<td style="text-align: left;"><input type='text' name='LDAP_User_Name_Prefix' maxlength='255' value="$LDAP_User_Name_Prefix" placeholder="$LDAP_User_Name_Prefix"></td>
+		</tr>
+		<tr>
+			<td style="text-align: right;">LDAP User Suffix (DN):</td>
+			<td style="text-align: left;"><input type='text' name='LDAP_User_Name_Suffix' maxlength='255' value="$LDAP_User_Name_Suffix" placeholder="$LDAP_User_Name_Suffix"></td>
 		</tr>
 		<tr>
 			<td style="text-align: right;">LDAP Filter:</td>
@@ -946,14 +970,15 @@ sub write_configuration {
 		`LDAP_Port`,
 		`LDAP_Timeout`,
 		`LDAP_User_Name_Prefix`,
+		`LDAP_User_Name_Suffix`,
 		`LDAP_Filter`,
 		`LDAP_Search_Base`
 	)
 	VALUES (
-		?, ?, ?, ?, ?, ?, ?
+		?, ?, ?, ?, ?, ?, ?, ?
 	)");
 
-	$LDAP_Config->execute($LDAP_Enabled, $LDAP_Server, $LDAP_Port, $LDAP_Timeout, $LDAP_User_Name_Prefix, $LDAP_Filter, $LDAP_Search_Base);
+	$LDAP_Config->execute($LDAP_Enabled, $LDAP_Server, $LDAP_Port, $LDAP_Timeout, $LDAP_User_Name_Prefix, $LDAP_User_Name_Suffix, $LDAP_Filter, $LDAP_Search_Base);
 
 
 	# Git

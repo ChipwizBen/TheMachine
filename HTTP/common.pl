@@ -186,31 +186,45 @@ sub LDAP_Login {
 
 	my $DB_Connection = &DB_Connection;
 
-	my $Select_Config = $DB_Connection->prepare("SELECT `LDAP_Enabled`, `LDAP_Server`, `LDAP_Port`, `LDAP_Timeout`, `LDAP_User_Name_Prefix`, `LDAP_Filter`, `LDAP_Search_Base`
+	my $Select_Config = $DB_Connection->prepare("SELECT `LDAP_Enabled`, `LDAP_Server`, `LDAP_Port`, `LDAP_Timeout`, `LDAP_User_Name_Prefix`, `LDAP_User_Name_Suffix`, `LDAP_Filter`, `LDAP_Search_Base`
 		FROM `config_ldap`");
 	$Select_Config->execute();
 
-	my ($LDAP_Enabled, $LDAP_Server, $LDAP_Port, $LDAP_Timeout, $LDAP_User_Name_Prefix, $LDAP_Filter, $LDAP_Search_Base) = $Select_Config->fetchrow_array();
+	my ($LDAP_Enabled, $LDAP_Server, $LDAP_Port, $LDAP_Timeout, $LDAP_User_Name_Prefix, $LDAP_User_Name_Suffix, $LDAP_Filter, $LDAP_Search_Base) = $Select_Config->fetchrow_array();
 
 	if (!$LDAP_Enabled) {$LDAP_Enabled = 0};
 
 	# ---- Do not edit vaules below this line ---- #
 
 	my $LDAP_Query = $_[0];
+
 	if ($LDAP_Query eq 'Status_Check') {
 		return $LDAP_Enabled;
 		exit(0);
 	}
 	elsif ($LDAP_Query eq 'Parameters') {
-		my @Parameters = ($LDAP_Server, $LDAP_Port, $LDAP_Timeout, $LDAP_User_Name_Prefix, $LDAP_Filter, $LDAP_Search_Base);
+		my @Parameters = ($LDAP_Server, $LDAP_Port, $LDAP_Timeout, $LDAP_User_Name_Prefix, $LDAP_User_Name_Suffix, $LDAP_Filter, $LDAP_Search_Base);
 		return @Parameters;
 		exit(0);
 	}
 	elsif ($LDAP_Enabled) {
 
 		my $LDAP_User_Name = $_[0];
-			my $LDAP_User_Name_Prefixed = $LDAP_User_Name_Prefix.$LDAP_User_Name;
 		my $LDAP_Password = $_[1];
+
+		$LDAP_User_Name_Prefix =~ s/=*$//;
+		if (!$LDAP_User_Name_Prefix) {$LDAP_User_Name_Prefix = 'uid'}
+		$LDAP_User_Name_Suffix =~ s/^,*//;
+		$LDAP_Filter =~ s/=*$//;
+
+		my $LDAP_User_Name_DN = $LDAP_User_Name_Prefix . '=' . $LDAP_User_Name;
+		if ($LDAP_User_Name_Suffix) {
+			$LDAP_User_Name_DN = $LDAP_User_Name_DN . ',' . $LDAP_User_Name_Suffix;
+		} 
+
+		if (!$LDAP_Filter) {$LDAP_Filter = 'uid'}
+			$LDAP_Filter = $LDAP_Filter . '=';
+		if (!$LDAP_Timeout) {$LDAP_Timeout = '5'}
 
 		use Net::LDAP;
 		my $LDAP_Connection = Net::LDAP->new(
@@ -218,10 +232,9 @@ sub LDAP_Login {
 			port => $LDAP_Port,
 			timeout => $LDAP_Timeout,
 			start_tls => 1,
-			#filter => $LDAP_Filter,
 		) or return "Can't connect to LDAP server $LDAP_Server:$LDAP_Port with timeout $LDAP_Timeout seconds. $@";
 		my $Bind = $LDAP_Connection->bind(
-			$LDAP_User_Name_Prefixed,
+			$LDAP_User_Name_DN,
 			password => $LDAP_Password,
 			);
 
@@ -231,10 +244,13 @@ sub LDAP_Login {
 
 			 my $Get_User_Details = $LDAP_Connection->search(
 			 	base   => $LDAP_Search_Base,
-			 	filter => "($LDAP_Filter=$LDAP_User_Name)"
+			 	filter => "(${LDAP_Filter}${LDAP_User_Name})"
 			 );
 
-			die $Get_User_Details->error if $Get_User_Details->code;
+			if ($Get_User_Details->code) {
+				my $User_Error = $Get_User_Details->error;
+				return "$User_Error<br />DN:$LDAP_User_Name_DN<br />Search Base:$LDAP_Search_Base<br />Filter:(${LDAP_Filter}${LDAP_User_Name})";
+			}
 
 			my $Display_Name;
 			my $Email;
@@ -244,16 +260,21 @@ sub LDAP_Login {
 					if (!$Display_Name) {$Display_Name = $User_Values->get_value("userPrincipalName");}
 					if (!$Display_Name) {$Display_Name = $LDAP_User_Name}
 				$Email = $User_Values->get_value("mail");
+
 			}
 
 			$LDAP_Connection->unbind;
 			return "Success,$Display_Name,$Email"; 
 
 		}
+		else {
+			my $Bind_Error = $Bind->error;
+			return "Error,Bind:$Bind_Error";
+		}
 		$LDAP_Connection->unbind;
 	}
 	else {
-		return 'Off';
+		return 0;
 	}
 
 } # sub LDAP_Login
@@ -1527,7 +1548,7 @@ sub Version {
 
 	my ($Version, $Latest_Version, $URL, $Notification) = $Select_Config->fetchrow_array();
 
-	if (!$Version) {$Version = '2.6.1'}
+	if (!$Version) {$Version = '2.6.3'}
 
 	my $Parameter = $_[0];
 	if ($Parameter =~ /Version_Check/) {

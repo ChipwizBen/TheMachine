@@ -1,3 +1,7 @@
+2.6.3   - Made LDAP configuration a bit more flexible by also allowing username (DN) suffixes to work with more servers.
+        - Made LDAP login report the reason for a login failure.
+        - Made an LDAP configured system failback to local auth if authentication fails to prevent accidental lockouts.
+        - Made a CLI script to overwrite LDAP DN configuration for emergencies (script is owned by root).
 2.6.2   - Fixed incorrect log path for sudo distribution log.
 2.6.1   - Path fix for temporarily created files.
         - Adjusted timeout behaviour to more quickly identify keys without passphrases during rebooting.

@@ -29,11 +29,12 @@ my $User_Password_Form = $CGI->param("Password_Form");
 
 my $Login_Message;
 
-if ($User_Name_Form && $LDAP_Check !~ /on/i) {
+if ($User_Name_Form && !$LDAP_Check) {
 	&login_user;
 }
-elsif ($User_Name_Form && $LDAP_Check =~ /on/i) {
+elsif ($User_Name_Form && $LDAP_Check) {
 	&ldap_login;
+	&login_user;
 }
 &html_output;
 exit(0);
@@ -47,6 +48,7 @@ sub ldap_login {
 		my @LDAP_Details = split(/\,/, $LDAP_Login);
 			my $LDAP_User_Name = $LDAP_Details[1];
 			my $LDAP_Email = $LDAP_Details[2];
+			if (!$LDAP_Email) {$LDAP_Email = '0'}
 
 		$Session->param('User_Name', $LDAP_User_Name);
 		$Session->flush();
@@ -120,10 +122,14 @@ sub ldap_login {
 	elsif ($LDAP_Login =~ /^Can't connect/) {
 		$Login_Message = "Error: Could not communicate with authentication server.";
 	}
-	else {
-		$Login_Message = "Login Failed";
+	elsif ($LDAP_Login =~ /^Error/) {
+		$LDAP_Login =~ s/Error,*\s*//;
+		$Login_Message = "Error: $LDAP_Login";
 	}
-}
+	else {
+		$Login_Message = "LDAP Login Failed: $LDAP_Login";
+	}
+} # sub ldap_login
 
 sub login_user {
 	my $Login_DB_Query = $DB_Connection->prepare("SELECT `id`, `password`, `salt`, `email`, `admin`, `ip_admin`, `icinga_admin`, 
@@ -133,6 +139,13 @@ sub login_user {
 	$Login_DB_Query->execute($User_Name_Form);
 
 	my $User_Admin;
+	if (!$Login_Message) {
+		$Login_Message = "Local Login Failed";
+	}
+	else {
+		$Login_Message = $Login_Message . '<br />Local Login also failed';
+	}
+
 	while ( my @DB_Query = $Login_DB_Query->fetchrow_array( ) )
 	{
 		my $DB_User_ID = $DB_Query[0];
@@ -156,7 +169,12 @@ sub login_user {
 		my $Email_Password;
 		if ($DB_Lockout == 1) {
 			&email_user_password_reset(12);
-			$Login_Message = "Your account is locked out.<br/>Please check your email for instructions.";
+			if (!$Login_Message) {
+				$Login_Message = "Your account is locked out.<br/>Please check your email for instructions.";
+			}
+			else {
+				$Login_Message = $Login_Message . '<br />Your account is locked out.<br/>Please check your email for instructions.';
+			}
 		}
 		elsif ("$DB_Password" ne "$User_Password_Form")
 		{
@@ -184,10 +202,17 @@ sub login_user {
 					}
 
 					$Lockout_Counter = 5 - $Lockout_Counter;
-					$Login_Message = "You have entered an incorrect password.<br/>Attempts remaining: $Lockout_Counter";
+					if (!$Login_Message) {
+						$Login_Message = "You have entered an incorrect password.<br/>Attempts remaining: $Lockout_Counter";
+					}
+					else {
+						$Login_Message = $Login_Message . "<br />You have entered an incorrect password.<br/>Attempts remaining: $Lockout_Counter";
+					}
 			}
 		}
 		elsif ("$DB_Password" eq "$User_Password_Form") {
+
+			$Login_Message='';
 
 			$Session->param('User_ID', $DB_User_ID);
 			$Session->param('User_Name', $User_Name_Form);
@@ -218,11 +243,10 @@ sub login_user {
 				print "Location: /index.cgi\n\n";
 				exit(0);
 			}
-
 		}
 	}
 
-} #sub login_user
+} # sub login_user
 
 sub email_user_password_reset {
 
