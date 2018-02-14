@@ -41,7 +41,7 @@ Options are:
 	${Blue}--search-base\t ${Green}LDAP search base (e.g. 'dc=nwk1,dc=local').
 
 
-${Green}Example:l
+${Green}Example:
 	${Blue}$0 --enable 1 --server 10.43.189.2 --port 389 --timeout 10 --user-prefix uid= --user-suffix ou=People,dc=nwk1,dc=local --filter uid --search-base dc=nwk1,dc=local ${Clear}\n\n";
 
 

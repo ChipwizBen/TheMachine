@@ -38,7 +38,7 @@ echo "Creating starter account (Username/Password: admin/admin)..."
 mysql -u root -p$MariaDB_Root_Password << _EOF_
 INSERT INTO \`TheMachine\`.\`credentials\` (\`username\`, \`password\`, \`admin\`, \`ip_admin\`, \`icinga_admin\`, \`dshell_admin\`, \`dns_admin\`, \`reverse_proxy_admin\`, \`dsms_admin\`, \`approver\`, \`requires_approval\`) VALUES ('admin', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec', '1', '1', '1', '1', '1', '1', '1', '1', '0');
 DELETE FROM \`TheMachine\`.\`version\` WHERE 1=1;
-INSERT INTO \`TheMachine\`.\`version\` (\`Version\`, \`Latest_Version\`, \`URL\`, \`Notification\`) VALUES ('', '', 'https://rpm.nwk1.com/notification', '')
+INSERT INTO \`TheMachine\`.\`version\` (\`Latest_Version\`, \`URL\`, \`Notification\`) VALUES ('', 'https://rpm.nwk1.com/notification', '')
 _EOF_
 
 echo "Populating $DIR/HTTP/common.pl..."
