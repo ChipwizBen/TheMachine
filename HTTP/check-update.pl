@@ -24,14 +24,6 @@ if ($Returned =~ /URL/) {
 	$URL = $Returned;
 		$URL =~ s/.*URL='(.*?)'.*/$1/gs;
 
-	if (!$Version && $Latest_Version) {
-		$Version = $Latest_Version;
-		my $Version_Check = $DB_Connection->prepare("UPDATE `version` SET
-		`Version` = ?
-		WHERE 1=1");
-		$Version_Check->execute($Version);
-	}
-
 	if ($Version eq $Latest_Version) {
 		print "Installed Version:\t$Version\n";
 		print "Latest Version:\t\t$Latest_Version\n";

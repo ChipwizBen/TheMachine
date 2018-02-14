@@ -1542,13 +1542,13 @@ sub Version {
 
 	my $DB_Connection = &DB_Connection;
 
-	my $Select_Config = $DB_Connection->prepare("SELECT `Version`, `Latest_Version`, `URL`, `Notification`
+	my $Select_Config = $DB_Connection->prepare("SELECT `Latest_Version`, `URL`, `Notification`
 		FROM `version`");
 	$Select_Config->execute();
 
-	my ($Version, $Latest_Version, $URL, $Notification) = $Select_Config->fetchrow_array();
+	my ($Latest_Version, $URL, $Notification) = $Select_Config->fetchrow_array();
 
-	if (!$Version) {$Version = '2.6.3'}
+	my $Version = '2.6.3';
 
 	my $Parameter = $_[0];
 	if ($Parameter =~ /Version_Check/) {

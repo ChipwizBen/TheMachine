@@ -2812,7 +2812,6 @@ DROP TABLE IF EXISTS `version`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `version` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `Version` varchar(64) DEFAULT NULL,
   `Latest_Version` varchar(64) DEFAULT NULL,
   `URL` varchar(255) DEFAULT NULL,
   `Notification` varchar(255) DEFAULT NULL,
