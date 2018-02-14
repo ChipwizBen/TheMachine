@@ -40,7 +40,7 @@ e40ec2161fe7993196f23c8a07346306  ./HTTP/Resources/jquery.min-2.1.1.js
 38d4d0c5547f8a589cf3a9f8c309dced  ./HTTP/Resources/The_Machine_Manual.pdf
 a6c3dfd03624afc1cf9e2ec217acb284  ./HTTP/header.cgi
 70da90efdcde7dee9e2fe6b14bb6d074  ./HTTP/account.cgi
-8c02794b7aba197b39c8c427cb7f0299  ./HTTP/check-update.pl
+5a22f255fa429ed64358de3fa0089d83  ./HTTP/check-update.pl
 9aff393199875a5d608bca9b002a09fa  ./HTTP/index.cgi
 e41d1e9a5294d8115fa772be11396552  ./HTTP/audit-log.cgi
 4a5c0bc439991893b42f88ba77a5a479  ./HTTP/access-log.cgi
@@ -117,7 +117,7 @@ fb5e25656199101050b6e69311edd84c  ./HTTP/Icinga2/icinga2-contact-groups.cgi
 903b6b30eb7e570dc07843eee29a9d58  ./HTTP/Storage/D-Shell/Job-Log/index.cgi
 9162ab9165bfb44e6363d9c7edd4cfdc  ./HTTP/Storage/DSMS/index.cgi
 9162ab9165bfb44e6363d9c7edd4cfdc  ./HTTP/Storage/DNS/index.cgi
-19b7b6307ec0c7a3f9519fdb36446fa5  ./HTTP/common.pl
+0ea93c6fd429bb35cca0626c20a9c9f2  ./HTTP/common.pl
 f0db0f28c4d7785df287a0e724cd1956  ./HTTP/login.cgi
 86b25aa8e425e7a993c7c93a0ff44d41  ./HTTP/DNS/index.cgi
 3fa9c282535d8c67ebe31cb8578ac39d  ./HTTP/DNS/zone-records.cgi
@@ -230,15 +230,15 @@ e10d2713afe34570d0443865623425d3  ./Configs/Populate_DB.sh
 ecd6d3eec1db50f669c4d0475277a495  ./Configs/SQL/migrate-1.10.0-to-2.0.0.pl
 f26a066beb87928104ad855fe90a5609  ./Configs/SQL/update-2.3.x-to-2.4.0.sql
 1ccfa364bbdb34805a6c138a471c9203  ./Configs/SQL/update-2.5.3-to-2.6.0.sql
-e9ba3feb0f5cd6c3b7ea9dd26f127b76  ./Configs/SQL/update-2.6.2-to-2.6.3.sql
+dd3c137fae66b8ef5027d6376639c567  ./Configs/SQL/update-2.6.2-to-2.6.3.sql
 4712b14be2f22c6d20dc59a59cd9d52f  ./Configs/SQL/update-2.2.x-to-2.3.0.sql
 d71479c15006765ff5b4c64d0c7f8865  ./Configs/SQL/migrate-2.5.3-to-2.6.0.pl
 5d072f19ac04448321bdb003b90a9fc7  ./Configs/SQL/update-2.4.1-to-2.5.0.sql
-b3972fb8a362dfe993c4f9aca066b947  ./Configs/SQL/FullSchema.sql
+e0e9526385b2b4577e58953aeab8106c  ./Configs/SQL/FullSchema.sql
 ee91e0c188782574211823b192dc5814  ./Configs/SQL/update-2.4.0-to-2.4.1.sql
 c5531fe947987f87be8ed0bb1c3987bb  ./Configs/SQL/my.cnf
 ddcbe32781e3f31af0ce9b92c37447df  ./Configs/ldap-reset.pl
 ced6179e0c8f03f66e70570cbe856356  ./Configs/Crontab/Client (DSMS)
 05d90132e572996621703f883d387c6f  ./Configs/Permissions.sh
-128f15ab6257d3d1cae8748d1160b095  ./.csync_journal.db-shm
+2cb691db8e26d10679497e9579f5d2de  ./.csync_journal.db-shm
 b453635745dd51900c84249f655372b9  ./.owncloudsync.log
