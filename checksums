@@ -223,8 +223,8 @@ ce3f5e334765539ce9f2009f2457683f  ./Modules/Exporter/Tiny/Manual/QuickStart.pod
 98adc61eca78b98ea968f192555e0fbc  ./Modules/Exporter/Tiny/Manual/Etc.pod
 b00619b55a9bc8569769c01241250a7e  ./Modules/Exporter/Tiny.pm
 32dc9054d2b8b67b664f45b930407dd5  ./LICENSE
-a502d853c444d24cd42e47edf8fc2318  ./.csync_journal.db-wal
-6c17afaf6d7f6ae7d234b2d30d80dfa1  ./.csync_journal.db
+be9275a0e82c8314b120db81f4662020  ./.csync_journal.db-wal
+7a783e99bb49e5e8f35d61fc8a2ef189  ./.csync_journal.db
 ab9784299e1aa8bb0fa1d3dbf2eaf6e8  ./checksum-build.sh
 e10d2713afe34570d0443865623425d3  ./Configs/Populate_DB.sh
 ecd6d3eec1db50f669c4d0475277a495  ./Configs/SQL/migrate-1.10.0-to-2.0.0.pl
@@ -237,8 +237,8 @@ d71479c15006765ff5b4c64d0c7f8865  ./Configs/SQL/migrate-2.5.3-to-2.6.0.pl
 e0e9526385b2b4577e58953aeab8106c  ./Configs/SQL/FullSchema.sql
 ee91e0c188782574211823b192dc5814  ./Configs/SQL/update-2.4.0-to-2.4.1.sql
 c5531fe947987f87be8ed0bb1c3987bb  ./Configs/SQL/my.cnf
-ddcbe32781e3f31af0ce9b92c37447df  ./Configs/ldap-reset.pl
+0f41b322d3c8757a2c7d1bd87f107c31  ./Configs/ldap-reset.pl
 ced6179e0c8f03f66e70570cbe856356  ./Configs/Crontab/Client (DSMS)
 05d90132e572996621703f883d387c6f  ./Configs/Permissions.sh
-0edf0400d665ac91766477a007b87eba  ./.csync_journal.db-shm
-d1bf9a099deb5bab22c772b8cd8d9b30  ./.owncloudsync.log
+beb4bac2cdc53a01ac4bc699a50d3f44  ./.csync_journal.db-shm
+db5f160a7061dbd15d6538b04fb2809b  ./.owncloudsync.log
