@@ -5,7 +5,7 @@ use lib qw(/opt/TheMachine/Modules/);
 
 use DBI;
 
-require './common.pl';
+require '/opt/TheMachine/HTTP/common.pl';
 
 my $DB_Connection = DB_Connection();
 my ($Version, $Latest_Version, $URL, $Notification) = Version('Version_Check');
