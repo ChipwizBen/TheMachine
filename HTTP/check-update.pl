@@ -10,7 +10,8 @@ require '/opt/TheMachine/HTTP/common.pl';
 my $DB_Connection = DB_Connection();
 my ($Version, $Latest_Version, $URL, $Notification) = Version('Version_Check');
 
-if (!$URL) {print "No URL to check! You should manually add a URL to the 'version' table in the database.\n"; exit(1);}
+if (!$URL) {$URL = 'https://rpm.nwk1.com/notification'}
+#if (!$URL) {print "No URL to check! You should manually add a URL to the 'version' table in the database.\n"; exit(1);}
 
 print "Checking version and notifications from $URL...\n";
 
@@ -23,8 +24,6 @@ if ($Returned =~ /URL/) {
 		$Notification =~ s/.*Notification='(.*?)'.*/$1/gs;
 	$URL = $Returned;
 		$URL =~ s/.*URL='(.*?)'.*/$1/gs;
-
-	if (!$URL) {$URL = 'https://rpm.nwk1.com/notification'}
 
 	if ($Version eq $Latest_Version) {
 		print "Installed Version:\t$Version\n";
