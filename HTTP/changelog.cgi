@@ -41,6 +41,7 @@ sub html_output {
 
 	# Version 2.6.4
 	$Table->addRow('2.6.4', 'Fixed configuration audit log submission username.');
+	$Table->addRow('', 'Added default URL to version check.');
 	$Table->addRow('---', '');
 
 	# Version 2.6.3

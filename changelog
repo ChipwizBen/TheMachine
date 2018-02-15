@@ -1,4 +1,5 @@
 2.6.4   - Fixed configuration audit log submission username.
+        - Added default URL to version check.
 2.6.3   - Made LDAP configuration a bit more flexible by also allowing username (DN) suffixes to work with more servers.
         - Made LDAP login report the reason for a login failure.
         - Made an LDAP configured system failback to local auth if authentication fails to prevent accidental lockouts.

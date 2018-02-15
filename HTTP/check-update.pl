@@ -24,6 +24,8 @@ if ($Returned =~ /URL/) {
 	$URL = $Returned;
 		$URL =~ s/.*URL='(.*?)'.*/$1/gs;
 
+	if (!$URL) {$URL = 'https://rpm.nwk1.com/notification'}
+
 	if ($Version eq $Latest_Version) {
 		print "Installed Version:\t$Version\n";
 		print "Latest Version:\t\t$Latest_Version\n";
