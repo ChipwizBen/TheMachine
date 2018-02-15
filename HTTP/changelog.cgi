@@ -39,6 +39,10 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	# Version 2.6.4
+	$Table->addRow('2.6.4', 'Fixed configuration audit log submission username.');
+	$Table->addRow('---', '');
+
 	# Version 2.6.3
 	$Table->addRow('2.6.3', 'Made LDAP configuration a bit more flexible by also allowing username (DN) suffixes to work with more servers.');
 	$Table->addRow('', 'Made LDAP login report the reason for a login failure.');

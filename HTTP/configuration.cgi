@@ -834,7 +834,7 @@ ENDHTML
 sub write_configuration {
 
 	my $Audit_Log_Submission = Audit_Log_Submission();
-	$Audit_Log_Submission->execute("Configuration", "Modify", "$User_Name Modified the system's configuration.", '$User_Name');
+	$Audit_Log_Submission->execute("Configuration", "Modify", "$User_Name Modified the system's configuration.", "$User_Name");
 
 	# System
 	my $System_Config = $DB_Connection->do("DELETE FROM `config_system` WHERE 1=1");
