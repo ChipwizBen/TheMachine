@@ -1,5 +1,5 @@
-4dd670ee02ff6e4c55e9289c72f338b1  ./changelog
-aa83f23c93e8095f7836b8cd85b90c3a  ./README.md
+beeb9e4adb41259f13d27068aaae8b03  ./changelog
+90599ce8330f5b45864439ea1875098c  ./README.md
 86b25aa8e425e7a993c7c93a0ff44d41  ./HTTP/Resources/index.cgi
 b3dba428ad19042b9ff17a1677695200  ./HTTP/Resources/Images/add-note.png
 1ceb49ca7e6d8fa44417a08afd9d17d7  ./HTTP/Resources/Images/back.png
@@ -38,15 +38,15 @@ f510664b7c378d0417d09976de81ce8b  ./HTTP/Resources/Images/linked.png
 dff0e5db07d658ef63f1efa2e70929da  ./HTTP/Resources/Images/history.png
 e40ec2161fe7993196f23c8a07346306  ./HTTP/Resources/jquery.min-2.1.1.js
 38d4d0c5547f8a589cf3a9f8c309dced  ./HTTP/Resources/The_Machine_Manual.pdf
-a6c3dfd03624afc1cf9e2ec217acb284  ./HTTP/header.cgi
+e81abb6d0a6ec70a74ea6b305975b467  ./HTTP/header.cgi
 70da90efdcde7dee9e2fe6b14bb6d074  ./HTTP/account.cgi
-2e5502233379d3b0938e073b78f833e7  ./HTTP/check-update.pl
+b29b6e80e9c0cbff82ec15569103d9d8  ./HTTP/check-update.pl
 9aff393199875a5d608bca9b002a09fa  ./HTTP/index.cgi
 e41d1e9a5294d8115fa772be11396552  ./HTTP/audit-log.cgi
 4a5c0bc439991893b42f88ba77a5a479  ./HTTP/access-log.cgi
 a1eb6fca018b006fc7c3e3097a5f01b8  ./HTTP/account-management.cgi
 d160a7e4a44dfbe69919cf52c1b27a5f  ./HTTP/register.pl
-833fd6c9fbad13d38d3d2428c9425baa  ./HTTP/changelog.cgi
+5f12b5a33366b59caf00b80a10d32a1b  ./HTTP/changelog.cgi
 1890c290456cd3ebaae318f50a75f874  ./HTTP/lockout.cgi
 86b25aa8e425e7a993c7c93a0ff44d41  ./HTTP/ReverseProxy/index.cgi
 1ae99ce08791f6d6b377636b9cc65af3  ./HTTP/ReverseProxy/redirects.cgi
@@ -223,8 +223,8 @@ ce3f5e334765539ce9f2009f2457683f  ./Modules/Exporter/Tiny/Manual/QuickStart.pod
 98adc61eca78b98ea968f192555e0fbc  ./Modules/Exporter/Tiny/Manual/Etc.pod
 b00619b55a9bc8569769c01241250a7e  ./Modules/Exporter/Tiny.pm
 32dc9054d2b8b67b664f45b930407dd5  ./LICENSE
-869f4cb165c7cb53da2c71921066a16f  ./.csync_journal.db-wal
-34d327fee2c16b463bc34dcefc17383e  ./.csync_journal.db
+2dcf3c8d9b57bce4926ad20067c32f39  ./.csync_journal.db-wal
+c9483b05be6edb1ff9884ee2cbb8687a  ./.csync_journal.db
 ab9784299e1aa8bb0fa1d3dbf2eaf6e8  ./checksum-build.sh
 6d730f19034141931a253015bc3165b5  ./Configs/Populate_DB.sh
 ecd6d3eec1db50f669c4d0475277a495  ./Configs/SQL/migrate-1.10.0-to-2.0.0.pl
@@ -240,5 +240,5 @@ c5531fe947987f87be8ed0bb1c3987bb  ./Configs/SQL/my.cnf
 28471b1b4e00002fe77a7327e9ac5ea0  ./Configs/ldap-reset.pl
 ced6179e0c8f03f66e70570cbe856356  ./Configs/Crontab/Client (DSMS)
 05d90132e572996621703f883d387c6f  ./Configs/Permissions.sh
-764d8694ef60038e5b52b115ff486e03  ./.csync_journal.db-shm
-8941bc1d849d807f13a8802a2431bcf8  ./.owncloudsync.log
+1738af5bca2c424fe89ac98e49ca1f9c  ./.csync_journal.db-shm
+b40f1c80205a706578c33c93696e3916  ./.owncloudsync.log

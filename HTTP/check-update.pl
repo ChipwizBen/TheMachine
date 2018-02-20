@@ -39,11 +39,15 @@ if ($Returned =~ /URL/) {
 		print "Notification: $Notification\n";
 	}
 
-	my $DB_Update = $DB_Connection->prepare("UPDATE `version` SET
-		`Latest_Version` = ?,
-		`URL` = ?,
-		`Notification` = ?
-		WHERE 1=1");
+	my $DB_Update = $DB_Connection->do("DELETE FROM `version` WHERE 1=1");
+	$DB_Update = $DB_Connection->prepare("INSERT INTO `version` (
+		`Latest_Version`,
+		`URL`,
+		`Notification`
+	)
+	VALUES (
+		?, ?, ?
+	)");
 	$DB_Update->execute($Latest_Version, $URL, $Notification);
 	exit(0);
 }

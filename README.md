@@ -38,6 +38,7 @@ The Machine is an automation tool designed for system administrators that need t
 * DNS Domains and Zone Records (BIND)
 * Bulk remote execution and reboot control of systems via SSH (D-Shell)
 * VMWare snapshot integration (via API)
+* Proxmox snapshot integration (via API)
 * Service dependency management and automatic dependency visualisation
 * Full auditability of actions
 * Icinga 2 configuration (beta)

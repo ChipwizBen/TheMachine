@@ -39,6 +39,10 @@ sub html_output {
 	$Table->addRow( "Version", "Change" );
 	$Table->setRowClass (1, 'tbrow1');
 
+	# Version 2.6.5
+	$Table->addRow('2.6.5', 'Fixed a bug in the version check process.');
+	$Table->addRow('---', '');
+
 	# Version 2.6.4
 	$Table->addRow('2.6.4', 'Fixed configuration audit log submission username.');
 	$Table->addRow('', 'Added default URL to version check.');

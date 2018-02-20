@@ -1,3 +1,4 @@
+2.6.5   - Fixed a bug in the version check process.
 2.6.4   - Fixed configuration audit log submission username.
         - Added default URL to version check.
 2.6.3   - Made LDAP configuration a bit more flexible by also allowing username (DN) suffixes to work with more servers.
